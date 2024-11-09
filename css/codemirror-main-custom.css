@@ -1,0 +1,92 @@
+.CodeMirror {
+  height: auto;
+  font-size: 16px;
+  font-family: 'Roboto', Arial;
+}
+
+.CodeMirror div {
+  z-index: auto;
+}
+
+.CodeMirror-gutter-wrapper, .CodeMirror-cursor {
+  z-index: 4!important;
+}
+
+.CodeMirror-lint-tooltip {
+  background-color: #fff;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  color: #666;
+  font-family: Roboto;
+  line-height: 16px;
+}
+
+.CodeMirror-lint-tooltip {
+  background-color: #fff;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  color: #666;
+  font-family: 'Roboto', Arial;
+  line-height: 16px;
+}
+
+.CodeMirror-hint {
+  font-family: 'Roboto', Arial;
+  line-height: 16px;
+}
+
+.CodeMirror-focused .cm-matchhighlight {
+  background-color: #0f0;
+}
+
+.CodeMirror-search-match {
+  background: gold;
+  border-top: 1px solid orange;
+  border-bottom: 1px solid orange;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  opacity: .5;
+}
+
+.CodeMirror-gutters {
+  border-right: none;
+  background-color: #fff;
+}
+
+.CodeMirror-selected, .CodeMirror-focused .CodeMirror-selected {
+  background-color: #c0c0c0!important;
+}
+
+.CodeMirror-hints::-webkit-scrollbar,
+.CodeMirror-hints::-webkit-scrollbar-button,
+.CodeMirror-hints::-webkit-scrollbar-track,
+.CodeMirror-hints::-webkit-scrollbar-track-piece,
+.CodeMirror-hints::-webkit-scrollbar-thumb,
+.CodeMirror-hints::-webkit-scrollbar-corner,
+.CodeMirror-hints::-webkit-resizer {
+  background: transparent;
+}
+
+.CodeMirror-hints::-webkit-scrollbar {
+  width:  12px;
+  height: 12px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-hints::-webkit-scrollbar-track-piece {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-hints::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 5px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.CodeMirror-hints::-webkit-scrollbar-button {
+  width:0;
+  height:0;
+}

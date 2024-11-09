@@ -1,0 +1,46 @@
+/**
+ * @file Simple test for 3D window
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+var win = await openWindow3D();
+win.document.title = "Test 3D Window - JSLAB | PR-DC";
+var THREE = win.THREE;
+
+const width = win.innerWidth, height = win.innerHeight;
+
+// init
+const camera = new THREE.PerspectiveCamera( 70, width / height, 0.01, 10 );
+camera.position.z = 1;
+
+const scene = new THREE.Scene();
+
+const geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+const material = new THREE.MeshNormalMaterial();
+
+const mesh = new THREE.Mesh( geometry, material );
+scene.add( mesh );
+
+const renderer = new THREE.WebGLRenderer( { antialias: true } );
+renderer.setSize( width, height );
+renderer.setAnimationLoop( animate );
+win.document.body.appendChild( renderer.domElement );
+
+// Handle window resizing
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+  camera.aspect = win.innerWidth / win.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(win.innerWidth, win.innerHeight);
+}
+
+function animate( time ) {
+  mesh.rotation.x = time / 2000;
+  mesh.rotation.y = time / 1000;
+  
+  renderer.render( scene, camera );
+}

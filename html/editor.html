@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Editor - JSLAB | PR-DC</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+    <link rel="stylesheet" type="text/css" href="../css/tabs.css">
+    <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/fold/foldgutter.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/lint/lint.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/hint/show-hint.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="../css/codemirror-editor-custom.css">
+		<link rel="stylesheet" type="text/css" href="../css/editor.css" />
+    <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
+    
+    <style id="dynamic-style-rules"></style>
+  </head>
+  <body>
+    <div id="editor-menu-container">
+      <div>
+        <img id="app-logo" src="../img/JSLAB.svg"/>
+        <ul id="editor-menu">
+          <li id="new-script" title-str="26"><img src="../img/new-script.svg"/><str sid="10"></str></li>
+          <li id="open-menu" title-str="27"><img src="../img/open.svg"/><str sid="11"></str></li>
+          <li id="save-menu" title-str="28"><img src="../img/save.svg"/><str sid="12"></str></li>
+          <li id="save-as-menu" title-str="29"><img src="../img/save-as.svg"/><str sid="13"></str></li>
+          <li id="run-menu" title-str="30"><img src="../img/run.svg"/><str sid="14"></str></li>
+        </ul>
+        <ul id="window-controls">
+          <li id="win-minimize"><img src="../img/win-minimize.svg"></li>
+          <li id="win-restore"><img src="../img/win-restore.svg"></li>
+          <li id="win-close"><img src="../img/win-close.svg"></li>
+        </ul>
+        <div id="app-title">JSLAB / EDITOR</div>
+        <div class="clear"></div>
+      </div>
+    </div>
+    <div class="tabs" style="--tab-content-margin: 9px">
+      <div class="tabs-content"></div>
+      <img id="new-tab" src="../img/new-tab.svg" />
+      <img id="editor-more-icon" src="../img/more.svg" />
+      <div class="tabs-bottom-bar"></div>
+    </div>
+    <div id="code"></div>
+    <div id="close-dialog-cont">
+      <div id="close-dialog">
+        <div id="close-dialog-header">
+          <span><str sid="47"></str></span>
+        </div>
+        <div id="close-dialog-msg">
+          <str sid="48"></str> <span id="close-file"></span> <str sid="49"></str>
+        </div>
+        <div id="close-dialog-buttons">
+          <button id="close-dialog-save"><str sid="50"></str></button>
+          <button id="close-dialog-discard"><str sid="51"></str></button>
+          <button id="close-dialog-cancel"><str sid="52"></str></button>
+        </div>
+        <br class="clear">
+      </div>
+    </div>
+
+    <div id="editor-more-popup" style="display: none;">
+      <ul>
+        <li id="search-dialog-menu" title-str="169"><img src="../img/search-dialog.svg"/><str sid="168"></str></li>
+      </ul>
+      <div class="popup-triangle"></div>
+    </div>
+    
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    
+    <script type="text/javascript" src="../lib/draggabilly-2.3.0/draggabilly-2.3.0.min.js"></script>
+    <script type="text/javascript" src="../lib/PRDC_TABS/PRDC_TABS.js"></script>
+    <script type="text/javascript" src="../lib/jshint-2.13.0/jshint-2.13.0.js"></script>
+    
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/lib/codemirror.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/selection/active-line.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/fold/foldcode.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/fold/foldgutter.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/fold/brace-fold.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/fold/indent-fold.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/fold/comment-fold.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/display/rulers.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/edit/matchbrackets.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/lint/lint.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/hint/show-hint.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/searchcursor.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/scroll/annotatescrollbar.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/matchesonscrollbar.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/jump-to-line.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/match-highlighter.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/comment/comment.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/mode/javascript/javascript.js"></script>
+    
+    <script type="text/javascript" src="../js/code/custom-javascript-hint.js"></script>
+    <script type="text/javascript" src="../js/code/dialog-search.js"></script>
+    
+    <script type="text/javascript" src="../lib/jquery-3.7.0/jquery-3.7.0.min.js"></script>
+    
+    <script type="text/javascript" src="../js/editor/init-editor.js"></script>
+  </body>
+</html>

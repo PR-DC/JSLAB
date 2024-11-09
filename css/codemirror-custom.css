@@ -1,0 +1,108 @@
+#code {
+  height: calc(100vh - 74px);
+}
+
+.CodeMirror {
+  height: calc(100% - 6px);
+  margin: 5px;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  font-size: 16px;
+  margin-top: 1px;
+}
+
+.CodeMirror div {
+  z-index: auto;
+}
+
+.CodeMirror-gutter-wrapper, .CodeMirror-cursor {
+  z-index: 4!important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar,
+.CodeMirror-vscrollbar::-webkit-scrollbar-button,
+.CodeMirror-vscrollbar::-webkit-scrollbar-track,
+.CodeMirror-vscrollbar::-webkit-scrollbar-track-piece,
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+.CodeMirror-vscrollbar::-webkit-scrollbar-corner,
+.CodeMirror-vscrollbar::-webkit-resizer {
+  background: transparent;
+}
+
+.CodeMirror-vscrollbar {
+
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar {
+  width:  12px;
+  height: 12px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-track-piece {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 5px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-button {
+  width:0;
+  height:0;
+}
+
+.CodeMirror-ruler {
+  z-index: 1!important;
+}
+
+.CodeMirror-foldmarker {
+  color: #000;
+  text-shadow: none;
+}
+
+.CodeMirror-lint-tooltip {
+  background-color: #fff;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  color: #666;
+  font-family: Roboto;
+  line-height: 16px;
+}
+
+.CodeMirror-lint-tooltip {
+  background-color: #fff;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  color: #666;
+  font-family: Roboto;
+  line-height: 16px;
+}
+
+.CodeMirror-hint {
+  line-height: 16px;
+}
+
+.CodeMirror-focused .cm-matchhighlight {
+  background-color: #0f0;
+}
+
+.CodeMirror-search-match {
+  background: gold;
+  border-top: 1px solid orange;
+  border-bottom: 1px solid orange;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  opacity: .5;
+}
+
+.CodeMirror-selection-highlight-scrollbar {
+  background-color: #0f0;
+  width: 13px!important;
+  z-index: 100!important;
+}

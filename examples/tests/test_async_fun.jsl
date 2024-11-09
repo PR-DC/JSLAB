@@ -1,0 +1,17 @@
+/**
+ * @file Simple test for asynchronous funtion
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+async function f() {
+  console.log(1);
+  await waitSeconds(2);
+  console.log(2);
+  await waitSeconds(10);
+  console.log(3);  
+}
+
+await f();

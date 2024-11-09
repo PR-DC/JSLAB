@@ -1,0 +1,354 @@
+#command-window-options {
+  position: absolute;
+  top: -1px;
+  right: 8px;
+}
+
+#command-window-options.options .options-right {
+  float: right;
+}
+
+#command-window-options.options i.settings {
+  background: url(../img/settings.svg) no-repeat center;
+}
+
+#command-window-options.options i.timestamp {
+  background: url(../img/timestamp.svg) no-repeat center;
+}
+
+#command-window-options.options i.autoscroll {
+  background: url(../img/autoscroll.svg) no-repeat center;
+}
+
+#command-window-options.options i.clear {
+  background: url(../img/clear.svg) no-repeat center;
+}
+
+#command-window-options.options i.log {
+  background: url(../img/save-log.svg) no-repeat center;
+}
+
+#command-window-options.options i.to-bottom {
+  background: url(../img/to-bottom.svg) no-repeat center;
+}
+
+#command-window-options.options i {
+  width: 16px;
+  height: 18px;
+  display: block;
+  background-size: 16px!important;
+  float: left;
+  clear: none;
+  padding: 3px 5px;
+  opacity: 0.3;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+#command-window-options.options i:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
+#command-window-options.options i.active {
+  opacity: 0.8;
+}
+
+#command-window-input-container {
+  padding: 10px;
+  padding-left: 25px;
+  position: relative;
+  background-image: url(../img/input.svg);
+  background-position: left 12px top 12px;
+  background-size: 15px;
+  background-repeat: no-repeat;
+}
+
+#command-window-input {
+  border: 0;
+  color: #333;
+  font-family: 'Roboto', Arial;
+  font-size: 16px;
+  font-weight: 300;
+  padding: 0;
+  width: 100%;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  min-height: 34px;
+}
+
+#command-window-messages {
+  padding-top: 10px;
+}
+
+#command-window-messages .welcome-message .app-logo {
+  float: left;
+  height: 200px;
+  padding: 20px;
+  padding-left: 0px;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+#command-window-messages .welcome-message .company-logo {
+  float: left;
+  height: 136px;
+  padding: 52px 10px;
+  padding-right: 10px;
+  opacity: 0.1;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+#command-window-messages .welcome-message p {
+  display: block;
+  line-height: 22px;
+  padding: 10px 0px;
+  color: #333;
+  font-weight: 300;
+  opacity: 0.8;
+  max-width: 800px;
+}
+
+#command-window-messages .welcome-message span:not(.timestamp) {
+  font-weight: 500;
+}
+
+#command-window-messages .welcome-message, #command-window-messages .welcome-message * {
+  white-space: normal!important;
+}
+
+#command-window-messages a {
+  font-weight: 500;
+  color: #000;
+}
+
+#command-window-messages.messages > div {
+  padding-bottom: 5px;
+  padding-top: 5px;
+  line-height: 22px;
+  padding-left: 130px;
+  padding-right: 10px;
+  position: relative;
+  white-space: pre-wrap;
+  min-height: 32px;
+}
+
+#command-window-messages.messages.no-timestamp > div {
+  padding-left: 25px;
+}
+
+#command-window-messages.messages div.system-in {
+  background: url(../img/system-in.svg) no-repeat 4px 8px;
+  background-size: 14px;
+}
+
+#command-window-messages.messages div.data-in {
+  background: url(../img/console-in.svg) no-repeat 4px 8px;
+  background-size: 14px;
+}
+
+#command-window-messages.messages div.data-out {
+  background: url(../img/console-out.svg) no-repeat 4px 8px;
+  background-size: 14px;
+}
+
+#command-window-messages.messages div:hover {
+  background-color: #f9f9f9;
+}
+
+#command-window-messages.messages.no-timestamp div span.timestamp {
+  display: none;
+}
+
+#command-window-messages.messages div:hover span.timestamp {
+  color: #2e85c7
+}
+
+#command-window-messages.messages div span.timestamp {
+  color: #999;
+  display: block;
+  position: absolute;
+  left: 25px;
+}
+
+#command-window-messages.messages div span.log {
+  color: #666;
+}
+
+#command-window-messages.messages div span.msg {
+  color: #12568a;
+}
+
+#command-window-messages.messages div span.data {
+  color: #17d838;
+}
+
+#command-window-messages.messages div span.error {
+  color: #cf000f;
+}
+
+#command-window-messages.messages div span.warn {
+  color: #dd8f00;
+}
+#command-window-messages.messages:hover div:hover {
+  filter: none;
+}
+
+/* #command-window-messages.messages:hover div {
+  filter: grayscale(100%);
+} */
+
+.save-log, .change-settings {
+  margin-bottom: 0px;
+}
+
+.history-cont {
+  display: none;
+  left: 0px;
+  position: absolute;
+  bottom: 0px;
+  top: 23px;
+  right: 0px;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 20px;
+}
+
+.history-panel {
+  top: 55px!important;
+  left: 20px!important;
+  right: 20px!important;
+  bottom: 0px!important;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.history-panel li {
+  padding-bottom: 5px;
+  padding-top: 5px;
+  line-height: 22px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0 10px;
+  position: relative;
+  white-space: pre-wrap;
+  border-bottom: 1px solid #f7df1e;
+  min-height: 22px;
+  cursor: pointer;
+  transition: all linear 0.3s;
+}
+
+.history-panel li:after {
+  transition: all linear 0.3s;
+}
+
+.history-panel li:after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 0px;
+  right: 0px;
+  bottom: 3px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: #ffffff69;
+  z-index: -1;
+}
+
+.history-panel li.active:after {
+  border: 1px solid #999;
+}
+
+.history-panel li:not(.active):hover:after {
+  border: 1px solid #999;
+}
+
+.history-panel li:last-child {
+  border-bottom: 1px solid transparent;
+}
+
+.history-panel .history-empty {
+  padding-bottom: 5px;
+  padding-top: 5px;
+  line-height: 22px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0 10px;
+  position: relative;
+  text-align: center;
+}
+
+.options-panel {
+  display: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  background-color: rgba(255, 255, 255, 0.7);
+  overflow-y: auto;
+}
+
+.options-cont {
+  margin: 0 auto;
+  width: 460px;
+  position: relative;
+  background: #ffffff6b;
+  box-shadow: 0 0 10px #00000026;
+  border-radius: 10px;
+  padding: 20px;
+  padding-bottom: 20px;
+  color: #777;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.options-header, .page-header, .history-header {
+  position: relative;
+  border-bottom: 1px solid #666;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+.page-header {
+  margin-bottom: 0px;
+}
+
+.options-header span, .page-header span, .history-header span {
+  color: #666;
+  display: block;
+  font-weight: bold;
+  font-size: 24px;
+  border-radius: 3px;
+}
+
+.options-close, .page-close, .history-close {
+  opacity: 0.7;
+  position: absolute;
+  display: block;
+  top: 0px;
+  right: 0px;
+  cursor: pointer;
+}
+
+.options-close:hover, .page-close:hover, .history-close:hover {
+  opacity: 0.3;
+}
+
+@media only screen and (max-width: 900px) {
+  .page-cont {
+    width: 460px;
+  }
+}

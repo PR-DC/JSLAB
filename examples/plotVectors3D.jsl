@@ -1,0 +1,31 @@
+/**
+ * @file Simple example for 3D plot with vectors
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+  
+var x = [0, 0, 0, 1, 0];
+var y = [0, 0, 0, 1, 0];
+var z = [0, 0, 0, 1, 0];
+
+var u = [1, 0, 0, 1, -1];
+var v = [0, 1, 0, 1, 0];
+var w = [0, 0, 1, 1, 0];
+
+var head_scale = 0.2;
+var head_angleFactor = 0.4;
+
+var vectors = createVectors3D(x, y, z, u, v, w, head_scale, head_angleFactor, {color: "#0f0", width: 6});
+
+figure(1);
+plot([
+  vectors.line, vectors.head
+], {'showLegend': false, 'font': {family: 'LatinModern', size: 14}});
+xlabel("x");
+ylabel("y");
+zlabel("z");
+xlim([-1, 3]);
+ylim([-1, 3]);
+zlim([-1, 3]);

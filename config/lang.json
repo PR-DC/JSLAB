@@ -1,0 +1,1092 @@
+{
+	"1": {
+		"en": "Editor",
+		"rs": "Uređivač",
+		"rsc": "Уређивач"
+	},
+  "2": {
+		"en": "Help",
+		"rs": "Pomoć",
+		"rsc": "Помоћ"
+	},
+  "3": {
+		"en": "Info",
+		"rs": "Info",
+		"rsc": "Инфо"
+	},
+  "4": {
+		"en": "File Browser",
+		"rs": "Pretraživač fajlova",
+		"rsc": "Претраживач фајлова"
+	},
+  "5": {
+		"en": "Workspace",
+		"rs": "Radni prostor",
+		"rsc": "Радни простор"
+	},
+  "6": {
+		"en": "Command History",
+		"rs": "Istorija Komandi",
+		"rsc": "Историја Команди"
+	},
+  "7": {
+		"en": "Command Window",
+		"rs": "Komandni Prozor",
+		"rsc": "Командни Прозор"
+	},
+  "8": {
+		"en": "version",
+		"rs": "verzija",
+		"rsc": "верзија"
+  },
+  "9": {
+		"en": "Settings",
+		"rs": "Podešavanja",
+		"rsc": "Подешавања"
+  },
+  "10": {
+		"en": "New",
+		"rs": "Nova",
+		"rsc": "Нова"
+  },
+  "11": {
+		"en": "Open",
+		"rs": "Otvori",
+		"rsc": "Отвори"
+  },
+  "12": {
+		"en": "Save",
+		"rs": "Sačuvaj",
+		"rsc": "Сачувај"
+  },
+  "13": {
+		"en": "Save As",
+		"rs": "Sačuvaj Kao",
+		"rsc": "Сачувај Као"
+  },
+  "14": {
+		"en": "Run",
+		"rs": "Pokreni",
+		"rsc": "Покрени"
+  },
+  "15": {
+		"en": "Sandbox paused",
+		"rs": "Radni prostor pauziran",
+		"rsc": "Радни простор паузиран"
+  },
+  "16": {
+		"en": "Language",
+		"rs": "Jezik",
+		"rsc": "Језик"
+  },
+  "17": {
+    "en": "Number of latest messages",
+    "rs": "Broj najnovijih poruka",
+    "rsc": "Број најновијих порука"
+  },
+  "18": {
+    "en": "Close log save dialog",
+    "rs": "Zatvorite dijalog za čuvanje dnevnika",
+    "rsc": "Затворите дијалог за чување дневника"
+  },
+  "19": {
+    "en": "Close command history",
+    "rs": "Zatvori istoriju komandi",
+    "rsc": "Затвори историју команди"
+  },
+  "20": {
+    "en": "Close script directory dialog",
+    "rs": "Zatvorite dijalog direktorijuma skripte",
+    "rsc": "Затворите дијалог директоријума скрипте"
+  },
+  "21": {
+    "en": "Close paths menu",
+    "rs": "Zatvorite meni putanja",
+    "rsc": "Затвори мени путања"
+  },
+  "22": {
+    "en": "Close help",
+    "rs": "Zatvori pomoć",
+    "rsc": "Затвори помоћ"
+  },
+  "23": {
+    "en": "Close info",
+    "rs": "Zatvori informacije",
+    "rsc": "Затворите информације"
+  },
+  "24": {
+    "en": "Close settings",
+    "rs": "Zatvorite podešavanja",
+    "rsc": "Затворите подешавања"
+  },
+  "25": {
+    "en": "Select language",
+    "rs": "Izaberite jezik",
+    "rsc": "Изаберите језик"
+  },
+  "26": {
+    "en": "Open new script",
+    "rs": "Otvorite novu skriptu",
+    "rsc": "Отворите нову скрипту"
+  },
+  "27": {
+    "en": "Open script from file",
+    "rs": "Otvorite skriptu iz datoteke",
+    "rsc": "Отворите скрипту из датотеке"
+  },
+  "28": {
+    "en": "Save script",
+    "rs": "Sačuvaj skriptu",
+    "rsc": "Сачувај скрипту"
+  },
+  "29": {
+    "en": "Script save as",
+    "rs": "Skript sačuvaj kao",
+    "rsc": "Скрипт сачувај као"
+  },
+  "30": {
+    "en": "Save script and run",
+    "rs": "Sačuvajte skriptu i pokreni",
+    "rsc": "Сачувајте скрипту и покрени"
+  },
+  "31": {
+    "en": "Click to go back",
+    "rs": "Kliknite da biste se vratili",
+    "rsc": "Кликните да бисте се вratili"
+  },
+  "32": {
+    "en": "Click to go forward",
+    "rs": "Kliknite da idete napred",
+    "rsc": "Кликните да идете napred"
+  },
+  "33": {
+    "en": "Click to go up",
+    "rs": "Kliknite da idete gore",
+    "rsc": "Кликните да идете gore"
+  },
+  "34": {
+    "en": "Select folder",
+    "rs": "Izaberi direktorijum",
+    "rsc": "Изабери директоријум"
+  },
+  "35": {
+    "en": "Save this path",
+    "rs": "Sačuvajte ovu putanju",
+    "rsc": "Сачувајте ову путању"
+  },
+  "36": {
+    "en": "More folder options",
+    "rs": "Više opcija direktorijuma",
+    "rsc": "Вiше опциjа директоријума"
+  },
+  "37": {
+    "en": "Refresh file browser",
+    "rs": "Osvežite pregledač datoteka",
+    "rsc": "Освежите прегледач датотека"
+  },
+  "38": {
+    "en": "Clear workspace",
+    "rs": "Očistite radni prostor",
+    "rsc": "Очистите радни простор"
+  },
+  "39": {
+    "en": "Clear command history",
+    "rs": "Obrišite istoriju komandi",
+    "rsc": "Обришите историjу команди"
+  },
+  "40": {
+    "en": "Open settings",
+    "rs": "Otvorite podešavanja",
+    "rsc": "Отворите подешавања"
+  },
+  "41": {
+    "en": "Hide timestamp",
+    "rs": "Sakrij vremensku oznaku",
+    "rsc": "Сакриj временску ознаку"
+  },
+  "42": {
+    "en": "Turn off auto scroll",
+    "rs": "Isključite automatsko pomeranje",
+    "rsc": "Искључите аутоматско померање"
+  },
+  "43": {
+    "en": "Clear command window",
+    "rs": "Očistite komandni prozor",
+    "rsc": "Очистите командни прозор"
+  },
+  "44": {
+    "en": "Save log to file",
+    "rs": "Sačuvajte dnevnik u datoteku",
+    "rsc": "Сачуваjте дневник у датотеку"
+  },
+  "45": {
+    "en": "Scroll to bottom",
+    "rs": "Pomerite se do dna",
+    "rsc": "Померите се до дна"
+  },
+  "46": {
+    "en": "Close settings dialog",
+    "rs": "Zatvorite dijalog podešavanja",
+    "rsc": "Затворите диjалог подешавања"
+  },
+  "47": {
+    "en": "File modified",
+    "rs": "Fajl je izmenjen",
+    "rsc": "Фајл је измењен"
+  },
+  "48": {
+    "en": "The file",
+    "rs": "Fajl",
+    "rsc": "Фајл"
+  },
+  "49": {
+    "en": "is about to be closed but has been modified. Do you want to save or discard the changes?",
+    "rs": "će biti zatvoren ali je izmenjen. Da li želite da sačuvate ili odbacite izmene?",
+    "rsc": "ће бити затворен али је измењен. Да ли желите да сачувате или одбаците измене?"
+  },
+  "50": {
+    "en": "Save",
+    "rs": "Sačuvaj",
+    "rsc": "Сачувај"
+  },
+  "51": {
+    "en": "Discard",
+    "rs": "Odbaci",
+    "rsc": "Одбаци"
+  },
+  "52": {
+    "en": "Cancel",
+    "rs": "Otkaži",
+    "rsc": "Откажи"
+  },
+  "53": {
+    "en": "Variable",
+    "rs": "Promenljiva",
+    "rsc": "Променљива"
+  },
+  "54": {
+    "en": "Type",
+    "rs": "Tip",
+    "rsc": "Тип"
+  },
+  "55": {
+    "en": "Class",
+    "rs": "Klasa",
+    "rsc": "Класа"
+  },
+  "56": {
+    "en": "Command window settings",
+    "rs": "Podešavanja komandnog prozora",
+    "rsc": "Подешавања командног прозора"
+  },
+  "57": {
+    "en": "Change settings",
+    "rs": "Promenite podešavanja",
+    "rsc": "Промените подешавања"
+  },
+  "58": {
+    "en": "Save log",
+    "rs": "Sačuvaj dnevnik",
+    "rsc": "Сачувај дневник"
+  },
+  "59": {
+    "en": "Write timestamps",
+    "rs": "Upisuj vremenske oznake",
+    "rsc": "Уписуј временске ознаке"
+  },
+  "60": {
+    "en": "Save log",
+    "rs": "Sačuvaj dnevnik",
+    "rsc": "Сачувај дневник"
+  },
+  "61": {
+    "en": "Session command history",
+    "rs": "Istorija komandi",
+    "rsc": "Историја команди"
+  },
+  "62": {
+    "en": "Script directory",
+    "rs": "Direktorijum skripte",
+    "rsc": "Директоријум скрипте"
+  },
+  "63": {
+    "en": "The directory",
+    "rs": "Direktorijum",
+    "rsc": "Директоријум"
+  },
+  "64": {
+    "en": "is not a working directory nor a saved directory, would you like to change a working directory or save this directory?",
+    "rs": "nije radni direktorijum niti sačuvani direktorijum, da li želite da promenite radni direktorijum ili sačuvate ovaj direktorijum?",
+    "rsc": "није радни директоријум нити сачувани директоријум, да ли желите да промените радни директоријум или сачувате овај директоријум?"
+  },
+  "65": {
+    "en": "Change working directory",
+    "rs": "Promeni radni direktorijum",
+    "rsc": "Промени радни директоријум"
+  },
+  "66": {
+    "en": "Save directory",
+    "rs": "Sačuvaj direktorijum",
+    "rsc": "Сачувај директоријум"
+  },
+  "67": {
+    "en": "Run",
+    "rs": "Pokreni",
+    "rsc": "Покрени"
+  },
+  "68": {
+    "en": "Saved paths",
+    "rs": "Sačuvane putanje",
+    "rsc": "Сачуване путање"
+  },
+  "69": {
+    "en": "Command window keyboard shortcuts",
+    "rs": "Prečice tastature komandnog prozora",
+    "rsc": "Пречице тастатуре командног прозора"
+  },
+  "70": {
+    "en": "Shortcut",
+    "rs": "Prečica",
+    "rsc": "Пречица"
+  },
+  "71": {
+    "en": "Action",
+    "rs": "Akcija",
+    "rsc": "Акција"
+  },
+  "72": {
+    "en": "Clear input / Close dialog",
+    "rs": "Obriši unos / Zatvori dijalog",
+    "rsc": "Обриши унос / Затвори дијалог"
+  },
+  "73": {
+    "en": "Go backward through the command history",
+    "rs": "Idi unazad kroz istoriju komandi",
+    "rsc": "Иди уназад кроз историју команди"
+  },
+  "74": {
+    "en": "Go forward through the command history",
+    "rs": "Idi unapred kroz istoriju komandi",
+    "rsc": "Иди унапред кроз историју команди"
+  },
+  "75": {
+    "en": "First command in the command history",
+    "rs": "Prva komanda u istoriji komandi",
+    "rsc": "Прва команда у историји команди"
+  },
+  "76": {
+    "en": "Last command in the command history",
+    "rs": "Poslednja komanda u istoriji komandi",
+    "rsc": "Последња команда у историји команди"
+  },
+  "77": {
+    "en": "Break the line",
+    "rs": "Prekini liniju",
+    "rsc": "Прекини линију"
+  },
+  "78": {
+    "en": "Repeat the last command",
+    "rs": "Ponovi poslednju komandu",
+    "rsc": "Понови последњу команду"
+  },
+  "79": {
+    "en": "Show the command history",
+    "rs": "Prikaži istoriju komandi",
+    "rsc": "Прикажи историју команди"
+  },
+  "80": {
+    "en": "Clear the command history",
+    "rs": "Obriši istoriju komandi",
+    "rsc": "Обриши историју команди"
+  },
+  "81": {
+    "en": "Complete current command from the command history",
+    "rs": "Završi trenutnu komandu iz istorije komandi",
+    "rsc": "Заврши тренутну команду из историје команди"
+  },
+  "82": {
+    "en": "Focus command input",
+    "rs": "Fokusiraj na unos komandi",
+    "rsc": "Фокусирај на унос команди"
+  },
+  "83": {
+    "en": "Open help",
+    "rs": "Otvorite pomoć",
+    "rsc": "Отворите помоћ"
+  },
+  "84": {
+    "en": "Open settings dialog",
+    "rs": "Otvorite dijalog podešavanja",
+    "rsc": "Отворите дијалог подешавања"
+  },
+  "85": {
+    "en": "Open log save dialog",
+    "rs": "Otvorite dijalog za čuvanje dnevnika",
+    "rsc": "Отворите дијалог за чување дневника"
+  },
+  "86": {
+    "en": "This software uses open-source components stated below, copyright and other proprietary rights of these components belong to their respective owners.",
+    "rs": "Ovaj softver koristi open-source komponente navedene ispod, autorska prava i druga prava intelektualne svojine ovih komponenti pripadaju njihovim vlasnicima.",
+    "rsc": "Овај софтвер користи open-source компоненте наведене испод, ауторска права и друга права интелектуалне својине ових компоненти припадају њиховим власницима."
+  },
+  "87": {
+    "en": "Ready...",
+    "rs": "Spremno...",
+    "rsc": "Спремно..."
+  },
+  "88": {
+    "en": "Evaluating...",
+    "rs": "Evaluacija...",
+    "rsc": "Евалуација..."
+  },
+  "89": {
+    "en": "Stop request sent by user...",
+    "rs": "Korisnik je poslao zahtev za zaustavljanje...",
+    "rsc": "Корисник је послао захтев за заустављање..."
+  },
+  "90": {
+    "en": "Stop loop triggered...",
+    "rs": "Petlja izvršavanja je zaustavljena...",
+    "rsc": "Петља извршавања је заустављена..."
+  },
+  "91": {
+    "en": "Sandbox activity",
+    "rs": "Aktivnost radnog prostora",
+    "rsc": "Активност радног простора"
+  },
+"92": {
+    "en": "Unable to scan directory",
+    "rs": "Nije moguće skenirati direktorijum",
+    "rsc": "Није могуће скенирати директоријум"
+  },
+  "93": {
+    "en": "Running total of",
+    "rs": "Ukupno pokrenuto",
+    "rsc": "Укупно покренуто"
+  },
+  "94": {
+    "en": "tests",
+    "rs": "testova",
+    "rsc": "тестова"
+  },
+  "95": {
+    "en": "Test",
+    "rs": "Test",
+    "rsc": "Тест"
+  },
+  "96": {
+    "en": "failed with error",
+    "rs": "nije uspeo zbog greške",
+    "rsc": "није успео због грешке"
+  },
+  "97": {
+    "en": "failed",
+    "rs": "nije uspeo",
+    "rsc": "није успео"
+  },
+  "98": {
+    "en": "passed",
+    "rs": "uspešan",
+    "rsc": "успешан"
+  },
+  "99": {
+    "en": "Final results",
+    "rs": "Konačni rezultati",
+    "rsc": "Коначни резултати"
+  },
+  "100": {
+    "en": "Tests passed",
+    "rs": "Testovi uspešni",
+    "rsc": "Тестови успешни"
+  },
+  "101": {
+    "en": "Tests failed",
+    "rs": "Testovi nisu uspešni",
+    "rsc": "Тестови нису успешни"
+  },
+  "102": {
+    "en": "There is no implemented tests.",
+    "rs": "Nema implementiranih testova.",
+    "rsc": "Нема имплементираних тестова."
+  },
+  "103": {
+    "en": "Script not found at",
+    "rs": "Skripta nije pronađena na",
+    "rsc": "Скрипта није пронађена на"
+  },
+  "104": {
+    "en": "Not enough lines in file",
+    "rs": "Nema dovoljno linija u fajlu",
+    "rsc": "Нема довољно линија у фајлу"
+  },
+  "105": {
+    "en": "script",
+    "rs": "skripta",
+    "rsc": "скрипта"
+  },
+  "106": {
+    "en": "File",
+    "rs": "Fajl",
+    "rsc": "Фајл"
+  },
+  "107": {
+    "en": "is selected. There are also",
+    "rs": "je odabran. Takođe postoje",
+    "rsc": "је одабран. Такође постоје"
+  },
+  "108": {
+    "en": "is selected. There is also",
+    "rs": "je odabran. Takođe postoji",
+    "rsc": "је одабран. Такође постоји"
+  },
+  "109": {
+    "en": "Failed to find",
+    "rs": "Nije pronađeno",
+    "rsc": "Није пронађено"
+  },
+  "110": {
+    "en": "module",
+    "rs": "modul",
+    "rsc": "модул"
+  },
+  "111": {
+    "en": "Provided path is not string",
+    "rs": "Data putanja nije niz karaktera",
+    "rsc": "Дата путања није низ карактера"
+  },
+  "112": {
+    "en": "line",
+    "rs": "linija",
+    "rsc": "линија"
+  },
+  "113": {
+    "en": "column",
+    "rs": "kolona",
+    "rsc": "колона"
+  },
+  "114": {
+    "en": "at",
+    "rs": "na",
+    "rsc": "на"
+  },
+  "115": {
+    "en": "Not implemented!",
+    "rs": "Nije implementirano!",
+    "rsc": "Није имплементирано!"
+  },
+  "116": {
+    "en": "Code arrived to user defined end point at line",
+    "rs": "Kod je došao do korisnički definisane tačke zaustavaljanja na liniji",
+    "rsc": "Код је дошао до кориснички дефинисане тачке заустављања на линији"
+  },
+  "117": {
+    "en": "Unable to write to file",
+    "rs": "Nije moguće pisati u fajl",
+    "rsc": "Није могуће писати у фајл"
+  },
+  "118": {
+    "en": "File content is not valid JSON",
+    "rs": "Sadržaj fajla nije ispravan JSON",
+    "rsc": "Садржај фајла није исправан JSON"
+  },
+  "119": {
+    "en": "Folder selection canceled",
+    "rs": "Odabir direktorijuma je otkazan",
+    "rsc": "Одабир директоријума је отказан"
+  },
+  "120": {
+    "en": "Content of binding.gyp is not valid JSON",
+    "rs": "Sadržaj binding.gyp nije ispravan JSON",
+    "rsc": "Садржај binding.gyp није исправан JSON"
+  },
+  "121": {
+    "en": "Unknown response",
+    "rs": "Nepoznat odgovor",
+    "rsc": "Непознат одговор"
+  },
+  "122": {
+    "en": "No targets defined",
+    "rs": "Nisu definisani ciljevi",
+    "rsc": "Нису дефинисани циљеви"
+  },
+  "123": {
+    "en": "File binding.gyp not found",
+    "rs": "Fajl binding.gyp nije pronađen",
+    "rsc": "Фајл binding.gyp није пронађен"
+  },
+  "124": {
+    "en": "Format not supported.",
+    "rs": "Format nije podržan.",
+    "rsc": "Формат није подржан."
+  },
+  "125": {
+    "en": "User requested loop stop!.",
+    "rs": "Korisnik je zatražio zaustavljanje petlje!.",
+    "rsc": "Корисник је захтевао заустављање петље!."
+  },
+  "126": {
+    "en": "Open canceled",
+    "rs": "Otvaranje je otkazano",
+    "rsc": "Отварање је отказано"
+  },
+  "127": {
+    "en": "Callback is missing",
+    "rs": "Callback nedostaje",
+    "rsc": "Callback недостаје"
+  },
+  "128": {
+    "en": "Unable to find files in folder",
+    "rs": "Nije moguće pronaći fajlove u direktorijumu",
+    "rsc": "Није могуће пронаћи фајлове у директоријуму"
+  },
+  "129": {
+    "en": "Save canceled",
+    "rs": "Čuvanje je otkazano",
+    "rsc": "Чување је отказано"
+  },
+  "130": {
+    "en": "Path override",
+    "rs": "Pregažena putanja",
+    "rsc": "Прегажена путања"
+  },
+  "131": {
+    "en": "Script run aborted, file not saved.",
+    "rs": "Izvršavanje skripte prekinuto, fajl nije sačuvan.",
+    "rsc": "Извршавање скрипте прекинуто, фајл није сачуван."
+  },
+  "132": {
+    "en": "File open canceled",
+    "rs": "Otvaranje fajla je otkazano",
+    "rsc": "Отварање фајла је отказано"
+  },
+  "133": {
+    "en": "Script",
+    "rs": "Skripta",
+    "rsc": "Скрипта"
+  },
+  "134": {
+    "en": "already open",
+    "rs": "je već otvoren",
+    "rsc": "је већ отворен"
+  },
+  "135": {
+    "en": "For more information, visit",
+    "rs": "Za više informacija, posetite",
+    "rsc": "За више информација, посетите"
+  },
+  "136": {
+    "en": "Copyright",
+    "rs": "Autorsko pravo",
+    "rsc": "Ауторско право"
+  },
+  "137": {
+    "en": "This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.",
+    "rs": "Ovaj program je besplatan softver: možete ga redistribuirati i/ili modifikovati pod uslovima GNU manje opšte javne licence koju je objavila Fondacija za slobodni softver, bilo verzije 3 licence, ili (po vašem izboru) bilo koje kasnije verzije.",
+    "rsc": "Овај програм је бесплатан софтвер: можете га редистрибуирати и/или модификовати под условима ГНУ мање опште јавне лиценце коју је објавила Фондација за слободни софтвер, било верзије 3 лиценце, или (по вашем избору) било којe касније верзије."
+  },
+  "138": {
+    "en": "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.",
+    "rs": "Ovaj program se distribuira u nadi da će biti koristan, ali BEZ IKAKVE GARANCIJE; čak i bez implicitne garancije o PRODAJNOSTI ili PRIKLADNOSTI ZA ODREĐENU NAMENU. Pogledajte GNU manje opštu javnu licencu za više detalja.",
+    "rsc": "Овај програм се дистрибуира у нади да ће бити користан, али БЕЗ ИКАКВЕ ГАРАНЦИЈЕ; чак и без имплицитне гаранције о ПРОДАЈНОСТИ или ПРИКЛАДНОСТИ ЗА ОДРЕЂЕНУ НАМЕНУ. Погледајте ГНУ мање општу јавну лиценцу за више детаља."
+  },
+  "139": {
+    "en": "For help type",
+    "rs": "Za pomoć unesite",
+    "rsc": "За помоћ унесите"
+  },
+  "140": {
+    "en": "No saved paths.",
+    "rs": "Nema sačuvanih putanja.",
+    "rsc": "Нема сачуваних путања."
+  },
+  "141": {
+    "en": "Choose N-API module folder",
+    "rs": "Izaberite direktorijum N-API modula",
+    "rsc": "Изаберите директоријум N-API модула"
+  },
+  "142": {
+    "en": "Choose folder",
+    "rs": "Izaberite direktorijum",
+    "rsc": "Изаберите директоријум"
+  },
+  "143": {
+    "en": "Save figure",
+    "rs": "Sačuvajte grafik",
+    "rsc": "Сачувајте график"
+  },
+  "144": {
+    "en": "Save script to file",
+    "rs": "Sačuvajte skriptu u datoteku",
+    "rsc": "Сачувајте скрипту у датотеку"
+  },
+  "145": {
+    "en": "Save script",
+    "rs": "Sačuvajte skriptu",
+    "rsc": "Сачувајте скрипту"
+  },
+  "146": {
+    "en": "Load script from file",
+    "rs": "Učitajte skriptu iz datoteke",
+    "rsc": "Учитајте скрипту из датотеке"
+  },
+  "147": {
+    "en": "Load script",
+    "rs": "Učitajte skriptu",
+    "rsc": "Учитајте скрипту"
+  },
+  "148": {
+    "en": "Choose working directory",
+    "rs": "Izaberite radni direktorijum",
+    "rsc": "Изаберите радни директоријум"
+  },
+  "149": {
+    "en": "Set",
+    "rs": "Postavi",
+    "rsc": "Постави"
+  },
+  "150": {
+    "en": "Save log file",
+    "rs": "Sačuvajte datoteku dnevnikа",
+    "rsc": "Сачувајте датотеку дневника"
+  },
+  "151": {
+    "en": "Save log",
+    "rs": "Sačuvajte dnevnik",
+    "rsc": "Сачувајте дневник"
+  },
+  "152": {
+    "en": "Plot save as",
+    "rs": "Sačuvaj grafikon kao",
+    "rsc": "Сачувај графикон као"
+  },
+  "153": {
+    "en": "Zoom part of the plot",
+    "rs": "Zumiraj deo grafikona",
+    "rsc": "Зумирај део графикона"
+  },
+  "154": {
+    "en": "Pan plot",
+    "rs": "Pomeranje grafikona",
+    "rsc": "Померaње графикона"
+  },
+  "155": {
+    "en": "Rotate plot",
+    "rs": "Rotiraj grafikon",
+    "rsc": "Ротирај графикон"
+  },
+  "156": {
+    "en": "Zoom in",
+    "rs": "Uvećaj",
+    "rsc": "Увећај"
+  },
+  "157": {
+    "en": "Zoom out",
+    "rs": "Umanji",
+    "rsc": "Умањи"
+  },
+  "158": {
+    "en": "Fit",
+    "rs": "Prilagodi",
+    "rsc": "Прилагоди"
+  },
+  "159": {
+    "en": "Save As",
+    "rs": "Sačuvaj kao",
+    "rsc": "Сачувај као"
+  },
+  "160": {
+    "en": "Zoom",
+    "rs": "Zumiraj",
+    "rsc": "Зумирај"
+  },
+  "161": {
+    "en": "Pan",
+    "rs": "Pomeranje",
+    "rsc": "Померaње"
+  },
+  "162": {
+    "en": "Rotate",
+    "rs": "Rotiraj",
+    "rsc": "Ротирај"
+  },
+  "163": {
+    "en": "Zoom in",
+    "rs": "Uvećaj",
+    "rsc": "Увећај"
+  },
+  "164": {
+    "en": "Zoom out",
+    "rs": "Umanji",
+    "rsc": "Умањи"
+  },
+  "165": {
+    "en": "Fit",
+    "rs": "Prilagodi",
+    "rsc": "Прилагоди"
+  },
+  "166": {
+    "en": "Show timestamp",
+    "rs": "Prikaži vremensku oznaku",
+    "rsc": "Прикажи временску ознаку"
+  },
+  "167": {
+    "en": "Turn on auto scroll",
+    "rs": "Uključite automatsko pomeranje",
+    "rsc": "Укључите аутоматско померање"
+  },
+  "168": {
+    "en": "Search",
+    "rs": "Pretraga",
+    "rsc": "Претрага"
+  },
+  "169": {
+    "en": "Show search dialog",
+    "rs": "Prikaži dijalog za pretragu",
+    "rsc": "Прикажи дијалог за претрагу"
+  },
+  "170": {
+    "en": "Failed to compile module!",
+    "rs": "Neuspešno kompajliranje modula!",
+    "rsc": "Неуспешно компајлирање модула!"
+  },
+  "171": {
+    "en": "Unable to recompile module, try reseting sandbox with <span class='eval-code'> resetSandbox()</span> function.",
+    "rs": "Nije moguće rekompajlirati modul, pokušajte reset sandbox-a sa <span class='eval-code'>resetSandbox()</span> funkcijom.",
+    "rsc": "Није могуће рекомпајлирати модул, покушајте ресет sandbox-а са <span class='eval-code'>resetSandbox()</span> функцијом."
+  },
+  "172": {
+    "en": "Figure is not opened.",
+    "rs": "Grafik nije otvoren.",
+    "rsc": "График није отворен."
+  },
+  "173": {
+    "en": "Source directory does not exist.",
+    "rs": "Izvorni direktorijum ne postoji.",
+    "rsc": "Изворни директоријум не постоји."
+  },
+  "174": {
+    "en": "Failed to open specified file in new window!",
+    "rs": "Neuspešno otvaranje specificirane datoteke u novom prozoru!",
+    "rsc": "Неуспешно отварање специфициране датотеке у новом прозору!"
+  },
+  "175": {
+    "en": "Wait for lib to be loaded!",
+    "rs": "Sačekajte da se biblioteka učita!",
+    "rsc": "Сачекајте да се библиотека учита!"
+  },
+  "176": {
+    "en": "Arrays must be of the same length!",
+    "rs": "Nizovi moraju biti iste dužine!",
+    "rsc": "Низови морају бити исте дужине!"
+  },
+  "177": {
+    "en": "Invalid input types!",
+    "rs": "Nevažeći tipovi ulaza!",
+    "rsc": "Неважећи типови улаза!"
+  },
+  "178": {
+    "en": "Array size does not match the dimensions provided.",
+    "rs": "Veličina niza ne odgovara datim dimenzijama.",
+    "rsc": "Величина низа не одговара датим димензијама."
+  },
+  "179": {
+    "en": "FreeCAD instance already active!",
+    "rs": "FreeCAD instanca je već aktivna!",
+    "rsc": "FreeCAD инстанца је већ активна!"
+  },
+  "180": {
+    "en": "Could not start FreeCAD!",
+    "rs": "Nije moguće pokrenuti FreeCAD!",
+    "rsc": "Није могуће покренути FreeCAD!"
+  },
+  "181": {
+    "en": "Could not find FreeCAD TCP Server!",
+    "rs": "Nije moguće pronaći FreeCAD TCP server!",
+    "rsc": "Није могуће пронаћи FreeCAD TCP сервер!"
+  },
+  "182": {
+    "en": "No FreeCAD instance!",
+    "rs": "Nema FreeCAD instance!",
+    "rsc": "Нема FreeCAD инстанце!"
+  },
+  "183": {
+    "en": "File does not exist!",
+    "rs": "Datoteka ne postoji!",
+    "rsc": "Датотека не постоји!"
+  },
+  "184": {
+    "en": "is a forbidden name.",
+    "rs": "je zabranjeno ime.",
+    "rsc": "је забрањено име."
+  },
+  "185": {
+    "en": "Invalid variable declaration",
+    "rs": "Nevažeća deklaracija promenljive",
+    "rsc": "Неважећа декларација променљиве"
+  },
+  "186": {
+    "en": "Invalid function declaration",
+    "rs": "Nevažeća deklaracija funkcije",
+    "rsc": "Неважећа декларација функције"
+  },
+  "187": {
+    "en": "Invalid class declaration",
+    "rs": "Nevažeća deklaracija klase",
+    "rsc": "Неважећа декларација класе"
+  },
+  "188": {
+    "en": "Invalid import",
+    "rs": "Nevažeći import",
+    "rsc": "Неважећи импорт"
+  },
+  "189": {
+    "en": "Increment dx cannot be zero.",
+    "rs": "Povećanje dx ne može biti nula.",
+    "rsc": "Повећање dx не може бити нула."
+  },
+  "190": {
+    "en": "Input must be an array.",
+    "rs": "Ulaz mora biti niz.",
+    "rsc": "Улаз мора бити низ."
+  },
+  "191": {
+    "en": "Array is empty or contains only NaN values.",
+    "rs": "Niz je prazan ili sadrži samo NaN vrednosti.",
+    "rsc": "Низ је празан или садржи само NaN вредности."
+  },
+  "192": {
+    "en": "Input must be a number, a complex number object, or an array thereof.",
+    "rs": "Ulaz mora biti broj, objekat kompleksnog broja ili niz takvih objekata.",
+    "rsc": "Улаз мора бити број, објекат комплексног броја или низ таквих објеката."
+  },
+  "193": {
+    "en": "The file is not a valid OFF one.",
+    "rs": "Datoteka nije validna OFF datoteka.",
+    "rsc": "Датотека није валидна OFF датотека."
+  },
+  "194": {
+    "en": "Incomplete header information in OFF file.",
+    "rs": "Nepotpune informacije u zaglavlju OFF datoteke.",
+    "rsc": "Непотпуне информације у заглављу OFF датотеке."
+  },
+  "195": {
+    "en": "Problem in reading vertices.",
+    "rs": "Problem pri čitanju tačaka.",
+    "rsc": "Проблем при читању тачака."
+  },
+  "196": {
+    "en": "Problem in reading faces.",
+    "rs": "Problem pri čitanju stranica.",
+    "rsc": "Проблем при читању страница."
+  },
+  "197": {
+    "en": "Step size cannot be zero.",
+    "rs": "Veličina koraka ne može biti nula.",
+    "rsc": "Величина корака не може бити нула."
+  },
+  "198": {
+    "en": "Step size does not align with start and end values.",
+    "rs": "Veličina koraka se ne slaže sa početnim i krajnjim vrednostima.",
+    "rsc": "Величина корака се не слаже са почетним и крајњим вредностима."
+  },
+  "199": {
+    "en": "No file for window!",
+    "rs": "Nema datoteke za prozor!",
+    "rsc": "Нема датотеке за прозор!"
+  },
+  "200": {
+    "en": "Alias 'as' is required when import is '*' in module ",
+    "rs": "Alias 'as' je potreban kada je import '*' u modulu ",
+    "rsc": "Alias 'as' је потребан када је import '*' у модулу "
+  },
+  "201": {
+    "en": "No connection with OMC. Create a new instance of OpenModelicaLink session.",
+    "rs": "Nema veze sa OMC-om. Kreirajte novu instancu OpenModelicaLink sesije.",
+    "rsc": "Нема везе са OMC-ом. Креирајте нову инстанцу OpenModelicaLink сесије."
+  },
+  "202": {
+    "en": "Model is not Linearized",
+    "rs": "Model nije linearizovan",
+    "rsc": "Модел није линеаризован"
+  },
+  "203": {
+    "en": "Filename and modelname are required.",
+    "rs": "Ime datoteke i ime modela su obavezni.",
+    "rsc": "Име датотеке и име модела су обавезни."
+  },
+  "204": {
+    "en": "XML file is not generated.",
+    "rs": "XML datoteka nije generisana.",
+    "rsc": "XML датотека није генерисана."
+  },
+  "205": {
+    "en": "Model cannot be Simulated: executable not found.",
+    "rs": "Model se ne može simulirati: izvršna datoteka nije pronađena.",
+    "rsc": "Модел се не може симулирати: извршна датотека није пронађена."
+  },
+  "206": {
+    "en": "Model cannot be Simulated: xmlfile not found.",
+    "rs": "Model se ne može simulirati: XML datoteka nije pronađena.",
+    "rsc": "Модел се не може симулирати: XML датотека није пронађена."
+  },
+  "207": {
+    "en": "Linearization cannot be performed: ",
+    "rs": "Linearizacija se ne može izvršiti: ",
+    "rsc": "Линеаризација се не може извршити: "
+  },
+  "208": {
+    "en": "Result File does not exist! ",
+    "rs": "Datoteka sa rezultatima ne postoji! ",
+    "rsc": "Датотека са резултатима не постоји! "
+  },
+  "209": {
+    "en": " is not a parameter",
+    "rs": " nije parametar",
+    "rsc": " није параметар"
+  },
+  "210": {
+    "en": " is not a Simulation Option",
+    "rs": " nije opcija za simulaciju",
+    "rsc": " није опција за симулацију"
+  },
+  "211": {
+    "en": " is not a Linearization Option",
+    "rs": " nije opcija za linearizaciju",
+    "rsc": " није опција за линеаризацију"
+  },
+  "212": {
+    "en": " is not an Input",
+    "rs": " nije ulaz",
+    "rsc": " није улаз"
+  },
+  "213": {
+    "en": "You can see current workspace in main window. Would you like to continue?",
+    "rs": "Možete videti trenutni radni prostor u glavnom prozoru. Da li želite da nastavite?",
+    "rsc": "Можете видети тренутни радни простор у главном прозору. Да ли желите да наставите?"
+  },
+  "214": {
+    "en": "yes",
+    "rs": "da",
+    "rsc": "да"
+  },
+  "215": {
+    "en": "no",
+    "rs": "ne",
+    "rsc": "не"
+  },
+  "216": {
+    "en": "Code arrived to breakpoint at line",
+    "rs": "Kod je dostigao breakpoint na liniji",
+    "rsc": "Код је досегао breakpoint на линији"
+  },
+  "217": {
+    "en": "Code paused at line",
+    "rs": "Kod je pauziran na liniji",
+    "rsc": "Код је паузиран на линији"
+  },
+  "218": {
+    "en": "No help found for ",
+    "rs": "Nije pronadjena dokumentacija za ",
+    "rsc": "Није пронађена документација за "
+  }
+} 

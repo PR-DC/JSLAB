@@ -1,0 +1,25 @@
+/**
+ * @file Simple test for asynchronous funtion with infinite while loop
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+tic;
+async function f() {
+  i = 0;
+  while(true) {
+   i += 1; 
+   if((i % 5000) == 0) {
+     disp(i.toString());
+     await waitMSeconds(0);
+   }
+    
+   if(i > 10000000) {
+      disp(toc().toString()+' s');
+      break;
+   }  
+  }
+}
+
+await f();

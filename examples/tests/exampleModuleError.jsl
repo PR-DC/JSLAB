@@ -1,0 +1,20 @@
+/**
+ * @file Example module with error
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+ 
+class EXAMPLE_MODULE {
+  constructor(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+  
+  methodWithError() {
+    fsdafsd;
+  }
+}
+
+exports.EXAMPLE_MODULE = EXAMPLE_MODULE;

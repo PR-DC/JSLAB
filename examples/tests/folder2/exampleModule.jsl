@@ -1,0 +1,19 @@
+/**
+ * @file Simple example module
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+ 
+class SIMPLE_MODULE {
+  constructor(msg) {
+    this.msg = msg;
+  }
+  
+  disp() {
+    disp(__filename + ': ' + this.msg);
+  }
+}
+
+exports.SIMPLE_MODULE = SIMPLE_MODULE;

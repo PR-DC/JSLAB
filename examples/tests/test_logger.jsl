@@ -1,0 +1,29 @@
+/**
+ * @file Simple test for logger
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+var N_data = 5;
+var N_buf = 10; // [-] loggers data buffer length
+var N_logged = 20;
+
+var { ipcRenderer } = require('electron');
+var { PRDC_LOGGER } = require('Z:/_PRDC/PROGRAMI/_Electron_lib/PRDC_LOGGER/PRDC_LOGGER.js');
+
+var LOGGER = new PRDC_LOGGER();
+
+var temp_dir = getDefaultPath('temp');
+var header = 'This is JSLAB test log';
+LOGGER.begin(temp_dir, N_data, N_buf, header);
+
+var data_in = [];
+for(i = 0; i < N_logged; i++) {
+  for(j = 0; j < N_data; j++) {
+    data_in[j] = Math.random();
+  }
+  LOGGER.logData(data_in);
+}
+
+LOGGER.saveLogFileSync('testLogJSLAB');

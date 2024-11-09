@@ -1,0 +1,78 @@
+/**
+ * @file Simple example for FreeCADLink
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; var t = tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var part = 'test'; // naziv modela
+var exe = 'C:/Program Files/FreeCAD 0.21/bin/FreeCAD.exe'; // putanja do programa
+var port = 11077; // port TCP servera
+var host = 'localhost'; // adresa TCP servera
+var model = pwd + '/resources/' + part + '.FCStd';
+var timeout = 300000; // [ms] timeout
+var startup_timeout = 120000; // [ms] start up timeout
+
+// Construct variables
+var nodes = [
+  [0, 0, 0],
+  [0, 10, 0],
+  [10, 10, 0],
+  [10, 0, 0],
+  [0, 0, 10],
+  [0, 10, 10],
+  [10, 10, 10],
+  [10, 0, 10]
+];
+var D = createFilledArray(nodes.length, 3);
+
+var lines = [];
+for(var i = 0; i < 4; i++) {
+  var j = i+1;
+  if(i == 3) {
+    j = 0;
+  }
+  lines.push([...nodes[i], ...nodes[j]]);
+  lines.push([...nodes[i+4], ...nodes[j+4]]);
+  lines.push([...nodes[i], ...nodes[i+4]]);
+}
+var d = createFilledArray(lines.length, 1);
+
+// Generate JSON
+var nodesFile = pwd + 'out/nodes.json';
+var data = {
+  'Coordinates': nodes,
+  'Diameters': D
+};
+writeFile(nodesFile, stringify(data));
+var data = {
+  'Coordinates': lines,
+  'Diameters': d
+};
+beamsFile = pwd + 'out/beams.json';
+writeFile(beamsFile, stringify(data));
+
+// Run FreeCADLink 
+await freecad_link.start(exe, {
+  port: port,
+  host: host,
+  timeout: timeout,
+  startup_timeout: startup_timeout
+}); // Start FreeCAD programa
+
+await freecad_link.newDocument(part);
+await freecad_link.callScript('MakeNodes', nodesFile, timeout);
+await freecad_link.callScript('MakeBeams', beamsFile, timeout);
+await freecad_link.callScript('MakeFusion', [], timeout);
+await freecad_link.saveAs(model, timeout);
+//await freecad_link.quit(); // Close programa
+
+deleteFile(nodesFile);
+deleteFile(beamsFile);
+
+disp(' The program was executed successfully... ');
+disp(' Execution time: ' + num2str(toc(t), 2) + ' seconds');
+disp(' -------------------- ');

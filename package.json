@@ -1,0 +1,147 @@
+{
+  "name": "JSLAB",
+  "version": "1.0.0",
+  "description": "JavaScript LABoratory environment",
+  "main": "js/init.js",
+  "repository": "https://github.com/PR-DC/JSLAB",
+  "license": "GPL-3.0-or-later",
+  "author": "Milos Petrasinovic <mpetrasinovic@prdc.rs>",
+  "homepage": "https://pr-dc.com",
+  "scripts": {
+    "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
+    "postinstall": "node js/dev/build-configure.js && node-gyp rebuild && node js/dev/make-doc.js & electron js/init.js",
+    "start": "electron js/init.js",
+    "debug": "electron js/init.js --debug",
+    "test": "electron js/init.js --test",
+    "build": "node js/dev/build-configure.js && node-gyp rebuild && electron js/init.js",
+    "pack": "node js/dev/build-configure.js --action pack && node-gyp rebuild && electron-builder --dir",
+    "dist": "node js/dev/build-configure.js --action dist && node-gyp rebuild && electron-builder --win",
+    "dist-portable": "node js/dev/build-configure.js --action dist-portable && node-gyp rebuild && electron-builder --win portable",
+    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build && node-gyp rebuild && electron-builder --win",
+    "clear-app-data": "node js/dev/clear-app-data.js --confirm",
+    "make-doc": "node js/dev/make-doc.js",
+    "update-libs": "node js/dev/download-libs.js --force --confirm",
+    "upload-source": "node js/dev/upload-source-code.js"
+  },
+  "build": {
+    "appId": "com.pr-dc.jslab",
+    "productName": "PR-DC JSLAB",
+    "copyright": "Copyright 2024 @ PR-DC",
+    "nodeGypRebuild": true,
+    "asarUnpack": [],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "**",
+      "!cpp",
+      "!dev",
+      "!dist",
+      "!build",
+      "!bin",
+      "!binding.gyp",
+      "!js/dev",
+      "!lib/boost-1.86.0",
+      "!lib/cgal-6.0.1",
+      "!lib/eigen-3.4.0"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "jsl",
+        "name": "JSL",
+        "description": "JavaScript LABoratory script",
+        "role": "Editor",
+        "icon": "icons/icon.ico"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "./build/Release/",
+        "to": "./include/build/Release/",
+        "filter": [
+          "*.node",
+          "*.dll"
+        ]
+      }
+    ],
+    "compression": "maximum",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "icons/icon.icns",
+      "target": "dmg"
+    },
+    "win": {
+      "icon": "icons/icon.ico",
+      "target": "nsis",
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "publisherName": "PR-DC"
+    },
+    "linux": {
+      "icon": "icons/",
+      "target": "AppImage"
+    },
+    "portable": {
+      "splashImage": "icons/splash.bmp"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icons/nsis_in_icon.ico",
+      "uninstallerIcon": "icons/nsis_un_icon.ico",
+      "installerHeader": "img/nsis_in_header.bmp",
+      "installerHeaderIcon": "icons/icon.ico",
+      "installerSidebar": "img/nsis_in_welcom.bmp",
+      "uninstallerSidebar": "img/nsis_un_welcom.bmp",
+      "uninstallDisplayName": "JSLAB ${version}",
+      "shortcutName": "JSLAB",
+      "language": "1033",
+      "displayLanguageSelector": true,
+      "installerLanguages": [
+        "en_US",
+        "sr_RS"
+      ],
+      "multiLanguageInstaller": true,
+      "warningsAsErrors": false
+    },
+    "artifactName": "JSLAB_1.0.0.${ext}"
+  },
+  "devDependencies": {
+    "electron": "29.1.2",
+    "electron-builder": "24.13.3"
+  },
+  "dependencies": {
+    "@babel/parser": "7.26.2",
+    "@babel/plugin-syntax-top-level-await": "7.14.5",
+    "7zip-bin": "^5.2.0",
+    "big-json-viewer": "0.1.7",
+    "bytenode": "1.5.6",
+    "dir-compare": "4.2.0",
+    "electron-context-menu": "3.6.1",
+    "electron-store": "8.2.0",
+    "eslint": "9.14.0",
+    "fast-xml-parser": "4.4.1",
+    "glob": "10.3.10",
+    "jsdoc-api": "9.3.4",
+    "ml-regression-polynomial": "3.0.1",
+    "node-7z": "^3.0.0",
+    "node-addon-api": "8.0.0",
+    "node-gyp": "10.2.0",
+    "node-mavlink": "2.0.7",
+    "npm": "10.9.0",
+    "path-equal": "1.2.5",
+    "pdfkit": "0.14.0",
+    "recast": "0.23.9",
+    "rimraf": "^5.0.10",
+    "seedrandom": "3.0.5",
+    "serialport": "12.0.0",
+    "source-map": "0.7.4",
+    "svg-to-pdfkit": "0.1.8",
+    "tcp-port-used": "1.0.2",
+    "usb": "2.9.0",
+    "zeromq": "6.0.0-beta.20"
+  }
+}

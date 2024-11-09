@@ -1,0 +1,32 @@
+/**
+ * @file Simple test for path resolve
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+savePath('C:/Electron/JSLAB/examples/tests/folder1');
+savePath('C:/Electron/JSLAB/examples/tests/folder2');
+savePath('C:/Electron/JSLAB/examples/tests/folder3');
+var { SIMPLE_MODULE } = require('exampleModule.jsl');
+var sm = new SIMPLE_MODULE('1');
+sm.disp();
+unrequire('exampleModule.jsl');
+
+removePath('C:/Electron/JSLAB/examples/tests/folder1');
+var { SIMPLE_MODULE } = require('exampleModule.jsl');
+var sm = new SIMPLE_MODULE('2');
+sm.disp();
+unrequire('exampleModule.jsl');
+
+removePath('C:/Electron/JSLAB/examples/tests/folder2');
+var { SIMPLE_MODULE } = require('exampleModule.jsl');
+var sm = new SIMPLE_MODULE('3');
+sm.disp();
+unrequire('exampleModule.jsl');
+
+removePath('C:/Electron/JSLAB/examples/tests/folder3');
+var { SIMPLE_MODULE } = require('exampleModule.jsl');
+var sm = new SIMPLE_MODULE('4');
+sm.disp();
+unrequire('exampleModule.jsl');

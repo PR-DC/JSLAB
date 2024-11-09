@@ -1,0 +1,109 @@
+/**
+ * @file Simple example for 2D plot
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+var win = await openPlotlyjs();
+win.document.title = "Example plot";
+
+var plot_config = {
+  responsive: true,
+  scrollZoom: true
+};
+
+var plot_layout = {
+  title: {},
+  autosize: true,
+  plot_bgcolor: "#fff",
+  paper_bgcolor: "#fff",
+  showlegend: true,
+  legend: {
+    x: 0.98,
+    xanchor: 'right',
+    y: 0.98,
+    bgcolor: '#fff',
+    bordercolor: '#000',
+    borderwidth: 1,
+    borderpad: 10
+  },
+  font: {
+    family: 'Roboto',
+    size: 18
+  },
+  margin: {
+    l: 60,
+    r: 15,
+    b: 60,
+    t: 15,
+    pad: 5
+  },
+  xaxis: {
+    showgrid: true,
+    zeroline: false,
+    showline: true,
+    automargin: true,
+    mirror: 'ticks',
+    ticks: 'inside',
+    ticklen: 8,
+    tickwidth: 0.5,
+    tickcolor: '#000',
+    linecolor: '#000',
+    linewidth: 0.5
+  },
+  yaxis: {
+    showgrid: true,
+    zeroline: false,
+    showline: true,
+    automargin: true,
+    mirror: 'ticks',
+    ticks: 'inside',
+    ticklen: 8,
+    tickwidth: 0.5,
+    tickcolor: '#000',
+    linecolor: '#000',
+    linewidth: 0.5,
+    title: {
+      text: 'yaxis1 title',
+    }
+  },
+  yaxis2: {
+    showgrid: true,
+    zeroline: false,
+    showline: true,
+    automargin: true,
+    mirror: 'ticks',
+    ticks: 'inside',
+    ticklen: 8,
+    tickwidth: 0.5,
+    tickcolor: '#000',
+    linecolor: '#000',
+    linewidth: 0.5,
+    title: {
+      text: 'yaxis2 title',
+      font: {color: '#f00'}
+    },
+    tickfont: {color: '#f00'},
+    overlaying: 'y',
+    side: 'right'
+  }
+};
+
+var trace1 = {
+  x: [1, 2, 3],
+  y: [40, 50, 60],
+  name: 'yaxis data',
+  type: 'scatter'
+};
+
+var trace2 = {
+  x: [2, 3, 4],
+  y: [4, 5, 6],
+  name: 'yaxis2 data',
+  yaxis: 'y2',
+  type: 'scatter'
+};
+
+win.Plotly.newPlot(win.plot_cont, [trace1, trace2], plot_layout, plot_config);

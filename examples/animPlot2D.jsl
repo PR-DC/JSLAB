@@ -1,0 +1,28 @@
+/**
+ * @file Simple test for 2D plot
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+var N_buffer = 500;
+var t = toc();
+var x = createFilledArray(N_buffer, null); x[0] = t;
+var y = createFilledArray(N_buffer, null); y[0] = sin(t);
+var p = plot({x: x, y: y});
+xlabel("x");
+ylabel("sin(x)");
+title("Simple 2-D Plot");
+
+await p.ready;
+setInterval(function() {
+  var t1 = toc();
+  x.push(t1);
+  y.push(sin(t1*2));
+  if(x.length > N_buffer) {
+    x.shift();
+    y.shift();
+  }
+  p.update({x: [x], y: [y]}, 0);
+}, 33);

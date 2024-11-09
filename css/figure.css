@@ -1,0 +1,166 @@
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+
+html {
+  overflow: hidden;
+}
+
+:focus {
+  outline: 0;
+}
+
+div {
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+section {
+  position: relative;
+  z-index: 2;
+}
+
+body  {
+  font-family: 'Roboto', Arial;
+  width: 100%;
+  background: #fff;
+}
+
+.clear {
+  clear: both;
+}
+
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+#figure-menu-button {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -5px;
+  z-index: 9999;
+  transition: all .2s linear;
+  width: 20px;
+  height: 20px;
+  border-radius: 0 0 50% 50%;
+  background-color: #12568a;
+  margin: 5px;
+  cursor: pointer;
+}
+
+#figure-menu-button.active, #figure-menu-button.hovered {
+  margin-top: 25px;
+}
+   
+#figure-menu-button img {
+  transition: transform .2s linear;
+  transform: rotate(180deg);
+  width: 60%;
+  display: block;
+  margin: 0 auto;
+  margin-top: 4px;
+}
+
+#figure-menu-button.active img, #figure-menu-button.hovered img {
+  transform: rotate(0deg);
+}
+ 
+#figure-menu-container {
+  background: #12568a;
+  background: linear-gradient(to left, #2e85c7, #12568a);
+  color: #fff;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+  max-height: 5px;
+  overflow: hidden;
+  transition: all .2s linear;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 9998;
+}
+
+#figure-menu-container.active, #figure-menu-container.hovered {
+  max-height: 30px;
+  border-bottom: 2px solid #ccc;
+}
+
+#figure-menu ul {
+  padding-left: 25px;
+}
+
+#figure-menu li {
+  float: left;
+  padding: 5px 10px;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 100;
+  line-height: 20px;
+  -webkit-transition: all .2s linear;
+  transition: all .2s linear;
+  cursor: pointer;
+}
+
+#figure-menu li:hover {
+  background: #ffffff40;
+}
+
+#figure-menu li img {
+  float: left;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+.plot-cont {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.modebar-container, .plotly-notifier {
+  display: none;
+}
+
+#figure-menu li.specific-2d, #figure-menu li.specific-3d {
+  display: none;
+}
+
+#figure-menu.figure-2d li.specific-2d {
+  display: initial;
+}
+
+#figure-menu.figure-3d li.specific-3d {
+  display: initial;
+}
+
+@media only screen and (max-width: 720px) {
+  #figure-menu li img {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  #figure-menu li img {
+    display: block;
+    padding-bottom: 10px;
+  }
+  
+  #figure-menu li {
+    padding: 5px;
+    width: 20px; 
+    height: 20px;
+    overflow: hidden;
+  }
+}

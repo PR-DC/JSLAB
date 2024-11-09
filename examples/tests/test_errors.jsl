@@ -1,0 +1,39 @@
+/**
+ * @file Test errors
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * Doktorska disertacija
+ * Mašinski fakultet Univerziteta u Beogradu
+ * @version 0.0.1
+ */
+//close('all'); clear; clc; tic;
+//disp(' --- ' + jsl_file_name + ' ---');
+// --------------------
+
+disp(await jsl.eval.getExpressionPosition());
+
+async function a() {
+  disp(await jsl.eval.getExpressionPosition());
+}
+
+a();
+
+// In file error
+//1asdf
+
+// In file error throw
+//throw Error('test 1');
+
+// Function call error
+function b() {
+  throw Error('test 2');
+}
+
+b();
+
+// In promise error
+async function c() {
+  await waitSeconds(1);
+  throw Error('test 2');
+}
+
+c();

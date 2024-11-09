@@ -1,0 +1,17 @@
+/**
+ * @file Simple example for 2D plot
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+var figure_size = [560, 420];
+var x = range(-10, 10, 0.1);
+plot({x: x, y: elementWise(sin, x)});
+xlabel("x");
+ylabel("sin(x)");
+title("Simple 2-D Plot");
+var jsl_file_basename = removeExtension(jsl_file_name);
+printFigure(pwd+'out/'+jsl_file_basename, {type: 'png', size: figure_size});
+printFigure(pwd+'out/'+jsl_file_basename, {type: 'pdf', size: figure_size});

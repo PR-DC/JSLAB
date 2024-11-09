@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>JSLAB | PR-DC</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
+    <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="../css/highlight-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/lint/lint.css">
+    <link rel="stylesheet" type="text/css" href="../css/big-json-viewer-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/hint/show-hint.css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="../css/codemirror-main-custom.css">
+		<link type="text/css" rel="stylesheet" href="../css/main.css" />
+    <link type="text/css" rel="stylesheet" href="../css/terminal.css" />
+    <link type="text/css" rel="stylesheet" href="../font/roboto.css" />
+    
+    <style id="dynamic-style-rules"></style>
+  </head>
+  <body>
+    <div id="main-menu-container">
+      <div>
+        <img id="app-logo" src="../img/JSLAB.svg"/>
+        <img id="company-logo" src="../img/PR-DC_icon.svg"/>
+        <ul id="main-menu">
+          <li id="editor-menu"><img src="../img/editor.svg"/><str sid="1"></str></li>
+          <li id="help-menu"><img src="../img/help.svg"/><str sid="2"></str></li>
+          <li id="info-menu"><img src="../img/info.svg"/><str sid="3"></str></li>
+          <li id="settings-menu"><img src="../img/settings-menu.svg"/><str sid="9"></str></li>
+        </ul>
+        <ul id="window-controls">
+          <li id="win-minimize"><img src="../img/win-minimize.svg"></li>
+          <li id="win-restore"><img src="../img/win-restore.svg"></li>
+          <li id="win-close"><img src="../img/win-close.svg"></li>
+        </ul>
+        <div id="app-title">JSLAB / MAIN</div>
+        <div class="clear"></div>
+      </div>
+    </div>
+
+    <div id="folder-navigation-container">
+      <div class="button float-left previous-folder disabled"><img src="../img/arrow.svg" title-str="31"/></div>
+      <div class="button float-left next-folder disabled"><img src="../img/arrow.svg" title-str="32"/></div>
+      <div class="button float-left up-folder disabled"><img src="../img/arrow.svg" title-str="33"/></div>
+      <div class="button float-left open-folder"><img src="../img/open-folder.svg" title-str="34"/></div>
+      <div class="address-line-container">
+        <div class="folder-icon"><img src="../img/folder.svg"/></div>
+        <div class="folder-address">
+        <input class="address-line float-left" value="C:/Electron/JSLAB">
+        <div class="current-address-cont">
+          <div class="current-address-wrap">
+            <div class="current-address">
+              <span class="folder">Local Disk (C:)</span>
+              <i class="i-next-folder"></i>
+              <span class="folder">Electron</span>
+              <i class="i-next-folder"></i>
+              <span class="folder">JSLAB</span>
+            </div>
+          </div>
+        </div>
+        <div id="save-path"><i title-str="35"/></i></div>
+        </div>
+      </div>
+      <div class="button float-right" id="paths-menu"><img src="../img/more.svg" title-str="36"/></div>
+      <div class="clear"></div>
+    </div>
+
+    <div id="panels-container">
+      <div id="left-panel">
+        <div id="left-top-panel">
+          <div class="cell-padding">
+            <div class="panel-container">
+              <div class="panel-title"><str sid="4"></str></div>
+              
+              <div id="file-browser-options" class="options">
+                <div class="options-right">
+                  <i class="refresh" title-str="37"></i>
+                </div>
+              </div>
+              
+              <div id="file-browser" class="panel">
+                <div id="file-browser-cont"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="left-middle-panel" >
+          <div class="cell-padding">
+            <div class="panel-container">
+              <div class="panel-title"><str sid="5"></str></div>
+              
+              <div id="workspace-options" class="options">
+                <div class="options-right">
+                  <i class="clear" title-str="38"></i>
+                </div>
+              </div>
+              
+              <div id="workspace-table-head">
+                <div class="row">
+                  <div class="col col-1"><str sid="53"></str></div>
+                  <div class="col col-2"><str sid="54"></str></div>
+                  <div class="col col-3"><str sid="55"></str></div>
+                </div>
+              </div>
+              
+              <div id="workspace" class="panel">
+                <div class="table"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="left-bottom-panel">
+          <div class="cell-padding">
+            <div class="panel-container">
+              <div class="panel-title"><str sid="6"></str></div>
+              
+              <div id="command-history-options" class="options">
+                <div class="options-right">
+                  <i class="clear" title-str="39"></i>
+                </div>
+              </div>
+            
+              <div id="command-history" class="panel">
+          
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="right-panel">
+        <div class="cell-padding">
+          <div class="panel-container">
+            <div class="panel-title"><str sid="7"></str></div>
+
+            <div id="command-window-options" class="options">
+              <div class="options-right">
+                <i class="settings" title-str="40"></i>
+                <i class="timestamp" title-str="41"></i>
+                <i class="autoscroll active" title-str="42"></i>
+                <i class="clear" title-str="43"></i>
+                <i class="log" title-str="44"></i>
+                <i class="to-bottom" title-str="45"></i>
+              </div>
+            </div>
+
+            <div id="command-window" class="terminal-panel panel">
+              <div id="command-window-messages" class="messages no-timestamp"></div>
+
+              <div id="command-window-input-container">
+                <textarea id="command-window-input">cmd_help;</textarea>
+              </div>
+            </div>
+
+            <div id="command-window-settings" class="terminal-dialog terminal-settings options-panel panel" tabindex="0">
+              <div class="options-cont">
+                <div class="options-header"><span><str sid="56"></str></span>
+                <img class="options-close" src="../img/close.svg" title-str="46">
+               </div>
+               <div class="float-input" title-str="17">
+                <input autocomplete="off" type="text" name="N-messages-max" class="N-messages-max" placeholder="Infinity" value="">
+                <label class="float-label" for="N-messages-max"><str sid="17"></str></label>
+               </div>
+               <button class="change-settings"><str sid="57"></str></button>
+              </div>
+            </div>
+
+            <div id="command-window-log" class="terminal-dialog terminal-log options-panel panel" tabindex="0">
+              <div class="options-cont">
+                <div class="options-header">
+                  <span><str sid="58"></str></span>
+                  <img class="options-close" src="../img/close.svg" title-str="18">
+                </div>
+                <label class="checkcont"><str sid="59"></str><input class="write-timestamps" type="checkbox" name="write-timestamps" value="1" checked><span class="checkmark"></span></label>
+                <button class="save-log"><str sid="60"></str></button>
+              </div>
+            </div>
+
+            <div id="command-window-history" class="terminal-dialog history-cont" tabindex="0">
+            <div class="history-header">
+              <span><str sid="61"></str></span>
+              <img class="history-close" src="../img/close.svg" title-str="19">
+            </div>
+            <ul class="history-panel panel" tabindex="0">
+            </ul>
+         </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="script-path-container" class="main-dialog" tabindex="0">
+      <div class="page-cont">
+        <div class="page-header">
+          <img id="script-path-close" class="page-close" src="../img/close.svg" title-str="20">
+          <span><str sid="62"></str></span>
+        </div>
+        <div class="page-panel panel">
+          <div id="script-path-dialog-msg">
+            <str sid="63"></str> <span id="script-path"></span> <str sid="64"></str>
+          </div>
+          <div id="script-path-dialog-buttons">
+            <button id="script-path-dialog-change-dir"><str sid="65"></str></button>
+            <button id="script-path-dialog-save"><str sid="66"></str></button>
+            <button id="script-path-dialog-run"><str sid="67"></str></button>
+          </div>
+          <br class="clear">
+        </div>
+      </div>
+    </div>
+    
+    <div id="paths-container" class="main-dialog" tabindex="0">
+      <div class="page-cont wide">
+        <div class="page-header">
+          <span><str sid="68"></str></span>
+          <img id="paths-close" class="page-close" src="../img/close.svg" title-str="21">
+        </div>
+        <div class="page-panel panel">
+          <ul></ul>
+        </div>
+      </div>
+    </div>
+    
+    <div id="help-container" class="main-dialog" tabindex="0">
+      <div class="page-cont wide">
+        <div class="page-header">
+          <span><str sid="2"></str></span>
+          <img id="help-close" class="page-close" src="../img/close.svg" title-str="22">
+        </div>
+        <div class="page-panel panel">
+            <h1><str sid="69"></str></h1>
+            <table style="width:100%">
+              <tr>
+                <th><str sid="70"></str></th>
+                <th><str sid="71"></str></th>
+              </tr>
+              <tr>
+                <td>ESC</td>
+                <td><str sid="72"></str></td>
+              </tr>
+              <tr>
+                <td>Arrow Up</td>
+                <td><str sid="73"></str></td>
+              </tr>
+              <tr>
+                <td>Arrow Down</td>
+                <td><str sid="74"></str></td>
+              </tr>
+              <tr>
+                <td>Page Up</td>
+                <td><str sid="75"></str></td>
+              </tr>
+              <tr>
+                <td>Page Down</td>
+                <td><str sid="76"></str></td>
+              </tr>
+              <tr>
+                <td>Shift + Enter</td>
+                <td><str sid="77"></str></td>
+              </tr>
+              <tr>
+                <td>F3</td>
+                <td><str sid="78"></str></td>
+              </tr>
+              <tr>
+                <td>F7</td>
+                <td><str sid="79"></str></td>
+              </tr>
+              <tr>
+                <td>Alt + F7</td>
+                <td><str sid="80"></str></td>
+              </tr>
+              <tr>
+                <td>F8</td>
+                <td><str sid="81"></str></td>
+              </tr>
+              <tr>
+                <td>Ctrl + F</td>
+                <td><str sid="82"></str></td>
+              </tr>
+              <tr>
+                <td>Ctrl + H</td>
+                <td><str sid="83"></str></td>
+              </tr>
+              <tr>
+                <td>Ctrl + S</td>
+                <td><str sid="84"></str></td>
+              </tr>
+              <tr>
+                <td>Ctrl + L</td>
+                <td><str sid="85"></str></td>
+              </tr>
+            </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="info-container" class="main-dialog" tabindex="0">
+      <div class="page-cont panel">
+        <div class="page-header">
+          <span><str sid="3"></str></span>
+          <img id="info-close" class="page-close" src="../img/close.svg" title-str="23">
+        </div>
+        <div class="page-panel panel">
+          <img class="app-logo" src="../img/JSLAB.svg">
+          <div class='app-name'>JavaScript LABoratory</div>
+          <div class='app-version'></div>
+          <div class='app-company'>by PR-DC company</div>
+          <img class="company-logo" src="../img/PR-DC_icon.svg">
+
+          <p><str sid="86"></str></p>
+          <ul>
+            <li><a href="https://www.electronjs.org/">Electron</a></li>
+            <li><a href="https://codemirror.net/">CodeMirror</a></li>
+            <li><a href="https://jquery.com/">JQuery</a></li>
+            <li><a href="https://github.com/adamschwartz/chrome-tabs">chrome-tabs</a></li>
+            <li><a href="https://plotly.com/javascript/">Plotly.js</a></li>
+            <li><a href="https://mathjs.org/">Math.js</a></li>
+            <li><a href="https://www.mathjax.org/">MathJax</a></li>
+            <li><a href="https://highlightjs.org/">highlight.js</a></li>
+            <li><a href="https://github.com/dhcode/big-json-viewer/">big-json-viewer</a></li>
+            <li><a href="https://threejs.org/">Three.js</a></li>
+            <li><a href="https://pyodide.org/en/stable/">pyodide</a></li>
+            <li><a href="https://www.sympy.org/en/index.html">SymPy</a></li>
+            <li><a href="https://www.cgal.org/">CGAL</a></li>
+            <li><a href="https://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a></li>
+          </ul>  
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-container" class="main-dialog" tabindex="0">
+      <div class="page-cont panel">
+        <div class="page-header">
+          <span><str sid="9"></str></span>
+          <img id="settings-close" class="page-close" src="../img/close.svg" title-str="24">
+        </div>
+        <div class="page-panel panel">
+          <div class="float-select" title-str="25">
+            <select name="set-langauge" class="set-langauge">
+              <option value="en">English</option>
+              <option value="rs">Srpski</option>
+              <option value="rsc">Српски</option>
+            </select>
+            <label class="float-label" for="set-langauge"><str sid="16"></str></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="sandbox-stats-popup" style="display: none;">
+      <div id="sandbox-stats-header">
+        <str sid="91"></str>
+      </div>
+      <div class="sandbox-stats-cont">
+        Required modules
+        <div class="sandbox-stats-val" id="sandbox-required-modules-num">0</div>
+      </div>
+      <div class="sandbox-stats-cont">
+        Promises
+        <div class="sandbox-stats-val" id="sandbox-promises-num">0</div>
+      </div>
+      <div class="sandbox-stats-cont">
+        Timeouts
+        <div class="sandbox-stats-val" id="sandbox-timeouts-num">0</div>
+      </div>
+      <div class="sandbox-stats-cont">
+        Immediates
+        <div class="sandbox-stats-val" id="sandbox-immediates-num">0</div>
+      </div>
+      <div class="sandbox-stats-cont">
+        Intervals
+        <div class="sandbox-stats-val" id="sandbox-intervals-num">0</div>
+      </div>
+      <div class="sandbox-stats-cont">
+        Animation frames
+        <div class="sandbox-stats-val" id="sandbox-animation-frames-num">0</div>
+      </div>
+      <div class="sandbox-stats-cont">
+        Idle callbacks
+        <div class="sandbox-stats-val" id="sandbox-idle-callbacks-num">0</div>
+      </div>
+      <div class="popup-triangle"></div>
+    </div>
+    
+    <div id="status-container">
+      <div id="sandbox-stats-icon" class="ready"></div>
+      
+      <div id="status">
+        <str sid="87"></str>
+      </div>
+      <div id="status-icons">
+
+      </div>
+    </div>
+    <script>if(typeof module === 'object') {window.module = module; module = undefined;}</script>
+    
+    <script type="text/javascript" src="../lib/jquery-3.7.0/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="../lib/jshint-2.13.0/jshint-2.13.0.js"></script>
+    <script type="text/javascript" src="../lib/highlight-11.0.1/highlight-11.0.1.min.js"></script>
+    <script type="text/javascript" src="../lib/tex-mml-chtml-3.2.0/tex-mml-chtml-3.2.0.js"></script>
+    
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/lib/codemirror.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/edit/matchbrackets.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/lint/lint.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/hint/show-hint.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/searchcursor.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/match-highlighter.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/mode/javascript/javascript.js"></script>
+    
+    <script type="text/javascript" src="../js/code/custom-javascript-hint.js"></script>
+    
+    <script type="text/javascript" src="../js/main/init-main.js"></script>
+  </body>
+</html>

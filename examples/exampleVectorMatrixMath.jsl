@@ -1,0 +1,365 @@
+/**
+ * @file Example for vector and matrix math
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+// --- 3D Vectors ---
+disp(' --- 3D Vectors ---');
+
+// Define 3D vectors
+var v1 = vec.new(1, 2, 3);
+var v2 = vec.new([4, 8, 6]);
+var v3 = vec.new({x: 7, y: 5, z: 9}); // Additional vector for triple products
+
+// Display vectors
+disp('Vector v1:');
+disp(v1);
+
+disp('Vector v2:');
+disp(v2);
+
+disp('Vector v3:');
+disp(v3);
+
+// Vector addition
+const v_add = v1.add(v2);
+disp('Vector Addition v1 + v2:');
+disp(v_add);
+
+// Vector plus (assuming it's similar to add)
+const v_plus = v1.plus(v2);
+disp('Vector Plus v1 + v2:');
+disp(v_plus);
+
+// Vector subtraction
+const v_sub = v1.subtract(v2);
+disp('Vector Subtraction v1 - v2:');
+disp(v_sub);
+
+// Vector minus (assuming it's similar to subtract)
+const v_minus = v1.minus(v2);
+disp('Vector Minus v1 - v2:');
+disp(v_minus);
+
+// Scalar multiplication
+const scalar = 2;
+const v_scalar_mult = v1.multiply(scalar);
+disp(`Scalar Multiplication ${scalar} * v1:`);
+disp(v_scalar_mult);
+
+// Dot product
+const v_dot = v1.dot(v2);
+disp('Dot Product of v1 and v2:');
+disp(v_dot);
+
+// Cross product
+const v_cross = v1.cross(v2);
+disp('Cross Product of v1 and v2:');
+disp(v_cross);
+
+// Magnitude (norm) of v1
+const v1_norm = v1.norm();
+disp('Magnitude (Norm) of v1:');
+disp(v1_norm);
+
+// Normalization of v1
+const v1_normalized = v1.normalize();
+disp('Normalization of v1:');
+disp(v1_normalized);
+
+// Azimuth and Elevation of v1 (in degrees)
+const v1_angles = v1.angles();
+disp('Azimuth and Elevation of v1 (degrees):');
+disp(v1_angles);
+
+// Angle between v1 and v2 (in degrees)
+const theta = v1.angleTo(v2);
+disp('Angle between v1 and v2 (in degrees):');
+disp(theta);
+
+// Projection of v1 onto v2
+const proj_v1_on_v2 = v1.projectTo(v2);
+disp('Projection of v1 onto v2:');
+disp(proj_v1_on_v2);
+
+// Vector triple product [v1 • (v2 × v3)]
+const v_triple_product = v1.dot(v2.cross(v3));
+disp('Vector Triple Product v1 • (v2 × v3):');
+disp(v_triple_product);
+
+// Area of parallelogram formed by v1 and v2
+const area_parallelogram = v1.cross(v2).norm();
+disp('Area of Parallelogram formed by v1 and v2:');
+disp(area_parallelogram);
+
+// Volume of parallelepiped formed by v1, v2, and v3
+const volume_parallelepiped = Math.abs(v1.dot(v2.cross(v3)));
+disp('Volume of Parallelepiped formed by v1, v2, and v3:');
+disp(volume_parallelepiped);
+
+// --- 2D Matrices ---
+disp(' --- 2D Matrices ---');
+
+// Define 2D matrices
+var A = mat.new([
+    [1, 2],
+    [3, 4]
+]);
+var B = mat.new([5, 6, 7, 8], 2, 2);
+let C = mat.new([
+    [3, 1],
+    [4, 1],
+    [5, 9]
+]);
+
+// Display matrices
+disp('Matrix A:');
+disp(A);
+
+disp('Matrix B:');
+disp(B);
+
+disp('Matrix C:');
+disp(C);
+
+// Display various matrix constructions
+disp('Matrix filled with 11 (2x3):');
+disp(mat.fill(11, 2, 3));
+
+disp('Matrix of NaNs (2x4):');
+disp(mat.NaNs(2, 4));
+
+disp('Matrix of ones (3x2):');
+disp(mat.ones(3, 2));
+
+disp('Matrix of zeros (3x4):');
+disp(mat.zeros(3, 4));
+
+disp('Diagonal Matrix with [1, 2, 3, 4]:');
+disp(mat.diag([1, 2, 3, 4]));
+
+disp('Identity Matrix of size 4:');
+disp(mat.eye(4));
+
+// Basic matrix operations
+disp('First row of A:');
+disp(A.row(0));
+
+disp('Second column of A:');
+disp(A.column(1));
+
+disp('Number of rows in A:');
+disp(A.length(0));
+
+disp('Number of columns in A:');
+disp(A.length(1));
+
+disp('Size of A:');
+disp(A.size());
+
+disp('Number of elements in A:');
+disp(A.numel());
+
+// Concatenation
+disp('Concatenation of A and B column-wise:');
+disp(mat.concatCol(A, B));
+
+disp('Concatenation of A and B row-wise:');
+disp(mat.concatRow(A, B));
+
+// Reshaping
+disp('Reshape B to 1x4:');
+disp(B.reshape(1, 4));
+
+disp('Reshape B to 4x1:');
+disp(B.reshape(4, 1));
+
+// Repeating matrices
+disp('Repeat B 1 time along rows and 2 times along columns:');
+disp(B.repmat(1, 2));
+
+disp('Repeat B 2 times along rows and 1 time along columns:');
+disp(B.repmat(2, 1));
+
+disp('Repeat B 2 times along both rows and columns:');
+disp(B.repmat(2, 2));
+
+// Transpose with specified dimensions (if applicable)
+disp('Transpose of B with dimensions 2x2:');
+disp(B.transpose(2, 2));
+
+// Transpose of A
+const A_transpose = A.transpose();
+disp('Transpose of A:');
+disp(A_transpose);
+
+// Inverse of A (if invertible)
+if (A.det() !== 0) {
+    const A_inv = A.inv();
+    disp('Inverse of A:');
+    disp(A_inv);
+} else {
+    disp('Matrix A is singular and cannot be inverted.');
+}
+
+// Determinant of A
+const A_det = A.det();
+disp('Determinant of A:');
+disp(A_det);
+
+// Trace of A
+const A_trace = A.trace();
+disp('Trace of A:');
+disp(A_trace);
+
+// Norm of A
+const A_norm = A.norm();
+disp('Norm of A:');
+disp(A_norm);
+
+// Matrix power (A squared)
+const A_squared = A.powm(2);
+disp('A squared (A^2):');
+disp(A_squared);
+
+// Matrix exponential of A
+const A_expm = A.expm();
+disp('Matrix Exponential of A:');
+disp(A_expm);
+
+// Matrix addition
+const A_add = A.add(B);
+disp('Matrix Addition A + B:');
+disp(A_add);
+
+// Matrix plus (assuming it's similar to add)
+const A_plus = A.plus(B);
+disp('Matrix Plus A + B:');
+disp(A_plus);
+
+// Matrix subtraction
+const A_sub = A.subtract(B);
+disp('Matrix Subtraction A - B:');
+disp(A_sub);
+
+// Matrix minus (assuming it's similar to subtract)
+const A_minus = A.minus(B);
+disp('Matrix Minus A - B:');
+disp(A_minus);
+
+// Matrix multiplication
+const A_mul = A.multiply(B);
+disp('Matrix Multiplication A * B:');
+disp(A_mul);
+
+// Solving linear system A * x = b
+const b = mat.new([
+    [5],
+    [11]
+]);
+const x = A.linsolve(b);
+disp('Solution to linear system A * x = b:');
+disp('b vector:');
+disp(b);
+disp('Solution x:');
+disp(x);
+
+// Scalar division
+const A_scalar_div = A.divideEl(scalar);
+disp(`Scalar Division A / ${scalar}:`);
+disp(A_scalar_div);
+
+// Element-wise division
+const A_B_div = A.divideEl(B);
+disp('Element-wise Division A ./ B:');
+disp(A_B_div);
+
+// Scalar multiplication (element-wise)
+const A_scalar_mult = A.multiplyEl(scalar);
+disp(`Scalar Multiplication ${scalar} * A:`);
+disp(A_scalar_mult);
+
+// Element-wise multiplication
+const A_B_mult = A.multiplyEl(B);
+disp('Element-wise Multiplication A .* B:');
+disp(A_B_mult);
+
+// Scalar power (element-wise)
+const A_scalar_pow = A.powEl(scalar);
+disp(`Scalar Power A .^ ${scalar}:`);
+disp(A_scalar_pow);
+
+// Reciprocal of A (element-wise)
+const A_reciprocal = A.reciprocal();
+disp('Reciprocal of A:');
+disp(A_reciprocal);
+
+// Sum of elements in C
+const C_sum = C.sum();
+disp('Sum of elements in C:');
+disp(C_sum);
+
+// Sort elements in C
+const C_sort = C.sort();
+disp('Sorted elements in C:');
+disp(C_sort);
+
+// Minimum element in C
+const C_min = C.min();
+disp('Minimum element in C:');
+disp(C_min);
+
+// Maximum element in C
+const C_max = C.max();
+disp('Maximum element in C:');
+disp(C_max);
+
+// Get Submatrix by rows and columns
+disp('Get Submatrix of A (rows 0-1, columns 1):');
+const sub_A_rows_cols = A.getSub([0, 1], 1);
+disp(sub_A_rows_cols);
+
+// Get Submatrix by rows and columns
+disp('Get Submatrix of A (all rows, columns 1):');
+const sub_A_all_rows_cols = A.getSub(_, 1);
+disp(sub_A_all_rows_cols);
+
+// Get Submatrix by rows and columns
+disp('Get Submatrix of A (rows 1, all columns):');
+const sub_A_rows_all_cols = A.getSub(1, _);
+disp(sub_A_rows_all_cols);
+
+// Get Submatrix by indices
+disp('Get Submatrix of A by indices [0, 3]:');
+const sub_A_indices = A.getSub([0, 3]);
+disp(sub_A_indices);
+
+// Set Submatrix by rows and columns
+disp('Set Submatrix of A (rows 0, columns 1) to 10:');
+A.setSub(0, 1, 10);
+disp(A);
+
+// Set Submatrix by indices
+disp('Set Submatrix of A by indices 3 to 20:');
+A.setSub(3, 20);
+disp(A);
+
+// Set Submatrix by matrix
+disp('Set A to B:');
+A.setSub(_, _, B);
+disp(A);
+
+// Set Submatrix by array
+disp('Set A to [1, 2, 3, 4]:');
+A.setSub(_, _, [1, 2, 3, 4]);
+disp(A);
+
+// - Kraj proračuna
+disp(' Program je uspešno izvršen... ');
+disp(' Potrebno vreme: ' + num2str(toc(), 2) + ' sekundi');
+disp(' -------------------- ');

@@ -1,0 +1,45 @@
+.cm-s-notepadpp span.cm-comment {
+  color: #008000;
+}
+.cm-s-notepadpp span.cm-keyword {
+  line-height: 1em;
+  font-weight: bold;
+  color: #0000ff;
+}
+.cm-s-notepadpp span.cm-string {
+  color: #808080;
+}
+.cm-s-notepadpp span.cm-builtin {
+  line-height: 1em;
+  font-weight: bold;
+  color: #804000;
+}
+.cm-s-notepadpp span.cm-special {
+  line-height: 1em;
+  font-weight: bold;
+  color: #0aa;
+}
+.cm-s-notepadpp span.cm-variable {
+  color: black;
+}
+.cm-s-notepadpp span.cm-number {
+  color: #ff8000;
+}
+
+.cm-s-notepadpp span.cm-atom {
+  color: #0000ff;
+}
+.cm-s-notepadpp span.cm-meta {
+  color: #555;
+}
+.cm-s-notepadpp span.cm-link {
+  color: #3a3;
+}
+
+.cm-s-notepadpp .CodeMirror-activeline-background {
+  background: #e8e8ff;
+}
+.cm-s-notepadpp .CodeMirror-matchingbracket {
+  outline: 1px solid grey;
+  color: black !important;
+}

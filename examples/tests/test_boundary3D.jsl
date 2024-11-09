@@ -1,0 +1,97 @@
+/**
+ * @file Test boundary 3D
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * Doktorska disertacija
+ * Mašinski fakultet Univerziteta u Beogradu
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+var S = 0.5;
+var QP = [[0.5, 0.5, 0.5], [2, 2, 2]]; // [mm] test points
+// --------------------
+
+disp(' Read OFF');
+var [ vertices, faces ] = readOff(pwd+'/../resources/rp.off');
+
+disp(' Write OFF');
+writeOff(pwd+'/../out/rp_new.off', vertices, faces);
+
+disp(' Prikaz modela...');
+figure(1);
+var p = plot([
+  {x: column(vertices, 0), y: column(vertices, 1), z: column(vertices, 2),
+   i: column(faces, 0), j: column(faces, 1), k: column(faces, 2), 
+   intensity: column(vertices, 2), colorscale: 'Jet', 
+   lighting: { ambient: 1 }, type: 'mesh3d', colorbar: { title: 'z [mm]' }}
+], {'showLegend': false, 'font': {'family': 'LatinModern', 'size': 14}});
+xlabel('x [mm]');
+ylabel('y [mm]');
+zlabel('z [mm]');
+await p.ready;
+
+disp(' Učitavanje tačaka...');
+var data = readFile(pwd+'/../resources/rp.txt', 'utf8');
+var tokens = data.split(/\s+/).filter(token => token.length > 0);
+var points = tokens.map(x => parseFloat(x));
+points = reshape(points, points.length / 3, 3);
+
+disp(' newShape...');
+var shp = new this.jsl.env.AlphaShape3D(); 
+shp.newShape(points);
+
+disp(' getCriticalAlpha...');
+var Aap = shp.getCriticalAlpha('all-points');
+var Acrit = shp.getCriticalAlpha('one-region');
+
+disp(' getAlphaSpectrum...');
+var spec = shp.getAlphaSpectrum();
+
+var idx = spec.indexOf(Acrit);
+var subspec = spec.slice(idx);
+var idx = Math.max(Math.ceil((1 - S) * subspec.length) - 1, 0);
+var alphaval = subspec[idx];
+
+disp(' setAlpha...');
+shp.setAlpha(alphaval);
+
+disp(' getNumRegions...');
+var N = shp.getNumRegions();
+disp(' getSurfaceArea...');
+var A = shp.getSurfaceArea();
+disp(' getVolume...');
+var V = shp.getVolume();
+disp(' getBoundaryFacets...');
+var bf = shp.getBoundaryFacets();
+
+disp(' writeBoundaryFacets...');
+shp.writeBoundaryFacets(pwd+'rp_1.off');
+
+disp(' removeUnusedPoints...');
+var rmUpoints = shp.removeUnusedPoints(points, bf);
+
+var Pr = rmUpoints.points;
+var bfr = rmUpoints.facets;
+
+shp.writeOff(pwd+'/../out/rpr.off', Pr, bfr);
+
+disp(' checkInShape...');
+var res1 = shp.checkInShape(QP);
+disp(' getTriangulation...');
+var res2 = shp.getTriangulation();
+disp(' getNearestNeighbor...');
+var res3 = shp.getNearestNeighbor(QP);
+
+disp(' getSimplifiedShape 1...');
+var ss_res1 = shp.getSimplifiedShape();
+disp(' getSimplifiedShape 2...');
+var ss_res2 = shp.getSimplifiedShape(0.1);
+disp(' getSimplifiedShape 3...');
+var ss_res3 = shp.getSimplifiedShape(pwd+'rps1.off');
+disp(' getSimplifiedShape 4...');
+var ss_res4 = shp.getSimplifiedShape(0.1 , pwd+'rps2.off');
+
+// - Kraj proračuna
+disp(' Program je uspešno izvršen... ');
+disp(' Potrebno vreme: ' + num2str(toc(), 2) + ' sekundi');
+disp(' -------------------- ');

@@ -1,0 +1,55 @@
+/**
+ * @file Example for symbolic math - Bending in XY plane shape function
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var le, x, E, Iz;
+var p, P, invP, N, d2N;
+var k_int, k_e_stretching, k_e_torsion;
+var xi = range(0, 1, 0.01);
+
+await sym.load();
+[le, x, E, Iz] = sym.syms(['le', 'x', 'E', 'Iz']);
+
+P = sym.mat([
+  [1, 0, 0, 0], 
+  [0, 1, 0, 0], 
+  [1, le, sym.pow(le, 2), sym.pow(le, 3)], 
+  [0, 1, sym.mul(2, le), sym.mul(3, sym.pow(le, 2))]
+]);
+p = sym.mat([[1, x, sym.pow(x, 2), sym.pow(x, 3)]]);
+
+invP = sym.inv(P);
+N = sym.mul(p, invP);
+d2N = sym.diff(N, 'x', 2);
+
+k_int = sym.mul(E, Iz, sym.intg(sym.mul(sym.transp(d2N), d2N), x, [0, le]));
+
+
+Ni = sym.subs(sym.subs(N, le, 1), x, xi).toNumeric();
+var N_flat = Ni.flat();
+
+sym.showLatex(N);
+sym.showLatex(k_int);
+
+// Prikaz grafika
+figure(1);
+plot([
+  {x: xi, y: column(N_flat, 0), name: 'N<sub>1</sub>', width: 3},
+  {x: xi, y: column(N_flat, 1), name: 'N<sub>2</sub>', width: 3},
+  {x: xi, y: column(N_flat, 2), name: 'N<sub>3</sub>', width: 3},
+  {x: xi, y: column(N_flat, 3), name: 'N<sub>4</sub>', width: 3}
+], {font: {family: 'LatinModern', size: 18}, legendLocation: 'east'});
+xlabel("x [L]");
+ylabel("N [-]");
+
+// - Kraj proračuna
+disp(' Program je uspešno izvršen... ');
+disp(' Potrebno vreme: ' + num2str(toc(), 2) + ' sekundi');
+disp(' -------------------- ');
+

@@ -1,0 +1,35 @@
+/**
+ * @file Simple test for non-blocking while block
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+tic;
+i = 0;
+while(true){
+ i += 1; 
+ if((i % 5000) == 0) {
+   disp(i.toString());
+ }
+ if(i > 100000) {
+   break;
+ }  
+}
+disp(toc().toString()+' s');
+
+tic;
+i = 0;
+nbwhile(function() {
+ i += 1; 
+ if((i % 5000) == 0) {
+   disp(i.toString());
+ }
+ if(i <= 100000) {
+    return 0;
+ } else {
+   	disp(toc().toString()+' s');
+    return 1;
+ }  
+}); 

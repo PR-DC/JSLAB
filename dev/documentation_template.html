@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>JSLAB / DOCUMENTATION</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+    
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20version%3D%221.1%22%20viewBox%3D%220%200%20630%20630%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22630%22%20height%3D%22630%22%20fill%3D%22%23f7df1e%22%20rx%3D%2250%22%20ry%3D%2250%22/%3E%3Cpath%20d%3D%22m%20132.3099%2C593%20c%2042.69727%2C0%2071.96556%2C-22.72597%2071.96556%2C-72.65424%20v%20-164.5911%20h%20-48.2066%20v%20163.90243%20c%200%2C24.1033%20-9.98565%2C30.30129%20-25.82496%2C30.30129%20-16.52798%2C0%20-23.41463%2C-11.36298%20-30.989963%2C-24.79196%20L%2060%2C548.92539%20C%2071.362984%2C573.0287%2093.744617%2C593%20132.3099%2C593%20Z%22%20style%3D%22font-size%3A341.94px%3Bline-height%3A1.05%3Bfont-family%3A'Neutra%20Text'%3Bword-spacing%3A0px%3Bfill%3A%23000000%3Bfill-opacity%3A1%3Bstroke-width%3A8.60834%22/%3E%3Cpath%20d%3D%22m%20318.24908%2C593%20c%2045.79626%2C0%2079.88522%2C-23.75897%2079.88522%2C-67.14491%200%2C-40.28695%20-23.0703%2C-58.19225%20-64.04591%2C-75.75323%20l%20-12.05165%2C-5.16499%20c%20-20.65997%2C-8.95266%20-29.61263%2C-14.80631%20-29.61263%2C-29.26829%200%2C-11.70732%208.95266%2C-20.65997%2023.0703%2C-20.65997%2013.77332%2C0%2022.72597%2C5.85365%2030.98996%2C20.65997%20l%2037.53228%2C-24.1033%20C%20368.17734%2C363.67432%20346.14004%2C353%20315.49441%2C353%20c%20-43.0416%2C0%20-70.58823%2C27.54663%20-70.58823%2C63.70158%200%2C39.25394%2023.0703%2C57.84791%2057.84792%2C72.65422%20l%2012.05165%2C5.165%20c%2022.0373%2C9.64132%2035.12195%2C15.49498%2035.12195%2C32.02295%200%2C13.77332%20-12.74032%2C23.75897%20-32.71162%2C23.75897%20-23.75897%2C0%20-37.18795%2C-12.39598%20-47.51793%2C-29.26829%20L%20230.4442%2C543.76039%20C%20244.56185%2C571.65136%20273.48581%2C593%20318.24908%2C593%20Z%22%20style%3D%22font-size%3A341.94px%3Bline-height%3A1.05%3Bfont-family%3A'Neutra%20Text'%3Bword-spacing%3A0px%3Bfill%3A%23000000%3Bfill-opacity%3A1%3Bstroke-width%3A8.60834%22/%3E%3Cpath%20d%3D%22M%20435.66613%2C589.901%20H%20589.92724%20V%20547.54805%20H%20483.87273%20V%20355.75466%20h%20-48.2066%20z%22%20style%3D%22font-size%3A341.94px%3Bline-height%3A1.05%3Bfont-family%3A'Neutra%20Text'%3Bword-spacing%3A0px%3Bfill%3A%23000000%3Bfill-opacity%3A1%3Bstroke-width%3A8.60834%22/%3E%3C/svg%3E">
+
+    <style>
+    html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+    
+    strong {
+      font-weight: bold;
+    }
+    
+    em {
+      font-style: italic;
+    }
+    
+    pre {
+      margin: 10px 0;
+      padding: 10px 20px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      color: #666;
+    }
+    
+    .panel::-webkit-scrollbar,
+    .panel::-webkit-scrollbar-button,
+    .panel::-webkit-scrollbar-track,
+    .panel::-webkit-scrollbar-track-piece,
+    .panel::-webkit-scrollbar-thumb,
+    .panel::-webkit-scrollbar-corner,
+    .panel::-webkit-resizer {
+      background: transparent;
+    }
+
+    .panel::-webkit-scrollbar {
+      width:  12px;
+      height: 12px;
+      -webkit-border-radius: 5px;
+      border-radius: 5px;
+    }
+
+    .panel::-webkit-scrollbar-track-piece {
+      -webkit-border-radius: 5px;
+      border-radius: 5px;
+    }
+
+    .panel::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 5px;
+      background-clip: content-box;
+      border: 2px solid transparent;
+    }
+
+    .panel::-webkit-scrollbar-button {
+      width:0;
+      height:0;
+    }
+    
+    .panel {
+      overflow: auto;
+    }
+    
+    body {
+      font-family: Roboto, Helvetica, Arial;
+    }
+    
+    #docs-header {
+      background: #12568a;
+      background: linear-gradient(to left, #2e85c7, #12568a);
+      color: #fff;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      max-height: 40px;
+      overflow: hidden;
+      transition: all .2s linear;
+      border-top: 2px solid #f7df1e;
+    }
+    
+    #jslab-logo svg {
+      height: 24px;
+      padding-top: 8px;
+      padding-left: 10px;
+      float: left;
+    }
+    
+    #company-logo svg {
+      filter: invert(1);
+      height: 30px;
+      float: left;
+      padding: 5px;
+      padding-left: 10px;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      margin-left: 10px;
+      border-left: 1px solid #00000054;
+      border-right: 1px solid #00000054;
+      padding-right: 10px;
+    }
+    
+    #title {
+      float: right;
+      font-size: 20px;
+      padding-top: 9px;
+      font-weight: 100;
+      border-right: 1px solid #ffffff2b;
+      padding-right: 10px;
+      height: 40px;
+    }
+
+    #docs-navigation-container {
+      padding: 10px 15px;
+      border-bottom: 1px solid #dadce0;
+      color: #5f6368;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      font-size: 20px;
+      font-weight: 100;
+    }
+    
+    #left-panel {
+      background: #f1f3f4;
+      width: 300px;
+      height: calc(100vh - 83px);
+      border-right: 1px solid #dadce0;
+      float: left;
+    }
+    
+    #left-panel .header {
+      border-bottom: 1px solid #dadce0;
+      padding-bottom: 10px;
+      margin: 0 10px;
+      margin-bottom: 10px;
+      padding-top: 10px;
+      color: #333;
+      font-weight: 100;
+    }
+    
+    #left-panel li {
+      padding: 5px 15px;
+      display: block;
+    }
+    
+    #left-panel ul {
+      margin-bottom: 10px;
+    }
+    
+    #left-panel a {
+      text-decoration: none;
+      color: #999;
+      transition: all .2s linear;
+    }
+    
+    #left-panel a.active {
+    color: #111;
+    }
+    
+    #left-panel a:hover {
+      text-decoration: none;
+      color: #333;
+    }
+    
+    #about-logo {
+      text-align: center;
+    }
+    
+    #about-logo svg {
+      margin: 0 auto;
+      width: 150px;
+    }
+    
+    #right-panel {
+      padding: 15px;
+      height: calc(100vh - 113px);
+    }
+    
+    #data-cont {
+      max-width: 1200px;
+      margin: 0 auto;
+      line-height: 22px;
+      color: #333;
+    }
+    
+    #data-cont h1 {
+      font-size: 24px;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    #data-cont h2 {
+      font-size: 20px;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      margin-top: 25px;
+      font-weight: bold;
+    }
+    
+    #data-cont h3 {
+      font-weight: bold;
+      padding-bottom: 5px;
+    }
+
+    #data-cont ul {
+      list-style: disc;
+      margin-left: 20px;
+    }
+    
+    #data-cont ol {
+      list-style: decimal;
+      margin-left: 20px;
+    }
+
+    #data-cont li {
+      padding: 10px;
+    }
+    
+    #data-cont code {
+      padding: 5px 10px;
+      background: #f9f9f9;
+      border-radius: 5px;
+      margin: 0 3px;
+      color: #666;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      display: inline-block;
+    }
+    
+    #data-cont svg, #data-cont img, #data-cont p {
+      margin-bottom: 10px;
+    }
+    
+    #data-cont {
+    
+    </style>
+  </head>
+  <body>
+  
+    <div id="docs-header">
+      <a href="https://pr-dc.com/jslab" title="JSLAB">
+        <div id="jslab-logo"></div>
+      </a>
+      <a href="https://pr-dc.com/" title="PR-DC Company">
+        <div id="company-logo"></div>
+      </a>
+      <div id="title">JSLAB / DOCUMENTATION</div>  
+    </div>
+    <div id="docs-navigation-container"> 
+      <span id="navigation-home"></span><span id="navigation-page"></span>
+    </div>
+    <div id="left-panel" class="panel"> 
+      <div class="header">MAIN</div>
+      <ul id="main-navigation"></ul>
+      <div class="header">CODE</div>
+      <ul id="code-navigation"></ul>
+    </div>
+    <div id="right-panel" class="panel"><div id="data-cont"></div></div>
+    
+    <script>
+      var jslab_log = `
+<svg
+ version="1.1"
+ viewBox="0 0 630 630"
+ xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+ xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:svg="http://www.w3.org/2000/svg"
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:cc="http://creativecommons.org/ns#"
+ xmlns:dc="http://purl.org/dc/elements/1.1/">
+<metadata
+   id="metadata12">
+  <rdf:RDF>
+    <cc:Work
+       rdf:about="">
+      <dc:format>image/svg+xml</dc:format>
+      <dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    </cc:Work>
+  </rdf:RDF>
+</metadata>
+<defs
+   id="defs10" />
+<rect
+   id="background"
+   x="0"
+   y="0"
+   width="630"
+   height="630"
+   fill="#f7df1e"
+   rx="50"
+   ry="50" />
+<path
+   d="m 132.3099,593 c 42.69727,0 71.96556,-22.72597 71.96556,-72.65424 v -164.5911 h -48.2066 v 163.90243 c 0,24.1033 -9.98565,30.30129 -25.82496,30.30129 -16.52798,0 -23.41463,-11.36298 -30.989963,-24.79196 L 60,548.92539 C 71.362984,573.0287 93.744617,593 132.3099,593 Z"
+   style="font-size:341.94px;line-height:1.05;font-family:'Neutra Text';-inkscape-font-specification:'Neutra Text';word-spacing:0px;fill:#000000;fill-opacity:1;stroke-width:8.60834"
+   id="path850" />
+<path
+   d="m 318.24908,593 c 45.79626,0 79.88522,-23.75897 79.88522,-67.14491 0,-40.28695 -23.0703,-58.19225 -64.04591,-75.75323 l -12.05165,-5.16499 c -20.65997,-8.95266 -29.61263,-14.80631 -29.61263,-29.26829 0,-11.70732 8.95266,-20.65997 23.0703,-20.65997 13.77332,0 22.72597,5.85365 30.98996,20.65997 l 37.53228,-24.1033 C 368.17734,363.67432 346.14004,353 315.49441,353 c -43.0416,0 -70.58823,27.54663 -70.58823,63.70158 0,39.25394 23.0703,57.84791 57.84792,72.65422 l 12.05165,5.165 c 22.0373,9.64132 35.12195,15.49498 35.12195,32.02295 0,13.77332 -12.74032,23.75897 -32.71162,23.75897 -23.75897,0 -37.18795,-12.39598 -47.51793,-29.26829 L 230.4442,543.76039 C 244.56185,571.65136 273.48581,593 318.24908,593 Z"
+   style="font-size:341.94px;line-height:1.05;font-family:'Neutra Text';-inkscape-font-specification:'Neutra Text';word-spacing:0px;fill:#000000;fill-opacity:1;stroke-width:8.60834"
+   id="path852" />
+<path
+   d="M 435.66613,589.901 H 589.92724 V 547.54805 H 483.87273 V 355.75466 h -48.2066 z"
+   style="font-size:341.94px;line-height:1.05;font-family:'Neutra Text';-inkscape-font-specification:'Neutra Text';word-spacing:0px;fill:#000000;fill-opacity:1;stroke-width:8.60834"
+   id="path854" />
+</svg>
+      `;
+      
+      var company_log = `
+<svg
+ viewBox="0 0 160 90"
+ version="1.1"
+ id="svg869"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:svg="http://www.w3.org/2000/svg"
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:cc="http://creativecommons.org/ns#"
+ xmlns:dc="http://purl.org/dc/elements/1.1/">
+<defs
+   id="defs863" />
+<metadata
+   id="metadata866">
+  <rdf:RDF>
+    <cc:Work
+       rdf:about="">
+      <dc:format>image/svg+xml</dc:format>
+      <dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    </cc:Work>
+  </rdf:RDF>
+</metadata>
+<g
+   id="layer1">
+  <path
+     id="path847"
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999999px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 483.13281 17.101562 C 483.13281 17.101562 455.74781 17.701959 428.36328 17.615234 C 425.51072 17.606164 422.57229 17.604649 419.5625 17.613281 C 374.41441 17.745451 313.17548 18.456471 280.00586 28.585938 C 219.34388 47.111121 185.96586 73.091557 158.50391 103.79688 C 153.5363 109.42942 147.05989 117.97425 139.72266 128.92188 C 143.64779 137.54078 145.61523 147.65489 145.61523 159.27539 C 145.61523 172.166 143.27648 183.00438 138.59766 191.78906 C 133.91885 200.57382 127.9503 207.49589 120.69336 212.55664 C 113.5319 217.52192 106.22722 220.81618 98.779297 222.43945 C 95.807549 223.02819 92.396307 223.51965 88.642578 223.93555 C 75.710747 253.86377 63.915338 287.36997 55.78125 322.60352 L 449.07422 322.89844 C 452.91989 288.9274 456.14589 259.97604 459.13281 232.99414 C 454.31399 221.25319 451.90039 207.64528 451.90039 192.16211 C 451.90039 165.94179 458.11321 145.11257 470.5293 129.66602 C 474.28218 95.661149 478.18692 60.495264 483.13281 17.101562 z M 539.49609 115.06445 C 519.44401 115.06445 503.26564 121.67252 490.96094 134.88867 C 478.65626 148.03972 472.50391 166.52928 472.50391 190.35742 C 472.50391 212.88348 478.62368 230.65689 490.86328 243.67773 C 503.10285 256.63347 518.72784 263.11133 537.73828 263.11133 C 553.10287 263.11133 565.76562 259.33529 575.72656 251.7832 C 585.75262 244.16601 592.91407 232.54493 597.21094 216.91992 L 569.18359 208.0332 C 566.77472 218.51498 562.80339 226.19726 557.26953 231.08008 C 551.73567 235.96289 545.12761 238.4043 537.44531 238.4043 C 527.02866 238.4043 518.56513 234.56315 512.05469 226.88086 C 505.54427 219.19856 502.28906 206.30796 502.28906 188.20898 C 502.28906 171.15168 505.57682 158.81446 512.15234 151.19727 C 518.79297 143.58007 527.41927 139.77148 538.03125 139.77148 C 545.71354 139.77148 552.22394 141.91992 557.5625 146.2168 C 562.96614 150.51367 566.51431 156.37304 568.20703 163.79492 L 596.82031 156.95898 C 593.56511 145.50064 588.68231 136.71159 582.17188 130.5918 C 571.23438 120.24023 557.00914 115.06445 539.49609 115.06445 z M 14.216797 117.50586 L 14.216797 260.66992 L 43.123047 260.66992 L 43.123047 206.66602 L 61.970703 206.66602 C 75.05665 206.66602 85.050127 205.98242 91.951172 204.61523 C 97.0293 203.50846 102.00976 201.26237 106.89258 197.87695 C 111.8405 194.42643 115.9095 189.70638 119.09961 183.7168 C 122.28971 177.72721 123.88477 170.3379 123.88477 161.54883 C 123.88477 150.15559 121.11784 140.87826 115.58398 133.7168 C 110.05013 126.49023 103.18165 121.80273 94.978516 119.6543 C 89.639971 118.222 78.181651 117.50586 60.603516 117.50586 L 14.216797 117.50586 z M 157.9082 117.50586 L 218.74805 117.50586 C 234.04754 117.50586 245.14779 118.80794 252.04883 121.41211 C 259.01499 123.95116 264.58138 128.50844 268.74805 135.08398 C 272.91471 141.65949 274.99805 149.17908 274.99805 157.64258 C 274.99805 168.38479 271.84049 177.27149 265.52539 184.30273 C 259.21025 191.26886 249.77016 195.66342 237.20508 197.48633 C 243.45506 201.1321 248.59831 205.13606 252.63477 209.49805 C 256.73635 213.86 262.23763 221.60745 269.13867 232.74023 L 286.61914 260.66992 L 252.04883 260.66992 L 231.15039 229.51758 C 223.72849 218.38483 218.65039 211.38606 215.91602 208.52148 C 213.18164 205.59178 210.2845 203.60613 207.22461 202.56445 C 204.16471 201.45769 199.31446 200.9043 192.67383 200.9043 L 186.81445 200.9043 L 186.81445 260.66992 L 157.9082 260.66992 L 157.9082 117.50586 z M 322.95312 117.50586 L 375.78516 117.50586 C 387.69921 117.50586 396.78123 118.41729 403.03125 120.24023 C 411.4297 122.7142 418.62367 127.10873 424.61328 133.42383 C 430.60285 139.73889 435.16017 147.48634 438.28516 156.66602 C 441.41018 165.78061 442.97266 177.04361 442.97266 190.45508 C 442.97266 202.23893 441.50783 212.39517 438.57812 220.92383 C 434.99745 231.34047 429.88672 239.77153 423.24609 246.2168 C 418.23308 251.09964 411.46225 254.9082 402.93359 257.64258 C 396.55341 259.66081 388.02475 260.66992 377.34766 260.66992 L 322.95312 260.66992 L 322.95312 117.50586 z M 43.123047 141.72461 L 57.087891 141.72461 C 67.504562 141.72461 74.43815 142.05013 77.888672 142.70117 C 82.576175 143.54753 86.449868 145.66341 89.509766 149.04883 C 92.569664 152.43425 94.099609 156.73112 94.099609 161.93945 C 94.099609 166.17123 92.99284 169.88216 90.779297 173.07227 C 88.630857 176.26237 85.636071 178.60612 81.794922 180.10352 C 77.953775 181.60091 70.336597 182.34961 58.943359 182.34961 L 43.123047 182.34961 L 43.123047 141.72461 z M 186.81445 141.72461 L 186.81445 178.05273 L 208.20117 178.05273 C 222.06836 178.05273 230.72721 177.4668 234.17773 176.29492 C 237.62825 175.12304 240.33009 173.10485 242.2832 170.24023 C 244.23635 167.37565 245.21289 163.79492 245.21289 159.49805 C 245.21289 154.68032 243.91081 150.80665 241.30664 147.87695 C 238.76755 144.88217 235.15428 142.99412 230.4668 142.21289 C 228.12304 141.88747 221.0918 141.72461 209.37305 141.72461 L 186.81445 141.72461 z M 351.85938 141.72461 L 351.85938 236.54883 L 373.44141 236.54883 C 381.51433 236.54883 387.34115 236.09311 390.92188 235.18164 C 395.60935 234.00976 399.48306 232.02411 402.54297 229.22461 C 405.66796 226.42511 408.20709 221.8353 410.16016 215.45508 C 412.1133 209.00977 413.08984 200.25325 413.08984 189.18555 C 413.08984 178.11784 412.1133 169.62179 410.16016 163.69727 C 408.20709 157.77282 405.47267 153.15039 401.95703 149.83008 C 398.44139 146.50976 393.98179 144.26368 388.57812 143.0918 C 384.54168 142.18033 376.63151 141.72461 364.84766 141.72461 L 351.85938 141.72461 z M 275.35742 187.93945 L 311.72266 187.93945 L 311.72266 206.12305 L 275.35742 206.12305 L 275.35742 187.93945 z "
+     transform="scale(0.26458333)" />
+  <g
+     aria-label="PR DC"
+     id="text865"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52.9167px;line-height:1.25;font-family:arial;-inkscape-font-specification:arial;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+     transform="translate(-26.307505,-2.9264341)" />
+  </g>
+</svg>`;
+
+    var data_cont = document.getElementById('data-cont');
+    var navigation_page = document.getElementById('navigation-page');
+    var main_navigation = document.getElementById('main-navigation');
+    var code_navigation = document.getElementById('code-navigation');
+    
+    var year = $JSLAB_PUBLISH_YEAR$;
+    var app_version = $JSLAB_APP_VERSION$;
+    
+    var current_page;
+    var main_pages_data = {
+      'about': {
+        'title': 'About JSLAB',
+        'data': `
+<h1>PR-DC JSLAB - JavaScript LABoratory environment</h1>
+
+<div id="about-logo">${jslab_log}</div>
+
+<p>Welcome to the JSLAB Documentation! This guide provides comprehensive information for users and contributors, detailing the features, usage, and contribution guidelines to ensure a consistent and high-quality codebase.</p>
+
+<p>The <strong>JavaScript Laboratory (JSLAB)</strong> is an open-source environment designed for scientific computing, data visualization, and various other computer operations. Inspired by <em>GNU Octave</em> and <em>Matlab</em>, JSLAB leverages the advantages of JavaScript, including its blazing speed, extensive examples, backing by some of the largest software companies globally, and the vast community of active programmers and software engineers.</p>
+
+<p>The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.</p>
+
+<h2>Why Choose JSLAB?</h2>
+
+<h3>🌟 Backed by Leading Investments</h3>
+
+<p>JavaScript is supported by major industry investments, ensuring continuous innovation and robust development. Our commitment to excellence makes JSLAB a trusted choice for professionals and organizations worldwide.</p>
+
+<h3>🚀 Powered by JavaScript, Trusted by Giants</h3>
+
+<p>Join the ranks of top companies who leverage JavaScript for their mission-critical applications. With JSLAB, you benefit from the same reliable and scalable technology that powers some of the most advanced projects on Earth and beyond.</p>
+
+<h3>👥 Thriving Community and Massive User Base</h3>
+
+<p>Become part of a vibrant and growing community of JavaScript developter. Extensive support network and active forums ensure you always have the resources and assistance you need to succeed.</p>
+
+<h3>📈 Comprehensive Functionality Comparable to Leading Tools</h3>
+
+<p>JSLAB bridges the gap between JavaScript and specialized scientific tools. Enjoy functionalities equivalent to MATLAB, GNU Octave, Python, R, and Julia, all within a single, unified platform. Perform data analysis, machine learning, numerical computations, and more with ease.</p>
+
+<h3>🎨 Seamless and Native GUI with HTML, CSS, and SVG</h3>
+
+<p>Design intuitive and visually appealing graphical user interfaces using native HTML, CSS, and SVG. Create interactive dashboards, custom visualizations, and responsive layouts without the need for additional frameworks.</p>
+
+<h3>🔧 Extend with Native Modules via NPM and C++/C</h3>
+
+<p>Enhance JSLAB’s capabilities by integrating native modules from npm, built with C++ and C. Tap into a vast ecosystem of extensions and customize your environment to meet your specific needs, ensuring maximum performance and flexibility.</p>
+
+<h3>Join the JSLAB Revolution Today!</h3>
+
+<p>Experience the seamless integration of powerful scientific computing and the flexibility of JavaScript. Whether you're developing complex algorithms, analyzing vast datasets, or creating innovative applications, JSLAB empowers you to achieve more.</p>
+
+<h2>License</h2>
+<p>Copyright (C) ${year} PR-DC info@pr-dc.com</p>
+
+<p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU Lesser General Public License along with this program. If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+      `},
+      'about-docs': {
+        'title': 'About documentation',
+        'data': `
+<p>This documentation serves as a comprehensive guide for both users and contributors of the JSLAB Library. It covers an introduction to the project, detailed features, installation and setup instructions, user interface overview, practical examples, coding standards, build instructions, contribution guidelines, and mechanisms for providing feedback.</p>
+
+<p>The documentation is structured to provide clear and detailed information, ensuring that both new users and seasoned contributors can effectively utilize and contribute to the JSLAB project.</p>
+        `},
+      'coding-style': {
+        'title': 'Coding style',
+        'data': `
+<h2>Documentation and Comments</h2>
+
+<p>Clear documentation is essential for maintaining and understanding the codebase. We utilize JSDoc for structured documentation and inline comments to clarify complex logic.</p>
+
+<ul>
+  <li><strong>JSDoc:</strong> Use JSDoc comments to document files, classes, methods, parameters, and return values.</li>
+  <li><strong>Inline Comments:</strong> Add comments to explain non-trivial code segments.</li>
+</ul>
+
+<pre>
+/**
+* Constructs the JSLAB library environment.
+* @param {Object} config Configuration options.
+*/
+constructor(config) {
+  // Initialize properties
+  this.config = config;
+  // ... other initializations
+}
+</pre>
+
+<h2>Naming Conventions</h2>
+  <p>Names should be as descriptive as possible to enhance code readability and maintainability.</p>
+  
+  <ul>
+    <li><strong>Meaningful Names:</strong> Choose self-explanatory names that clearly convey their purpose.</li>
+    <li><strong>Classes and Constants:</strong> Use uppercase letters with underscores (e.g., <code>PRDC_JSLAB_LIB</code>, <code>CONSTANTS_LIKE_THIS</code>).</li>
+    <li><strong>Functions and Methods:</strong> Use camelCase (e.g., <code>getFullFilePath</code>, <code>methodNamesLikeThis</code>).</li>
+    <li><strong>Variables:</strong> Use lowercase letters with underscores (e.g., <code>new_file_path</code>, <code>variable_names_like_this</code>).</li>
+    <li><strong>Indexing:</strong> Use concise names for indexing variables where necessary.</li>
+  </ul>
+  
+  <pre>
+var variable_names_like_this;
+function functionNamesLikeThis() { }
+class CLASS_NAME_LIKE_THIS { }
+methodNamesLikeThis() { }
+const CONSTANTS_LIKE_THIS = 'value';
+  </pre>
+
+<h2>Code Structure and Modularization</h2>
+<ul>
+  <li><strong>Separation of Concerns:</strong> Organize code into separate modules/files based on functionality.</li>
+  <li><strong>Object-Oriented Design:</strong> Use ES6 classes to encapsulate related properties and methods.</li>
+</ul>
+<pre>
+const { PRDC_JSLAB_EVAL } = require('./jslab-eval');
+
+class PRDC_JSLAB_LIB {
+  constructor(config) {
+  this.eval = new PRDC_JSLAB_EVAL(this);
+  // ... other initializations
+  }
+}
+</pre>
+
+<h2>Error Handling</h2>
+<ul>
+  <li><strong>Try-Catch Blocks:</strong> Use try-catch to handle potential errors gracefully.</li>
+  <li><strong>Custom Errors:</strong> Throw custom error objects for specific error scenarios.</li>
+</ul>
+<pre>
+try {
+  return this.resolve(file_path);
+} catch {
+  this.jsl.env.error('Path resolution failed.');
+}
+</pre>
+
+<h2>State Management and Cleanup</h2>
+<ul>
+  <li><strong>Resource Tracking:</strong> Maintain arrays and objects to track active asynchronous operations.</li>
+  <li><strong>Cleanup Methods:</strong> Implement methods to clear resources and reset the environment state.</li>
+</ul>
+
+<h2>Configuration Management</h2>
+<ul>
+  <li><strong>Centralized Configuration:</strong> Use a dedicated class (<code>PRDC_APP_CONFIG</code>) to manage all configuration settings.</li>
+  <li><strong>Conditional Configurations:</strong> Adjust settings based on the runtime environment or command-line arguments.</li>
+</ul>
+
+<h2>Best Practices</h2>
+<ul>
+  <li><strong>Consistent Formatting:</strong> Use a consistent code formatter to maintain uniform code style.</li>
+  <li><strong>Meaningful Commit Messages:</strong> Write clear and descriptive commit messages that explain the purpose of the changes.</li>
+  <li><strong>Modular Code:</strong> Write reusable and modular code to enhance maintainability and scalability.</li>
+  <li><strong>Comprehensive Testing:</strong> Implement thorough tests to ensure the reliability of your contributions.</li>
+  <li><strong>Character Encoding:</strong> Code should be in UTF-8.</li>
+  <li><strong>Indentation:</strong> Use two spaces for indentation instead of tabs.</li>
+  <li><strong>Trailing Spaces:</strong> Do not include additional spaces at the end of lines.</li>
+  <li><strong>Space Before Curly Braces:</strong> Always use a space before opening curly braces (<code>{</code>).</li>
+  <li><strong>Semicolons:</strong> Always include semicolons at the end of statements.</li>
+  <li><strong>Logical Operators:</strong> Always use spaces before and after logical operators.</li>
+  <li><strong>Unary Operators:</strong> Unary operators applied to a single variable should not have spaces (e.g., <code>!y</code>).</li>
+  <li><strong>Unary Operators in Expressions:</strong> Unary operators within expressions should have spaces before and after (e.g., <code>1 + 5</code>).</li>
+  <li><strong>Ternary Operators:</strong> Always use spaces before and after ternary operators (e.g., <code>(x === undefined) ? 0 : 1</code>).</li>
+  <li><strong>Undefined Checks:</strong> Variable definitions should be checked with strict equality against <code>undefined</code> (e.g., <code>x === undefined</code>).</li>
+</ul>
+<pre>
+var y = x > 5;
+
+var x = !y;
+
+var x = 1 + 5;
+var str = 'x = ' + x + ' units';
+
+var y = (x === undefined) ? 0 : 1;
+
+x === undefined;
+</pre>
+
+<h3>String</h3>
+<ul>
+  <li>Always use single quotes for strings.</li>
+</ul>
+<pre>
+var text = 'String like this';
+</pre>
+  
+<h3>Objects</h3>
+<ul>
+  <li>Create empty objects using <code>{}</code>.</li>
+</ul>
+<pre>
+var obj = { A: 1, B: 2, V: 3 };
+</pre>
+
+<h3>Arrays</h3>
+<ul>
+  <li>Create empty arrays using <code>[]</code>.</li>
+</ul>
+<pre>
+var arr = [1, 2, 3];
+</pre>
+
+<h3>Control Structures and Loops</h2>
+<ul>
+  <li>Do not use spaces after control statements (e.g., <code>if(x == 0)</code> instead of <code>if (x == 0)</code>).</li>
+  <li>Do not use spaces inside parentheses before and after expressions.</li>
+</ul>
+<pre>
+if(x == 0) {
+  y = 5;
+} else if(x == 1) {
+  y = 10;
+} else {
+  y = 0;
+}
+
+switch(x) {
+  case 0:
+    y = 5;
+    break;
+  case 1:
+    y = 10;
+    break;
+  default:
+    y = 0;
+}
+
+for(let i = 0; i < cars.length; i++) {
+  text += cars[i] + "<br>";
+}
+
+while(i < 10) {
+  text += "The number is " + i;
+  i++;
+}
+  </pre>
+</div>
+        `},
+      'installaiton': {
+        'title': 'Installation',
+        'data': `
+You can install JSLAB by either downloading the latest stable release from GitHub or by building it from source. Choose the method that best fits your needs.
+
+<h2>Download the Latest Stable Release</h2>
+<ul>
+  <li>Visit the JSLAB Releases Page on GitHub Repository: <a href="https://github.com/PR-DC/JSLAB/releases">https://github.com/PR-DC/JSLAB/releases</a></li>
+  <li>Download the appropriate installer and install program.</li>
+  <li>Try examples from: <a href="https://github.com/PR-DC/JSLAB/tree/master/examples">https://github.com/PR-DC/JSLAB/tree/master/examples</a></li>
+</ul>
+
+<h2>Build from Source</h2>
+
+If you prefer to build JSLAB from source, follow the detailed <a class="documentation-link" href="build-instructions">build instructions</a> available in this documentation.
+
+        `},
+      'build-instructions': {
+        'title': 'Build instructions',
+        'data': `
+<h2>Prerequisites</h2>
+
+In order to download necessary tools, clone the repository, and install dependencies via npm, you need network access.
+
+<ul>
+    <li><strong>Node.js:</strong> Ensure that Node.js is installed on your system. You can download it from the official website: <a href="https://nodejs.org/">https://nodejs.org/</a></li>
+    <li><strong>npm:</strong> npm is typically installed alongside Node.js.</li>
+    <li><strong>node-gyp:</strong> node-gyp is installed alongside with application but it requires additional tools and libraries depending on your operating system. Follow the instructions for your specific OS from: <a href="https://github.com/nodejs/node-gyp">https://github.com/nodejs/node-gyp</a></li>
+    <li><strong>Git:</strong> Suggested for cloning the repository. Download it from the official website: <a href="https://git-scm.com/">https://git-scm.com/</a></li>
+</ul>
+
+<h2>Installation Steps</h2>
+<ol>
+    <li>Clone the JSLAB repository:</li>
+    <pre>git clone git clone https://github.com/PR-DC/JSLAB.git</pre>
+    
+    <li>Navigate to the project directory:</li>
+    <pre>cd JSLAB</pre>
+    
+    <li>Install the necessary dependencies:</li>
+    <pre>npm install</pre>
+    
+    <li>Start the application:</li>
+    <pre>npm start</pre>
+    
+    <li>Check examples from: <a href="https://github.com/PR-DC/JSLAB/tree/master/examples">https://github.com/PR-DC/JSLAB/tree/master/examples</a></li>
+</ol>
+        `},
+      'contibuting': {
+        'title': 'Contributing',
+        'data': `
+<h2>Setting Up the Development Environment</h2>
+
+<p>Follow the detailed <a class="documentation-link" href="build-instructions">build instructions</a> available in this documentation.</p>
+
+<h2>Making Changes</h2>
+
+<p>Follow the <a class="documentation-link" href="coding-style">coding style and best practices</a> available in this documentation.</p>
+
+<h2>Submitting Changes</h2>
+<ol>
+    <li>Create a new branch for your feature or bugfix:</li>
+    <pre>git checkout -b feature/your-feature-name</pre>
+    <li>Make your changes and commit them with clear messages:</li>
+    <pre>git commit -m "Add feature X to improve Y"</pre>
+    <li>Push your branch to your forked repository:</li>
+    <pre>git push origin feature/your-feature-name</pre>
+    <li>Submit a Pull Request (PR) detailing your changes.</li>
+</ol>
+
+<h2>Testing</h2>
+<p>Before submitting a PR, ensure that all tests pass and add new tests for any new functionality you introduce.</p>
+
+<h2>Reviewing Process</h2>
+<p>All PRs are subject to review by the maintainers. Be prepared to make revisions based on feedback to align with project standards.</p>
+
+<h2>Best Practices</h2>
+<ul>
+    <li><strong>Consistent Formatting:</strong> Use a consistent code formatter (e.g., Prettier) to maintain uniform code style.</li>
+    <li><strong>Meaningful Commit Messages:</strong> Write clear and descriptive commit messages that explain the purpose of the changes.</li>
+    <li><strong>Modular Code:</strong> Write reusable and modular code to enhance maintainability and scalability.</li>
+    <li><strong>Comprehensive Testing:</strong> Implement thorough tests to ensure the reliability of your contributions.</li>
+</ul>
+        `},
+      'feedback': {
+        'title': 'Feedback',
+        'data': `
+<p>Your feedback is invaluable in improving the JSLAB Library. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:</p>
+<ul>
+    <li><strong>GitHub Issues:</strong> Report bugs or suggest features by opening an issue in the GitHub repository.</li>
+    <li><strong>Email:</strong> Contact us directly at <a href="mailto:info@pr-dc.com">info@pr-dc.com</a> or main author at <a href="mailto:mpetrasinovic@pr-dc.com">mpetrasinovic@pr-dc.com</a>.</li>
+</ul>
+<p>We encourage active participation and appreciate all forms of feedback that help us enhance the functionality and usability of JSLAB.</p>
+        `}
+    }
+    
+    var code_data = $JSLAB_CODE_DATA$;
+    
+    document.getElementById('jslab-logo').innerHTML = jslab_log;
+    document.getElementById('company-logo').innerHTML = company_log;
+    document.getElementById('navigation-home').innerText = 'JSLAB v'+app_version+' / ';
+    
+    for(var page in main_pages_data) {
+      main_navigation.innerHTML += '<li><a class="documentation-link" href="'+page+'">'+main_pages_data[page]['title']+'</a></li>';
+    }
+    
+    for(var page in code_data) {
+      code_navigation.innerHTML += '<li><a class="documentation-link" href="'+page+'">'+page+'</a></li>';
+    }
+
+    document.addEventListener('click', function(event) {
+      if(event.target.matches('.documentation-link')) {
+        event.preventDefault();
+        setPage(event.target.getAttribute('href'));
+      }
+    });
+    
+    function setPage(page_name) {
+      if(page_name == current_page) {
+        return;
+      }
+      window.location.hash = page_name;
+      
+      if(current_page) {
+        document.querySelectorAll('#left-panel a[href="'+current_page+'"]').forEach(a => {
+          a.classList.remove('active');
+        });
+      }
+      current_page = page_name;
+      document.querySelectorAll('#left-panel a[href="'+page_name+'"]').forEach(a => {
+        a.classList.add('active');
+      });
+      
+      if(page_name in main_pages_data) {
+        data_cont.innerHTML = main_pages_data[page_name]['data'];
+        navigation_page.innerText = main_pages_data[page_name]['title'];
+      } else if(page_name in code_data) {
+        data_cont.innerHTML = getHtmlByCodeCategory(page_name);
+        navigation_page.innerText = page_name;
+      }
+    }
+
+    function getHtmlByCodeCategory(category) {
+       // Helper function to escape HTML special characters
+      function escapeHtml(string) {
+        if(typeof string !== 'string') {
+          return string;
+        }
+        return string
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+          .replace(/`/g, '&#96;');
+      }
+
+      var html = '';
+      for (var item_name in code_data[category]) {
+        var item = code_data[category][item_name];
+        if(item.kind === 'function') {
+          // Generate the function signature
+          const params = item.params
+            ? item.params
+                .map(param => {
+                  if(param.type === 'Object' && param.properties) {
+                    // Generate nested object structure for 'opts'
+                    const nested_signature = param.properties
+                      .map(prop =>
+                        prop.optional
+                          ? `[${escapeHtml(prop.name)}]`
+                          : `${escapeHtml(prop.name)}`
+                      )
+                      .join(', ');
+
+                    // Format the 'opts' parameter
+                    return param.optional
+                      ? `[${escapeHtml(param.name)}{ ${nested_signature} }]`
+                      : `${escapeHtml(param.name)}{ ${nested_signature} }`;
+                  } else {
+                    // Handle simple parameters with optionality and default values
+                    return param.optional
+                      ? `[${escapeHtml(param.name)}${param.default ? `=${escapeHtml(param.default)}` : ''}]`
+                      : `${escapeHtml(param.name)}${param.default ? `=${escapeHtml(param.default)}` : ''}`;
+                  }
+                })
+                .join(', ')
+            : "";
+
+          // Function methods - same as before with escaped data
+          html += `<h2><code>${escapeHtml(item.name)}(${params})</code><span><a class="mark" href="#${encodeURIComponent(category)}/${encodeURIComponent(item.name)}" id="${escapeHtml(item.name)}">#</a></span></h2>`;
+
+          if(item.since) {
+            html += `<div class="api_metadata"><span>Added in: v${escapeHtml(item.since)}</span></div>`;
+          }
+
+          if(item.params && item.params.length > 0) {
+            html += '<ul>';
+            item.params.forEach(param => {
+              const type = param.type && param.type.names && param.type.names[0] ? param.type.names[0] : 'Unknown';
+              html += `<li><code>${escapeHtml(param.name)}</code> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#${encodeURIComponent(type)}" class="type">&lt;${escapeHtml(type)}&gt;</a> ${escapeHtml(param.description || '')}</li>`;
+            });
+            html += '</ul>';
+          }
+
+          if(item.returns && item.returns.length > 0) {
+            const returnType = item.returns[0].type && item.returns[0].type.names && item.returns[0].type.names[0] ? item.returns[0].type.names[0] : 'Unknown';
+            html += `<ul><li>Returns: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/${encodeURIComponent(returnType)}" class="type">&lt;${escapeHtml(returnType)}&gt;</a> ${escapeHtml(item.returns[0].description || '')}</li></ul>`;
+          }
+
+          if(item.description) {
+            html += `<p>${escapeHtml(item.description)}</p>`;
+          }
+
+          if(item.examples && item.examples.length > 0) {
+            html += `<pre><code class="language-js">${escapeHtml(item.examples[0])}</code> <button class="copy-button">copy</button></pre>`;
+          }
+
+        } else if(item.kind === 'member') {
+          // Member variables or properties
+          html += `<h2><code>${escapeHtml(item.name)}</code><span><a class="mark" href="#${encodeURIComponent(category)}/${encodeURIComponent(item.name)}" id="${escapeHtml(item.name)}">#</a></span></h2>`;
+
+          // Metadata (version, etc.)
+          if(item.since) {
+            html += `<div class="api_metadata"><span>Added in: v${escapeHtml(item.since)}</span></div>`;
+          }
+
+          // Type and description
+          const type = item.type && item.type.names && item.type.names[0] ? item.type.names[0] : 'Unknown';
+          html += `<ul><li>Type: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#${encodeURIComponent(type)}" class="type">&lt;${escapeHtml(type)}&gt;</a></li></ul>`;
+
+          if(item.description) {
+            html += `<p>${escapeHtml(item.description)}</p>`;
+          }
+        }
+      }
+      return html;
+    }
+
+    const hash = window.location.hash;
+    const match = hash.match(/#([^/]+)(?:\/(.+))?/);
+    if(match) {
+      const category = match[1];
+      const element_id = match[2];
+      
+      setPage(category);
+      const element = document.getElementById(element_id);
+      if(element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      setPage('about');
+    }
+    </script>
+  </body>
+</html>

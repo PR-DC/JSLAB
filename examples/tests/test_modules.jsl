@@ -1,0 +1,13 @@
+/**
+ * @file Simple test for modules
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+var { EXAMPLE_MODULE_REQUIRE } = require('exampleModuleRequire.jsl');
+var m = new EXAMPLE_MODULE_REQUIRE('1');
+
+m.disp(2);
+
+m.callMethodWithError();

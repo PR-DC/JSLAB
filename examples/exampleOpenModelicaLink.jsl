@@ -1,0 +1,26 @@
+/**
+ * @file Simple example for OpenModelicaLink
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; t = tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var exe = "C:/Program Files/OpenModelica1.14.1-64bit/bin/omc.exe";
+var model = 'C:/Program Files/OpenModelica1.14.1-64bit/share/doc/omc/testmodels/BouncingBall.mo';  // putanja do modela
+
+// Run OpenModelicaLink 
+await om_link.start(exe); // Start OpenModelica programa
+disp(await om_link.sendExpression('getVersion()'));
+
+disp(await om_link.sendExpression("model a end a;"));
+disp(await om_link.sendExpression('loadFile("'+model+'")'));
+disp(await om_link.sendExpression("getClassNames()"));
+disp(await om_link.sendExpression("simulate(BouncingBall)"));
+await om_link.close();
+
+disp(' The program was executed successfully... ');
+disp(' Execution time: ' + num2str(toc(t), 2) + ' seconds');
+disp(' -------------------- ');

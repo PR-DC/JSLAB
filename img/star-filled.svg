@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="256"
+   height="256"
+   viewBox="0 0 67.733331 67.733331"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="star-filled.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="150"
+     inkscape:cy="1281.4286"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1080"
+     inkscape:window-height="1857"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       d="M 64.423055,26.973139 42.449961,25.08782 33.866666,4.8380953 25.283371,25.08782 3.310278,26.973139 19.978788,41.417152 14.982815,62.895238 33.866666,51.50381 52.750517,62.895238 47.754544,41.417152 Z"
+       id="Shape"
+       style="fill:#f7df1e;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:3.05563"
+       sodipodi:nodetypes="ccccccccccc" />
+    <path
+       d="M 64.423055,26.973137 42.449961,25.087817 33.866666,4.8380967 25.283371,25.087817 l -21.9730928,1.88532 16.6685098,14.44401 -4.995973,21.47809 18.883851,-11.39143 18.883851,11.39143 -4.995973,-21.47809 z m -30.556389,18.79829 -11.498369,6.9363 3.043416,-13.08119 -10.153896,-8.79413 13.3837,-1.14888 5.225149,-12.33255 5.225138,12.33255 13.383699,1.14888 -10.150823,8.79413 3.043416,13.08119 z"
+       id="Shape-5"
+       style="fill:#5f6368;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:3.05563" />
+  </g>
+</svg>

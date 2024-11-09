@@ -1,0 +1,25 @@
+/**
+ * @file Example module
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+ 
+const { EXAMPLE_MODULE } = require('./exampleModuleError.jsl');
+
+class EXAMPLE_MODULE_REQUIRE {
+  constructor(a, b) {
+    this.module_with_error = new EXAMPLE_MODULE();
+  }
+  
+  disp(msg) {
+    disp(msg);
+  }
+  
+  callMethodWithError() {
+    this.module_with_error.methodWithError();
+  }
+}
+
+exports.EXAMPLE_MODULE_REQUIRE = EXAMPLE_MODULE_REQUIRE;
