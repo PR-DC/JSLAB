@@ -1,13 +1,13 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB.svg" width="150">
+  <img src="https://pr-dc.com/web/img/github/JSLAB.svg?v1" width="150">
 </p>
 
 The **JavaScript Laboratory (JSLAB)** is an open-source environment designed for scientific computing, data visualization, and various other computer operations. Inspired by *GNU Octave* and *Matlab*, `JSLAB` leverages the advantages of JavaScript, including its blazing speed, extensive examples, backing by some of the largest software companies globally, and the vast community of active programmers and software engineers.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_gui.png" width="800">
+  <img src="https://pr-dc.com/web/img/github/JSLAB_gui.png?v1" width="800">
 </p>
 
 The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.
@@ -55,7 +55,7 @@ You can install `JSLAB` by either downloading the latest stable release from Git
 The image below shows the main window of the `JSLAB` program.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_main_window.svg" alt="Main window of the JSLAB program" width="800">
+  <img src="https://pr-dc.com/web/img/github/JSLAB_main_window.svg?v1" alt="Main window of the JSLAB program" width="800">
 </p>
 
 Within the main window, there are various shortcuts defined in the help window—for example, the `[CTRL] + [H]` shortcut opens the help window.
@@ -95,7 +95,7 @@ In the image above, the following elements of the main window are numbered:
 For `JSLAB` scripts, the `.jsl` extension is used to distinguish them from the standard `.js` extension for JavaScript. Scripts are executed by providing the script path as the sole argument to the `run` function. For writing or editing code in a script, it is best to use the built-in code editor (which can be opened with the `editor` command or the `edit()` function). The code editor window is shown in the image below.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_editor_window.svg" alt="Code editor window of the JSLAB program" width="800">
+  <img src="https://pr-dc.com/web/img/github/JSLAB_editor_window.svg?v1" alt="Code editor window of the JSLAB program" width="800">
 </p>
 
 In the image above, the following elements of the code editor window are numbered:
