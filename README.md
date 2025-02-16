@@ -46,7 +46,7 @@ You can install `JSLAB` by either downloading the latest stable release from Git
 - Download the appropriate installer and install the program.
 - Try examples from: [https://github.com/PR-DC/JSLAB/tree/master/examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
-## Getting Started
+## 🛑 Getting Started
 
 <details>
 
