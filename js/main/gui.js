@@ -43,9 +43,9 @@ class PRDC_JSLAB_GUI {
       ipcRenderer.send('MainProcess', 'show-editor');
     });
             
-    $("#script-path-dialog-change-dir").click(function() { obj.win.eval.scriptDirDialogButton(2) });
-    $("#script-path-dialog-save").click(function() { obj.win.eval.scriptDirDialogButton(1) });
-    $("#script-path-dialog-run").click(function() { obj.win.eval.scriptDirDialogButton(0) });
+    $("#script-path-dialog-change-dir").click(function() { obj.win.eval.scriptDirDialogButton(2); });
+    $("#script-path-dialog-save").click(function() { obj.win.eval.scriptDirDialogButton(1); });
+    $("#script-path-dialog-run").click(function() { obj.win.eval.scriptDirDialogButton(0); });
     
     // Window controls    
     window.addEventListener('resize', function() {
@@ -127,7 +127,7 @@ class PRDC_JSLAB_GUI {
       'intervals': 0,
       'animation_frames': 0,
       'idle_callbacks': 0
-    }
+    };
     this.setStats(stats);
   }
   

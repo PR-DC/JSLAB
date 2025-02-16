@@ -24,10 +24,12 @@ class PRDC_APP_CONFIG {
     
     this.DEBUG_FUN_SHADOW = false;
     this.DEBUG_NEW_FUN = false;
-    this.DEBUG_RENDER_GONE_ERROR = false;
+    this.DEBUG_RENDER_GONE_ERROR = true;
     this.DEBUG_SYM_PYTHON_EVAL_CODE = false;
     this.DEBUG_PRE_TRANSFORMED_CODE = false;
     this.DEBUG_TRANSFORMED_CODE = false;
+    this.DEBUG_PARALLEL_WORKER_SETUP_FUN = false;
+    this.DEBUG_PARALLEL_WORKER_WORK_FUN = false;
     
     this.LOG_RENDER_GONE_ERROR = true;
     
@@ -35,7 +37,7 @@ class PRDC_APP_CONFIG {
     this.LOG_CODES = {
       'other': 0,
       'render-gone-error': 1,
-    }
+    };
     
     // JSLAB settings
     this.FORBIDDEN_NAMES = ['jsl', 'config', 'language', 'app_path', 'packed'];
@@ -55,11 +57,13 @@ class PRDC_APP_CONFIG {
         {name: 'device', file: 'device', class_name: 'PRDC_JSLAB_LIB_DEVICE'},
         {name: 'file_system', file: 'file-system', class_name: 'PRDC_JSLAB_LIB_FILE_SYSTEM'},
         {name: 'system', file: 'system', class_name: 'PRDC_JSLAB_LIB_SYSTEM'},
-        {name: 'geographic', file: 'geographic', class_name: 'PRDC_JSLAB_LIB_GEOGRAPHIC'},
+        {name: 'geography', file: 'geography', class_name: 'PRDC_JSLAB_LIB_GEOGRAPHY'},
         {name: 'networking', file: 'networking', class_name: 'PRDC_JSLAB_LIB_NETWORKING'},
         {name: 'format', file: 'format', class_name: 'PRDC_JSLAB_LIB_FORMAT'},
         {name: 'render', file: 'render', class_name: 'PRDC_JSLAB_LIB_RENDER'},
         {name: 'geometry', file: 'geometry', class_name: 'PRDC_JSLAB_LIB_GEOMETRY'},
+        {name: 'control', file: 'control', class_name: 'PRDC_JSLAB_LIB_CONTROL'},
+        {name: 'optim', file: 'optim', class_name: 'PRDC_JSLAB_LIB_OPTIM'},
       ],
       'lib': [
         {name: 'parallel', file: 'parallel', class_name: 'PRDC_JSLAB_PARALLEL'},
@@ -78,11 +82,18 @@ class PRDC_APP_CONFIG {
       {name: 'Plot', file: 'figures', class_name: 'PRDC_JSLAB_PLOT'},
       {name: 'freecad_link', file: 'freecad-link', class_name: 'PRDC_JSLAB_FREECAD_LINK'},
       {name: 'om_link', file: 'om-link', class_name: 'PRDC_JSLAB_OPENMODELICA_LINK'},
-      {name: 'tcp_client', file: 'networking', class_name: 'PRDC_JSLAB_TCP_CLIENT'},
-      {name: 'udp_client', file: 'networking', class_name: 'PRDC_JSLAB_UDP'},
-      {name: 'udp_server', file: 'networking', class_name: 'PRDC_JSLAB_UDP_SERVER'},
+      {name: 'tcp_client', file: 'networking-tcp', class_name: 'PRDC_JSLAB_TCP_CLIENT'},
+      {name: 'tcp_server', file: 'networking-tcp', class_name: 'PRDC_JSLAB_TCP_SERVER'},
+      {name: 'udp_client', file: 'networking-udp', class_name: 'PRDC_JSLAB_UDP'},
+      {name: 'udp_server', file: 'networking-udp', class_name: 'PRDC_JSLAB_UDP_SERVER'},
+      {name: 'video_call', file: 'networking-videocall', class_name: 'PRDC_JSLAB_VIDEOCALL'},
       {name: 'mathjs', file: 'mathjs-doc', class_name: 'PRDC_JSLAB_MATHJS_DOC'},
-    ]
+      {name: 'rcmiga', file: 'optim-rcmiga', class_name: 'PRDC_JSLAB_OPTIM_RCMIGA'},
+      {name: 'space_search', file: 'geometry-spacesearch', class_name: 'PRDC_JSLAB_GEOMETRY_SPACE_SERACH'},
+      {name: 'map', file: 'geography-map', class_name: 'PRDC_JSLAB_GEOGRAPHY_MAP'},
+      {name: 'map_3d', file: 'geography-map-3d', class_name: 'PRDC_JSLAB_GEOGRAPHY_MAP_3D'},
+      {name: 'Gamepad', file: 'device-gamepad', class_name: 'PRDC_JSLAB_DEVICE_GAMEPAD'},
+    ];
 
     this.LINT_OPTIONS = {
       overrideConfigFile: true,
@@ -101,7 +112,7 @@ class PRDC_APP_CONFIG {
           "no-use-before-define": "warn"
         }
       }
-    }
+    };
 
     this.COMPRESSED_LIBS = [
       'sympy-0.26.2',
@@ -110,6 +121,7 @@ class PRDC_APP_CONFIG {
       'codemirror-5.49.2', 
       'eigen-3.4.0',
       'three.js-r162',
+      'Cesium-1.124',
     ];
     this.COMPILE_LIBS = [];
     
@@ -122,6 +134,7 @@ class PRDC_APP_CONFIG {
     // Other
     this.PLOTER = ['plotly', 'echarts'][0];
     this.DOC_LATEX_RERUNS_NUMBER = 3;
+    this.MAX_ACTIVE_WEBGL_CONTEXTS = '128';
     
     // Build sign
     this.COMPANY_NAME = process.env.COMPANY_NAME;
@@ -155,6 +168,9 @@ class PRDC_APP_CONFIG {
       'hammer-2.0.8',
       'anime-3.2.1',
       'tween.js-23.1.1',
+      'leaflet-1.9.4',
+      'leaflet.rotatedMarker-0.2.0',
+      'Cesium-1.124',
       'PRDC_APP_LOGGER',  
       'PRDC_PANEL', 
       'PRDC_TABS', 
@@ -168,11 +184,11 @@ class PRDC_APP_CONFIG {
     
     // Conditional variables
     if(typeof process_arguments != 'undefined') {
-      var args = process_arguments.map(function(e) { return e.toLowerCase() });
-      if(args.includes("--debug")) {
+      var args = process_arguments.map(function(e) { return e.toLowerCase(); });
+      if(args.includes("--debug-app")) {
         this.DEBUG = true;
       }
-      if(args.includes("--test")) {
+      if(args.includes("--test-app")) {
         this.TEST = true;
       }
       if(args.includes("--sign-build")) {

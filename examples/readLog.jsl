@@ -9,7 +9,7 @@ close('all'); clear; clc;
 disp(' --- ' + jsl_file_name + ' ---');
 
 // Variables
-var N_data = 5;
+var N_data = 9;
 
 // Include classes
 const { PRDC_PACKET } = require('Z:/_PRDC/PROGRAMI/_Electron_lib/PRDC_PACKET/PRDC_PACKET');

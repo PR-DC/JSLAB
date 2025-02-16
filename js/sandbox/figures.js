@@ -49,7 +49,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         fid = this._fid;
       }
       this.open_figures[fid] = new PRDC_JSLAB_FIGURE(this.jsl, fid);
-      this.open_figures[fid].open();
+      this.open_figures[fid].init();
     } else {
       this.open_figures[fid].focus();
     }
@@ -58,7 +58,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.ignore_output = true;
     return fid;
   }
-  
+
   /**
    * Retrieves the figure object associated with the specified figure ID.
    * @param {string} fid - The identifier of the figure to retrieve.
@@ -73,6 +73,39 @@ class PRDC_JSLAB_LIB_FIGURES {
   }
 
   /**
+   * Retrieves the window of the figure object associated with the specified figure ID.
+   * @param {string} fid - The identifier of the figure to retrieve.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  getFigureWindow(fid) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].win;
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves current active figure object.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  getCurrentFigure() {
+    if(this.open_figures.hasOwnProperty(this.active_figure)) {
+      return this.open_figures[this.active_figure];
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Retrieves current active figure object.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  gcf() {
+    return this.getCurrentFigure();
+  }
+  
+  /**
    * Retrieves the plot object for a specified figure ID.
    * @param {string} fid - The identifier of the figure to retrieve the plot for.
    * @returns {(Object|boolean)} The plot object if it exists, otherwise `false`.
@@ -80,6 +113,147 @@ class PRDC_JSLAB_LIB_FIGURES {
   getPlot(fid) {
     if(this.open_figures.hasOwnProperty(fid) && this.open_figures[fid].plot) {
       return this.open_figures[fid].plot;
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves the plot object for a specified figure ID.
+   * @param {string} fid - The identifier of the figure to retrieve the plot for.
+   * @returns {(Object|boolean)} The plot object if it exists, otherwise `false`.
+   */
+  getAxes(fid) {
+    return this.getPlot(fid);
+  }
+  
+  /**
+   * Retrieves plot from current active figure object.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  getCurrentPlot() {
+    if(this.open_figures.hasOwnProperty(this.active_figure)) {
+      return this.open_figures[this.active_figure].plot;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Retrieves plot from current active figure object.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  gcp() {
+    return this.getCurrentPlot();
+  }
+  
+  /**
+   * Retrieves plot from current active figure object.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  getCurrentAxes() {
+    return this.getCurrentPlot();
+  }
+
+  /**
+   * Retrieves plot from current active figure object.
+   * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
+   */
+  gca() {
+    return this.getCurrentPlot();
+  }
+  
+  /**
+   * Brings the specified figure to the foreground.
+   * @param {number} fid - The ID of the figure to focus.
+   * @returns {boolean|undefined} - Returns false if the figure ID is invalid.
+   */
+  focusFigure(fid) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].focus();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the size of a specified figure.
+   * @param {number} fid - The ID of the figure.
+   * @param {number} width - The new width of the figure.
+   * @param {number} height - The new height of the figure.
+   * @returns {boolean|undefined} - Returns false if the figure ID is invalid.
+   */
+  setFigureSize(fid, width, height) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].setSize(width, height);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the position of a specified figure.
+   * @param {number} fid - The ID of the figure.
+   * @param {number} left - The new left position of the figure.
+   * @param {number} top - The new top position of the figure.
+   * @returns {boolean|undefined} - Returns false if the figure ID is invalid.
+   */
+  setFigurePos(fid, left, top) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].setPos(left, top);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the title of the specified figure.
+   * @param {string} fid - The figure ID.
+   * @param {string} title - The new title for the figure.
+   * @returns {boolean|*} The result of setting the title, or false if the figure does not exist.
+   */
+  setFigureTitle(fid, title) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].setTitle(title);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves the size of a specified figure.
+   * @param {number} fid - The ID of the figure.
+   * @returns {Array|boolean} - Returns an array [width, height] or false if the figure ID is invalid.
+   */
+  getFigureSize(fid) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].getSize();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves the position of a specified figure.
+   * @param {number} fid - The ID of the figure.
+   * @returns {Array|boolean} - Returns an array [left, top] or false if the figure ID is invalid.
+   */
+  getFigurePos(fid) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].getPos();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Closes a specified figure.
+   * @param {number} fid - The ID of the figure to close.
+   * @returns {boolean|undefined} - Returns false if the figure ID is invalid.
+   */
+  closeFigure(fid) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].close();
     } else {
       return false;
     }
@@ -149,7 +323,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         ext = 'svg';
       }
       
-      var data_url = await this.open_figures[fid].win.plot.toImage(ext, size);
+      var data_url = await this.open_figures[fid].context.plot.toImage(ext, size);
       var data;
       if(ext == 'svg') {
         if(html_flag) {
@@ -157,6 +331,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         } else {
           data = decodeURIComponent(data_url.replace('data:image/svg+xml,',''));
         }
+        data = data.replace(/\bLatinModern\b/g, "LatinModernMath");
       } else {
         data_url = data_url.replace('data:image/png;base64,','');
         data_url = data_url.replace('data:image/jpeg;base64,','');
@@ -292,6 +467,18 @@ class PRDC_JSLAB_LIB_FIGURES {
   }
 
   /**
+   * Adjusts the zoom based on zoom factor.
+   * @param {number} factor - The zoom factor.
+   */
+  zoom(factor) {
+    if(this.active_figure >= 0 && this.open_figures[this.active_figure].plot) {
+      this.open_figures[this.active_figure].plot.zoom(factor);
+    }
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+  }
+  
+  /**
    * Applies the specified style to the active figure's plot axis.
    * @param {Object} style - The style configuration to apply to the axis.
    */
@@ -380,7 +567,7 @@ class PRDC_JSLAB_LIB_FIGURES {
             new_fid = fids[N-2];
           }
         }
-        this._setActiveFigure(fid);
+        this._setActiveFigure(new_fid);
       }
       delete this.open_figures[fid];
     }
@@ -397,6 +584,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     } catch(err) {
       this.jsl.env.error('@getFontData: '+err.stack);
     }
+    return false;
   }
   /**
    * Registers fonts for use in figures.
@@ -431,12 +619,12 @@ class PRDC_JSLAB_LIB_FIGURES {
       height = size[1];
     }
     
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
       var doc = new obj.jsl.env.PDFDocument({
         size: [width, height]
       });
       doc.registerFont('Roboto', obj._fonts[0]);
-      doc.registerFont('LatinModern', obj._fonts[1]);
+      doc.registerFont('LatinModernMath', obj._fonts[1]);
       obj.jsl.env.SVGtoPDF(doc, data, 0, 0, {
         width: width,
         height: height,
@@ -487,7 +675,7 @@ class PRDC_JSLAB_FIGURE {
     
     this.wid;
     
-    this.win;
+    this.context;
     this.dom;
     this.name;
     this.size;
@@ -501,30 +689,94 @@ class PRDC_JSLAB_FIGURE {
     
     this.plot = undefined;
 
-    this.ready = new Promise((resolve, reject) => {
+    this.ready = new Promise((resolve) => {
       obj._readyResolve = resolve;
     });
+    
+    this.wid = this.#jsl.windows.openWindow('figure.html');
+    this.#jsl.windows.open_windows[this.wid].onClosed = function() {
+      obj.#jsl.figures._closedFigure(obj.fid);
+    }
   }
   
   /**
-   * Opens the figure window if it is not already open.
+   * Initializes figure.
    */
-  async open() {
+  async init() {
     if(!this.opened) {
-      this.opened = true;
-      this.wid = this.#jsl.windows.openWindow('figure.html');
       await this.#jsl.windows.open_windows[this.wid].ready;
       await this._onReady();
+      this.opened = true;
     }
   }
   
   /**
    * Brings the figure window to the foreground.
    */
-  focus() {
-    this.#jsl.windows.open_windows[this.wid].focus();
+  async focus() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].focus();
   }
 
+  /**
+   * Sets the size of the window.
+   * @param {number} width - The desired width of the window.
+   * @param {number} height - The desired height of the window.
+   * @returns {Promise} - Resolves when the window size is set.
+   */
+  async setSize(width, height) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].setSize(width, height);
+  }
+  
+  /**
+   * Sets the position of the window.
+   * @param {number} left - The desired left position of the window.
+   * @param {number} top - The desired top position of the window.
+   * @returns {Promise} - Resolves when the window position is set.
+   */
+  async setPos(left, top) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].setPos(left, top);
+  }
+  
+  /**
+   * Sets the title of the current window.
+   * @param {string} title - The new title for the window.
+   * @returns {Promise<*>} A promise that resolves when the title is set.
+   */
+  async setTitle(title) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].setTitle(title);
+  }
+  
+  /**
+   * Retrieves the size of the window.
+   * @returns {Promise<Array>} - Resolves with an array [width, height].
+   */
+  async getSize() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].getSize();
+  }
+  
+  /**
+   * Retrieves the position of the window.
+   * @returns {Promise<Array>} - Resolves with an array [left, top].
+   */
+  async getPos() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].getPos();
+  }
+  
+  /**
+   * Closes the window.
+   * @returns {Promise} - Resolves when the window is closed.
+   */
+  async close() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].close();
+  }
+  
   /**
    * Creates a new plot in the figure.
    * @param {Number} id Identifier for the new plot.
@@ -548,14 +800,12 @@ class PRDC_JSLAB_FIGURE {
   async _onReady() {
     var obj = this;
     this.fig_ready = true;
-    this.win = this.#jsl.windows.open_windows[this.wid].win;
-    this.#jsl.windows.open_windows[this.wid].onClosed = function() {
-      obj.#jsl.figures._closedFigure(obj.fid);
-    }
+    this.win = this.#jsl.windows.open_windows[this.wid];
+    this.context = this.win.context;
     
-    this.dom = this.win.document;
+    this.dom = this.context.document;
     
-    this.win.addEventListener("resize", function() {
+    this.context.addEventListener("resize", function() {
       if(obj.#jsl.figures.open_figures.hasOwnProperty(obj.fid)) {
         obj._onResize();
       }
@@ -565,7 +815,7 @@ class PRDC_JSLAB_FIGURE {
 
     // Menu showing
     var menu_button = this.dom.getElementById('figure-menu-button');
-    var menu = this.dom.getElementById('figure-menu-container')
+    var menu = this.dom.getElementById('figure-menu-container');
 
     menu_button.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -641,6 +891,10 @@ class PRDC_JSLAB_FIGURE {
         btn.click();
       }
     });
+    this.dom.getElementById('reset-menu')
+        .addEventListener('click', function() {
+      obj.#jsl.ploter.updatePlotLayout(obj.plot.fid);
+    });
     this.dom.getElementById('pan-menu-3d')
         .addEventListener('click', function() {
       var btn = obj.dom.querySelector('a[data-attr="scene.dragmode"][data-val="pan"]');
@@ -662,7 +916,12 @@ class PRDC_JSLAB_FIGURE {
         btn.click();
       }
     });
+    this.dom.getElementById('reset-menu-3d')
+        .addEventListener('click', function() {
+      obj.#jsl.ploter.updatePlotLayout(obj.plot.fid);
+    });
     
+    this._readyResolve(true);
     if(this.plot) {
       await this.plot._onFigureReady();   
     }
@@ -713,13 +972,14 @@ class PRDC_JSLAB_PLOT {
     this.ylim_val;
     this.zlim_val;
     this.view_val = [37.5+180, 30];
+    this.zoom_val = 1;
     this.axis_style_val;
     this.legend_state;
     
     this.plot_ready = false;
     this.lim_update = false;
     
-    this.ready = new Promise((resolve, reject) => {
+    this.ready = new Promise((resolve) => {
       obj._readyResolve = resolve;
     });
   }
@@ -828,6 +1088,17 @@ class PRDC_JSLAB_PLOT {
   }
   
   /**
+   * Adjusts the zoom based on factor.
+   * @param {number} factor - The zoom factor.
+   */
+  zoom(factor) {
+    this.zoom_val = factor;
+    if(this.plot_ready) {
+      this.#jsl.ploter.updatePlotLayout(this.fid);
+    }
+  }
+  
+  /**
    * Sets the axis style value and updates the plot layout if the plot is ready.
    * @param {Object} style - The style configuration to set for the axis.
    */
@@ -844,7 +1115,7 @@ class PRDC_JSLAB_PLOT {
    * @param {Object} options - Options for the print job.
    */
   async print(filename, options) {
-    await this.ready;
+    await this.#jsl.promiseOrStoped(this.ready);
     var type = 'png';
     var size;
     if(options) {
@@ -883,8 +1154,7 @@ class PRDC_JSLAB_PLOT {
     await this.#jsl.ploter.plot(this.fid);
     this.plot_ready = true;
     this.#jsl.ploter.updatePlotLayout(this.fid);
-    await waitMSeconds(30);
-    this._readyResolve();
+    this._readyResolve(true);
   }
   
   /**

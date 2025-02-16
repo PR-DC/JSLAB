@@ -33,10 +33,12 @@ class PRDC_JSLAB_PLOTER {
     var obj = this;
     var figure = this.jsl.figures.open_figures[fid];
     var plot = figure.plot;
+    var context_plot = figure.context.plot;
     
-    var plot_cont = figure.dom.querySelector('#figure-content .plot-cont')
+    var plot_cont = figure.dom.querySelector('#figure-content .plot-cont');
     if(!plot_cont) {
-      figure.win.plot.setCont();
+      context_plot.setCont();
+      plot_cont = context_plot.plot_cont;
     }
     
     // Plot traces
@@ -112,7 +114,7 @@ class PRDC_JSLAB_PLOTER {
 
     var layout = {};
     
-    await figure.win.plot.newPlot(plot, traces, layout, config);
+    await context_plot.newPlot(plot, traces, layout, config);
     figure.dom.getElementById('rotate-menu').style.display = "none";
   }
   
@@ -127,6 +129,8 @@ class PRDC_JSLAB_PLOTER {
     }
     var figure = this.jsl.figures.open_figures[fid];
     var plot = figure.plot;
+    var context_plot = figure.context.plot;
+    var plot_cont = context_plot.plot_cont;
     
     // Plot layout
     var layout = {
@@ -430,7 +434,8 @@ class PRDC_JSLAB_PLOTER {
       layout.margin.t = 40;
     }
     
-    if(plot.hasOwnProperty('legend_state') && ['on', 'off', 1, 0].includes(plot.legend_state)) {
+    if(plot.hasOwnProperty('legend_state') && 
+        ['on', 'off', 1, 0].includes(plot.legend_state)) {
       layout.showlegend = plot.legend_state == 'on' || plot.legend_state;
     }
     
@@ -468,8 +473,8 @@ class PRDC_JSLAB_PLOTER {
       }
     }
     
-    figure.win.plot.relayout(layout);
-    figure.win.plot.resize();
+    context_plot.relayout(layout);
+    context_plot.resize();
     
     if(plot.lim_update) {
       plot.lim_update = false;
@@ -477,75 +482,80 @@ class PRDC_JSLAB_PLOTER {
       if(figure.layout_3d) {
         if(plot.hasOwnProperty('xlim_val')) {
           if(plot.xlim_val[0] == 'auto') {
-            plot.xlim_val[0] = figure.win.plot.plot_cont._fullLayout.scene.xaxis.range[0];
+            plot.xlim_val[0] = plot_cont._fullLayout.scene.xaxis.range[0];
           } 
           if(plot.xlim_val[1] == 'auto') {
-            plot.xlim_val[1] = figure.win.plot.plot_cont._fullLayout.scene.xaxis.range[1];
+            plot.xlim_val[1] = plot_cont._fullLayout.scene.xaxis.range[1];
           } 
           layout2['scene.xaxis.range'] = plot.xlim_val;
         }
         if(plot.hasOwnProperty('ylim_val')) {
           if(plot.ylim_val[0] == 'auto') {
-            plot.ylim_val[0] = figure.win.plot.plot_cont._fullLayout.scene.yaxis.range[0];
+            plot.ylim_val[0] = plot_cont._fullLayout.scene.yaxis.range[0];
           } 
           if(plot.ylim_val[1] == 'auto') {
-            plot.ylim_val[1] = figure.win.plot.plot_cont._fullLayout.scene.yaxis.range[1];
+            plot.ylim_val[1] = plot_cont._fullLayout.scene.yaxis.range[1];
           } 
           layout2['scene.yaxis.range'] = plot.ylim_val;
         }
         if(plot.hasOwnProperty('zlim_val')) {
           if(plot.zlim_val[0] == 'auto') {
-            plot.zlim_val[0] = figure.win.plot.plot_cont._fullLayout.scene.zaxis.range[0];
+            plot.zlim_val[0] = plot_cont._fullLayout.scene.zaxis.range[0];
           } 
           if(plot.zlim_val[1] == 'auto') {
-            plot.zlim_val[1] = figure.win.plot.plot_cont._fullLayout.scene.zaxis.range[1];
+            plot.zlim_val[1] = plot_cont._fullLayout.scene.zaxis.range[1];
           } 
           layout2['scene.zaxis.range'] = plot.zlim_val;
         }
       } else {
         if(plot.hasOwnProperty('xlim_val')) {
           if(plot.xlim_val[0] == 'auto') {
-            plot.xlim_val[0] = figure.win.plot.plot_cont._fullLayout.xaxis.range[0];
+            plot.xlim_val[0] = plot_cont._fullLayout.xaxis.range[0];
           } 
           if(plot.xlim_val[1] == 'auto') {
-            plot.xlim_val[1] = figure.win.plot.plot_cont._fullLayout.xaxis.range[1];
+            plot.xlim_val[1] = plot_cont._fullLayout.xaxis.range[1];
           } 
           layout2['xaxis.range'] = plot.xlim_val;
         }
         if(plot.hasOwnProperty('ylim_val')) {
           if(plot.ylim_val[0] == 'auto') {
-            plot.ylim_val[0] = figure.win.plot.plot_cont._fullLayout.yaxis.range[0];
+            plot.ylim_val[0] = plot_cont._fullLayout.yaxis.range[0];
           } 
           if(plot.ylim_val[1] == 'auto') {
-            plot.ylim_val[1] = figure.win.plot.plot_cont._fullLayout.yaxis.range[1];
+            plot.ylim_val[1] = plot_cont._fullLayout.yaxis.range[1];
           } 
           layout2['yaxis.range'] = plot.ylim_val;
         }
       }
-      figure.win.plot.relayout(layout2);
-      figure.win.plot.resize();
+      context_plot.relayout(layout2);
+      context_plot.resize();
     }
     
     if(figure.layout_3d) {
       var layout3 = {};
       
       // Equal axes
-      var xRange = figure.win.plot.plot_cont._fullLayout.scene.xaxis.range;
+      var xRange = plot_cont._fullLayout.scene.xaxis.range;
       if(plot.hasOwnProperty('xlim_val')) {
         xRange = plot.xlim_val;
         layout3['scene.xaxis.range'] = plot.xlim_val;
       }
-      var yRange = figure.win.plot.plot_cont._fullLayout.scene.yaxis.range;
+      var yRange = plot_cont._fullLayout.scene.yaxis.range;
       if(plot.hasOwnProperty('ylim_val')) {
         yRange = plot.ylim_val;
         layout3['scene.yaxis.range'] = plot.ylim_val;
       }
-      var zRange = figure.win.plot.plot_cont._fullLayout.scene.zaxis.range;
+      var zRange = plot_cont._fullLayout.scene.zaxis.range;
       if(plot.hasOwnProperty('zlim_val')) {
         zRange = plot.zlim_val;
         layout3['scene.zaxis.range'] = plot.zlim_val;
       }
 
+      var zoom = 1;
+      if(typeof plot.zoom_val != 'undefined') {
+        zoom = plot.zoom_val;
+      }
+      
       if(plot.axis_style_val == 'equal') {
         var xRangeSize = Math.abs(xRange[1] - xRange[0]);
         var yRangeSize = Math.abs(yRange[1] - yRange[0]);
@@ -553,9 +563,15 @@ class PRDC_JSLAB_PLOTER {
         var maxRange = Math.max(xRangeSize, yRangeSize, zRangeSize);
         
         layout3["scene.aspectratio"] =  {
-          x: xRangeSize / maxRange,
-          y: yRangeSize / maxRange,
-          z: zRangeSize / maxRange
+          x: xRangeSize / maxRange * zoom,
+          y: yRangeSize / maxRange * zoom,
+          z: zRangeSize / maxRange * zoom
+        };
+      } else {
+        layout3["scene.aspectratio"] =  {
+          x: zoom,
+          y: zoom,
+          z: zoom
         };
       }
      
@@ -568,13 +584,14 @@ class PRDC_JSLAB_PLOTER {
         y: radius * Math.cos(elevationRad) * Math.sin(azimuthRad),
         z: radius * Math.sin(elevationRad)
       };
+      
       var up = { x: 0, y: 0, z: 1 };
 
       layout3['scene.camera.eye'] = eye;
       layout3['scene.camera.up'] = up;
       
-      figure.win.plot.relayout(layout3);
-      figure.win.plot.resize();
+      context_plot.relayout(layout3);
+      context_plot.resize();
     }
   }
   
@@ -590,7 +607,7 @@ class PRDC_JSLAB_PLOTER {
       return;
     }
     var figure = this.jsl.figures.open_figures[fid];
-    figure.win.plot.restyle(traces, [N]);
+    figure.context.plot.restyle(traces, [N]);
   }
   
   /**
@@ -603,7 +620,7 @@ class PRDC_JSLAB_PLOTER {
       return;
     }
     var figure = this.jsl.figures.open_figures[fid];
-    figure.win.plot.resize();
+    figure.context.plot.resize();
   }
   
   /**
@@ -616,7 +633,7 @@ class PRDC_JSLAB_PLOTER {
       return;
     }
     var figure = this.jsl.figures.open_figures[fid];
-    var plot_cont = figure.dom.querySelector('#figure-content .plot-cont')
+    var plot_cont = figure.context.plot.plot_cont;
     if(plot_cont) {
       plot_cont.remove();
     }

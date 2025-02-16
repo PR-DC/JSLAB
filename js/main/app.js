@@ -42,6 +42,8 @@ class PRDC_JSLAB_APP {
     this.version = ipcRenderer.sendSync('sync-message', 'get-app-version');
     this.documents_path = ipcRenderer.sendSync('sync-message', 
       'get-path', 'documents');
+    this.exe_path = ipcRenderer.sendSync('sync-message', 
+      'get-path', 'exe');
     this.user = os.userInfo().username + '@' + this.computer_name;
   }
 
@@ -61,4 +63,4 @@ class PRDC_JSLAB_APP {
   }
 }
 
-exports.PRDC_JSLAB_APP = PRDC_JSLAB_APP
+exports.PRDC_JSLAB_APP = PRDC_JSLAB_APP;

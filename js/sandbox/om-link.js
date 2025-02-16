@@ -171,6 +171,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
     this.mat_temp_dir = fs.mkdtempSync(path.join(os.tmpdir(), 'OpenModelicaLink-'));
     await this.sendExpression('cd("' + this.mat_temp_dir + '")');
     await this.BuildModelicaModel();
+    return true;
   }
   
   /**
@@ -185,6 +186,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
 
     this.xmlfile = path.join(this.mat_temp_dir, build_model_result[1]);
     this.xmlparse();
+    return true;
   }
   
   /**
@@ -217,7 +219,6 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
       // scalar_variables
       const scalar_variables = xDoc.fmiModelDescription.ModelVariables.ScalarVariable || [];
       const fields = ['name', 'isValueChangeable', 'description', 'variability', 'causality', 'alias', 'aliasVariable'];
-      let t = Date.now();
       for(let k = 0; k < scalar_variables.length; k++) {
         const item = scalar_variables[k];
         let scalar = {};
@@ -235,6 +236,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
       this.jsl.env.error('@xmlparse: '+language.string(204));
       return false;
     }
+    return true;
   }
   
   /**
@@ -547,7 +549,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         var_data = eval(var_data.replace(/\[|\]|\(|\)/g, match => {
           return match === '[' || match === ']' ? '{' : '{';
         }));
-      } catch (e) {
+      } catch {
         var_data = [[0, 0]]; // Default to 0 if evaluation fails
       }
       tmpcsvdata[field] = var_data;
@@ -568,18 +570,16 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
 
     sorted_time.forEach(t => {
       let line = `${t},`;
-      fields.forEach((field, i) => {
+      fields.forEach((field) => {
         let data = tmpcsvdata[field];
         let value = previous_value[field] || 0;
 
         if(Array.isArray(data)) {
-          let found = false;
           for(let j = 0; j < data.length; j++) {
             if(data[j][0] === t) {
               value = data[j][1];
               data.splice(j, 1);
               tmpcsvdata[field] = data;
-              found = true;
               break;
             }
           }
@@ -687,6 +687,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         return false;
       }
     }
+    return true;
   }
   
   /**
@@ -838,7 +839,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
    */
   parseExpression(args) {
     // Use regular expressions to match strings and key parts of the expression
-    const final = args.match(/"(.*?)"|[{}()=]|[a-zA-Z0-9_.]+/g);
+    const final = args.match(/"(.*?)"|[{}()=]|-?\d+(\.\d+)?([eE][+-]?\d+)?|[a-zA-Z_][a-zA-Z0-9_.]*/g);
     
     if(final.length > 1) {
       if(final[0] === "{" && final[1] !== "{") {

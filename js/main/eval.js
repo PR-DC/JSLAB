@@ -39,7 +39,7 @@ class PRDC_JSLAB_EVAL {
       } else {
         cmd = 'run("' + script_path + '")';
       }
-      this.evalCommand(cmd, false);
+      this.evalCommand(cmd);
     } else {
       this.win.command_window.message('@evalScript: Sandbox is busy...');
     }

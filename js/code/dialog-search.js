@@ -54,11 +54,11 @@
       replace_input.addEventListener('keydown', function(e) {
         if(e.key == 'Enter') {
           // Replace
-          replace(cm, replace_input.value, false)
+          replace(cm, replace_input.value, false);
         }
       });
       
-      find_input.addEventListener('keyup', function(e) {
+      find_input.addEventListener('keyup', function() {
         // Find match
         clearSearch(cm); 
         var state = getSearchState(cm);
@@ -66,27 +66,27 @@
         doSearch(cm);
       });
       
-      find_prev_btn.addEventListener('click', function(e) {
+      find_prev_btn.addEventListener('click', function() {
         // Show previous match
         doSearch(cm, true);
       });
       
-      find_next_btn.addEventListener('click', function(e) {
+      find_next_btn.addEventListener('click', function() {
         // Show next match
         doSearch(cm, false);
       });
       
-      replace_btn.addEventListener('click', function(e) {
+      replace_btn.addEventListener('click', function() {
         // Replace
         replace(cm, replace_input.value, false)
       });
       
-      replace_all_btn.addEventListener('click', function(e) {
+      replace_all_btn.addEventListener('click', function() {
         // Replace all
         replace(cm, replace_input.value, true)
       });
       
-      match_case_btn.addEventListener('click', function(e) {
+      match_case_btn.addEventListener('click', function() {
         if(this.classList.contains('active')) {
           cm.search_match_case = false;
           this.classList.remove('active');
@@ -96,7 +96,7 @@
         }
       });
       
-      regex_btn.addEventListener('click', function(e) {
+      regex_btn.addEventListener('click', function() {
         if(this.classList.contains('active')) {
           cm.search_regex = false;
           this.classList.remove('active');
@@ -106,7 +106,7 @@
         }
       });
       
-      close.addEventListener('click', function(e) {
+      close.addEventListener('click', function() {
         if(window.jQuery) {
           $(div).slideUp(200);
         } else {
@@ -117,7 +117,7 @@
       
       cm.display.wrapper.appendChild(div);
     }
-  })
+  });
   
   function searchOverlay(query, caseInsensitive) {
     if(typeof query == "string")
@@ -136,6 +136,7 @@
       } else {
         stream.skipToEnd();
       }
+      return false;
     }};
   }
 
@@ -171,7 +172,7 @@
       var isRE = query.match(/^\/(.*)\/([a-z]*)$/);
       if(isRE) {
         try { query = new RegExp(isRE[1], isRE[2].indexOf("i") == -1 ? "" : "i"); }
-        catch(e) {} // Not a regular expression after all, do a string search
+        catch(e) {}
       }
     } else {
       query = parseString(query);

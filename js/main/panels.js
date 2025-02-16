@@ -46,7 +46,7 @@ class PRDC_JSLAB_PANELS {
   }
 }
 
-exports.PRDC_JSLAB_PANELS = PRDC_JSLAB_PANELS
+exports.PRDC_JSLAB_PANELS = PRDC_JSLAB_PANELS;
 
 /**
  * Represents a single resizable panel within the application. Supports resizing, orientation configuration, and nesting of sub-panels.
@@ -100,7 +100,7 @@ class PRDC_JSLAB_PANEL {
       // Create resizer element
       if(i < this.cells-1) {
         let resizer = document.createElement('div');
-        resizer.classList.add(orientation + '-resizer')
+        resizer.classList.add(orientation + '-resizer');
         pos_resizer += this.cells_size[i];
         resizer.style[this.attr_pos] = 'calc('+pos_resizer+'% - '+config.PANEL_RESIZER_WIDTH/2+'px)';
         resizer.style[this.attr_size] = config.PANEL_RESIZER_WIDTH+'px';
@@ -163,7 +163,7 @@ class PRDC_JSLAB_PANEL {
 
     var pos = (e['page'+this.attr_axis]-this.container_bcr[this.attr_pos])/this.container[this.attr_cont_size]*100;
     var total_size = this.cells_size[i]+this.cells_size[i+1];
-    var size_pre = this.cells_size.slice(0, i).reduce(function(sum, num) { return sum + num; }, 0)
+    var size_pre = this.cells_size.slice(0, i).reduce(function(sum, num) { return sum + num; }, 0);
     if(pos < size_pre+config.PANEL_MIN_SIZE) {
       pos = size_pre+config.PANEL_MIN_SIZE;
     } else if(pos > size_pre+total_size-config.PANEL_MIN_SIZE) {

@@ -195,7 +195,7 @@ class PRDC_JSLAB_LIB_BASIC {
    * @param {Boolean} [force_run=false] If true, forces the script to run even if stop conditions are met.
    */
   async run(script_path, lines, silent = false, force_run = false) {
-    if(this.jsl.env.isAbsolutePath(script_path)) {
+    if(this.jsl.env.pathIsAbsolute(script_path)) {
       this.jsl.last_script_path = script_path;
       this.jsl.last_script_lines = lines;
       this.jsl.last_script_silent = silent;
@@ -203,7 +203,7 @@ class PRDC_JSLAB_LIB_BASIC {
         return;
       }
     }
-    await this.jsl.eval.runScript(script_path, lines, silent, force_run);
+    return await this.jsl.eval.runScript(script_path, lines, silent, force_run);
   }
   
   /**
@@ -225,7 +225,7 @@ class PRDC_JSLAB_LIB_BASIC {
         const result = data[itemName];
         if(result) {
           result.type = 'lib';
-          result.lib = libName;
+          result.category = libName;
           return this.jsl.setDepthSafeStringify(result, Infinity);
         }
       }
@@ -261,9 +261,104 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {string|undefined} The JSON string of the documentation or undefined if not found.
    */
   help(name, type) {
-    return helpToJSON(name, type);
+    return this.helpToJSON(name, type);
   }
-
+  
+  /**
+   * Retrieves documentation based on the provided name and type.
+   * @param {string} name - The name of the documentation item.
+   * @param {string} type - The type of the documentation.
+   * @returns {string|undefined} The JSON string of the documentation or undefined if not found.
+   */
+  doc(name, type) {
+    return this.help(name, type);
+  }
+  
+  /**
+   * Retrieves documentation based on the provided name and type.
+   * @param {string} name - The name of the documentation item.
+   * @param {string} type - The type of the documentation.
+   * @returns {string|undefined} The JSON string of the documentation or undefined if not found.
+   */
+  documentation(name, type) {
+    return this.help(name, type);
+  }
+  
+  /**
+   * Searches the documentation for methods that match all words in the given query, regardless of order.
+   * @param {string} query - The search query containing keywords to match within the documentation.
+   * @returns {Array<Object>} Array of matching documentation entries, each entry containing `type` and `category` properties.
+   */
+  helpSearch(query) {
+    var obj = this;
+    var query_words = query.toLowerCase().split(' ');
+    var results = {};
+    Object.keys(this._docs).forEach(function(type) {
+      Object.keys(obj._docs[type]).forEach(function(category) {
+        Object.keys(obj._docs[type][category]).forEach(function(member) {
+          var member_obj = obj._docs[type][category][member];
+          var str = JSON.stringify(member_obj).toLowerCase();
+          var match = query_words.every((word) => str.includes(word));
+          if(match) {
+            member_obj.type = type;
+            member_obj.category = category;
+            results[member] = member_obj;
+          }
+        });
+      });
+    });
+    return results;
+  }
+  
+  /**
+   * Searches the documentation for methods that match all words in the given query, regardless of order.
+   * @param {string} query - The search query containing keywords to match within the documentation.
+   * @returns {Array<Object>} Array of matching documentation entries, each entry containing `type` and `category` properties.
+   */
+  docSearch(query) {
+    return this.helpSearch(query);
+  }
+  
+  /**
+   * Searches the documentation for methods that match all words in the given query, regardless of order.
+   * @param {string} query - The search query containing keywords to match within the documentation.
+   * @returns {Array<Object>} Array of matching documentation entries, each entry containing `type` and `category` properties.
+   */
+  documentationSearch(query) {
+    return this.helpSearch(query);
+  }
+  
+  /**
+   * Opens the source file and navigates to the specified line based on the provided name.
+   * @param {string} name - The name of the source to locate.
+   */
+  source(name) {
+    const parts = name.split(".");
+    if(parts.length === 2) {
+      const [libName, itemName] = parts;
+      const data = this._docs.lib[libName];
+      if(data.hasOwnProperty(itemName)) {
+        const result = data[itemName];
+        if(result) {
+          this.jsl.env.editor(app_path + '/js/sandbox/' + result.source_filename, result.source_lineno);
+          return;
+        }
+      }
+    } else {
+      for(const category in this._docs.global) {
+        const categoryData = this._docs.global[category];
+        if(categoryData.hasOwnProperty(name)) {
+          const result = categoryData[name];
+          if(result) {
+            this.jsl.env.editor(app_path + '/js/sandbox/' + result.source_filename, result.source_lineno);
+            return;
+          }
+        }
+      }
+    }
+    this.jsl.env.error('@source: ' + language.string(220) + name);
+  }
+  
   /**
    * Retrieves the file name of the currently active JSL script.
    * @returns {string} The file name of the JSL script.
@@ -445,6 +540,17 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.ignore_output = true;
     return msg+"\n";
   }
+
+  /**
+   * Displays a general message with monospaced font.
+   * @param {string} msg The message to display.
+   */
+  dispMonospaced(msg) {
+    this.jsl.env.dispMonospaced(msg);
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    return msg+"\n";
+  }
   
   /**
    * Displays a warning message.
@@ -546,7 +652,7 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   checkStopLoop() {
     if(!this.jsl.stop_loop) {
-      this.jsl.stop_loop = this.jsl.env.checkStopLoop()
+      this.jsl.stop_loop = this.jsl.env.checkStopLoop();
     }
     return this.jsl.stop_loop;
   }
@@ -565,8 +671,8 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   getExamples() {
     var obj = this;
-    return this.jsl.env.readdirSync(app_path +'\\examples')
-        .filter(function(file) { return file.match(new RegExp('\.jsl$')); }).map(function(i) { return app_path + '\\examples\\' + i; });
+    return this.jsl.env.readdirSync(app_path + '/examples')
+        .filter(function(file) { return file.match(new RegExp('\.jsl$')); }).map(function(i) { return folder + '\\' + i; });
   }
 
   /**
@@ -574,12 +680,26 @@ class PRDC_JSLAB_LIB_BASIC {
    * @param {string} filename - Name of the example file to open.
    */
   openExample(filename) {
-    if(!this.jsl.env.isAbsolutePath(filename)) {
+    if(!this.jsl.env.pathIsAbsolute(filename)) {
       filename = app_path + '\\examples\\' + filename;
     }
     this.edit(filename);
   }
 
+  /**
+   * Opens examples folder in File Explorer
+   */
+  openExamplesFolder() {
+    this.jsl.env.openFolder(app_path + '\\examples');
+  }
+
+  /**
+   * Opens examples folder in File Explorer
+   */
+  goToExamplesFolder() {
+    this.jsl.env.cd(app_path + '\\examples');
+  }
+  
   /**
    * Displays a synchronous message box to the user and waits for their response.
    * @param {Object} options - Configuration options for the message box.
@@ -609,8 +729,8 @@ class PRDC_JSLAB_LIB_BASIC {
         }
       });
     }
-    if(!this.jsl.env.isAbsolutePath(file_path)) {
-      file_path = this.jsl.env.joinPath(this.jsl.current_path, file_path);
+    if(!this.jsl.env.pathIsAbsolute(file_path)) {
+      file_path = this.jsl.env.pathJoin(this.jsl.current_path, file_path);
     }
     var flag = this.jsl.env.writeFileSync(file_path, JSON.stringify(vars));
     if(flag === false) {
@@ -641,7 +761,7 @@ class PRDC_JSLAB_LIB_BASIC {
         Object.keys(vars).forEach(function(property) {
           scope[property] = vars[property];
         });
-      } catch(e) {
+      } catch(err) {
         this.jsl.env.error('@load: '+language.string(118)+'.');
       }
     }
@@ -772,10 +892,25 @@ class PRDC_JSLAB_LIB_BASIC {
   }
   
   /**
+   * Resets app.
+   */
+  resetApp() {
+    this.jsl.env.resetApp();
+  }
+  
+  /**
    * Resets the sandbox environment to its initial state.
    */
   resetSandbox() {
     this.jsl.env.resetSandbox();
+  }
+
+  /**
+   * Opens the developer tools for the sandbox environment in the current context.
+   * @returns {void}
+   */
+  openDevTools() {
+    this.jsl.env.openSandboxDevTools();
   }
   
   /**
@@ -795,7 +930,7 @@ class PRDC_JSLAB_LIB_BASIC {
         title: language.currentString(141),
         buttonLabel: language.currentString(142),
         properties: ['openDirectory'],
-      }
+      };
       path = this.jsl.env.showOpenDialogSync(options);
       if(path === undefined) {
         this.jsl.env.error('@compileNapi: '+language.string(119)+'.');
@@ -804,7 +939,7 @@ class PRDC_JSLAB_LIB_BASIC {
         path = path[0];
       }
     }
-    var path = this.jsl.env.addPathSep(path);
+    path = this.jsl.env.addPathSep(path);
  
     if(this.jsl.env.rmSync(path+'build/Release/', false) === false) {
       this.jsl.env.error('@compileNapi: '+language.string(171));
@@ -815,7 +950,7 @@ class PRDC_JSLAB_LIB_BASIC {
       var targets = [];
       try {
         var binding_file_data = JSON.parse(this.jsl.env.readFileSync(binding_file_path).toString());
-      } catch(e) {
+      } catch(err) {
         this.jsl.env.error('@compileNapi: '+language.string(120)+'.');
         return false;
       }
@@ -823,21 +958,20 @@ class PRDC_JSLAB_LIB_BASIC {
         targets.push(path + 'build/Release/' + target.target_name + '.node');
       });
       if(targets.length > 0) {
-        var node_gyp_path = this.jsl.env.joinPath(app_path, 'node_modules', '.bin', 'node-gyp');
-        var npm_path = this.jsl.env.joinPath(app_path, 'node_modules', '.bin', 'npm');
-        var msg = this.system(npm_path + ' cache clean --force & ' +npm_path + ' install & ' + node_gyp_path + ' rebuild --target='+process.version+' 2>&1', 
-          {cwd: path, shell: true});
-
+        var exe = this.jsl.env.exe_path;
+        var node_gyp_path = app_path + '/node_modules/node-gyp/bin/node-gyp.js';
+        var npm_path = this.jsl.env.pathJoin(app_path, 'node_modules', 'npm', 'bin', 'npm-cli.js');
+        var msg = this.system('set ELECTRON_RUN_AS_NODE=1 & "' + exe + '" "' + npm_path + '" cache clean --force & "' + exe + '" "' + npm_path + '" install --build-from-source=false & "' + exe + '" "' + node_gyp_path + '" rebuild --target='+process.version+' 2>&1', {cwd: path, shell: false});
+        
         if(msg.endsWith('gyp info ok \n')) {
           if(show_output) {
-            this.jsl.env.disp(msg);
+            this.jsl.env.disp(msg.replaceAll('\n', '<br>'));
           }
           result = true;
         } else if(!msg.endsWith('gyp ERR! not ok \n')) {
-          this.jsl.env.error('@compileNapi: '+language.string(121)+'.');
+          this.jsl.env.error('@compileNapi: '+language.string(121)+'. '+msg.replaceAll('\n', '<br>'));
         } else {
-          this.jsl.env.disp(msg);
-          this.jsl.env.error('@compileNapi: '+language.string(170)+'.');
+          this.jsl.env.error('@compileNapi: '+language.string(170)+'. '+msg.replaceAll('\n', '<br>'));
         }
 
         if(result) {
@@ -846,13 +980,59 @@ class PRDC_JSLAB_LIB_BASIC {
           return [result, undefined];
         }
       } else {
-        this.jsl.env.error('@compileNapi: '+language.string(122)+'.');
+        this.jsl.env.error('@compileNapi: '+language.string(122)+'. '+msg.replaceAll('\n', '<br>'));
         return [result, undefined];
       }
     } else {
-      this.jsl.env.error('@compileNapi: '+language.string(123)+'.');
+      this.jsl.env.error('@compileNapi: '+language.string(123)+'. '+msg.replaceAll('\n', '<br>'));
       return [result, undefined];
     }
+  }
+  
+  /**
+   * Installs a module located at the specified path.
+   * @param {string} path - The path to the module.
+   * @param {boolean} [show_output=true] - Whether to show output in the command window.
+   */
+  installModule(path, show_output = false) {
+    if(typeof path == 'string') {
+      path = this.jsl.pathResolve(path);
+    }
+    if(!path) {
+      var options = {
+        title: language.currentString(141),
+        buttonLabel: language.currentString(142),
+        properties: ['openDirectory'],
+      };
+      path = this.jsl.env.showOpenDialogSync(options);
+      if(path === undefined) {
+        this.jsl.env.error('@installModule: '+language.string(119)+'.');
+      } else {
+        path = path[0];
+      }
+    }
+    path = this.jsl.env.addPathSep(path);
+    
+    var exe = this.jsl.env.exe_path;
+    var npm_path = this.jsl.env.pathJoin(app_path, 'node_modules', 'npm', 'bin', 'npm-cli.js');
+    var msg = this.system('set ELECTRON_RUN_AS_NODE=1 & "' + exe + '" "' + npm_path + '" install 2>&1', {cwd: path, shell: false});
+    
+    if(!msg.includes('\nnpm error')) {
+      if(show_output) {
+        this.jsl.env.disp(msg);
+      }
+    } else {
+      this.jsl.env.error('@installModule: '+msg.replaceAll('\n', '<br>'));
+    }
+  }
+  
+  /**
+   * Registers an object for cleanup with a specified cleanup function.
+   * @param {Object} obj - The object to be registered for cleanup.
+   * @param {Function} fun - The function to execute during cleanup.
+   */
+  addForCleanup(...args) {
+    this.jsl.addForCleanup(...args);
   }
 }
 

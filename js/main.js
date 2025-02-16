@@ -10,11 +10,14 @@ const { app, BrowserWindow, ipcMain, dialog, powerSaveBlocker, shell,
 
 const contextMenu = require('electron-context-menu');
 const fs = require('fs');
-const path = require('path');
 const os = require('os');
 const Store = require('electron-store');
 
 const { PRDC_APP_LOGGER } = require('./../lib/PRDC_APP_LOGGER/PRDC_APP_LOGGER');
+
+var app_version = process.env.npm_package_version;
+
+app.commandLine.appendSwitch('max-active-webgl-contexts', config.MAX_ACTIVE_WEBGL_CONTEXTS);
 
 /**
  * Class for flight control app.
@@ -26,7 +29,6 @@ class PRDC_JSLAB_MAIN {
    */
   constructor() {
     var obj = this;
-    this.screens;
     this.show_inspect_element = false;
     if(!config.PRODUCTION && config.DEBUG) {
       this.show_inspect_element = true;
@@ -79,7 +81,7 @@ class PRDC_JSLAB_MAIN {
     
     // Context menu
     contextMenu({
-      append: function(default_actions, parameters, browser_window) {
+      append: function(default_actions, parameters) {
         return [
           new MenuItem({
             label: 'Toggle Comment',
@@ -111,7 +113,7 @@ class PRDC_JSLAB_MAIN {
     app.commandLine.appendSwitch("disable-http-cache");
 
     // Prevent sleep
-    const sleep_prevent_id = powerSaveBlocker.start('prevent-app-suspension');
+    powerSaveBlocker.start('prevent-app-suspension');
   
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
@@ -178,10 +180,6 @@ class PRDC_JSLAB_MAIN {
     };
     options = this.getWindowBounds('mainWinBounds', options);
     this.win_main = new BrowserWindow(options);
-
-    desktopCapturer.getSources({ types: ['screen'] }).then(async function(sources) {
-      obj.screens = sources;
-    });
     
     // Hide menu
     this.win_main.setMenu(null);
@@ -195,16 +193,16 @@ class PRDC_JSLAB_MAIN {
     this.win_main.loadFile(app_path + '/html/main.html');
 
     // Events
-    this.win_main.on("resize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds') });
-    this.win_main.on("move", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds') });
-    this.win_main.on("maximize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds') });
-    this.win_main.on("unmaximize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds') });
+    this.win_main.on("resize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
+    this.win_main.on("move", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
+    this.win_main.on("maximize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
+    this.win_main.on("unmaximize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
     
     // Show window when ready
     this.win_main.once('ready-to-show', function() {
       obj.win_main.show();
       if(config.DEBUG) {
-        obj.win_main.webContents.openDevTools({ mode: 'detach' });
+        obj.openDevTools(obj.win_main);
       }
     });
 
@@ -250,17 +248,17 @@ class PRDC_JSLAB_MAIN {
     
     if(config.DEBUG) {
       // Show dev tools
-      this.win_sandbox.webContents.openDevTools({ mode: 'detach' });
+      this.openDevTools(this.win_sandbox);
     }
     
     // Sub windows
-    this.win_sandbox.webContents.setWindowOpenHandler(function({ url }) {
-      if(url.startsWith('file://')) {
+    this.win_sandbox.webContents.setWindowOpenHandler(function(handler) {
+      if(handler.url.startsWith('file://')) {
         return {
           action: 'allow',
           overrideBrowserWindowOptions: {
             minWidth: 250,
-            minHeight: 250,
+            minHeight: 50,
             icon: obj.app_icon, // png to ico https://icoconvert.com/
             show: false,
             backgroundColor: '#ffffff',
@@ -277,7 +275,11 @@ class PRDC_JSLAB_MAIN {
       return { action: 'deny' };
     }); 
     
+    this.sandbox_sub_wins = {};
     this.win_sandbox.webContents.on('did-create-window', function(sub_win, details) {
+      var wid = details.frameName;
+      obj.sandbox_sub_wins[wid] = sub_win;
+      
       // Hide menu
       sub_win.setMenu(null);
       
@@ -288,20 +290,30 @@ class PRDC_JSLAB_MAIN {
         obj.fadeWindowIn(sub_win, 0.1, 10);
 
         if(config.DEBUG) {
-          if(!sub_win.webContents.isDevToolsOpened()) {
-            sub_win.webContents.openDevTools({ mode: 'detach' });
-          }
+          obj.openDevTools(sub_win);
         }
+      });
+      
+      // Close all windows
+      sub_win.on('close', function(e) {
+        e.preventDefault();
+        obj.win_sandbox.webContents.executeJavaScript('jsl.windows._closedWindow('+wid+');');
+        sub_win.hide();
+        sub_win.forClose = true;
       });
     });
     
-    this.win_sandbox.webContents.on('render-process-gone', function(event , details) {
+    this.win_sandbox.webContents.on('render-process-gone', function(event, details) {
       obj.app_logger.logMessage(config.DEBUG_RENDER_GONE_ERROR, config.LOG_RENDER_GONE_ERROR, config.LOG_CODES['render-gone-error'], 'Render gone error', 'Sandbox window render gone error:' + JSON.stringify(event) + ' ' + JSON.stringify(details));
       app.exit();
       app.relaunch();
     });
     
     this.win_sandbox.webContents.on('did-finish-load', function() {
+      if(!obj.store.get('shown-getting-started')) {
+        obj.store.set('shown-getting-started', 1);
+        obj.win_sandbox.webContents.executeJavaScript('openDocumentation("about");');
+      }
       if(obj.sandbox_reload_active) {
         obj.win_main.webContents.executeJavaScript('win_main.onSandboxReset();');
         obj.sandbox_reload_active = false;
@@ -353,10 +365,10 @@ class PRDC_JSLAB_MAIN {
     }
 
     // Events
-    this.win_editor.on("resize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds') });
-    this.win_editor.on("move", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds') });
-    this.win_editor.on("maximize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds') });
-    this.win_editor.on("unmaximize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds') });
+    this.win_editor.on("resize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
+    this.win_editor.on("move", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
+    this.win_editor.on("maximize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
+    this.win_editor.on("unmaximize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
 
     // Hide window when ready
     this.win_editor.hide();
@@ -387,7 +399,7 @@ class PRDC_JSLAB_MAIN {
     // For MainProcess 
     ipcMain.handle('get-completions', function(e, data) {
       obj.win_sandbox.send('SandboxWindow', 'get-completions', data);
-      return new Promise(function(resolve, reject) {
+      return new Promise(function(resolve) {
         ipcMain.once('completions-'+data[0], function(e, data) {
           resolve(data);
         });
@@ -402,6 +414,10 @@ class PRDC_JSLAB_MAIN {
         params.icon = obj.app_icon;
       }
       return dialog[method](params);
+    });
+
+    ipcMain.on('get-desktop-sources', async function(e) {
+      e.returnValue = await desktopCapturer.getSources({ types: ['screen', 'window'] });
     });
     
     ipcMain.on('dialog', function(e, method, params) {
@@ -418,7 +434,7 @@ class PRDC_JSLAB_MAIN {
       var retval;
       switch(action) {
         case 'get-app':
-          retval = {'name': app.getName(), 'version': app.getVersion(), 'path': app_path};
+          retval = {'name': app.getName(), 'version': app_version, 'path': app_path, 'exe_path': app.getPath('exe')};
           break;
         case 'get-app-name':
           retval = app.getName();
@@ -427,7 +443,7 @@ class PRDC_JSLAB_MAIN {
           retval = app_path;
           break;
         case 'get-app-version':
-          retval = app.getVersion();
+          retval = app_version;
           break;
         case 'get-platform':
           retval = os.platform();
@@ -441,14 +457,10 @@ class PRDC_JSLAB_MAIN {
           } else if(data == 'root') {
             retval = app_path;
           } else if(data == 'includes') {
-            retval = app_path + '/includes';
+            retval = app_path + '\\includes';
           } else {
             retval = true;
           }
-          break;
-        case 'get-all-displays':
-          //retval = screen.getAllDisplays();
-          retval = obj.screens;
           break;
         case 'get-log-file':
           retval = obj.log_file;
@@ -466,15 +478,33 @@ class PRDC_JSLAB_MAIN {
         case 'get-process-arguments':
           retval = process.argv;
           break;
-        case 'focus-win-by-id':
-          retval = BrowserWindow.fromId(data).focus();
+        case 'call-sub-win-method':
+          var [id, method, ...args] = data;
+          if(obj.sandbox_sub_wins.hasOwnProperty(id)) {
+            retval = obj.sandbox_sub_wins[id][method](...args);
+          } else {
+            retval = false;
+          }
           break;
-        case 'get-last-window-id':
-          retval = BrowserWindow.getAllWindows()[0].id;
+        case 'open-sub-win-devtools':
+          if(obj.sandbox_sub_wins.hasOwnProperty(data)) {
+            obj.openDevTools(obj.sandbox_sub_wins[data]);
+            retval = true;
+          } else {
+            retval = false;
+          }
+          break;
+        case 'reset-app':
+          app.exit();
+          app.relaunch();
           break;
         case 'reset-sandbox':
           obj.sandbox_reload_active = true;
           obj.win_sandbox.destroy();
+          Object.keys(obj.sandbox_sub_wins).forEach(function(wid) {
+            obj.sandbox_sub_wins[wid].destroy();
+            delete obj.sandbox_sub_wins[wid];
+          });
           obj.createSandboxWindow();
           break;
         default:
@@ -486,35 +516,13 @@ class PRDC_JSLAB_MAIN {
     
     ipcMain.on('MainProcess', function(e, action, data) {
       switch(action) {
-        case 'toggle-dev-tools':
-          // Toggle DevTools
-          e.sender.toggleDevTools({ mode: 'detach' });
-          break;
-        case 'toggle-sandbox-dev-tools':
-          // Toggle Sandbox DevTools
-          obj.win_sandbox.toggleDevTools({ mode: 'detach' });
-          break;
         case 'show-dev-tools':
           // Show DevTools
-          if(e.sender.isDevToolsOpened()) {
-            e.sender.devToolsWebContents.focus();
-          } else {
-            e.sender.openDevTools();
-            e.sender.on('devtools-opened', function() {
-              e.sender.devToolsWebContents.focus();
-            });
-          }
+          obj.openDevTools(BrowserWindow.fromWebContents(e.sender));
           break;
         case 'show-sandbox-dev-tools':
           // Show Sandbox DevTools
-          if(obj.win_sandbox.isDevToolsOpened()) {
-            obj.win_sandbox.devToolsWebContents.focus();
-          } else {
-            obj.win_sandbox.openDevTools();
-            obj.win_sandbox.on('devtools-opened', function() {
-              obj.win_sandbox.devToolsWebContents.focus();
-            });
-          }
+          obj.openDevTools(obj.win_sandbox);
           break;
         case 'open-dir':
         case 'open-folder':
@@ -596,6 +604,17 @@ class PRDC_JSLAB_MAIN {
         case 'close-log':
           obj.app_logger.closeLog();
           break;
+        case 'code-evaluated':
+          Object.keys(obj.sandbox_sub_wins).forEach(function(wid) {
+            var win = obj.sandbox_sub_wins[wid];
+            if(win.forClose) {
+              setTimeout(function() {
+                win.destroy();
+                delete obj.sandbox_sub_wins[wid];
+              }, 500);
+            }
+          });
+          break;
         case 'set-win-size':
           obj.win_main.setSize(data[0], data[1]);
           break;
@@ -654,8 +673,8 @@ class PRDC_JSLAB_MAIN {
     this.fadeWindowIn(this.win_editor, 0.1, 10);
    
     if(config.DEBUG) {
-      if(!this.win_editor.webContents.isDevToolsOpened()) {
-        this.win_editor.webContents.openDevTools({ mode: 'detach' });
+      if(!this.win_editor.devtools_win || !this.win_editor.devtools_win.isVisible()) {
+        this.openDevTools(this.win_editor);
       }
     }
   }
@@ -719,16 +738,30 @@ class PRDC_JSLAB_MAIN {
       callback(0);
     });
     
-    this.win_main.webContents.session.setPermissionCheckHandler(function(webContents, permission, requestingOrigin, details) {
+    this.win_main.webContents.session.setPermissionCheckHandler(function() {
       return true;
     });
 
-    this.win_main.webContents.session.setDevicePermissionHandler(function(details) {
+    this.win_main.webContents.session.setDevicePermissionHandler(function() {
       return true;
     });
 
-    this.win_main.webContents.session.setUSBProtectedClassesHandler(function(details) {
+    this.win_main.webContents.session.setUSBProtectedClassesHandler(function() {
       return [];
+    });
+  }
+  
+  /**
+   * Opens the Developer Tools for the specified Electron BrowserWindow in a detached window.
+   * @param {BrowserWindow} win - The Electron `BrowserWindow` instance for which to open the Developer Tools.
+   */
+  openDevTools(win) {
+    if(win.webContents.isDevToolsOpened()) {
+      win.webContents.closeDevTools();
+    }
+    win.webContents.openDevTools({mode: 'undocked'});
+    win.webContents.once('devtools-opened', function() {
+      win.devToolsWebContents.focus();
     });
   }
   
@@ -740,25 +773,28 @@ class PRDC_JSLAB_MAIN {
    * @returns {number} The interval identifier for the fade-in operation.
    */
   fadeWindowIn(win, step = 0.1, dt = 10) {
-    // Get the opacity of the window.
-    var opacity = win.getOpacity();
-    var interval = [];
+    if(win) {
+      // Get the opacity of the window.
+      var opacity = win.getOpacity();
+      var interval = [];
 
-    if(opacity != 1) {
-      // Increase the opacity of the window by `step` every `dt` ms
-      interval = setInterval(function() {
-        // Stop fading if window's opacity is 1 or greater.
-        if(opacity >= 1) { 
-          clearInterval(interval);
-          opacity = 1;
-        }
-        win.setOpacity(opacity);
-        opacity += step;
-      }, dt);
+      if(opacity != 1) {
+        // Increase the opacity of the window by `step` every `dt` ms
+        interval = setInterval(function() {
+          // Stop fading if window's opacity is 1 or greater.
+          if(opacity >= 1) { 
+            clearInterval(interval);
+            opacity = 1;
+          }
+          win.setOpacity(opacity);
+          opacity += step;
+        }, dt);
+      }
+
+      // Return the interval. Useful if we want to stop fading at will.
+      return interval;
     }
-
-    // Return the interval. Useful if we want to stop fading at will.
-    return interval;
+    return false;
   }
 
   /**
@@ -769,25 +805,28 @@ class PRDC_JSLAB_MAIN {
    * @returns {number} The interval identifier for the fade-out operation.
    */
   fadeWindowOut(win, step = 0.1, dt = 10) {
-    // Get the opacity of the window.
-    var opacity = win.getOpacity();
-    var interval = [];
+    if(win) {
+      // Get the opacity of the window.
+      var opacity = win.getOpacity();
+      var interval = [];
 
-    if(opacity != 0) {
-      // Reduce the opacity of the window by `step` every `dt` ms
-      interval = setInterval(function() {
-        // Stop fading if window's opacity is 0 or lesser.
-        if(opacity <= 0) {
-          clearInterval(interval);
-          opacity = 0;
-        }
-        win.setOpacity(opacity);
-        opacity -= step;
-      }, dt);
+      if(opacity != 0) {
+        // Reduce the opacity of the window by `step` every `dt` ms
+        interval = setInterval(function() {
+          // Stop fading if window's opacity is 0 or lesser.
+          if(opacity <= 0) {
+            clearInterval(interval);
+            opacity = 0;
+          }
+          win.setOpacity(opacity);
+          opacity -= step;
+        }, dt);
+      }
+
+      // Return the interval. Useful if we want to stop fading at will.
+      return interval;
     }
-
-    // Return the interval. Useful if we want to stop fading at will.
-    return interval;
+    return false;
   }
 }
 

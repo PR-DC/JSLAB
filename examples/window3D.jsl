@@ -42,5 +42,27 @@ function animate( time ) {
   mesh.rotation.x = time / 2000;
   mesh.rotation.y = time / 1000;
   
-  renderer.render( scene, camera );
+  
+  
 }
+
+var N_buffer = 1000;
+var t = toc();
+var x = createFilledArray(N_buffer, null); x[0] = t;
+var y = createFilledArray(N_buffer, null); y[0] = sin(t);
+var p = plot({x: x, y: y});
+xlabel("x");
+ylabel("sin(x)");
+title("Simple 2-D Plot");
+
+await p.ready;
+setInterval(function() {
+  var t1 = toc();
+  x.push(t1);
+  y.push(sin(t1*2));
+  if(x.length > N_buffer) {
+    x.shift();
+    y.shift();
+  }
+  p.update({x: [x], y: [y]}, 0);
+}, 33);

@@ -15,15 +15,12 @@ const readline = require('readline').createInterface({
   output: process.stdout
 });
 
-const { PRDC_APP_CONFIG } = require("../../config/config");
 var data = JSON.parse(fs.readFileSync('package.json'));
 
 console.log('[clear-app-data.js] Started');
 var t = performance.now();
 
 // Variables
-var config = new PRDC_APP_CONFIG();
-
 var confirm = process.argv.includes('--confirm');
 
 if(confirm) {

@@ -4,6 +4,14 @@ html {
   overflow: hidden;
 }
 
+b {
+  font-weight: bold;
+}
+
+i {
+  font-style: italic;
+}
+
 :focus {
   outline: 0;
 }
@@ -38,6 +46,10 @@ lang {
 
 .float-right {
   float: right;
+}
+
+.monospaced {
+  font-family: 'RobotoMono';
 }
 
 #app-logo {

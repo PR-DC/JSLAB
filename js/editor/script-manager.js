@@ -51,7 +51,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     });
 
     // On tab remove
-    this.tabs_cont.addEventListener("tabRemove", function({ detail }) {
+    this.tabs_cont.addEventListener("tabRemove", function() {
       if(obj.scripts.length == 0) {
         if(obj.close_window) {
           store.set("last_script_paths", obj.last_script_paths);
@@ -180,18 +180,21 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   }
   
   /**
-   * Opens a script by its path if it is not already opened, or activates it if it is.
-   * @param {string} script_path The filesystem path to the script.
+   * Opens a script by its path if not already open, or activates it if it is already open.
+   * @param {Array<string, number>} data - An array where the first element is the script path and the second is the line number.
    */
-  openScript(script_path) {
+  openScript(data) {
+    var script_path = data[0];
+    var script_lineno = data[1];
     var lstat = fs.lstatSync(script_path, {throwIfNoEntry: false});
     if(lstat && lstat.isFile()) {
       var [script, i] = this.getScriptByPath(script_path);
       if(script == undefined) {
-        this.createScript(script_path);
+        this.createScript(script_path, script_lineno);
       } else {
         this.win.editor.disp("@editor/openScript: "+language.string(133)+" "+script_path+" "+language.string(134)+"!", false);
         script.activate();
+        script.setLine(script_lineno);
       }
     }
   }
@@ -204,12 +207,15 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   }
 
   /**
-   * Creates a new script tab and editor instance, optionally loading a script from the given path.
-   * @param {string} [path] The optional path to a script file to load into the new editor instance.
+   * Creates a new script tab and editor instance, loading the script from the given path.
+   * @param {string} path - The file path of the script to load.
+   * @param {number} lineno - The line number to navigate to in the newly created script.
    */
-  createScript(path) {
+  createScript(path, lineno) {
     this.tab = this.tabs.addTab();
-    this.scripts.push(new PRDC_JSLAB_EDITOR_SCRIPT(this.win, this, path, this.tab));
+    var script = new PRDC_JSLAB_EDITOR_SCRIPT(this.win, this, path, this.tab);
+    script.setLine(lineno);
+    this.scripts.push(script);
   }
   
   /**

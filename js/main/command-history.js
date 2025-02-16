@@ -13,51 +13,68 @@ const store = new Store();
  * Class for JSLAB command history.
  */
 class PRDC_JSLAB_COMMAND_HISTORY {
-
+  
   /**
-   * Initializes the command history, loading previous commands from storage and setting up the UI component for displaying the history.
+   * Initializes the command history.
    * @param {object} win The window object representing the current Electron window.
    */
   constructor(win) {
     var obj = this;
     this.win = win;
-    
     this.history_cont = document.getElementById('command-history');
+    this.full_history = store.get('full_history') || [];
     this.history = [];
-    this.full_history = [];    
     
-    // Load full command history
-    this.full_history = store.get('full_history');
-    if(!this.full_history) {
-      this.full_history = [];
+    this.N_history_max = Number(store.get('N_history_max'));
+    if(!isFinite(this.N_history_max)) {
+      this.setMaxSize(20);
     }
-    this.full_history.forEach(function(cmd) {
-      var div = document.createElement('div');
+
+    this.renderHistory();
+
+    // Append initialization command
+    const init_cmd = `// JSLAB ${this.win.app.version}, ${new Date()} [${this.win.app.user}]`;
+    this.updateHistory(init_cmd);
+
+    // History clear button click
+    const clear_button = document.querySelector('#command-history-options .clear');
+    if(clear_button) {
+      clear_button.addEventListener('click', function() {
+        obj.clearHistory()
+      });
+    }
+
+    // Event delegation for command interactions
+    this.history_cont.addEventListener('click', function(e) {
+      if(e.target && !e.target.classList.contains('comment')) {
+        obj.selectCommand(e.target.textContent);
+      }
+    });
+
+    this.history_cont.addEventListener('dblclick', function(e) {
+      if(e.target && !e.target.classList.contains('comment')) {
+        obj.evalSelectedCommand(e.target.textContent);
+      }
+    });
+  }
+
+  /**
+   * Renders the entire history efficiently using DocumentFragment.
+   */
+  renderHistory() {
+    const fragment = document.createDocumentFragment();
+
+    this.full_history.forEach((cmd) => {
+      const div = document.createElement('div');
       if(cmd.startsWith('//')) {
         div.classList.add('comment');
-      } else {
-        $(div).click(function() {
-          obj.selectCommand(this.innerText);
-        });
-        $(div).dblclick(function() {
-          obj.evalSelectedCommand(this.innerText);
-        });
       }
-      div.innerText = cmd;
-      $(obj.history_cont).append(div);
+      div.textContent = cmd.replace(/\\/g, '\\\\');
+      fragment.appendChild(div);
     });
-    $(this.history_cont)[0].scrollTop = 
-      $(this.history_cont)[0].scrollHeight;
-    
-    var cmd = '// JSLAB ' + this.win.app.version + ', ' + 
-      new Date() + ' [' + this.win.app.user + ']';
-    this.updateHistory(cmd);
-    
-    // History clear button click
-    $('#command-history-options .clear').click(function(e){
-      obj.full_history = [];
-      $(obj.history_cont).html('');
-    });
+
+    this.history_cont.appendChild(fragment);
+    this.scrollToBottom();
   }
 
   /**
@@ -65,36 +82,43 @@ class PRDC_JSLAB_COMMAND_HISTORY {
    * @param {string} cmd The command to be added to the history.
    */
   updateHistory(cmd) {
-    var obj = this;
-    var div = document.createElement('div');
+    if(this.full_history.length >= this.N_history_max) {
+      this.full_history.shift();
+      if(this.history_cont.firstChild) {
+        this.history_cont.removeChild(this.history_cont.firstChild);
+      }
+    }
+
+    const div = document.createElement('div');
     if(cmd.startsWith('//')) {
       div.classList.add('comment');
     } else {
-      this.history.unshift(cmd);
-      div.onclick = function() {
-        obj.selectCommand(this.innerHTML);
-      }
-      div.ondblclick = function() {
-        obj.evalSelectedCommand(this.innerHTML);
-      };
+      this.history.unshift(cmd)
     }
-    div.innerHTML = cmd;
-    $(this.history_cont).append(div);
+    div.textContent = cmd;
+    this.history_cont.appendChild(div);
     this.full_history.push(cmd);
 
-    // Scroll to bottom
-    $(this.history_cont)[0].scrollTop = 
-      $(this.history_cont)[0].scrollHeight;
+    this.scrollToBottom();
+    this.saveHistory();
   }
-  
+
+  /**
+   * Scrolls the history container to the bottom.
+   */
+  scrollToBottom() {
+    this.history_cont.scrollTop = this.history_cont.scrollHeight;
+  }
+
   /**
    * Selects a command from the history, placing it in the command input for potential modification and re-execution.
    * @param {string} cmd The command to select.
    */
   selectCommand(cmd) {
-    this.win.command_window.code_input.setValue(cmd);
-    this.win.command_window.code_input.focus();
-    this.win.command_window.code_input.setCursor(this.win.command_window.code_input.lineCount(), 0);
+    const code_input = this.win.command_window.code_input;
+    code_input.setValue(cmd);
+    code_input.focus();
+    code_input.setCursor(code_input.lineCount(), 0);
   }
 
   /**
@@ -104,6 +128,42 @@ class PRDC_JSLAB_COMMAND_HISTORY {
   evalSelectedCommand(cmd) {
     this.win.eval.evalCommand(cmd);
   }
+
+  /**
+   * Clears the command history.
+   */
+  clearHistory() {
+    this.full_history = [];
+    this.history_cont.innerHTML = '';
+    this.saveHistory();
+  }
+
+  /**
+   * Saves the current history to storage asynchronously.
+   */
+  saveHistory() {
+    store.set('full_history', this.full_history);
+  }
+
+  /**
+   * Sets the maximum number of commands to retain in the history.
+   * @param {number} N - The desired maximum number of history entries
+   */
+  setMaxSize(N) {
+    if(N < 5) {
+      N = 5;
+    }
+    this.N_history_max = N;
+    $('#settings-container .N-history-max').val(N);
+    while(this.full_history.length >= this.N_history_max) {
+      this.full_history.shift();
+      if(this.history_cont.firstChild) {
+        this.history_cont.removeChild(this.history_cont.firstChild);
+      }
+    }
+    store.set('N_history_max', this.N_history_max);
+    this.saveHistory();
+  }
 }
 
-exports.PRDC_JSLAB_COMMAND_HISTORY = PRDC_JSLAB_COMMAND_HISTORY
+exports.PRDC_JSLAB_COMMAND_HISTORY = PRDC_JSLAB_COMMAND_HISTORY;

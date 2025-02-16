@@ -311,6 +311,20 @@ class PRDC_JSLAB_LIB_CONVERSION {
       return value;
     }
   }
+  
+  /**
+   * Rounds a number to a fixed number of decimal places if it is a number.
+   * @param {number} value - The value to round.
+   * @param {number} p - The number of digits after the decimal point.
+   * @returns {number} The rounded number with a fixed number of decimal places, or the original value if it is not a number.
+   */
+  roundIfPrec(value, p) {
+    if(typeof p === 'number') {
+      return round(value, p);
+    } else {
+      return value;
+    }
+  }
 
   /**
    * Converts a uint8_t number to a bit string.
@@ -399,7 +413,6 @@ class PRDC_JSLAB_LIB_CONVERSION {
     } else {
       return A_hex.join(' ');
     }
-    return str;
   }
 
   /**
@@ -467,6 +480,104 @@ class PRDC_JSLAB_LIB_CONVERSION {
   resetValue(data) {
     data.last_value = undefined;
     data.value = undefined;
+  }
+
+  /**
+   * Converts an ADC count to force in Newtons.
+   * @param {number} adc_count - The raw ADC count value.
+   * @param {number} load_cell_capacity - The capacity of the load cell in Newtons.
+   * @param {number} [adc_resolution=24] - The ADC resolution in bits.
+   * @param {number} [adc_gain=128] - The gain applied to the ADC.
+   * @param {number} [adc_sensitivity=2] - The ADC sensitivity in mV/V.
+   * @param {boolean} [adc_bipolar=true] - Indicates if the ADC is bipolar.
+   * @returns {number} The calculated force in Newtons.
+   */
+  adcToNewtons(adc_count, load_cell_capacity, 
+      adc_resolution = 24, adc_gain = 128,  
+      adc_sensitivity = 2, adc_bipolar = true) {
+    if(adc_bipolar) {
+      adc_resolution = adc_resolution - 1;
+    }
+    adc_sensitivity = adc_sensitivity / 1000;
+    const max_adc_count = Math.pow(2, adc_resolution) - 1;
+    const measured_adc = (adc_count / max_adc_count) / adc_gain;
+    const force = (measured_adc / adc_sensitivity) * load_cell_capacity;
+    return force;
+  }
+  
+  /**
+   * Converts file data from a given path to a blob URL.
+   * @param {string} path - Relative path from the application's base path to the file.
+   * @returns {string} A blob URL representing the file's data.
+   */
+  data2blobUrl(path) {
+    return URL.createObjectURL(new Blob([fs.readFileSync(app_path+'\\'+path)]));
+  }
+  
+  /**
+   * Converts top, right, bottom, and left margins into x and y coordinates.
+   * @param {number} cont_width - Container width.
+   * @param {number} cont_height - Container height.
+   * @param {number} width - Element width.
+   * @param {number} height - Element height.
+   * @param {number} top - Top margin.
+   * @param {number} right - Right margin.
+   * @param {number} bottom - Bottom margin.
+   * @param {number} left - Left margin.
+   * @returns {Array} Array containing x and y coordinates.
+   */
+  trbl2xy(cont_width, cont_height, width, height, top, right, bottom, left) {
+    var x = 0;
+    var y = 0;
+
+    if(!isUndefined(left)) {
+      x = left;
+    } else if(!isUndefined(right)) {
+      x = cont_width - width - right;
+    }
+    if(!isUndefined(top)) {
+      y = top;
+    } else if(!isUndefined(bottom)) {
+      y = cont_height - height - bottom;
+    }
+    return [x, y];
+  }
+
+  /**
+   * Generates a CSV string from an simple object containing arrays of values.
+   * Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
+   * @param {Object} data - The object containing arrays of data. Each key will be a column header.
+   * @param {string} [delimiter=','] - The delimiter to use for separating entries in the CSV (defaults to a comma).
+   * @returns {string} The generated CSV as a string, with each row representing an entry and each column representing data from the corresponding key in the input object.
+   */
+  simpleObj2Csv(data, delimiter = ',') {
+    const keys = Object.keys(data);
+    let csv_content = keys.join(delimiter) + '\n';
+
+    const maxEntries = Math.max(...keys.map(function(key) {return data[key].length;} ));
+    for(let i = 0; i < maxEntries; i++) {
+      let row = keys.map(function(key) { return (i < data[key].length) ? data[key][i] : ''; }).join(delimiter);
+      csv_content += row + '\n';
+    }
+
+    return csv_content;
+  }
+  
+  /**
+   * Converts a 2D array into a CSV string format.
+   * @param {Array} data - An array of arrays to be converted into CSV format.
+   * @param {string} [delimiter=','] - The delimiter to separate the values in the CSV.
+   * @returns {string} The formatted CSV string.
+   */
+  simpleArray2Csv(data, delimiter = ',') {
+    let csv_content = '';
+    const maxEntries = Math.max(...data.map(function(e) {return e.length;} ));
+    for(let i = 0; i < maxEntries; i++) {
+      let row = data.map(function(e) { return (i < e.length) ? e[i] : ''; }).join(delimiter);
+      csv_content += row + '\n';
+    }
+
+    return csv_content;
   }
 }
 

@@ -15,7 +15,6 @@ const { PRDC_APP_LOGGER } = require('../lib/PRDC_APP_LOGGER/PRDC_APP_LOGGER');
 const { PRDC_JSLAB_LANGUAGE } = require('../js/language');
 
 global.app_path = process.argv.find(e => e.startsWith('--app-path=')).split('=')[1].replace(/\\js\\?$/, '');
-global.packed = app_path.endsWith("\\app.asar");
 
 const { PRDC_JSLAB_WIN_EDITOR } = require('../js/editor/win-editor');
 

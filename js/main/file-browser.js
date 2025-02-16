@@ -44,14 +44,22 @@ class PRDC_JSLAB_FILE_BROWSER {
     } else {
       $(element).find('ul').remove();
     }
-    fs.readdir(folder_path, function(err, files) {
+    fs.readdir(folder_path, {withFileTypes: true}, function(err, dirents) {
       if(err) {
-        return obj.win.command_window.errorInternal(language.string(92) + ': ' + err);
+        obj.win.command_window.errorInternal(language.string(92) + ': ' + err);
+        return;
       }
       
-      files.forEach(function(file) {
-        var absolute_path = path.join(folder_path, file);
-        obj.addFileBrowserItem(absolute_path, ul);
+      dirents.sort((a, b) => {
+        if(a.isDirectory() && !b.isDirectory()) return -1;
+        if(!a.isDirectory() && b.isDirectory()) return 1;
+
+        return a.name.localeCompare(b.name);
+      });
+    
+      dirents.forEach(function(dirent) {
+        var absolute_path = path.join(folder_path, dirent.name);
+        obj.addFileBrowserItem(absolute_path, dirent, ul);
       });
       $(ul).appendTo(element).hide().slideDown(300, 'linear');
     });
@@ -62,18 +70,17 @@ class PRDC_JSLAB_FILE_BROWSER {
    * @param {string} absolute_path The absolute path to the file or folder to add.
    * @param {HTMLElement} ul The unordered list (UL) HTML element to which the item should be added.
    */
-  addFileBrowserItem(absolute_path, ul) {
+  addFileBrowserItem(absolute_path, dirent, ul) {
     var obj = this;
     var type_folder = false;
     var li = document.createElement('li');
     li.setAttribute('path', absolute_path.replace(/\\/g, '/'));
     li.innerHTML = '<span>' + path.basename(absolute_path) + '</span>';
     
-    var lstat = fs.lstatSync(absolute_path, {throwIfNoEntry: false});
-    if(lstat != undefined && lstat.isDirectory()) {
+    if(dirent.isDirectory()) {
       li.className = 'folder';
       type_folder = true;
-    } else if(lstat != undefined && lstat.isSymbolicLink()) {
+    } else if(dirent.isSymbolicLink()) {
       li.className = 'link';
       absolute_path = fs.readlinkSync(absolute_path);
       type_folder = true;
@@ -82,7 +89,7 @@ class PRDC_JSLAB_FILE_BROWSER {
       li.ondblclick = function(e) {
         e.stopPropagation();
         e.preventDefault();
-        ipcRenderer.send('EditorWindow', 'open-script', absolute_path);
+        ipcRenderer.send('EditorWindow', 'open-script', [absolute_path]);
       };
       var ext = absolute_path.split('.').pop();
       if(ext == 'jsl') {

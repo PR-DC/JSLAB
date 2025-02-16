@@ -34,6 +34,11 @@ class PRDC_JSLAB_SETTINGS {
       obj.win.gui.changeLangauge($(this).val());
     });
     $("#settings-container .set-langauge").val(language.lang);
+    
+    $('#settings-container .change-settings').on('click', function() {
+      obj.win.command_history.setMaxSize($('#settings-container .N-history-max').val());
+      obj.win.gui.closeSettings();
+    });
   }
 }
 

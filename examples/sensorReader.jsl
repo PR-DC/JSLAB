@@ -1,0 +1,137 @@
+/**
+ * @file Sensor reader
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+// Optional flags
+var DEBUG_INPUT = false; // [-] input debug
+var DEBUG_OUTPUT = true; // [-] output debug
+
+// Input data
+var I_port = 'COM16';
+var I_ID = 'LCADC-8';
+var N_data = 9;
+var N_buf = 1000; // [-] loggers data buffer length
+var timeout_time = 3; // [s] read timeout time
+var disp_time = 5; // [s] display time
+var libs_folder = 'Z:/_PRDC/PROGRAMI/_Electron_lib/';
+
+// Include classes
+const { PRDC_PACKET } = require(libs_folder + 'PRDC_PACKET/PRDC_PACKET');
+const { PRDC_SCBP } = require(libs_folder + 'PRDC_SCBP/PRDC_SCBP');
+const { PRDC_LOGGER } = require(libs_folder + 'PRDC_LOGGER/PRDC_LOGGER.js');
+
+// Libraries
+// --------------------
+var COM = new PRDC_SCBP();
+var P_in = new PRDC_PACKET();
+var P_out = new PRDC_PACKET();
+var LOGGER = new PRDC_LOGGER();
+
+// Configure serial communication
+var I_baudrate = 1000000; // [-] serial communication baudrate
+
+// Serial packet definition
+var packet_struct_in = [['UInt32LE', 'cell', 8]];
+var packet_struct_out = [
+  ['UInt16LE', 'id'], 
+  ['UInt16LE', 'flag', 8]
+];
+
+var temp_dir = getDefaultPath('temp');
+
+P_in.makePacket(packet_struct_in);
+var inFun = P_in.getInputCast();
+P_out.makePacket(packet_struct_out);
+var outFun = P_out.getOutputCast();
+var N_in = P_in.bytes;
+var N_out = P_out.bytes;
+
+// Run logger
+var header = ' PR-DC Log File\n Instrument: '  + I_ID +
+  '\n Number of columns: ' + N_data + '\n Date: ' + getDateTimeFull() +
+  '\n\ PR-DC, Republic of Serbia\n  ' +
+  'info@pr-dc.com\n\ -------------------- \n\n';
+LOGGER.begin(temp_dir, N_data, N_buf, header);
+
+// Open serial port
+function serialErrorCallback(e) {
+  error(e);
+}
+COM.begin(I_port, I_baudrate, serialErrorCallback);
+
+// Run test
+var stop = false;
+var data_out = [2, 1];
+if(DEBUG_OUTPUT) {
+ disp(' data_out = ' + data_out); 
+}
+COM.sendPacket(outFun(data_out), N_out);
+data_out = [1, 1];
+if(DEBUG_OUTPUT) {
+ disp(' data_out = ' + data_out); 
+}
+COM.sendPacket(outFun(data_out), N_out);
+
+// GUI
+(async function() {
+  var win = await openWindowBlank();
+  win.setSize(250, 170);
+  win.document.body.innerHTML += '<div id="stop-button" style="margin: 20px auto; font-size: 30px; padding: 30px; background: #f00; border-radius: 5px; color: #fff; width: 200px; text-align: center; font-weight: bold;">STOP</div>';
+  win.document.getElementById('stop-button')
+      .addEventListener("click", function() {
+    stop = true;
+    disp(' Pressed stop!');
+    win.close();
+  });
+})();
+
+// Read data
+var N_packet = 0;
+var N_packet_total = 0;
+var t = tic;
+var t_read = tic;
+var t_disp = tic;
+while(!stop) {
+  while(COM.availableData()) {
+    t_read = tic;
+    var [data_in_temp, flag_in] = COM.readPacket(N_in);
+    if(flag_in) {
+      var data_in = inFun(data_in_temp);
+      LOGGER.logData([...data_in, toc(t)]);
+      N_packet++;
+      N_packet_total++;
+      if(DEBUG_INPUT) {
+       disp(' data_in = ' + data_in); 
+      }
+    }
+  }
+  if(toc(t_disp) > disp_time) {
+    t_disp = tic;
+    disp(' Arrived ' + N_packet + ' packets!');
+    N_packet = 0;
+  }
+  if(toc(t_read) > timeout_time) {
+    stop = true;
+    disp(' Read timeout!');
+  }
+  await waitMSeconds(10);
+}
+
+disp(' Total number of packets: ' + N_packet_total);
+
+if(COM.isOpen()) {
+  COM.close();
+}
+LOGGER.closeLogFile();
+if(LOGGER.isEmpty()) {
+  LOGGER.deleteLogFile();
+  disp(' Log file is empty.');
+} else {
+  disp(' Log saved to: ' + LOGGER.file_path);
+}

@@ -1,0 +1,53 @@
+/**
+ * @file Optim module test
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+// Define the Rosenbrock function
+function rosenbrock(x) {
+  let sum = 0;
+  for(let i = 0; i < x.length - 1; i++) {
+    const term1 = 100 * Math.pow(x[i + 1] - Math.pow(x[i], 2), 2);
+    const term2 = Math.pow(x[i] - 1, 2);
+    sum += term1 + term2;
+  }
+  return sum;
+}
+
+// Initial guess for the parameters
+const initialGuess = [-1.2, 1.0, 0];
+
+// Optimization options (optional)
+const options = {
+  eps: 1e-6,
+  alpha: 0.001,
+  stepSize: 1e-6,
+  maxIterations: 10000,
+  disp: true
+};
+
+// Perform minimization with Powell
+disp('Runging Powell optimization...');
+var result = optimPowell(rosenbrock, initialGuess, options);
+
+disp('Powell optimization result:');
+disp('Solution: ' + stringify(result.x));
+disp('Function Value: ' + result.fx.toFixed(6));
+
+// Perform minimization with Nelder Mead 
+disp('Runging Nelder Mead optimization...');
+var result = optimNelderMead(rosenbrock, initialGuess);
+
+disp('Nelder Mead optimization result:');
+disp('Solution: ' + stringify(result.x));
+disp('Function Value: ' + result.fx.toFixed(6));
+
+// - Kraj proračuna
+disp(' Program je uspešno izvršen... ');
+disp(' Potrebno vreme: ' + num2str(toc(), 2) + ' sekundi');
+disp(' -------------------- ');

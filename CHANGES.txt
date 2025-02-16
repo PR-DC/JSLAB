@@ -3,6 +3,33 @@ JSLAB
 JavaScript LABoratory environment.
 --------------------
 
+Release v1.0.1, xx.12.2024.
+
+- Bug fixes and new features.
+- Added dispMonospaced function.
+- Fixed version display.
+- Runs parallel worker setup and context assignment only once.
+- Fixed examples unpacking and added openExamplesFolder function.
+- Added documentation indicating that the .JSL extension is used for scripts.
+- Extended meshgrid to N dimensions.
+- Extended reshape to use _ for automatic length.
+- Added an example for sensor reader.
+- Changed handling of window closing.
+- Added multiple helper functions for windows and figures.
+- Added adcToNewtons function.
+- Added functions for DevTools opening.
+- Added searchHelp function.
+- Added search to HTML documentation.
+- Added installModule function.
+- Added basic support for SISO systems analysis with control module, Computer-Aided Control System Design (CACSD).
+- Added basic support for optimization with optim module, based on npm package fmin.
+- Added support for Real Coded Mixed Integer Genetic Algorithm.
+- Added Search Space Algorithm.
+- Added support for 2D and 3D maps (functions webmap and geoglobe).
+- Added support for gamepads using Web Gamepad API.
+- Added functions checkArduino, compileArduino and uploadArduino.
+
+--------------------
 Release v1.0.0, 09.11.2024.
 
 - Initial release

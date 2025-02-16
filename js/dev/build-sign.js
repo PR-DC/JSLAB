@@ -7,15 +7,25 @@
  */
  
 // Import the filesystem module
-const fs = require('fs');
 const { PRDC_APP_CONFIG } = require('../../config/config.js');
 
 console.log('[build-sign.js] Started');
 var t = performance.now();
 
+if(!process.env.COMPANY_NAME) {
+  console.error('Environment variable COMPANY_NAME must be defined!');
+}
+if(!process.env.TIMESTAMP_SERVER) {
+  console.error('Environment variable TIMESTAMP_SERVER must be defined!');
+}
+if(!process.env.SIGN_TOOL_PATH) {
+  console.error('Environment variable SIGN_TOOL_PATH must be defined!');
+}
+
 var config = new PRDC_APP_CONFIG();
 
 const { execSync } = require('child_process');
+
 
 /**
  * Signs a specified file using the digital signature tool and parameters defined in the application's configuration. The

@@ -21,17 +21,17 @@ class PRDC_JSLAB_EDITOR {
     this.fullscreen = false;
     
     // On menu click
-    $("#save-menu").click(function() { obj.win.script_manager.saveScript() });
-    $("#save-as-menu").click(function() { obj.win.script_manager.saveAsScript() });
-    $("#open-menu").click(function() { obj.win.script_manager.openScriptFile() });
+    $("#save-menu").click(function() { obj.win.script_manager.saveScript(); });
+    $("#save-as-menu").click(function() { obj.win.script_manager.saveAsScript(); });
+    $("#open-menu").click(function() { obj.win.script_manager.openScriptFile(); });
 
-    $("#run-menu").click(function() { obj.win.script_manager.runScript() });
-    $("#new-tab").click(function() { obj.win.script_manager.createScript() });
-    $("#new-script").click(function() { obj.win.script_manager.createScript() });
+    $("#run-menu").click(function() { obj.win.script_manager.runScript(); });
+    $("#new-tab").click(function() { obj.win.script_manager.createScript(); });
+    $("#new-script").click(function() { obj.win.script_manager.createScript(); });
     
-    $("#close-dialog-save").click(function() { obj.win.script_manager.closingDialogButton(2) });
-    $("#close-dialog-discard").click(function() { obj.win.script_manager.closingDialogButton(1) });
-    $("#close-dialog-cancel").click(function() { obj.win.script_manager.closingDialogButton(0) });
+    $("#close-dialog-save").click(function() { obj.win.script_manager.closingDialogButton(2); });
+    $("#close-dialog-discard").click(function() { obj.win.script_manager.closingDialogButton(1); });
+    $("#close-dialog-cancel").click(function() { obj.win.script_manager.closingDialogButton(0); });
 
     $("#search-dialog-menu").click(function() { 
       obj.win.script_manager.openSearchDialog();
@@ -116,6 +116,15 @@ class PRDC_JSLAB_EDITOR {
   }
 
   /**
+   * Displays an internal message within the application's main window. Can optionally request to focus the window.
+   * @param {string} msg - The internal message to display.
+   * @param {boolean} [focus=true] - Optional. Whether to focus the application window when displaying the message. Defaults to true.
+   */
+  dispInternal(msg, focus = true) {
+    ipcRenderer.send("MainWindow", "disp-internal", [msg, focus]);
+  }
+  
+  /**
    * Displays an error message through the application's main window. Typically used for internal errors.
    * @param {string} msg The error message to display.
    */
@@ -124,4 +133,4 @@ class PRDC_JSLAB_EDITOR {
   }
 }
 
-exports.PRDC_JSLAB_EDITOR = PRDC_JSLAB_EDITOR
+exports.PRDC_JSLAB_EDITOR = PRDC_JSLAB_EDITOR;

@@ -13,7 +13,7 @@ const rimraf = require('rimraf');
 
 const { PRDC_APP_CONFIG } = require('../../config/config');
 
-console.log('[make-sandbox-doc.js] Started');
+console.log('[make-doc.js] Started');
 var t = performance.now();
 
 var package_data = JSON.parse(fs.readFileSync('package.json'));
@@ -56,6 +56,11 @@ async function processDoc(module) {
       if(doc.async) {
         doc_output.async = doc.async;
       }
+      if(doc.meta) {
+        doc_output.source_filename = doc.meta.filename;
+        doc_output.source_lineno = doc.meta.lineno;
+        doc_output.source_range = doc.meta.range;
+      }
       docs_out[doc.name] = doc_output;
     }
   });
@@ -75,7 +80,10 @@ async function processDoc(module) {
   var jslab_doc_flat = Object.values(jslab_doc).reduce((acc, innerObj) => {
     return { ...acc, ...innerObj };
   }, {});
-
+  if(config.OUTPUT_COMPLETE_JSDOC) {
+    return;
+  }
+  
   // Make JSON documentation
   console.log(' Making documentation.json');
   fs.writeFileSync('documentation.json', JSON.stringify(jslab_doc, null, 2));
@@ -152,7 +160,7 @@ async function processDoc(module) {
           : "";
 
         // Add a title for the function
-        latex += `\\vspace{5mm}\n\\noindent \\code{\\texttt{${escapeLatex(item.name)}(${params})}}{\\color{jsl-gray}\\vspace{2mm}\\hrule\\vspace{4mm}}\n\n`;
+        latex += `\\vspace{5mm}\n\\noindent \\codeBlock{\\texttt{${escapeLatex(item.name)}(${params})}}{\\color{jsl-gray}\\vspace{2mm}\\hrule\\vspace{4mm}}\n\n`;
 
         // Add metadata if available
         if(item.since) {
@@ -205,7 +213,7 @@ async function processDoc(module) {
       }
     }
     
-    latex += '\n'
+    latex += '\n';
     
     return latex;
   }
@@ -239,5 +247,5 @@ async function processDoc(module) {
   }
   rimraf.sync(dir);
 
-  console.log('[make-sandbox-doc.js] ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
+  console.log('[make-doc.js] ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
 })();

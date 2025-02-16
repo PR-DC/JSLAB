@@ -59,7 +59,7 @@ class PRDC_JSLAB_LIB_TIME {
       return dt-this.jsl.context.last_tic;
     } else {
       return dt-tic;
-    }
+    } 
   }
 
   /**
@@ -71,7 +71,7 @@ class PRDC_JSLAB_LIB_TIME {
     if(!tic) {
       tic = global.last_tic;
     }
-    return (performance.now()-tic);
+    return (performance.now()-tic*1000);
   }
 
   /**

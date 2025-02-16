@@ -41,12 +41,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       this.path = undefined;
       this.name = "Unknown";
     }
-    
+
     this.tab.setAttribute("title", this.path);
     this.script_manager.setScriptNameByTab(this.tab, this.name);
 
     this.code_editor = CodeMirror(document.getElementById("code"), {
-      mode: "javascript",
       theme: "notepadpp",
       rulers: [{ color: "#aff", column: 75, lineStyle: "solid" }],
       indentUnit: 2,
@@ -62,21 +61,6 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
         "CodeMirror-lint-markers",
       ],
       foldGutter: true,
-      lint: {
-        getAnnotations: async function(text, callback) {
-          var results = await obj.script_manager.eslint.lintText(text);
-          callback(results[0].messages.map(message => ({
-            from: CodeMirror.Pos(message.line - 1, message.column - 1),
-            to: CodeMirror.Pos(
-              message.endLine ? message.endLine - 1 : message.line - 1,
-              message.endColumn ? message.endColumn - 1 : message.column
-            ),
-            severity: message.severity === 2 ? "error" : "warning",
-            message: message.message,
-          })));
-        },
-        async: true
-      },
       searchDialog: true,
       highlightSelectionMatches: { annotateScrollbar: true },
     });
@@ -114,6 +98,8 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     this.code_editor.on("change", function() {
       obj.codeChanged();
     });
+    this.updateEditorMode();
+    
     this.show();
   }
 
@@ -224,6 +210,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
         this.tab.querySelector(".tab-title").innerHTML = this.name;
         this.saved_code = this.code;
         this.tab.classList.remove("changed");
+        this.updateEditorMode();
         return true;
       } else {
         this.win.editor.errorInternal(language.string(130));
@@ -282,6 +269,16 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
   }
 
   /**
+   * Sets the cursor in the code editor to the specified line number.
+   * @param {number} lineno - The line number to navigate to (1-based index).
+   */
+  setLine(lineno) {
+    if(isFinite(lineno)) {
+      this.code_editor.setCursor({ line: lineno-1, ch: 0 });
+    }
+  }
+  
+  /**
    * Saves the script and then runs it, typically in an external execution environment.
    * @param {array} lines The specific lines or sections of the script to execute, if applicable.
    */
@@ -308,6 +305,38 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
   }
   
   /**
+   * Update editor mode based on script extension
+   */
+  updateEditorMode() {
+    var obj = this;
+    if(typeof this.path === 'string' || this.path instanceof String) {
+      var file_extension = path.extname(this.path);
+      if(['.cpp', '.c', '.ino', '.h', '.hpp'].includes(file_extension.toLowerCase())) {
+        this.code_editor.setOption("mode", "clike");
+        this.code_editor.setOption("lint", {});
+        return;
+      }
+    }
+    this.code_editor.setOption("mode", "javascript");
+    this.code_editor.setOption("lint", {
+      getAnnotations: async function(text, callback) {
+        var results = await obj.script_manager.eslint.lintText(text);
+        callback(results[0].messages.map(message => ({
+          from: CodeMirror.Pos(message.line - 1, message.column - 1),
+          to: CodeMirror.Pos(
+            message.endLine ? message.endLine - 1 : message.line - 1,
+            message.endColumn ? message.endColumn - 1 : message.column
+          ),
+          severity: message.severity === 2 ? "error" : "warning",
+          message: message.message,
+        })));
+      },
+      async: true
+    });
+      
+  }
+  
+  /**
    * Opens search dialog in the code editor.
    */
   openSearchDialog() {
@@ -315,4 +344,4 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
   }
 }
 
-exports.PRDC_JSLAB_EDITOR_SCRIPT = PRDC_JSLAB_EDITOR_SCRIPT
+exports.PRDC_JSLAB_EDITOR_SCRIPT = PRDC_JSLAB_EDITOR_SCRIPT;

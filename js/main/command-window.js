@@ -59,7 +59,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
       this.show_timestamp = false;
     }
     this.N_messages_max = Number(store.get('N_messages_max'));
-    if(this.N_messages_max == 0) {
+    if(!isFinite(this.N_messages_max) || this.N_messages_max == 0) {
       this.N_messages_max = Infinity;
     }
     this.write_timestamps = store.get('write_timestamps');
@@ -77,7 +77,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     // Command history
     this.terminal_history_cont = 
       $('#right-panel .history-cont');
-    $('#right-panel .history-close').click(function(e){
+    $('#right-panel .history-close').click(function(){
       obj.closeTerminalDialog(obj.terminal_history_cont);
     });
     this.terminal_history_cont.on('keydown', function(e) {
@@ -151,11 +151,11 @@ class PRDC_JSLAB_COMMAND_WINDOW {
         e.preventDefault();
       }
     });
-    $('#right-panel .terminal-settings .options-close').click(function(e){
+    $('#right-panel .terminal-settings .options-close').click(function(){
       obj.closeTerminalDialog(obj.settings_dialog);
     });
     this.setNMessagesMax();
-    $('#right-panel .terminal-settings .change-settings').click(function(e){
+    $('#right-panel .terminal-settings .change-settings').click(function(){
       obj.closeTerminalDialog(obj.settings_dialog);
       obj.N_messages_max =
         Number($('#right-panel .terminal-settings .N-messages-max').val());
@@ -178,15 +178,15 @@ class PRDC_JSLAB_COMMAND_WINDOW {
         e.preventDefault();
       }
     });
-    $('#right-panel .terminal-log .options-close').click(function(e){
+    $('#right-panel .terminal-log .options-close').click(function(){
       obj.closeTerminalDialog(obj.log_dialog);
     });
-    $('#right-panel .terminal-log .write-timestamps').click(function(e){
+    $('#right-panel .terminal-log .write-timestamps').click(function(){
       obj.write_timestamps = this.checked;
       obj.setWriteTimestamps();
     });
     this.setWriteTimestamps();
-    $('#right-panel .terminal-log .save-log').click(function(e){
+    $('#right-panel .terminal-log .save-log').click(function(){
       obj.closeTerminalDialog(obj.log_dialog);
       obj.saveLog();
     });
@@ -250,7 +250,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     });
 
     // Code input keydown callbacks
-    function historyUp(e) {
+    function historyUp() {
       if(obj.i_history < (obj.win.command_history.history.length - 1)) {
         obj.i_history += 1;
         obj.code_input.setValue(obj.win.command_history.history[obj.i_history]);
@@ -259,7 +259,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
       }
     }
     
-    function historyDown(e) {
+    function historyDown() {
       if(obj.i_history > 0) {
         obj.i_history -= 1;
         obj.code_input.setValue(obj.win.command_history.history[obj.i_history]);
@@ -287,18 +287,13 @@ class PRDC_JSLAB_COMMAND_WINDOW {
         // Arrow up
 
         var cursor = obj.code_input.getCursor();
-        if(cursor.line == 0 && cursor.ch == 0) {
+        var line = obj.code_input.lineCount()-1;
+        var position = obj.code_input.getLine(line).length;
+        if(cursor.line == 0 && (cursor.ch == position || cursor.ch == 0)) {
           historyUp(e);
-        } else {
-          requestAnimationFrame(function() {
-            var cursor = obj.code_input.getCursor();
-            if(cursor.line == 0 && cursor.ch == 0) {
-              historyUp(e);
-            }
-          });
+          e.stopPropagation();
+          e.preventDefault();
         }
-        e.stopPropagation();
-        e.preventDefault();
       } else if(e.key == 'ArrowDown' &&
           !obj.code_input.state.completionActive) {
         // Arrow down
@@ -306,20 +301,11 @@ class PRDC_JSLAB_COMMAND_WINDOW {
         var cursor = obj.code_input.getCursor();
         var line = obj.code_input.lineCount()-1;
         var position = obj.code_input.getLine(line).length;
-        if(cursor.line == line && cursor.ch == position) {
+        if(cursor.line == line && (cursor.ch == position || cursor.ch == 0)) {
           historyDown(e);
-        } else {
-          requestAnimationFrame(function() {
-            var cursor = obj.code_input.getCursor();
-            var line = obj.code_input.lineCount()-1;
-            var position = obj.code_input.getLine(line).length;
-            if(cursor.line == line && cursor.ch == position) {
-              historyDown(e);
-            }
-          });
+          e.stopPropagation();
+          e.preventDefault();
         }
-        e.stopPropagation();
-        e.preventDefault();
       } else if(e.key == 'PageUp') {
         // Page up
         if(obj.win.command_history.history.length) {
@@ -446,7 +432,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     this.terminal_options_cont = $('#right-panel .options');
 
     // Terminal settings button click
-    $('#right-panel .options .settings').click(function(e){
+    $('#right-panel .options .settings').click(function(){
       obj.openTerminalDialog(obj.settings_dialog);
     });
 
@@ -478,12 +464,12 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     });
 
     // Terminal save log button click
-    $('#right-panel .options .log').click(function(e){
+    $('#right-panel .options .log').click(function(){
       obj.openTerminalDialog(obj.log_dialog);
     });
     
     // Terminal scroll to bottom button click
-    $('#right-panel .options .to-bottom').click(function(e){
+    $('#right-panel .options .to-bottom').click(function(){
       obj.scrollToBottom();
       obj.code_input.focus();
       obj.code_input.setCursor(obj.code_input.lineCount(), 0);
@@ -496,10 +482,11 @@ class PRDC_JSLAB_COMMAND_WINDOW {
         shell.openExternal(e.target.href);
         return false;
       }
+      return true;
     });
     
     // Commands for evaluation
-    $(document.body).on('click', '#command-window-messages span.eval-code', function(e) {
+    $(document.body).on('click', '#command-window-messages span.eval-code', function() {
       obj.win.eval.evalCommand(this.innerText);
     });
   }
@@ -561,6 +548,8 @@ class PRDC_JSLAB_COMMAND_WINDOW {
         const node = viewer.getRootElement();
         el[0].appendChild(node);
         node.openAll(1);
+      }).catch(function(err) {
+        console.log(err);
       });
     } else {
       this.message(this.highlightCode('ans = ' + data[0]), 'ans = ' + data[0]);
@@ -570,12 +559,23 @@ class PRDC_JSLAB_COMMAND_WINDOW {
   /**
    * Displays a general message in the command window.
    * @param {string} msg The message to display.
+   * @param {string} raw Raw message to log.
    */
   message(msg, raw) {
     this.win.workspace.updateWorkspace();
     return this.addMessage('data-in', this.prettyPrint(msg), raw);
   }
 
+  /**
+   * Displays a general message in the command window with monospaced font.
+   * @param {string} msg The message to display.
+   * @param {string} raw Raw message to log.
+   */
+  messageMonospaced(msg, raw) {
+    this.win.workspace.updateWorkspace();
+    return this.addMessage('data-in', '<div class="monospaced">'+this.prettyPrint(msg)+"</div>", raw);
+  }
+  
   /**
    * Displays a general message in the command window.
    * @param {string} msg The message to display.

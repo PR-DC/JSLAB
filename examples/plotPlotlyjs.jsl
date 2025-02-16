@@ -7,7 +7,7 @@
  */
 
 var win = await openPlotlyjs();
-win.document.title = "Example plot";
+win.setTitle("Example plot");
 
 var plot_config = {
   responsive: true,
@@ -51,7 +51,10 @@ var plot_layout = {
     tickwidth: 0.5,
     tickcolor: '#000',
     linecolor: '#000',
-    linewidth: 0.5
+    linewidth: 0.5,
+    title: {
+      text: 'xaxis title',
+    }
   },
   yaxis: {
     showgrid: true,

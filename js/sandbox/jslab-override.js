@@ -19,11 +19,12 @@ class PRDC_JSLAB_OVERRIDE {
     this.jsl = jsl;
     
     this.jsl.builtin_workspace = Object.getOwnPropertyNames(this.jsl.context);
+    this._Module = require('module');
     
     // Overrides
     this.jsl._console = this.jsl.context.console;
     this.jsl._eval = this.jsl.context.eval;
-    this.jsl._require = this.jsl.context.require;
+    this.jsl._require = this._Module.prototype.require;
     this.jsl._requestAnimationFrame = this.jsl.context.requestAnimationFrame.bind(this.context);
     this.jsl._cancelAnimationFrame = this.jsl.context.cancelAnimationFrame.bind(this.context);
     this.jsl._setInterval = setInterval.bind(this.jsl.context);
@@ -39,6 +40,34 @@ class PRDC_JSLAB_OVERRIDE {
     }
     this.jsl._isNaN = this.jsl.context.isNaN;
     
+    // Add toJSON methods to some classes
+    if(!Gamepad.prototype.toJSON) {
+      Gamepad.prototype.toJSON = function() {
+        return {
+          id: this.id,
+          index: this.index,
+          connected: this.connected,
+          timestamp: this.timestamp,
+          mapping: this.mapping,
+          axes: Array.from(this.axes),
+          buttons: this.buttons.map(button => ({
+            pressed: button.pressed,
+            value: button.value
+          }))
+        };
+      };
+    }
+    if(!MediaDeviceInfo.prototype.toJSON) {
+      MediaDeviceInfo.prototype.toJSON = function() {
+        return {
+          deviceId: this.deviceId,
+          kind: this.kind,
+          label: this.label,
+          groupId: this.groupId
+        };
+      };
+    }
+
     // Assign environment properties to context
     this.jsl.env.exports.forEach(function(prop) {
       if(config.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
@@ -60,7 +89,7 @@ class PRDC_JSLAB_OVERRIDE {
         
         var prop_out = prop;
         if(config.MATHJS_PREVENT_OVERRIDE.includes(prop)) {
-          prop_out = 'mathjs_'+prop
+          prop_out = 'mathjs_'+prop;
         }
         obj.jsl.context[prop_out] = obj.jsl.env.math[prop];
       });
@@ -263,6 +292,7 @@ class PRDC_JSLAB_OVERRIDE {
           let newPromise = super.then(...args);
           return newPromise;
         }
+        return false;
       }
 
       // Override the `catch` method
@@ -271,6 +301,7 @@ class PRDC_JSLAB_OVERRIDE {
           let newPromise = super.catch(...args);          
           return newPromise;
         }
+        return false;
       }
       
       // Override the `finally` method
@@ -279,23 +310,21 @@ class PRDC_JSLAB_OVERRIDE {
           let newPromise = super.finally(...args);
           return newPromise;
         }
+        return false;
       }
-    }
-  }
-  
-  /**
-   * Dynamically loads and returns modules or libraries specified by the module path, integrating with JSLAB's module management system.
-   * @param {string} module The module path to load.
-   * @returns {*} The loaded module.
-   */
-  require(module) {
-    module = this.jsl.pathResolve(module);
-    if(module) {
-      if(!this.jsl.required_modules.includes(module)) {
-        this.jsl.required_modules.push(module);
+    };
+    
+    this._Module.prototype.require = function(...args) {
+      var name = obj.jsl.pathResolve(args[0], this);
+      if(name) {
+        if(!obj.jsl.required_modules.includes(name)) {
+          obj.jsl.required_modules.push(name);
+        }
+        args[0] = name;
+        return obj.jsl._require.apply(this, args);
       }
-      return this.jsl._require(module);
-    }
+      return false;
+    };
   }
   
   /**
@@ -331,9 +360,9 @@ class PRDC_JSLAB_OVERRIDE {
    * @param {Object} options Optional settings for the idle callback.
    * @returns {number} The request ID of the idle callback request.
    */
-  request_idleCallback(fun, options) {
+  requestIdleCallback(fun, options) {
     var obj = this;
-    var request_id = this.jsl._request_idleCallback(function() {
+    var request_id = this.jsl.requestIdleCallback(function() {
       fun(options);
       obj.jsl.array.removeElementByValue(obj.jsl.started_idle_callbacks, request_id);
       obj.jsl.onStatsChange();
@@ -360,7 +389,6 @@ class PRDC_JSLAB_OVERRIDE {
    * @returns {number} The interval ID.
    */
   setInterval(...arg) {
-    var obj = this;
     var request_id = this.jsl._setInterval(...arg);
     this.jsl.started_intervals.push(request_id);
     this.jsl.onStatsChange();

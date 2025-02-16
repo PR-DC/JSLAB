@@ -265,7 +265,7 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
           span.title += path.sep;
         }
         span.textContent = folders[i];
-        span.onclick = function(e) {
+        span.onclick = function() {
           obj.setPath(this.title);
         };
         address.appendChild(span);
@@ -368,4 +368,4 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
   }
 }
 
-exports.PRDC_JSLAB_FOLDER_NAVIGATION = PRDC_JSLAB_FOLDER_NAVIGATION
+exports.PRDC_JSLAB_FOLDER_NAVIGATION = PRDC_JSLAB_FOLDER_NAVIGATION;

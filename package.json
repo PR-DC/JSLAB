@@ -1,6 +1,6 @@
 {
   "name": "JSLAB",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JavaScript LABoratory environment",
   "main": "js/init.js",
   "repository": "https://github.com/PR-DC/JSLAB",
@@ -9,26 +9,27 @@
   "homepage": "https://pr-dc.com",
   "scripts": {
     "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
-    "postinstall": "node js/dev/build-configure.js && node-gyp rebuild && node js/dev/make-doc.js & electron js/init.js",
+    "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron js/init.js",
     "start": "electron js/init.js",
-    "debug": "electron js/init.js --debug",
-    "test": "electron js/init.js --test",
-    "build": "node js/dev/build-configure.js && node-gyp rebuild && electron js/init.js",
-    "pack": "node js/dev/build-configure.js --action pack && node-gyp rebuild && electron-builder --dir",
-    "dist": "node js/dev/build-configure.js --action dist && node-gyp rebuild && electron-builder --win",
-    "dist-portable": "node js/dev/build-configure.js --action dist-portable && node-gyp rebuild && electron-builder --win portable",
-    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build && node-gyp rebuild && electron-builder --win",
+    "debug": "electron js/init.js --debug-app",
+    "test": "electron js/init.js --test-app",
+    "build": "node js/dev/build-configure.js & node-gyp rebuild & electron js/init.js",
+    "pack": "node js/dev/build-configure.js --action pack & node-gyp rebuild & electron-builder --dir",
+    "dist": "node js/dev/build-configure.js --action dist & node-gyp rebuild & electron-builder --win",
+    "dist-portable": "node js/dev/build-configure.js --action dist-portable & node-gyp rebuild & electron-builder --win portable",
+    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build & node-gyp rebuild & electron-builder --win",
     "clear-app-data": "node js/dev/clear-app-data.js --confirm",
     "make-doc": "node js/dev/make-doc.js",
+    "make-source-code-book": "node js/dev/make-source-code-book.js",
     "update-libs": "node js/dev/download-libs.js --force --confirm",
     "upload-source": "node js/dev/upload-source-code.js"
   },
   "build": {
+    "asar": false,
     "appId": "com.pr-dc.jslab",
     "productName": "PR-DC JSLAB",
     "copyright": "Copyright 2024 @ PR-DC",
     "nodeGypRebuild": true,
-    "asarUnpack": [],
     "directories": {
       "buildResources": "build",
       "output": "dist"
@@ -58,11 +59,19 @@
     "extraResources": [
       {
         "from": "./build/Release/",
-        "to": "./include/build/Release/",
+        "to": "./app/build/Release/",
         "filter": [
           "*.node",
           "*.dll"
         ]
+      },
+      {
+        "from": "./node_modules/npm/",
+        "to": "./app/node_modules/npm/"
+      },
+      {
+        "from": "./node_modules/node-gyp/",
+        "to": "./app/node_modules/node-gyp/"
       }
     ],
     "compression": "maximum",
@@ -107,7 +116,7 @@
       "multiLanguageInstaller": true,
       "warningsAsErrors": false
     },
-    "artifactName": "JSLAB_1.0.0.${ext}"
+    "artifactName": "JSLAB_1.0.1.${ext}"
   },
   "devDependencies": {
     "electron": "29.1.2",
@@ -124,6 +133,7 @@
     "electron-store": "8.2.0",
     "eslint": "9.14.0",
     "fast-xml-parser": "4.4.1",
+    "fmin": "0.0.4",
     "glob": "10.3.10",
     "jsdoc-api": "9.3.4",
     "ml-regression-polynomial": "3.0.1",

@@ -30,8 +30,6 @@ class PRDC_JSLAB_LIB_WINDOWS {
      * @type {Array}
      */
     this.open_windows = {};
-    
-    this._bridge_code = this.jsl.env.readFileSync(app_path+'/js/windows/jsl-bridge.js').toString();
   }
 
   /**
@@ -40,7 +38,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {number} The identifier (wid) of the newly opened window.
    */
   openWindow(file) {
-    if(!this.jsl.env.isAbsolutePath(file)) {
+    if(!this.jsl.env.pathIsAbsolute(file)) {
       file = app_path + '/html/' + file;
     }
     
@@ -57,6 +55,19 @@ class PRDC_JSLAB_LIB_WINDOWS {
     this.jsl.ignore_output = true;
     return wid;
   }
+
+  /**
+   * Opens the developer tools for a specified window by ID if it exists.
+   * @param {string} wid - The window ID.
+   * @returns {boolean} True if the developer tools were opened; otherwise, false.
+   */
+  openWindowDevTools(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].openDevTools();
+    } else {
+      return false;
+    }
+  }
   
   /**
    * Closes the specified window.
@@ -69,6 +80,277 @@ class PRDC_JSLAB_LIB_WINDOWS {
   }
   
   /**
+   * Closes the specified window.
+   * @param {number} wid - Identifier for the window to close.
+   */
+  closeWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].close();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves the window object with the specified ID.
+   * @param {number} wid - The ID of the window.
+   * @returns {Object|boolean} - The window object if found, otherwise false.
+   */
+  getWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid];
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Retrieves current active window object.
+   * @returns {Object|boolean} - The window object if found, otherwise false.
+   */
+  getCurrentWindow() {
+    if(this.open_windows.hasOwnProperty(this.active_window)) {
+      return this.open_windows[this.active_window];
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Retrieves current active window object.
+   * @returns {Object|boolean} - The window object if found, otherwise false.
+   */
+  gcw() {
+    return this.getCurrentWindow();
+  }
+
+  /**
+   * Shows the specified window.
+   * @param {number} wid - The ID of the window to show.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the show() method.
+   */
+  showWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].show();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Hides the specified window.
+   * @param {number} wid - The ID of the window to hide.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the hide() method.
+   */
+  hideWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].hide();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Brings the specified window to the foreground.
+   * @param {number} wid - The ID of the window to focus.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid.
+   */
+  focusWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].focus();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Minimizes the specified window.
+   * @param {number} wid - The ID of the window to minimize.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the minimize() method.
+   */
+  minimizeWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].minimize();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Centers the specified window on the screen.
+   * @param {number} wid - The ID of the window to center.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the center() method.
+   */
+  centerWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].center();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Moves the specified window to the top of the window stack.
+   * @param {number} wid - The ID of the window to move to the top.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the moveTop() method.
+   */
+  moveTopWindow(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].moveTop();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the size of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {number} width - The new width of the window.
+   * @param {number} height - The new height of the window.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid.
+   */
+  setWindowSize(wid, width, height) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setSize(width, height);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the position of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {number} left - The new left position of the window.
+   * @param {number} top - The new top position of the window.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid.
+   */
+  setWindowPos(wid, left, top) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setPos(left, top);
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Sets the resizable state of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {boolean} state - Whether the window should be resizable.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setResizable() method.
+   */
+  setWindowResizable(wid, state) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setResizable(state);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the movable state of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {boolean} state - Whether the window should be movable.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setMovable() method.
+   */
+  setWindowMovable(wid, state) {
+    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setMovable(state);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the aspect ratio of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {number} aspect_ratio - The desired aspect ratio of the window.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setAspectRatio() method.
+   */
+  setWindowAspectRatio(wid, aspect_ratio) {
+    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setAspectRatio(aspect_ratio);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the opacity of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {number} opacity - The desired opacity level (0 to 1).
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setOpacity() method.
+   */
+  setWindowOpacity(wid, opacity) {
+    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setOpacity(opacity);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Sets the position of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {number} left - The new left position of the window.
+   * @param {number} top - The new top position of the window.
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid.
+   */
+  setWindowTitle(wid, title) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setTitle(title);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves the size of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @returns {Array|boolean} - An array [width, height] if the window exists, otherwise false.
+   */
+  getWindowSize(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].getSize();
+    } else {
+      return false;
+    }
+  }
+  
+  /**
+   * Retrieves the position of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @returns {Array|boolean} - An array [left, top] if the window exists, otherwise false.
+   */
+  getWindowPos(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].getPos();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Opens window with documentation
+   */
+  async openDocumentation(query) {
+    var wid = this.openWindow('../documentation.html');
+    var win = this.open_windows[wid];
+    await win.ready;
+    if(query) {
+      win.context.location.href = '../documentation.html#'+encodeURI(query);
+      win.context.location.reload(true);
+    }
+    win.setTitle('JSLAB / DOCUMENTATION');
+  }
+  
+  /**
+   * Opens window with documentation
+   */
+  async openDoc(query) {
+    await this.openDocumentation(query);
+  }
+  
+  /**
    * Opens a new 3D window and imports specified modules.
    * @param {Array<Object>} [imports=[]] - An array of import objects specifying modules to import.
    * @returns {Promise<Object>} A promise that resolves to the window object once imports are ready.
@@ -76,8 +358,8 @@ class PRDC_JSLAB_LIB_WINDOWS {
   async openWindow3D(imports = []) {
     var wid = this.openWindow('three.html');
     await this.open_windows[wid].ready;
-    var win = this.open_windows[wid].win;
-    var script = win.document.createElement('script');
+    var context = this.open_windows[wid].context;
+    var script = context.document.createElement('script');
     script.type = 'module';
 
     const import_statements = [];
@@ -111,32 +393,54 @@ class PRDC_JSLAB_LIB_WINDOWS {
     
     script.textContent = `${import_statements.join('\n')}\n\n${window_assignments.join('\n')}\n window.imports_ready = true;`;
     
-    win.imports_ready = false;
-    win.document.body.appendChild(script);
-    while(!win.imports_ready) {
+    context.imports_ready = false;
+    context.document.body.appendChild(script);
+    while(!context.imports_ready) {
       await this.jsl.non_blocking.waitMSeconds(1);
     }
-    return win;
+    return context;
   }
 
-/**
+  /**
    * Opens a Plotly.js window and initializes the plot container.
    * @returns {Promise<Window>} The window object where Plotly.js is loaded and the plot container is available.
    */
   async openPlotlyjs() {
     var wid = this.openWindow('plotlyjs.html');
     await this.open_windows[wid].ready;
-    var win = this.open_windows[wid].win;
-    win.imports_ready = false;
-    while(!win.imports_ready) {
-      if(typeof win.Plotly != undefined) {
-        win.imports_ready = true;
+    var context = this.open_windows[wid].context;
+    context.imports_ready = false;
+    while(!context.imports_ready) {
+      if(typeof context.Plotly != 'undefined') {
+        context.imports_ready = true;
       }
       await this.jsl.non_blocking.waitMSeconds(1);
     }
-    win.plot_cont = win.document.getElementById('plot-cont');
-    win.plot_cont.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
-    return win;
+    context.plot_cont = context.document.getElementById('plot-cont');
+    context.plot_cont.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
+    return context;
+  }
+
+  /**
+   * Opens a window with canvas and D3 and initializes the canvas element.
+   * @returns {Promise<Window>} The window object where D3 is loaded and the canvas element is available.
+   */
+  async openCanvas() {
+    var wid = this.openWindow('d3.html');
+    await this.open_windows[wid].ready;
+    var context = this.open_windows[wid].context;
+    context.imports_ready = false;
+    while(!context.imports_ready) {
+      if(typeof context.d3 != 'undefined') {
+        context.imports_ready = true;
+      }
+      await this.jsl.non_blocking.waitMSeconds(1);
+    }
+    context.svg = context.document.getElementById('d3-svg');
+    context.canvas = context.document.getElementById('d3-canvas');
+    context.svg.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
+    context.canvas.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
+    return context;
   }
   
   /**
@@ -146,7 +450,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
   async openWindowBlank() {
     var wid = this.openWindow('blank.html');
     await this.open_windows[wid].ready;
-    return this.open_windows[wid].win;
+    return this.open_windows[wid].context;
   }
   
   /**
@@ -215,12 +519,11 @@ class PRDC_JSLAB_WINDOW {
     this.#jsl = jsl;
     this.wid = wid;
 
-    this.win;
-    this.win_id;
+    this.context;
     this.dom;
     
     this.opened = false;
-    this.ready = new Promise((resolve, reject) => {
+    this.ready = new Promise((resolve) => {
       obj._readyResolve = resolve;
     });
     
@@ -235,21 +538,174 @@ class PRDC_JSLAB_WINDOW {
   async open(file) {
     if(!this.opened) {
       this.opened = true;
-      var [win, win_id, ready] = this.#jsl.env.openWindow(this.wid, file);
-      this.win = win;
-      this.win_id = win_id;
+      var [context, ready] = this.#jsl.env.openWindow(this.wid, file);
+      this.context = context;
       await ready;
-      this.dom = this.win.document;
+      this.dom = this.context.document;
       this._onReady();
     }
+  }
+
+  /**
+   * Shows the window.
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was shown successfully, or `false` if the window ID is invalid.
+   */
+  async show() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.showWindow(this.wid);
+  }
+
+  /**
+   * Hides the window.
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was hidden successfully, or `false` if the window ID is invalid.
+   */
+  async hide() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.hideWindow(this.wid);
   }
   
   /**
    * Brings focus to the window.
-   * @returns {void}
+   * @returns {Promise} - Resolves when the window size is focused.
    */
-  focus() {
-    this.#jsl.env.focusWindow(this.wid);
+  async focus() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.focusWindow(this.wid);
+  }
+
+  /**
+   * Minimizes the window.
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was minimized successfully, or `false` if the window ID is invalid.
+   */
+  async minimize() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.minimizeWindow(this.wid);
+  }
+
+/**
+ * Centers the window on the screen.
+ * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was centered successfully, or `false` if the window ID is invalid.
+ */
+  async center() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.centerWindow(this.wid);
+  }
+
+  /**
+   * Moves the window to the top of the window stack.
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was moved to the top successfully, or `false` if the window ID is invalid.
+   */
+  async moveTop() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.moveTopWindow(this.wid);
+  }
+  
+  /**
+   * Sets the size of the current window.
+   * @param {number} width - The desired width of the window.
+   * @param {number} height - The desired height of the window.
+   * @returns {Promise} - Resolves when the window size is set.
+   */
+  async setSize(width, height) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowSize(this.wid, width, height);
+  }
+  
+  /**
+   * Sets the position of the current window.
+   * @param {number} left - The desired left position of the window.
+   * @param {number} top - The desired top position of the window.
+   * @returns {Promise} - Resolves when the window position is set.
+   */
+  async setPos(left, top) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowPos(this.wid, left, top);
+  }
+
+  /**
+   * Sets the resizable state of the window.
+   * @param {boolean} state - Whether the window should be resizable (`true`) or not (`false`).
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the resizable state was set successfully, or `false` if the window ID is invalid.
+   */
+  async setResizable(state) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowResizable(this.wid, state);
+  }
+
+  /**
+   * Sets the movable state of the window.
+   * @param {boolean} state - Whether the window should be movable (`true`) or not (`false`).
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the movable state was set successfully, or `false` if the window ID is invalid.
+   */
+  async setMovable(state) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowMovable(this.wid, state);
+  }
+
+  /**
+   * Sets the aspect ratio of the window.
+   * @param {number} aspect_ratio - The desired aspect ratio (width divided by height) for the window.
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the aspect ratio was set successfully, or `false` if the window ID is invalid.
+   */
+  async setAspectRatio(aspect_ratio) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowAspectRatio(this.wid, aspect_ratio);
+  }
+
+  /**
+   * Sets the opacity of the window.
+   * @param {number} opacity - The desired opacity level of the window (ranging from `0` for fully transparent to `1` for fully opaque).
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the opacity was set successfully, or `false` if the window ID is invalid.
+   */
+  async setOpacity(opacity) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowOpacity(this.wid, opacity);
+  }
+  
+  /**
+   * Sets the title of the current window.
+   * @param {string} title - The new title for the window.
+   * @returns {Promise<*>} A promise that resolves when the title is set.
+   */
+  async setTitle(title) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowTitle(this.wid, title);
+  }
+  
+  /**
+   * Retrieves the size of the current window.
+   * @returns {Promise<Array>} - Resolves with an array [width, height].
+   */
+  async getSize() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.getWindowSize(this.wid);
+  }
+  
+  /**
+   * Retrieves the position of the current window.
+   * @returns {Promise<Array>} - Resolves with an array [left, top].
+   */
+  async getPos() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.getWindowPos(this.wid);
+  }
+  
+  /**
+   * Closes the current window.
+   * @returns {Promise} - Resolves when the window is closed.
+   */
+  async close() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.closeWindows(this.wid);
+  }
+  
+  /**
+   * Opens the developer tools for the current window asynchronously.
+   * @returns {Promise<boolean>} A promise that resolves to true when dev tools are opened.
+   */
+  async openDevTools() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.openWindowDevTools(this.wid);
   }
   
   /**
@@ -262,8 +718,7 @@ class PRDC_JSLAB_WINDOW {
     this.lang_styles = style.sheet;
     this.lang_styles.insertRule("lang { display: none; }", 0);
     this._updateLanguage();
-    
-    this._readyResolve();
+    this._readyResolve(true);
   }
   
   /**

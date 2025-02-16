@@ -32,23 +32,17 @@ class PRDC_JSLAB_PARALLEL {
   
   /**
    * Generates the worker's internal script.
-   * @returns {string} The worker script as a string.
+   * @param {Object} [context={}] - Optional context to pass to the work_function.
+   * @param {Function|String} work_function_str - The work function to execute.
+   * @param {Function|String} [setup_function_str] - Optional setup function to execute on init.
    */
-  workerFunction() {
+  workerFunction(context = {}, setup_function_str = "") {
     return `
+      
       self.addEventListener("message", async function(e) {
         if(e.data.type === 'execute') {
           try {
-            const { setup_fun_str, work_fun_str, args, context } = e.data;
-
-            // Assign context variables
-            Object.assign(self, context);
-
-            // Reconstruct and execute the setup function if provided
-            if(setup_fun_str) {
-              const setup_function = new Function('return ' + setup_fun_str);
-              await setup_function();
-            }
+            const { work_fun_str, args } = e.data;
 
             // Reconstruct the work function
             const work_function = new Function('return ' + work_fun_str)();
@@ -58,21 +52,29 @@ class PRDC_JSLAB_PARALLEL {
 
             // Send back the result
             self.postMessage({ type: 'result', result });
-          } catch(error) {
-            self.postMessage({ type: 'error', error: error });
+          } catch(err) {
+            self.postMessage({ type: 'error', error: err });
           }
         }
       });
-      
-      self.postMessage({ type: 'ready' });
+
+      // Assign context variables
+      Object.assign(self, ${JSON.stringify(context)});
+            
+      // Reconstruct and execute the setup function if provided
+      ${setup_function_str}.then(function() {
+        self.postMessage({ type: 'ready' });
+      });
     `;
   }
 
   /**
    * Initializes the worker pool with the specified number of workers.
    * @param {number} num_workers - Number of workers to initialize.
+   * @param {Object} [context={}] - Optional context to pass to the work_function.
+   * @param {Function|String} [setup_function_str] - Optional setup function to execute on init.
    */
-  init(num_workers) {
+  init(num_workers, context = {}, setup_function_str = "") {
     if(this.is_initialized) return;
 
     if(!num_workers || num_workers <= 0) {
@@ -81,9 +83,13 @@ class PRDC_JSLAB_PARALLEL {
 
     const worker_script = `
       ${this.jsl.getWorkerInit()}
-      ${this.workerFunction()}
+      ${this.workerFunction(context, setup_function_str)}
     `;
 
+    if(config.DEBUG_PARALLEL_WORKER_SETUP_FUN) {
+      this.jsl._console.log(worker_script);
+    }
+    
     const blob = new Blob([worker_script], { type: 'application/javascript' });
     const blobURL = URL.createObjectURL(blob);
 
@@ -106,13 +112,15 @@ class PRDC_JSLAB_PARALLEL {
         const task = this.task_queue.shift();
         worker.busy = true;
         
+        if(config.DEBUG_PARALLEL_WORKER_WORK_FUN) {
+          this.jsl._console.log(task);
+        }
+    
         function executeTask() {
           worker.postMessage({
             type: 'execute',
-            setup_fun_str: task.setup_function_str,
             work_fun_str: task.work_function_str,
             args: task.args,
-            context: task.context,
           });
         }
         
@@ -145,15 +153,13 @@ class PRDC_JSLAB_PARALLEL {
   /**
    * Enqueues a task to be executed by the worker pool.
    * @param {Object} context - Context variables to assign in the worker.
-   * @param {Function|String} [setup_function] - Optional setup function to execute before work_function.
+   * @param {Function|String} [setup_function] - Optional setup function to execute on init.
    * @param {Array} args - Arguments to pass to the work_function.
-   * @param {Function|String} work_function_str - The work function to execute.
+   * @param {Function|String} work_function - The work function to execute.
+   * @param {boolean} reset_workers - Wether to reset all workers or not.
    * @returns {Promise} - Resolves with the result of the work_function.
    */
-  run(context = {}, setup_function = null, args = [], work_function) {
-    if(!this.is_initialized) {
-      this.init(0);
-    }
+  run(context = {}, setup_function = null, args = [], work_function, reset_workers = false) {
     var setup_function_str = setup_function;
     if(typeof setup_function_str !== 'string') {
       setup_function_str = this.jsl.eval.rewriteCode(this.jsl.eval.getFunctionBody(setup_function)).code;
@@ -162,13 +168,16 @@ class PRDC_JSLAB_PARALLEL {
     if(typeof work_function_str !== 'string') {
       work_function_str = work_function.toString();
     }
-    
+    if(reset_workers) {
+      this.terminate();
+    }
+    if(!this.is_initialized) {
+      this.init(0, context, setup_function_str);
+    }
     return new Promise((resolve, reject) => {
       this.task_queue.push({
         work_function_str,
         args,
-        context,
-        setup_function_str,
         resolve,
         reject,
       });
@@ -187,12 +196,17 @@ class PRDC_JSLAB_PARALLEL {
    * @param {Object} [context={}] - Optional context to pass to the work_function.
    * @param {Function} [setup_function=null] - Optional setup function to execute before work_function.
    * @param {Function} work_function - The function to execute on each iteration.
+   * @param {boolean} reset_workers - Wether to reset all workers or not.
    * @returns {Promise<Array>} - A promise that resolves to an array of results.
    */
   async parfor(start, end, step = 1, num_workers, context, 
-      setup_function, work_function) {
+      setup_function, work_function, reset_workers = false) {
+    var setup_function_str = this.jsl.eval.rewriteCode(this.jsl.eval.getFunctionBody(setup_function)).code;
+    if(reset_workers) {
+      this.terminate();
+    }
     if(!this.is_initialized) {
-      this.init(num_workers);
+      this.init(num_workers, context, setup_function_str);
     }
 
     if(step === 0) {
@@ -218,8 +232,6 @@ class PRDC_JSLAB_PARALLEL {
       }
       return results;
     };
-    
-    var setup_function_str = this.jsl.eval.rewriteCode(this.jsl.eval.getFunctionBody(setup_function)).code;
     var task_function_str = task_function.toString();
     
     for(let worker_index = 0; worker_index < num_workers; worker_index++) {
@@ -236,11 +248,16 @@ class PRDC_JSLAB_PARALLEL {
       if(chunk_end > end) {
         chunk_end = end;
       }
-
+      
+      var work_function_str = work_function;
+      if(typeof work_function == 'function') {
+        work_function_str = work_function.toString();
+      }
+      
       const task = this.run(
         context,
         setup_function_str,   
-        [chunk_start, chunk_end, step, work_function.toString()],
+        [chunk_start, chunk_end, step, work_function_str],
         task_function_str
       );
 

@@ -20,6 +20,7 @@ class PRDC_JSLAB_LIB {
    */
   constructor(config) {
     var obj = this;
+    this.ready = false;
     this.config = config;
     
     // Library built in properties
@@ -39,6 +40,7 @@ class PRDC_JSLAB_LIB {
     this.started_animation_frames = [];
     this.started_idle_callbacks = [];
     this.started_immediates = [];
+    this.cleanup_registry = [];
     this.started_promises = {};
     this.promises_number = 0;
     this.last_promise_id = 0;
@@ -60,6 +62,8 @@ class PRDC_JSLAB_LIB {
     this.ploter = new PRDC_JSLAB_PLOTER(this);
     
     this.override = new PRDC_JSLAB_OVERRIDE(this);
+    
+    this.ready = true;
   }
   
   /**
@@ -103,17 +107,21 @@ class PRDC_JSLAB_LIB {
    * Clears the current workspace, stopping any ongoing operations and removing any dynamic properties.
    */
   clear() {
+    this.doCleanup();
     this.context.sym.clear();
     this.context.parallel.terminate();
-    this.stopPromises();
+
     this.clearEventListeners();
     this.clearImmediates();
     this.clearAnimationFrames();
+    this.clearIntervals();
     this.clearTimeouts();
-    this.clearIntervals()
     this.clearIdleCallbacks();
+    this.stopPromises();
+    this.stopSubprocesses();
     this.unrequireAll();
     this.onStatsChange();
+
     var obj = this;
     this.previous_properties.forEach(function(property) {
       if(typeof obj.context[property] != 'function' || (typeof obj.context[property] == 'function' && obj.context[property]._jsl_saved)) {
@@ -198,13 +206,13 @@ class PRDC_JSLAB_LIB {
 
     for(var i = 0, l = current_prop_list.length; i < l; ++i) {
       var prop_name = current_prop_list[i];
-      if(initial_props.indexOf(prop_name) === -1) {
+      if(initial_props && initial_props.indexOf(prop_name) === -1) {
         var prop = this.context[prop_name];
         var type = typeof prop;
         var name = 'none';
 
         if(type !== 'undefined') {
-          if(prop.constructor) {
+          if(prop && prop.constructor) {
             name = prop.constructor.name;
           } else {
             name = '/';
@@ -224,7 +232,6 @@ class PRDC_JSLAB_LIB {
   getWorkerInit() {
     return `
       global.app_path = ${JSON.stringify(app_path)};
-      global.packed = app_path.endsWith("\\app.asar");
       global.is_worker = true;
       global.debug = ${this.env.debug};
       global.version = '${this.env.version}';
@@ -251,25 +258,33 @@ class PRDC_JSLAB_LIB {
   }
   
   /**
-   * Resolves the path for a file, checking against the current path, includes path, and saved paths.
-   * @param {String} file_path The file path to resolve.
-   * @returns {String|Boolean} The resolved file path, or false if the path cannot be resolved.
+   * Resolves the absolute path for a file, searching through predefined directories and optionally using module context.
+   * @param {string} file_path - The file path to resolve.
+   * @param {object} [this_module] - Optional module context for resolution.
+   * @returns {string|boolean} - The resolved path, or `false` if not found.
    */
-  pathResolve(file_path) {
+  pathResolve(file_path, this_module) {
     var obj = this;
     if(typeof file_path == 'string') {
-      if(!this.env.isAbsolutePath(file_path)) {
+      if(!this.env.pathIsAbsolute(file_path)) {
+        if(this_module) {
+          var file_path_temp = this.env.pathJoin(this_module.path, file_path);
+          if(this.env.checkFile(file_path_temp)) {
+            return file_path_temp;
+          }
+        }
+        
         var file_paths = [];
-        var file_path_temp = this.env.joinPath(this.current_path, file_path);
+        var file_path_temp = this.env.pathJoin(this.current_path, file_path);
         if(this.env.checkFile(file_path_temp)) {
           file_paths.push(file_path_temp);
         }
-        file_path_temp = this.env.joinPath(this.includes_path, file_path);
+        file_path_temp = this.env.pathJoin(this.includes_path, file_path);
         if(this.env.checkFile(file_path_temp)) {
           file_paths.push(file_path_temp);
         }
         this.saved_paths.forEach(function(saved_path) {
-          file_path_temp = obj.env.joinPath(saved_path, file_path);
+          file_path_temp = obj.env.pathJoin(saved_path, file_path);
           if(obj.env.checkFile(file_path_temp)) {
             file_paths.push(file_path_temp);
           }
@@ -286,8 +301,13 @@ class PRDC_JSLAB_LIB {
           this.env.disp('@pathResolve: '+language.string(106)+' ' + file_paths[0] + ' '+language.string(108)+': [\n  ' + file_paths[1] + '\n]');
         } else if(file_paths.length == 0) {
           try {
-            return this._require.resolve(file_path);
-          } catch {
+            if(this_module) {
+              return this.override._Module._resolveFilename(file_path, this_module, false);
+            } else {
+              return require.resolve(file_path);
+            }
+          } catch(err) {
+            this._console.log(err);
             this.env.error('@pathResolve: '+language.string(109)+' ' + file_path + ' '+language.string(110)+'.');
             return false;
           }
@@ -308,6 +328,7 @@ class PRDC_JSLAB_LIB {
   setStopLoop(data) {
     this.stop_loop = data;
     this.onStopLoop(false);
+    this.onEvaluated();
     this.env.disp(language.string(90));
   }
   
@@ -321,10 +342,12 @@ class PRDC_JSLAB_LIB {
       this.clearEventListeners();
       this.clearImmediates();
       this.clearAnimationFrames();
-      this.clearIntervals()
-      this.clearTimeouts()
+      this.clearIntervals();
+      this.clearTimeouts();
       this.clearIdleCallbacks();
       this.stopPromises();
+      this.stopSubprocesses();
+      this.doCleanup();
       this.onStatsChange();
       if(throw_error) {
         throw {name: 'JslabError', message: language.string(90)};
@@ -344,21 +367,26 @@ class PRDC_JSLAB_LIB {
    * Placeholder function for features that have not been implemented.
    */
   notImplemented() {
-    obj.jsl.env.error(language.string(115));
+    obj.env.error(language.string(115));
   }
   
   /**
    * Clears all modules that have been required during the session.
    */
   unrequireAll() {
+    var obj = this;
     this.required_modules.forEach(function(module) {
-      var name = require.resolve(module);
-      if(name) {
-        delete require.cache[name];    
+      try {
+        var name = require.resolve(module);
+        if(name) {
+          delete require.cache[name];    
+        }
+      } catch(err) {
+        obj._console.log(err);
       }
     });
     this.required_modules = [];
-    Object.keys(require.cache).forEach(function(key) { delete require.cache[key] });
+    Object.keys(require.cache).forEach(function(key) { delete require.cache[key]; });
   }
   
   /**
@@ -371,6 +399,33 @@ class PRDC_JSLAB_LIB {
       delete obj.started_promises[key];
     });  
     this.promises_number = 0;
+  }
+  
+  /**
+   * Registers an object for cleanup with a specified cleanup function.
+   * @param {Object} obj - The object to be registered for cleanup.
+   * @param {Function} fun - The function to execute during cleanup.
+   */
+  addForCleanup(obj, fun) {
+    this.cleanup_registry.push({obj: obj, fun: fun});
+  }
+  
+  /**
+   * Do cleanup on all registred objects;
+   */
+  doCleanup() {
+    for(var entry of this.cleanup_registry) {
+      if(isFunction(entry.fun)) {
+        try {
+          entry.fun();
+        } catch {};
+      } else if(isFunction(entry.obj._jslabCleanup)) {
+        try {
+          entry.obj._jslabCleanup();
+        } catch {};
+      }
+    }
+    this.cleanup_registry = [];
   }
   
   /**
@@ -449,16 +504,36 @@ class PRDC_JSLAB_LIB {
   }
 
   /**
+   * Lists all subprocesses.
+   */
+  stopSubprocesses() {
+    var pids = this.listSubprocesses();
+    pids.forEach(function(pid) {
+      killProcess(pid);
+    });
+  }
+  
+  /**
    * Sets the safe stringify depth for the given data.
    * @param {Object} data - The data object to modify.
    * @param {number} depth - The depth level for safe stringification.
    * @returns {Object} The modified data object with the set depth.
    */
   setDepthSafeStringify(data, depth) {
-    data._safeStringifyDepth = depth
+    data._safeStringifyDepth = depth;
     return data;
   }
 
+  /**
+   * Lists all subprocesses.
+   */
+  listSubprocesses() {
+    var output = this.env.execSync(`wmic process where (ParentProcessId=${this.env.process_pid}) get ProcessId,CommandLine`).toString();
+    var pids = output.match(/(?<=\s)\d+(?=\s*$)/gm);
+    pids.pop();
+    return pids.map((pid) => Number(pid));
+  }
+  
   /**
    * Gets properties missing documentation.
    * @param {Array|string} [workspace=this.initial_workspace] - Workspace to check.
@@ -472,8 +547,8 @@ class PRDC_JSLAB_LIB {
           (!without_builtin || 
            !this.builtin_workspace.includes(prop))) {
         try {
-          var h = help(prop);
-        } catch(e) {
+          help(prop);
+        } catch {
           missing.push(prop);
         }
       }
@@ -485,9 +560,8 @@ class PRDC_JSLAB_LIB {
    * Writes templates for missing docs to a file.
    * @param {string} path - File path for missing docs.
    * @param {Array|string} [workspace=this.initial_workspace] - Workspace to check.
-   * @param {boolean} [without_builtin=true] - Exclude built-in properties.
    */
-  _writeMissingDocsToFile(path, workspace = this.initial_workspace, without_builtin = true) {
+  _writeMissingDocsToFile(path, workspace = this.initial_workspace) {
     var workspace_array = workspace;
     if(!Array.isArray(workspace)) {
       workspace_array = Object.keys(workspace);
@@ -513,6 +587,17 @@ class PRDC_JSLAB_LIB {
 `;
     }
     this.env.writeFileSync(path, str);
+  }
+  
+  /**
+   * Awaits the provided promise if the loop has not been stopped.
+   * @param {Promise} p - The promise to await.
+   * @returns {Promise|undefined} - Resolves if `p` is awaited; does nothing if the loop is stopped.
+   */
+  async promiseOrStoped(p) {
+    if(!p.loop_stoped) {
+      await p;
+    }
   }
 }
 

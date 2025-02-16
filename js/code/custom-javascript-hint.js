@@ -61,7 +61,7 @@
                   "if in import instanceof new null return super switch this throw true try typeof var void while with yield").split(" ");
 
   function getCompletions(token, context, keywords, options, cur) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
       ipcRenderer.invoke('get-completions', [token.string, JSON.stringify(context), keywords]).then(function(found) {
         resolve({list: found,
             from: Pos(cur.line, token.start),

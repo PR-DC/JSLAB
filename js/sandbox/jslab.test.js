@@ -14,7 +14,7 @@ tests.add('Expect tic to be equal to last tic', function() {
 );
 
 tests.add('Joining two paths with path separator', function() {
-    return 'a'+pathSep()+'b' == jsl.env.joinPath('a', 'b');
+    return 'a'+pathSep()+'b' == jsl.env.pathJoin('a', 'b');
   }
 );
     

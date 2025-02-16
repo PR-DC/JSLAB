@@ -57,11 +57,12 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
     var obj = this;
     function fnw() {
       if(!obj.jsl.basic.checkStopLoop()) {
-        obj.jsl.env.setImmediate(fnw);
+        fn();
       } else {
         obj.jsl.env.error('@nbnext: '+language.string(125));
       }
     }
+    this.jsl.env.setImmediate(fnw);
   }
 
   /**
@@ -75,6 +76,7 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
     } else {
       this.jsl.env.error('@waitMSeconds: '+language.string(125), true);
     }
+    return false;
   }
   
   /**
@@ -88,6 +90,7 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
     } else {
       this.jsl.env.error('@waitSeconds: '+language.string(125), true);
     }
+    return false;
   }
 
   /**
@@ -101,6 +104,31 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
     } else {
       this.jsl.env.error('@waitMinutes: '+language.string(125), true);
     }
+    return false;
+  }
+
+  /**
+   * Clears the specified interval if it exists.
+   * @param {number|undefined} timeout - The interval ID to be cleared.
+   * @returns {boolean} Always returns false.
+   */
+  clearIntervalIf(timeout) {
+    if(timeout) {
+      clearInterval(timeout);
+    }
+    return false;
+  }
+  
+  /**
+   * Clears the specified timeout if it exists.
+   * @param {number|undefined} timeout - The timeout ID to be cleared.
+   * @returns {boolean} Always returns false.
+   */
+  clearTimeoutIf(timeout) {
+    if(timeout) {
+      clearTimeout(timeout);
+    }
+    return false;
   }
   
   /**

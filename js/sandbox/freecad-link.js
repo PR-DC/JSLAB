@@ -97,7 +97,6 @@ class PRDC_JSLAB_FREECAD_LINK {
     var obj = this;
     var buf_in = [];
     var N_in;
-    var sent = false;
     var got_header = false;
 
     if(this.jsl.format.isUndefined(timeout)) {
@@ -123,7 +122,7 @@ class PRDC_JSLAB_FREECAD_LINK {
             N_in = (header[0] << 8) | header[1];
             buf_in.push(...data);
             if(buf_in.length == N_in) {
-              break
+              break;
             }
           } else if(got_header && this.tcp_com.availableBytes() > 0) {
             var data = this.tcp_com.read();
@@ -144,8 +143,8 @@ class PRDC_JSLAB_FREECAD_LINK {
       if(buf_in.length) {
         return Buffer.from(buf_in).toString();
       }
-      return false;
     }
+    return false;
   }
   
   /**
@@ -190,6 +189,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -209,6 +209,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -228,6 +229,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -252,6 +254,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -266,6 +269,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -281,6 +285,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -295,6 +300,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -310,6 +316,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -334,6 +341,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -353,6 +361,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
   
   /**
@@ -372,6 +381,7 @@ class PRDC_JSLAB_FREECAD_LINK {
     } else {
       this.jsl.env.disp('@FreeCADLink: '+language.string(182));
     }
+    return false;
   }
 }
 

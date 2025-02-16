@@ -91,7 +91,7 @@
     var isRE = query.match(/^\/(.*)\/([a-z]*)$/);
     if(isRE) {
       try { query = new RegExp(isRE[1], isRE[2].indexOf("i") == -1 ? "" : "i"); }
-      catch(e) {} // Not a regular expression after all, do a string search
+      catch(e) {}
     } else {
       query = parseString(query);
     }

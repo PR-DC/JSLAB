@@ -1,0 +1,42 @@
+/**
+ * @file Control module test
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var num = [3.953, 1];       // Numerator coefficients
+var den = [1, 2, 3.868]; // Denominator coefficients
+
+var t = range(0, 49); // Time vector
+var u = ones(t.length); // Unit step input
+
+// Simulate the system response
+var { y } = lsim(num, den, u, t);
+
+// Log or plot the results
+console.log("Output (y):", y);
+
+// Additional Example for Discretization
+var num = [1.095, 23.03];
+var den = [1, 16.52, 155.1, 2];
+var { num: numd, den: dend } = c2d(num, den, 1);
+console.log("Discrete-Time Transfer Function:", { numd, dend });
+
+var num = [1.095, 23.03, 3];
+var den = [1, 16.52, 155.1, 2];
+var { num: numd, den: dend } = c2d(num, den, 1);
+console.log("Discrete-Time Transfer Function:", { numd, dend });
+
+var num = [1.095, 23.03, 1, 1];
+var den = [1, 16.52, 155.1, 2];
+var { num: numd, den: dend } = c2d(num, den, 1);
+console.log("Discrete-Time Transfer Function:", { numd, dend });
+
+// - Kraj proračuna
+disp(' Program je uspešno izvršen... ');
+disp(' Potrebno vreme: ' + num2str(toc(), 2) + ' sekundi');
+disp(' -------------------- ');

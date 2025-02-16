@@ -28,7 +28,6 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   /**
    * Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
    * Initializes the Python environment for symbolic computations.
-   * @async
    * @returns {Promise<void>} A promise that resolves when the libraries are loaded.
    */
   async load() {
@@ -106,9 +105,10 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     }
     try {
       return this.pyodide.runPython(code);
-    } catch(e) {
-      this.jsl.env.error('@sym: ' + e);
+    } catch(err) {
+      this.jsl.env.error('@sym: ' + err);
     }
+    return false;
   }
   
   /**
@@ -475,7 +475,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
    */
   constructor(name, value) {
     this.name = name;
-    this.value = value
+    this.value = value;
   }
   
   /**

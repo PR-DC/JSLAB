@@ -239,8 +239,56 @@
       margin-bottom: 10px;
     }
     
-    #data-cont {
+    #search-cont {
+      float: right;
+      margin-top: -2px;
+    }
     
+    #search-input {
+      width: 200px;
+      border: 2px solid #eee;
+      border-radius: 20px;
+      padding: 3px 15px;
+      margin-top: -3px;
+      font-weight: 300;
+      font-family: Roboto, Helvetica, Arial;
+      font-size: 16px;
+      transition: all .2s linear;
+      outline:none;
+    }
+    
+    #search-input:focus {
+      border-color: #f7df1e;
+    }
+
+    #search-button {
+      background: #ccc;
+      border: 2px solid #ccc;
+      border-radius: 20px;
+      padding: 4px 10px;
+      color: #fff;
+      display: inline-block;
+      float: right;
+      margin-top: -2px;
+      margin-left: 5px;
+      transition: all .2s linear;
+      cursor: pointer;
+    }
+    
+    #search-button:hover { 
+      color: #2e85c7;
+      background: #fff;
+      border-color: #2e85c7;
+    }
+
+    #search-no-results {
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      margin-top: 25px;
+      font-size: 24px;
+      color: #999;
+    }    
     </style>
   </head>
   <body>
@@ -256,6 +304,11 @@
     </div>
     <div id="docs-navigation-container"> 
       <span id="navigation-home"></span><span id="navigation-page"></span>
+      
+      <div id="search-cont">
+        <input id="search-input" placeholder="Search documentation..."></input>
+        <button id="search-button">SEARCH</button>
+      </div>
     </div>
     <div id="left-panel" class="panel"> 
       <div class="header">MAIN</div>
@@ -374,6 +427,8 @@
 <p>The <strong>JavaScript Laboratory (JSLAB)</strong> is an open-source environment designed for scientific computing, data visualization, and various other computer operations. Inspired by <em>GNU Octave</em> and <em>Matlab</em>, JSLAB leverages the advantages of JavaScript, including its blazing speed, extensive examples, backing by some of the largest software companies globally, and the vast community of active programmers and software engineers.</p>
 
 <p>The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.</p>
+
+<p>JSLAB offers a streamlined, dual-window interface designed to boost productivity and foster innovation. The main window combines a versatile workspace with a sandbox terminal, allowing users to run, test, and iterate on code in real time. The dedicated editor window introduces the <strong>.JSL file format</strong>—a plain text format tailored for JSLAB scripts. With advanced linting and intelligent autocompletion, the editor makes it easy to write precise, reusable code with minimal errors.</p>
 
 <h2>Why Choose JSLAB?</h2>
 
@@ -682,7 +737,7 @@ In order to download necessary tools, clone the repository, and install dependen
       'feedback': {
         'title': 'Feedback',
         'data': `
-<p>Your feedback is invaluable in improving the JSLAB Library. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:</p>
+<p>Your feedback is invaluable in improving the JSLAB application. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:</p>
 <ul>
     <li><strong>GitHub Issues:</strong> Report bugs or suggest features by opening an issue in the GitHub repository.</li>
     <li><strong>Email:</strong> Contact us directly at <a href="mailto:info@pr-dc.com">info@pr-dc.com</a> or main author at <a href="mailto:mpetrasinovic@pr-dc.com">mpetrasinovic@pr-dc.com</a>.</li>
@@ -695,7 +750,7 @@ In order to download necessary tools, clone the repository, and install dependen
     
     document.getElementById('jslab-logo').innerHTML = jslab_log;
     document.getElementById('company-logo').innerHTML = company_log;
-    document.getElementById('navigation-home').innerText = 'JSLAB v'+app_version+' / ';
+    document.getElementById('navigation-home').innerText = 'JSLAB '+app_version+' / ';
     
     for(var page in main_pages_data) {
       main_navigation.innerHTML += '<li><a class="documentation-link" href="'+page+'">'+main_pages_data[page]['title']+'</a></li>';
@@ -712,11 +767,13 @@ In order to download necessary tools, clone the repository, and install dependen
       }
     });
     
-    function setPage(page_name) {
-      if(page_name == current_page) {
+    function setPage(page_name, keep_url = false) {
+      if(page_name != 'Search' && page_name == current_page) {
         return;
       }
-      window.location.hash = page_name;
+      if(!keep_url) {
+        window.location.hash = page_name;
+      }
       
       if(current_page) {
         document.querySelectorAll('#left-panel a[href="'+current_page+'"]').forEach(a => {
@@ -734,10 +791,26 @@ In order to download necessary tools, clone the repository, and install dependen
       } else if(page_name in code_data) {
         data_cont.innerHTML = getHtmlByCodeCategory(page_name);
         navigation_page.innerText = page_name;
+      } else if(page_name == 'Search') {
+        data_cont.innerHTML = getHtmlBySearch();
+        navigation_page.innerText = page_name;
       }
     }
-
+    
+    function getHtmlBySearch() {
+      var data = helpSearch(document.getElementById('search-input').value);
+      if(Object.keys(data).length) {
+        return getHtml(data);
+      } else {
+        return '<div id="search-no-results">No results found.</div>';
+      }
+    }
+    
     function getHtmlByCodeCategory(category) {
+      return getHtml(code_data[category], category);
+    }
+    
+    function getHtml(data, category_in) {
        // Helper function to escape HTML special characters
       function escapeHtml(string) {
         if(typeof string !== 'string') {
@@ -753,8 +826,12 @@ In order to download necessary tools, clone the repository, and install dependen
       }
 
       var html = '';
-      for (var item_name in code_data[category]) {
-        var item = code_data[category][item_name];
+      for (var item_name in data) {
+        var item = data[item_name];
+        var category = category_in;
+        if(!category) {
+          category = item.category;
+        }
         if(item.kind === 'function') {
           // Generate the function signature
           const params = item.params
@@ -834,14 +911,48 @@ In order to download necessary tools, clone the repository, and install dependen
       return html;
     }
 
-    const hash = window.location.hash;
-    const match = hash.match(/#([^/]+)(?:\/(.+))?/);
+    function helpSearch(query) {
+      var obj = this;
+      if(query == '') {
+        return {};
+      }
+      var query_words = query.toLowerCase().split(' ');
+      var results = {};
+      Object.keys(code_data).forEach(function(category) {
+        Object.keys(code_data[category]).forEach(function(member) {
+          var member_obj = code_data[category][member];
+          var str = JSON.stringify(member_obj).toLowerCase();
+          var match = query_words.every((word) => str.includes(word));
+          if(match) {
+            member_obj.category = category;
+            results[member] = member_obj;
+          }
+        });
+      });
+      return results;
+    }
+    
+    document.getElementById('search-button').addEventListener("click", function() {
+      setPage('Search');
+    });
+    document.getElementById('search-input').addEventListener("keydown", function(event) {
+      if(event.key === "Enter") {
+        setPage('Search');
+      }
+    });
+
+    var hash = window.location.hash;
+    var match = hash.match(/#([^/]+)(?:\/(.+))?/);
     if(match) {
-      const category = match[1];
-      const element_id = match[2];
-      
-      setPage(category);
-      const element = document.getElementById(element_id);
+      var category = match[1];
+      var element_id = match[2];
+
+      if(category == 'Search' && element_id) {
+        element_id = decodeURI(element_id);
+        document.getElementById('search-input').value = element_id;
+      }
+      setPage(category, true);
+      var element = document.getElementById(element_id);
       if(element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }

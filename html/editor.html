@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Editor - JSLAB | PR-DC</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+    <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/tabs.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/fold/foldgutter.css">
@@ -91,6 +91,7 @@
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/search/match-highlighter.js"></script>
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/comment/comment.js"></script>
     <script type="text/javascript" src="../lib/codemirror-5.49.2/mode/javascript/javascript.js"></script>
+    <script type="text/javascript" src="../lib/codemirror-5.49.2/mode/clike/clike.js"></script>
     
     <script type="text/javascript" src="../js/code/custom-javascript-hint.js"></script>
     <script type="text/javascript" src="../js/code/dialog-search.js"></script>

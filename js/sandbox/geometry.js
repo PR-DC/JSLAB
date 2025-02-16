@@ -5,6 +5,8 @@
  * info@pr-dc.com
  */
  
+var { PRDC_JSLAB_GEOMETRY_SPACE_SERACH } = require('./geometry-spacesearch');
+ 
 /**
  * Class for JSLAB geometry submodule.
  */
@@ -18,14 +20,280 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     var obj = this;
     this.jsl = jsl;
   }
+  
+  /**
+   * Creates an instance of PRDC_JSLAB_LIB_OPTIM_SPACE_SERACH.
+   */
+  spaceSearch(...args) {
+    return new PRDC_JSLAB_GEOMETRY_SPACE_SERACH(...args);
+  }
+  
+  /**
+   * Returns the shortest distance from point P to the line defined by (A, i)
+   * and the closest point (P1) on that line.
+   * @param {number[]} P  - point [Px, Py, Pz]
+   * @param {number[]} A  - a point on the line
+   * @param {number[]} i  - a unit direction vector of the line
+   * @returns {{ d: number, P1: number[] }}
+   *   d   - shortest distance
+   *   P1  - point on the line with the smallest distance to P
+   */
+  pointLineDistance(P, A, i) {
+    // P1 = A + dot(P - A, i) * i
+    const PA = minus(P, A);
+    const distAlongI = dot(PA, i);
+    const P1 = plus(A, scale(i, distAlongI));
 
+    // Distance = || P - P1 ||
+    const d = norm(minus(P, P1));
+
+    return { d, P1 };
+  }
+  /**
+   * Returns the intersection points of a circle (center O, radius r) 
+   * in a plane with a line passing through point P with direction i.
+   * @param {number[]} P - point on the line
+   * @param {number[]} i - direction vector of the line (unit)
+   * @param {number[]} O - center of the circle
+   * @param {number} r   - circle radius
+   * @returns {{ P1: number[]|null, P2: number[]|null, flag: number }}
+   *   flag = 0 -> intersection (two points)
+   *   flag = 1 -> tangent (one point)
+   *   flag = 2 -> no intersection
+   */
+  lineCircleIntersection(P, i, O, r) {
+    let P1 = null;
+    let P2 = null;
+    let flag = 0;
+
+    // Distance from O to line & the closest point A
+    const { d, P1: A } = this.pointLineDistance(O, P, i);
+
+    if(d < r) {
+      // Two intersection points
+      const h = Math.sqrt(r * r - d * d); // half of the chord length
+      P1 = plus(A, scale(i, h));
+      P2 = plus(A, scale(i, -h));
+      flag = 0; // intersection
+    } else if(Math.abs(d - r) <= EPS) {
+      // Tangent
+      P1 = A;
+      flag = 1;
+    } else {
+      // No intersection
+      flag = 2;
+    }
+
+    return { P1, P2, flag };
+  }
+  
+  /**
+   * Returns the line (point P, direction i) that is the intersection 
+   * of two planes, or indicates if they are the same or parallel.
+   * @param {number[]} P1 - a point in plane 1
+   * @param {number[]} n1 - normal to plane 1
+   * @param {number[]} P2 - a point in plane 2
+   * @param {number[]} n2 - normal to plane 2
+   * @returns {{ P: number[]|null, i: number[]|null, flag: number }}
+   *   flag = 0 -> planes intersect
+   *   flag = 1 -> planes are the same
+   *   flag = 2 -> planes are parallel (no intersection)
+   */
+  planesIntersection(P1, n1, P2, n2) {
+    let P = null;
+    let i = null;
+    let flag = 0;
+
+    const V = cross3D(n1, n2, 1);
+
+    const V_norm = norm(V);
+    if(V_norm > EPS) {
+      // planes intersect
+      i = scale(V, 1.0 / V_norm); // unit direction
+
+      // Solve for a point on the intersection line:
+      // We want to solve the system:
+      //   dot(n1, X) = dot(n1, P1)
+      //   dot(n2, X) = dot(n2, P2)
+      //
+      // We'll attempt x=0, y=0, z=0 approach or check sub-determinants.
+      const A = [
+        [n1[0], n1[1], n1[2]],
+        [n2[0], n2[1], n2[2]],
+      ];
+      const B = [dot(n1, P1), dot(n2, P2)];
+
+      // We try ignoring one coordinate at a time (k=1 to 3):
+      let solved = false;
+      for(let k = 0; k < 3; k++) {
+        // Indices [0,1,2], skip k => j
+        const j = [0, 1, 2].filter(idx => idx !== k);
+
+        // Build a 2x2 submatrix from A, using columns j[0], j[1]
+        const subA = [
+          [A[0][j[0]], A[0][j[1]]],
+          [A[1][j[0]], A[1][j[1]]],
+        ];
+        const detSubA = subA[0][0] * subA[1][1] - subA[0][1] * subA[1][0];
+
+        if(Math.abs(detSubA) > EPS) {
+          // We can solve
+          // subA * C = B
+          // C is 2x1 => we solve by 2x2 inverse
+          const invDet = 1.0 / detSubA;
+          const C0 = invDet * ( B[0]*subA[1][1] - B[1]*subA[0][1] );
+          const C1 = invDet * (-B[0]*subA[1][0] + B[1]*subA[0][0]);
+
+          // Build full solution X
+          const X = [0, 0, 0];
+          X[j[0]] = C0;
+          X[j[1]] = C1;
+          P = X;
+          solved = true;
+          break;
+        }
+      }
+      if(!solved) {
+        // fallback: planes might be very close, etc.
+        P = [0, 0, 0]; 
+      }
+    } else {
+      // Check if they are the same plane
+      // We test if P2 satisfies plane 1 => dot(n1, P1-P2)=0 (within EPS).
+      const diff = minus(P1, P2);
+      if(Math.abs(dot(n1, diff)) <= EPS) {
+        // same plane
+        flag = 1;
+      } else {
+        // parallel planes
+        flag = 2;
+      }
+    }
+
+    return { P, i, flag };
+  }
+
+  /**
+   * Checks if point P lies on the line segment A-B.
+   * Returns 1 if on segment, 0 otherwise.
+   * @param {number[]} P 
+   * @param {number[]} A 
+   * @param {number[]} B 
+   * @returns {number} 1 (on segment), 0 (not on segment)
+   */
+  isPointOnLine(P, A, B) {
+    // i = (B - A) / ||B - A||
+    const AB = minus(B, A);
+    const i = scale(AB, 1.0 / norm(AB));
+
+    // dot(A - P, i) and dot(B - P, i)
+    const d1 = dot(minus(A, P), i);
+    const d2 = dot(minus(B, P), i);
+
+    // If both dot products have the same sign, P is outside the segment
+    if((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0)) {
+      return 0;
+    }
+    return 1;
+  }
+
+  /**
+   * Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,
+   * or indicates no overlap.
+   * @param {number[]} P1
+   * @param {number[]} P2
+   * @param {number[]} P3
+   * @param {number[]} P4
+   * @returns {{ A: number[]|null, B: number[]|null, flag: number, id1: number|null, id2: number|null }}
+   */
+  linesOverlap(P1, P2, P3, P4) {
+    let A = null;
+    let B = null;
+    let id1 = null;
+    let id2 = null;
+    let flag = 0;
+
+    // i = (P2 - P1) / ||P2 - P1||
+    const v = minus(P2, P1);
+    const len = norm(v);
+    const i = scale(v, 1.0 / len);
+
+    const P = [P1, P2, P3, P4];
+
+    const tArr = [];
+    tArr.push([0, 1, 1]);
+    tArr.push([dot(minus(P2, P1), i), 2, 1]);
+    tArr.push([dot(minus(P3, P1), i), 3, 2]);
+    tArr.push([dot(minus(P4, P1), i), 4, 2]);
+
+    // Sort rows by the first column
+    tArr.sort((a, b) => a[0] - b[0]);
+
+    if(Math.abs(tArr[0][2] - tArr[1][2]) <= EPS) {
+      // no overlap
+      flag = 1;
+    } else {
+      id1 = tArr[1][1];
+      id2 = tArr[2][1];
+      A = P[id1 - 1];
+      B = P[id2 - 1];
+      flag = 0;
+    }
+
+    return { A, B, flag, id1, id2 };
+  }
+
+  /**
+   * Finds the minimal 3D distance between all pairs of points in two arrays.
+   *
+   * @param {number[][]} P1i - Array of 3D points (e.g. [[x1, y1, z1], [x2, y2, z2], ...]).
+   * @param {number[][]} P2i - Another array of 3D points.
+   * @returns {{ L: number, P1: number[], P2: number[] }}
+   *   L  - The minimal distance found.
+   *   P1 - The point in P1i corresponding to the minimal distance.
+   *   P2 - The point in P2i corresponding to the minimal distance.
+   */
+  minPointsDistance3D(P1i, P2i) {
+    var P1ia = P1i.flat();
+    var P2ia = P2i.flat();
+    
+    let L = Infinity;
+    let I = -1;
+    let J = -1;
+
+    for(let i = 0; i < P1ia.length; i += 3) {
+      for(let j = 0; j < P2ia.length; j += 3) {
+        const dx = P1ia[i]   - P2ia[j];
+        const dy = P1ia[i+1] - P2ia[j+1];
+        const dz = P1ia[i+2] - P2ia[j+2];
+
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+        if (dist < L) {
+          L = dist;
+          I = i;
+          J = j;
+        }
+      }
+    }
+
+    const closestP1 = [P1ia[I], P1ia[I + 1], P1ia[I + 2]];
+    const closestP2 = [P2ia[J], P2ia[J + 1], P2ia[J + 2]];
+
+    return {
+      L,
+      P1: closestP1,
+      P2: closestP2
+    };
+  }
+  
   /**
    * Generates a rotation matrix to rotate from vector a to vector b.
    * @param {number[]} a - The initial unit vector.
    * @param {number[]} b - The target unit vector.
    * @returns {number[][]} - The resulting rotation matrix.
    */
-  getrotation_matrix(a, b) {
+  getRotationMatrix(a, b) {
     // a and b are unit vectors
     var v = this.jsl.array.cross3D(a, b, 1);
     var s = this.jsl.env.math.norm(v);
@@ -100,7 +368,13 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @param {Object} opts - Additional plotting options.
    * @returns {Object} - An object containing line and head trace data for plotting.
    */
-  createVectors3D(xi, yi, zi, ui, vi, wi, scale, angle_factor, opts) {
+  createVectors3D(xi, yi, zi, ui, vi, wi, scale = 0.3, angle_factor = 0.4, opts) {
+    if(!Array.isArray(xi)) xi = [xi];
+    if(!Array.isArray(yi)) yi = [yi];
+    if(!Array.isArray(zi)) zi = [zi];
+    if(!Array.isArray(ui)) ui = [ui];
+    if(!Array.isArray(vi)) vi = [vi];
+    if(!Array.isArray(wi)) wi = [wi];
     
     // Define the unit arrow once
     var arrowhead_length = scale * 1;
@@ -135,90 +409,444 @@ class PRDC_JSLAB_LIB_GEOMETRY {
         type: 'mesh3d', color: '#00f', opacity: 1, flatShading: true, 
         showScale: false, showLegend: false, lighting: {ambient: 1}
       }
-    }
+    };
     
     if(typeof opts == 'object') {
       Object.assign(vectors.line, opts);
       Object.assign(vectors.head, opts);
     }
     
-    var vertexIndex = 0;
+    var vertex_index = 0;
     var x_axis = [1, 0, 0];
     
     for(var i = 0; i < xi.length; i++) {
-        var x0 = xi[i];
-        var y0 = yi[i];
-        var z0 = zi[i];
-        var u = ui[i];
-        var v = vi[i];
-        var w = wi[i];
-        
-        var vector = [u, v, w];
-        
-        // Calculate the length of the vector
-        var length = this.jsl.env.math.norm(vector);
-        if(length === 0) continue; // Skip zero-length vectors
+      var x0 = xi[i];
+      var y0 = yi[i];
+      var z0 = zi[i];
+      var u = ui[i];
+      var v = vi[i];
+      var w = wi[i];
+      
+      var vector = [u, v, w];
+      
+      // Calculate the length of the vector
+      var length = this.jsl.env.math.norm(vector);
+      if(length === 0) continue; // Skip zero-length vectors
 
-        // Normalize the direction vector
-        var dir = this.jsl.array.normalizeVector(vector);
+      // Normalize the direction vector
+      var dir = this.jsl.array.normalizeVector(vector);
 
-        // Compute rotation matrix to rotate from x-axis to dir
-        var R = this.getrotation_matrix(x_axis, dir);
+      // Compute rotation matrix to rotate from x-axis to dir
+      var R = this.getRotationMatrix(x_axis, dir);
 
-        // Scale factor is the length of the vector
-        var scale_factor = length;
+      // Scale factor is the length of the vector
+      var scale_factor = length;
 
-        // Translation vector is the starting point (x0, y0, z0)
-        var translation = [x0, y0, z0];
+      // Translation vector is the starting point (x0, y0, z0)
+      var translation = [x0, y0, z0];
 
-        // Transform the unit arrow points
-        var transformed_points = this.transform(unit_arrow_points, scale_factor, R, translation);
+      // Transform the unit arrow points
+      var transformed_points = this.transform(unit_arrow_points, scale_factor, R, translation);
 
-        // Extract points
-        var shaft_start_rot = transformed_points[0];
-        var shaft_end_rot = transformed_points[1];
-        var arrow_tip_rot = transformed_points[2];
-        var arrow_left_rot = transformed_points[3];
-        var arrow_right_rot = transformed_points[4];
+      // Extract points
+      var shaft_start_rot = transformed_points[0];
+      var shaft_end_rot = transformed_points[1];
+      var arrow_tip_rot = transformed_points[2];
+      var arrow_left_rot = transformed_points[3];
+      var arrow_right_rot = transformed_points[4];
 
-        // Add shaft line to lines arrays
-        vectors.line.x.push(shaft_start_rot[0], shaft_end_rot[0], null);
-        vectors.line.y.push(shaft_start_rot[1], shaft_end_rot[1], null);
-        vectors.line.z.push(shaft_start_rot[2], shaft_end_rot[2], null);
+      // Add shaft line to lines arrays
+      vectors.line.x.push(shaft_start_rot[0], shaft_end_rot[0], null);
+      vectors.line.y.push(shaft_start_rot[1], shaft_end_rot[1], null);
+      vectors.line.z.push(shaft_start_rot[2], shaft_end_rot[2], null);
 
-        // Add arrowhead edges to lines arrays
-        vectors.line.x.push(
-            arrow_tip_rot[0], arrow_left_rot[0], null,
-            arrow_left_rot[0], arrow_right_rot[0], null,
-            arrow_right_rot[0], arrow_tip_rot[0], null
-        );
-        vectors.line.y.push(
-            arrow_tip_rot[1], arrow_left_rot[1], null,
-            arrow_left_rot[1], arrow_right_rot[1], null,
-            arrow_right_rot[1], arrow_tip_rot[1], null
-        );
-        vectors.line.z.push(
-            arrow_tip_rot[2], arrow_left_rot[2], null,
-            arrow_left_rot[2], arrow_right_rot[2], null,
-            arrow_right_rot[2], arrow_tip_rot[2], null
-        );
+      // Add arrowhead edges to lines arrays
+      vectors.line.x.push(
+        arrow_tip_rot[0], arrow_left_rot[0], null,
+        arrow_left_rot[0], arrow_right_rot[0], null,
+        arrow_right_rot[0], arrow_tip_rot[0], null
+      );
+      vectors.line.y.push(
+        arrow_tip_rot[1], arrow_left_rot[1], null,
+        arrow_left_rot[1], arrow_right_rot[1], null,
+        arrow_right_rot[1], arrow_tip_rot[1], null
+      );
+      vectors.line.z.push(
+        arrow_tip_rot[2], arrow_left_rot[2], null,
+        arrow_left_rot[2], arrow_right_rot[2], null,
+        arrow_right_rot[2], arrow_tip_rot[2], null
+      );
 
-        // Add arrowhead vertices to mesh arrays
-        vectors.head.x.push(arrow_tip_rot[0], arrow_left_rot[0], arrow_right_rot[0]);
-        vectors.head.y.push(arrow_tip_rot[1], arrow_left_rot[1], arrow_right_rot[1]);
-        vectors.head.z.push(arrow_tip_rot[2], arrow_left_rot[2], arrow_right_rot[2]);
+      // Add arrowhead vertices to mesh arrays
+      vectors.head.x.push(arrow_tip_rot[0], arrow_left_rot[0], arrow_right_rot[0]);
+      vectors.head.y.push(arrow_tip_rot[1], arrow_left_rot[1], arrow_right_rot[1]);
+      vectors.head.z.push(arrow_tip_rot[2], arrow_left_rot[2], arrow_right_rot[2]);
 
-        // Define the face for the current arrowhead
-        vectors.head.i.push(vertexIndex);
-        vectors.head.j.push(vertexIndex + 1);
-        vectors.head.k.push(vertexIndex + 2);
+      // Define the face for the current arrowhead
+      vectors.head.i.push(vertex_index);
+      vectors.head.j.push(vertex_index + 1);
+      vectors.head.k.push(vertex_index + 2);
 
-        // Update vertex index for the next arrow
-        vertexIndex += 3;
+      // Update vertex index for the next arrow
+      vertex_index += 3;
     }
     return vectors;
   }
         
+  /**
+   * Creates 3D disks for plotting based on provided parameters.
+   * @param {number[]} xi - X coordinates of disk centers.
+   * @param {number[]} yi - Y coordinates of disk centers.
+   * @param {number[]} zi - Z coordinates of disk centers.
+   * @param {number[]} ri - Radii of the disks.
+   * @param {number[]} ui - X components of normal vectors (for disk orientation).
+   * @param {number[]} vi - Y components of normal vectors (for disk orientation).
+   * @param {number[]} wi - Z components of normal vectors (for disk orientation).
+   * @param {Object} opts - Additional plotting options.
+   * @returns {Object} - An object containing line and area trace data for plotting.
+   */
+  createDisks3D(xi, yi, zi, ri, ui, vi, wi, opts) {
+    if(!Array.isArray(xi)) xi = [xi];
+    if(!Array.isArray(yi)) yi = [yi];
+    if(!Array.isArray(zi)) zi = [zi];
+    if(!Array.isArray(ri)) ri = [ri];
+    if(!Array.isArray(ui)) ui = [ui];
+    if(!Array.isArray(vi)) vi = [vi];
+    if(!Array.isArray(wi)) wi = [wi];
+    if(ri.length === 1 && xi.length > 1) ri = new Array(xi.length).fill(ri[0]);
+    
+    var segments = opts.segments || 32;
+    delete opts.segments;
+    
+    var disks = {
+      line: {
+        x: [],
+        y: [],
+        z: [],
+        type: 'scatter3d', color: '#00f', mode: 'lines', showLegend: false
+      },
+      area: {
+        x: [],
+        y: [],
+        z: [],
+        i: [],
+        j: [],
+        k: [],
+        type: 'mesh3d', color: '#00f', opacity: 1, flatShading: true, 
+        showScale: false, showLegend: false, lighting: {ambient: 1}
+      }
+    };
+    
+    if(typeof opts == 'object') {
+      Object.assign(disks.line, opts);
+      Object.assign(disks.area, opts);
+    }
+    
+    var vertex_index = 0;
+    var z_axis = [0, 0, 1]; // Assuming disk normal initially aligns with x-axis
+
+    // Create a unit circle in the XY plane for the disk
+    var points = [...this.circle(1, segments)];
+
+    for(var i = 0; i < xi.length; i++) {
+      var x0 = xi[i];
+      var y0 = yi[i];
+      var z0 = zi[i];
+      var radius = ri[i];
+      var normal = [ui[i], vi[i], wi[i]];
+
+      if(radius === 0) continue; // Skip zero-radius disks
+
+      // Normalize the normal vector to ensure it's a unit vector
+      var dir = this.jsl.array.normalizeVector(normal);
+
+      // Compute rotation matrix to rotate from x-axis to the normal vector
+      var R = this.getRotationMatrix(z_axis, dir);
+
+      // Translation vector is the disk center point
+      var translation = [x0, y0, z0];
+
+      var circle = [...points];
+      
+      // Transform the circle points to the correct position and orientation
+      var transformed_points = this.transform(circle, radius, R, translation);
+
+      // Add circle outline to line data for edges
+      for(var j = 0; j < transformed_points.length; j++) {
+        var point = transformed_points[j];
+        disks.line.x.push(point[0]);
+        disks.line.y.push(point[1]);
+        disks.line.z.push(point[2]);
+        if(j === transformed_points.length - 1) {
+          disks.line.x.push(transformed_points[0][0], null); // Connect last to first point
+          disks.line.y.push(transformed_points[0][1], null);
+          disks.line.z.push(transformed_points[0][2], null);
+        }
+      }
+      disks.line.x.push(null);
+      disks.line.y.push(null);
+      disks.line.z.push(null);
+          
+      // Add all points for mesh (area) data
+      for(var j = 0; j < transformed_points.length; j++) {
+        var point = transformed_points[j];
+        disks.area.x.push(point[0]);
+        disks.area.y.push(point[1]);
+        disks.area.z.push(point[2]);
+      }
+
+      // Triangulation for mesh
+      for(var j = 1; j < transformed_points.length - 1; j++) {
+        disks.area.i.push(vertex_index);
+        disks.area.j.push(vertex_index + j);
+        disks.area.k.push(vertex_index + j + 1);
+      }
+
+      vertex_index += transformed_points.length;
+    }
+    return disks;
+  }
+  
+  /**
+   * Creates a rectangular planes in 3D space, oriented by a normal vector [u, v, w].
+   * @param {number[]} xi - X coordinates of planes centers.
+   * @param {number[]} yi - Y coordinates of planes centers.
+   * @param {number[]} zi - Z coordinates of planes centers.
+   * @param {number[]} width_i    - Width of the rectangle.
+   * @param {number[]} height_i   - Height of the rectangle.
+   * @param {number[]} ui        - X component of the plane's normal vector.
+   * @param {number[]} vi        - Y component of the plane's normal vector.
+   * @param {number[]} wi        - Z component of the plane's normal vector.
+   * @param {Object} opts     - Additional plotting options (color, opacity, etc.).
+   * @returns {Object}        - An object containing line and area trace data for plotting.
+   */
+  createPlanes3D(xi, yi, zi, width_i, height_i, ui, vi, wi, opts) {
+    if(!Array.isArray(xi)) xi = [xi];
+    if(!Array.isArray(yi)) yi = [yi];
+    if(!Array.isArray(zi)) zi = [zi];
+    if(!Array.isArray(width_i)) width_i = [width_i];
+    if(!Array.isArray(height_i)) height_i = [height_i];
+    if(!Array.isArray(ui)) ui = [ui];
+    if(!Array.isArray(vi)) vi = [vi];
+    if(!Array.isArray(wi)) wi = [wi];
+    if(width_i.length === 1 && xi.length > 1) width_i = new Array(xi.length).fill(width_i[0]);
+    if(height_i.length === 1 && xi.length > 1) height_i = new Array(xi.length).fill(height_i[0]);
+    
+    const planes = {
+      line: {
+        x: [],
+        y: [],
+        z: [],
+        type: 'scatter3d',
+        color: '#00f',
+        mode: 'lines',
+        showLegend: false
+      },
+      area: {
+        x: [],
+        y: [],
+        z: [],
+        i: [],
+        j: [],
+        k: [],
+        type: 'mesh3d',
+        color: '#00f',
+        opacity: 1,
+        flatShading: true,
+        showScale: false,
+        showLegend: false,
+        lighting: { ambient: 1 }
+      }
+    };
+
+    // Merge any provided opts into our line & area objects
+    if(typeof opts === 'object') {
+      Object.assign(planes.line, opts);
+      Object.assign(planes.area, opts);
+    }
+
+    // Reference axis (z-axis) that our rectangle initially lies in (XY-plane).
+    // We will rotate from z-axis to our normal.
+    const z_axis = [0, 0, 1];
+    
+    for(var i = 0; i < ui.length; i++) {
+      // Create a symmetrical rectangle in the XY-plane, centered at (0,0,0)
+      const rect_coords = this.symRectangle(width_i[i], height_i[i], 0);
+
+      // Convert that flat array into point-triplets:
+      var rectangle_points = [];
+      for(let i = 0; i < rect_coords.length; i += 3) {
+        rectangle_points.push([rect_coords[i], rect_coords[i + 1], rect_coords[i + 2]]);
+      }
+    
+      // Normal vector
+      const normal = [ui[i], vi[i], wi[i]];
+      
+      // Normalize the plane normal
+      const dir = this.jsl.array.normalizeVector(normal);
+
+      // Compute rotation matrix to rotate a plane (lying in XY-plane) so its normal aligns with 'dir'
+      const R = this.getRotationMatrix(z_axis, dir);
+      
+      // Rotate these points according to R
+      // No scaling or translation is applied here. If you want to shift it to [x0,y0,z0], just add that translation.
+      rectangle_points = this.transform(rectangle_points, 1.0, R, [xi[i], yi[i], zi[i]]);
+
+      // Build the line trace: push each consecutive segment plus a null to break the stroke
+      for(let j = 0; j < rectangle_points.length; j++) {
+        var [x, y, z] = rectangle_points[j];
+        planes.line.x.push(x);
+        planes.line.y.push(y);
+        planes.line.z.push(z);
+      }
+      // Insert null to break the line
+      planes.line.x.push(null);
+      planes.line.y.push(null);
+      planes.line.z.push(null);
+
+      // Build the mesh: we only need the first 4 unique corners for a rectangle
+      // (the 5th is a repeat of the 1st).
+      // Triangulate the rectangle as two triangles: (0,1,2) and (0,2,3)
+      const n = 4; // We only take indices 0..3
+      const base_index = 0;
+
+      for(let j = 0; j < n; j++) {
+        planes.area.x.push(rectangle_points[j][0]);
+        planes.area.y.push(rectangle_points[j][1]);
+        planes.area.z.push(rectangle_points[j][2]);
+      }
+      // Two triangles to form the quad
+      planes.area.i.push(base_index, base_index);
+      planes.area.j.push(base_index + 1, base_index + 2);
+      planes.area.k.push(base_index + 2, base_index + 3);
+    }
+    return planes;
+  }
+
+  /**
+   * Creates a lines in 3D space.
+   * @param {number[]} x1i - X1 coordinates of lines.
+   * @param {number[]} y1i - Y1 coordinates of lines.
+   * @param {number[]} z1i - Z1 coordinates of lines.
+   * @param {number[]} x2i - X2 coordinates of lines.
+   * @param {number[]} y2i - Y2 coordinates of lines.
+   * @param {number[]} z2i - Z2 coordinates of lines.
+   * @returns {Object} - lines object.
+   */
+  createLines3D(x1i, y1i, z1i, x2i, y2i, z2i, opts) {
+    if(!Array.isArray(x1i)) x1i = [x1i];
+    if(!Array.isArray(y1i)) y1i = [y1i];
+    if(!Array.isArray(z1i)) z1i = [z1i];
+    if(!Array.isArray(x2i)) x2i = [x2i];
+    if(!Array.isArray(y2i)) y2i = [y2i];
+    if(!Array.isArray(z2i)) z2i = [z2i];
+    
+    const lines = {
+      x: [],
+      y: [],
+      z: [],
+      type: 'scatter3d',
+      color: '#00f',
+      mode: 'lines',
+      showLegend: false
+    };
+
+    // Merge any provided opts into our line & area objects
+    if(typeof opts === 'object') {
+      Object.assign(lines, opts);
+    }
+    
+    for(var i = 0; i < x1i.length; i++) {
+      lines.x.push(x1i[i], x2i[i], null);
+      lines.y.push(y1i[i], y2i[i], null);
+      lines.z.push(z1i[i], z2i[i], null);
+    }
+    return lines;
+  }
+
+  /**
+   * Creates a points in 3D space.
+   * @param {number[]} xi - X coordinates of points.
+   * @param {number[]} yi - Y coordinates of points.
+   * @param {number[]} zi - Z coordinates of points.
+   * @returns {Object} - points object.
+   */
+  createPoints3D(xi, yi, zi, opts) {
+    if(!Array.isArray(xi)) xi = [xi];
+    if(!Array.isArray(yi)) yi = [yi];
+    if(!Array.isArray(zi)) zi = [zi];
+    
+    const points = {
+      x: [],
+      y: [],
+      z: [],
+      type: 'scatter3d',
+      color: '#00f',
+      mode: 'markers',
+      showLegend: false
+    };
+
+    // Merge any provided opts into our line & area objects
+    if(typeof opts === 'object') {
+      Object.assign(points, opts);
+    }
+    
+    for(var i = 0; i < xi.length; i++) {
+      points.x.push(xi[i], null);
+      points.y.push(yi[i], null);
+      points.z.push(zi[i], null);
+    }
+    return points;
+  }
+
+  /**
+   * Creates a points in 3D space.
+   * @param {number[]} xi - X coordinates of points.
+   * @param {number[]} yi - Y coordinates of points.
+   * @param {number[]} zi - Z coordinates of points.
+   * @returns {Object} - points object.
+   */
+  createText3D(xi, yi, zi, texti, dxi, dyi, dzi, opts) {
+    if(!Array.isArray(xi)) xi = [xi];
+    if(!Array.isArray(yi)) yi = [yi];
+    if(!Array.isArray(zi)) zi = [zi];
+    if(!Array.isArray(texti)) texti = [texti];
+    if(!Array.isArray(dxi)) dxi = [dxi];
+    if(!Array.isArray(dyi)) dyi = [dyi];
+    if(!Array.isArray(dzi)) dzi = [dzi];
+    if(dxi.length === 1 && xi.length > 1) dxi = new Array(xi.length).fill(dxi[0]);
+    if(dyi.length === 1 && yi.length > 1) dyi = new Array(yi.length).fill(dyi[0]);
+    if(dzi.length === 1 && zi.length > 1) dzi = new Array(zi.length).fill(dzi[0]);
+    
+    const texts = {
+      x: [],
+      y: [],
+      z: [],
+      text: [],
+      type: 'scatter3d',
+      textposition: 'center middle',
+      textfont: {
+        size: 18,
+        color: '#f00'
+      },
+      mode: 'text',
+      showLegend: false
+    };
+
+    // Merge any provided opts into our line & area objects
+    if(typeof opts === 'object') {
+      Object.assign(texts, opts);
+    }
+    
+    for(var i = 0; i < xi.length; i++) {
+      texts.x.push(plus(xi[i], dxi[i]));
+      texts.y.push(plus(yi[i], dyi[i]));
+      texts.z.push(plus(zi[i], dzi[i]));
+      texts.text.push(texti[i]);
+    }
+    return texts;
+  }
+  
   /**
    * Creates a symmetrical rectangle in 3D space.
    * @param {number} W - Width of the rectangle.
@@ -233,7 +861,42 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       W/2, -H/2, Z,
       W/2, H/2, Z];
   }
-        
+
+  /**
+   * Helper method to generate points for a circle in the XY plane.
+   * @param {number} radius - Radius of the circle.
+   * @param {number} segments - Number of segments for the circle.
+   * @returns {number[][]} - Array of points forming the circle.
+   */
+  circle(radius, segments) {
+    var points = [];
+    for(var i = 0; i < segments; i++) {
+      var angle = 2 * Math.PI * i / segments;
+      points.push([radius * Math.cos(angle), radius * Math.sin(angle), 0]);
+    }
+    return points;
+  }
+
+  /**
+   * Helper method to generate points for a disk in the XY plane.
+   * @param {number} radius - Radius of the disk.
+   * @param {number} segments_a - Number of angular segments for the disk.
+   * @param {number} segments_r - Number of radial segments for the disk.
+   * @returns {number[][]} - Array of points forming the disk.
+   */
+  disk(radius, segments_a, segments_r) {
+    var points = [];
+    points.push([0, 0, 0]);
+    for(var j = 1; j <= segments_r; j++) {
+      var r = radius * j / segments_r;
+      for(var i = 1; i <= segments_a; i++) {
+        var angle = 2 * Math.PI * i / segments_a;
+        points.push([r * Math.cos(angle), r * Math.sin(angle), 0]);
+      }
+    }
+    return points;
+  }
+  
   /**
    * Generates the boundary of a 3D shape based on points and a shrink factor.
    * @param {number[][]} points - Array of points defining the shape.

@@ -42,6 +42,14 @@ class PRDC_JSLAB_WIN_EDITOR {
     document.addEventListener("keydown", function (e) {
       if(e.key == "F12") {
         ipcRenderer.send("MainProcess", "toggle-dev-tools");
+      } else if(e.ctrlKey && e.key.toLowerCase() == 'c') {
+        if(obj.getSelectionText() == "") {
+          // No selected text
+          obj.editor.dispInternal(language.string(89));
+          ipcRenderer.send('SandboxWindow', 'stop-loop', true);
+          e.stopPropagation();
+          e.preventDefault();
+        }
       }
     });
 
@@ -81,13 +89,28 @@ class PRDC_JSLAB_WIN_EDITOR {
     document.addEventListener("drop", function(e) {
       e.stopPropagation();
       e.preventDefault();
-
+      console.log(e.dataTransfer.files);
+      
       for(const f of e.dataTransfer.files) {
-        obj.script_manager.openScript(f.path);
+        obj.script_manager.openScript([f.path]);
       }
     }, false);
   }
-
+  
+  /**
+   * Retrieves selected text within the application, if any.
+   * @return {string} The currently selected text.
+   */
+  getSelectionText() {
+    var text = "";
+    if(window.getSelection) {
+        text = window.getSelection().toString();
+    } else if(document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    return text;
+  }
+  
   /**
    * Method used to execute code when gui is ready.
    */

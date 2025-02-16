@@ -12,7 +12,6 @@ const { PRDC_APP_CONFIG } = require('../config/config');
 const { PRDC_JSLAB_LANGUAGE } = require('../js/language');
 
 global.app_path = process.argv.find(e => e.startsWith('--app-path=')).split('=')[1].replace(/\\js\\?$/, '');
-global.packed = app_path.endsWith("\\app.asar");
 
 const { PRDC_JSLAB_LIB } = require('../js/sandbox/jslab');
 
@@ -22,7 +21,7 @@ global.language = new PRDC_JSLAB_LANGUAGE();
 var jsl = new PRDC_JSLAB_LIB(config);
 
 if(config.TEST) {
-  const { PRDC_JSLAB_TESTER } = jsl._require("../js/tester.js");
+  const { PRDC_JSLAB_TESTER } = require("../js/tester.js");
   tester = new PRDC_JSLAB_TESTER('sandbox');
   tester.runTests();
 }

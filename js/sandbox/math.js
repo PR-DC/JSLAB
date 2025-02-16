@@ -39,6 +39,18 @@ class PRDC_JSLAB_LIB_MATH {
        */
       this.r2d = 1/this.d2r; 
     }
+    
+    /**
+     * Floating-point relative accuracy
+     * @type {number}
+     */
+    this.eps = 1E-7; 
+    
+    /**
+     * Floating-point relative accuracy
+     * @type {number}
+     */
+    this.EPS = this.eps; 
   }
   
   /**
@@ -49,24 +61,56 @@ class PRDC_JSLAB_LIB_MATH {
   seedRandom(...args) {
     return this.jsl.env.seedRandom(...args);
   }
-  
+    
   /**
    * Performs linear interpolation on a set of data points.
    * @param {Array} x The x-values of the data points.
    * @param {Array} y The y-values of the data points, corresponding to each x-value.
-   * @param {Number} xq The x-value for which to interpolate a y-value.
-   * @returns {Number} The interpolated y-value at xq.
+   * @param {Number|Array} xq The x-value(s) for which to interpolate a y-value.
+   * @param {String} mode The mode of interpolation. Use 'extrap' for extrapolation.
+   * @returns {Number|Array} The interpolated y-value(s) at xq.
    */
-  interp(x, y, xq) {
-    var i = x.indexOf(xq);
-    if(i >= 0) {
-      return y[i];
+  interp(x, y, xq, mode = 'none') {
+    // Helper function for scalar interpolation
+    const interpolate = (xqi) => {
+      var i = x.indexOf(xqi);
+      if(i >= 0) {
+        return y[i];
+      }
+
+      var x1 = [...x].reverse().find(v => v <= xqi);
+      var x2 = x.find(v => v >= xqi);
+
+      // Handle extrapolation if mode is 'extrap'
+      if(mode === 'extrap') {
+        if(xqi < x[0]) {
+          // Left-side extrapolation
+          const gradient = (y[1] - y[0]) / (x[1] - x[0]);
+          return y[0] + (xqi - x[0]) * gradient;
+        } else if(xqi > x[x.length - 1]) {
+          // Right-side extrapolation
+          const lastIdx = x.length - 1;
+          const gradient = (y[lastIdx] - y[lastIdx - 1]) / (x[lastIdx] - x[lastIdx - 1]);
+          return y[lastIdx] + (xqi - x[lastIdx]) * gradient;
+        }
+      }
+
+      // Handle interpolation inside the data range
+      if(x1 !== undefined && x2 !== undefined && x1 !== x2) {
+        var y1 = y[x.indexOf(x1)];
+        var y2 = y[x.indexOf(x2)];
+        return y1 + (xqi - x1) * (y2 - y1) / (x2 - x1);
+      }
+
+      // Return NaN if no valid interpolation point is found
+      return NaN;
+    };
+
+    // Check if xq is an array
+    if(Array.isArray(xq)) {
+      return xq.map(interpolate);
     } else {
-      var	x1 = [...x].reverse().find(function(v) { return v <= xq; });
-      var x2 = x.find(function(v) { return v >= xq; });
-      var y1 = y[x.indexOf(x1)];  
-      var y2 = y[x.indexOf(x2)]; 
-      return y1+(xq-x1)*(y2-y1)/(x2-x1);
+      return interpolate(xq);
     }
   }
 
@@ -230,6 +274,28 @@ class PRDC_JSLAB_LIB_MATH {
    */
   tand(x) {
     return this.jsl.env.math.tan(this.jsl.env.math.dotMultiply(x, this.d2r));
+  }
+  
+  /**
+   * Computes the characteristic polynomial of a matrix or the polynomial from roots.
+   * @param {Array} A - If `A` is a matrix (2D array), computes its characteristic polynomial.
+   *                    If `A` is an array of roots, computes the polynomial with those roots.
+   * @returns {Array} - Coefficients of the resulting polynomial.
+   */
+  poly(A) {
+    if(A[0].length) {
+      return charpoly(A);
+    }
+    
+    let p = [1];
+    
+    for(const root of A) {
+      p = p.map((coef) => coef * -root)
+        .concat(0)
+        .map((coef, index, arr) => coef + (arr[index + 1] || 0));
+    }
+    
+    return p;
   }
 
   /**
@@ -403,92 +469,6 @@ class PRDC_JSLAB_LIB_MATH {
         }
       }
     }
-    return x;
-  }
-  
-  /**
-   * Finds the minimum of a univariate function within a specified interval using a bracketing method.
-   * @param {function} func - The function to minimize. Should accept a single number and return a number.
-   * @param {number} a - The lower bound of the interval.
-   * @param {number} b - The upper bound of the interval.
-   * @param {number} [tol=1e-5] - The tolerance for convergence (optional).
-   * @returns {number} The x-value where the function attains its minimum within [a, b].
-   */
-  fminbnd(func, a, b, tol = 1e-5) {
-    const eps = 1e-10;  // A small value to prevent division by zero or to avoid precision issues.
-    const golden_ratio = (3 - Math.sqrt(5)) / 2;
-
-    let x = a + golden_ratio * (b - a);
-    let w = x;
-    let v = w;
-    let fx = func(x);
-    let fw = fx;
-    let fv = fw;
-
-    let d = 0;
-    let e = 0;
-
-    while(Math.abs(b - a) > tol) {
-      const m = 0.5 * (a + b);
-      const tol1 = tol * Math.abs(x) + eps;
-      const tol2 = 2 * tol1;
-
-      // Check for convergence
-      if(Math.abs(x - m) <= tol2 - 0.5 * (b - a)) {
-        break;
-      }
-
-      let u;
-      let useGolden = true;
-
-      // Try parabolic interpolation
-      if(Math.abs(e) > tol1) {
-        const r = (x - w) * (fx - fv);
-        const q = (x - v) * (fx - fw);
-        const p = (x - v) * q - (x - w) * r;
-        const q2 = 2 * (q - r);
-        const q2abs = Math.abs(q2);
-        if(q2abs > eps) {
-          u = x - p / q2;
-          if(a + tol1 <= u && u <= b - tol1 && Math.abs(u - x) < 0.5 * Math.abs(e)) {
-            useGolden = false;
-          }
-        }
-      }
-
-      // If parabolic interpolation is not used, fall back to golden section
-      if(useGolden) {
-        if(x < m) {
-          u = x + golden_ratio * (b - x);
-        } else {
-          u = x - golden_ratio * (x - a);
-        }
-        e = d;
-      } else {
-        e = d;
-      }
-
-      const fu = func(u);
-
-      // Update a, b, v, w, x
-      if(fu <= fx) {
-        if(u < x) b = x;
-        else a = x;
-        v = w; fv = fw;
-        w = x; fw = fx;
-        x = u; fx = fu;
-      } else {
-        if(u < x) a = u;
-        else b = u;
-        if(fu <= fw || w === x) {
-          v = w; fv = fw;
-          w = u; fw = fu;
-        } else if(fu <= fv || v === x || v === w) {
-          v = u; fv = fu;
-        }
-      }
-    }
-
     return x;
   }
 
@@ -678,6 +658,7 @@ class PRDC_JSLAB_LIB_MATH {
     } else {
       this.jsl.env.error('@imag: '+language.string(192));
     }
+    return false;
   }
   
   /**
@@ -696,6 +677,63 @@ class PRDC_JSLAB_LIB_MATH {
    */
   trapz(...args) {
     return this.jsl.env.native_module.trapz(...args);
+  }
+  
+  /**
+   * Compute the mean squared error (MSE) between two arrays.
+   * @param {Array<number>} A - The first array.
+   * @param {Array<number>} B - The second array.
+   * @returns {number} - The mean squared error between A and B.
+   * @throws {Error} - If A and B have different lengths or are not arrays.
+   */
+  mse(A, B) {
+    if(!Array.isArray(A) || !Array.isArray(B)) {
+      throw new Error("Both inputs must be arrays.");
+    }
+
+    if(A.length !== B.length) {
+      throw new Error("Input arrays must have the same length.");
+    }
+
+    const n = A.length;
+    const mse = A.reduce((sum, a, i) => {
+      const diff = a - B[i];
+      return sum + diff * diff;
+    }, 0) / n;
+
+    return mse;
+  }
+  
+  /**
+   * Calculates the coefficients of the characteristic polynomial of a square matrix.
+   * @param {number[][]} matrix - A square matrix (2D array) for which the characteristic polynomial is computed.
+   * @returns {number[]} - An array of coefficients of the characteristic polynomial.
+   * @throws {Error} - Throws an error if the input is not a square matrix or has less than 2 rows/columns.
+   */
+  charpoly(matrix) {
+    const n = matrix.length;
+    const m = matrix[0].length;
+
+    if(n !== m || n < 1) {
+      throw new Error("Argument 'matrix' must be a square matrix.");
+    }
+    
+    if(n == 1) {
+      return [1, -matrix[0][0]];
+    }
+    
+    let p = ones(n+1);
+    let a1 = [...matrix];
+    for(let k = 2; k <= n; k++) {
+      p[k-1] = -1 * sum(this.jsl.env.math.diag(a1)) / (k - 1);
+      a1 = this.jsl.env.math.multiply(matrix, plus(a1, 
+        this.jsl.env.math.multiply(p[k-1], 
+        this.jsl.env.math.diag(ones(n)))));
+    }
+
+    p[n] = -1 * sum(this.jsl.env.math.diag(a1)) / n;
+
+    return p;
   }
 }
 

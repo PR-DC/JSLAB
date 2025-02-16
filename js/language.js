@@ -55,7 +55,6 @@ class PRDC_JSLAB_LANGUAGE {
       return e == lang;
     });
     if(idx >= 0) {
-      var obj = this;
       this.lang = lang;
       this.lang_index = idx;
       if(this.lang_styles.cssRules.length) {

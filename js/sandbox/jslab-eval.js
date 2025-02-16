@@ -22,26 +22,35 @@ class PRDC_JSLAB_EVAL {
     // Errors handling
     this.jsl.context.addEventListener('unhandledrejection', function(e) { 
       if(e && e.reason) {
-        if('stack' in e.reason) {
-          obj.rewriteError('@jslab: '+e.reason.stack.toString());
-        } else if(e.reason.message) {
-          obj.jsl.env.error('@jslab: '+e.reason.message, false);
+        if(obj.jsl.ready) {
+          if(e.reason.hasOwnProperty('stack')) {
+            obj.rewriteError('@jslab: '+e.reason.stack.toString());
+          } else if(e.reason.message) {
+            obj.jsl.env.error('@jslab: '+e.reason.message, false);
+          }
+        } else {
+          console.log(e);
+          obj.jsl.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
         }
         e.preventDefault();
       }
     });
 
     this.jsl.context.addEventListener('error', function(e) {
-      if(e && e.error && 'stack' in e.error) {
-        obj.rewriteError('@jslab: '+e.error.stack.toString());
-      } else if(e && e.error && e.error.message) {
-        obj.jsl.env.error('@jslab: '+e.error.message, false);
+      if(obj.jsl.ready) {
+        if(e && e.error && 'stack' in e.error) {
+          obj.rewriteError('@jslab: '+e.error.stack.toString());
+        } else if(e && e.error && e.error.message) {
+          obj.jsl.env.error('@jslab: '+e.error.message, false);
+        }
+      } else {
+        console.log(e);
+        obj.jsl.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
       }
-      
       e.preventDefault();
     });
   }
-
+  
   /**
    * Evaluates a block of code as a string within the JSLAB environment.
    * @param {String} code The code block to evaluate.
@@ -74,7 +83,7 @@ class PRDC_JSLAB_EVAL {
     }
     
     try {
-      var data = await this.evalString(code, show_output);
+      var data = await this.evalString(code);
       if(obj.jsl.no_ans == false) {
         obj.jsl.context.ans = data;
       }
@@ -90,25 +99,27 @@ class PRDC_JSLAB_EVAL {
   /**
    * Evaluates a string of code and handles errors and output.
    * @param {String} code The code string to evaluate.
-   * @param {Boolean} [show_output=true] If true, displays the output of the code block.
    * @returns {*} The result of the evaluated code.
    */
-  async evalString(code, show_output = true) { 
+  async evalString(code) { 
     var rewrite_result = this.rewriteCode(code);
-    this.source_maps.push(rewrite_result.map);
-    this.transformed_codes.push(rewrite_result.code);
-    this.source_codes.push(code);
-    
-    var current_source_code = this.current_source_code;
-    var current_source_map = this.current_source_map;
-    this.current_source_code = code;
-    this.current_source_map = rewrite_result.map;
+    if(rewrite_result) {
+      this.source_maps.push(rewrite_result.map);
+      this.transformed_codes.push(rewrite_result.code);
+      this.source_codes.push(code);
+      
+      var current_source_code = this.current_source_code;
+      var current_source_map = this.current_source_map;
+      this.current_source_code = code;
+      this.current_source_map = rewrite_result.map;
 
-    var result = await this.jsl._eval(rewrite_result.code);
-    
-    this.current_source_code = current_source_code;
-    this.current_source_map = current_source_map;
-    return result;
+      var result = await this.jsl._eval(rewrite_result.code);
+      
+      this.current_source_code = current_source_code;
+      this.current_source_map = current_source_map;
+      return result;
+    }
+    return false;
   }
   
   /**
@@ -116,13 +127,12 @@ class PRDC_JSLAB_EVAL {
    * @param {String} script_path The path to the script file to be executed.
    * @param {Array} [lines] Specifies a range of lines to execute, if provided.
    * @param {Boolean} [silent=false] If true, suppresses output from the script.
-   * @param {Boolean} [force_run=false] If true, forces the script to run even if stop conditions are met.
    */
-  async runScript(script_path, lines, silent = false, force_run = false) {
+  async runScript(script_path, lines, silent = false) {
     script_path = this.jsl.pathResolve(script_path);
     if(script_path) {
       this.jsl.current_script = script_path;
-      this.jsl.jsl_file_name = this.jsl.env.basenamePath(script_path);
+      this.jsl.jsl_file_name = this.jsl.env.pathBaseName(script_path);
       
       var script_code = this.jsl.env.readFileSync(script_path);
       if(script_code === false) {
@@ -145,9 +155,10 @@ class PRDC_JSLAB_EVAL {
             }
           }
         }
-        await this.evalString(script_code, !silent);
+        return await this.evalString(script_code, !silent);
       }
     }
+    return false;
   } 
 
   /**
@@ -160,7 +171,7 @@ class PRDC_JSLAB_EVAL {
     } else {
       cmd = 'run(' + JSON.stringify(this.jsl.last_script_path) + ', undefined, false, true)';
     }
-    await this.evalCodeFromMain(cmd, false);
+    await this.evalCodeFromMain(cmd);
   }
   
   /**
@@ -168,7 +179,7 @@ class PRDC_JSLAB_EVAL {
    * @param {String} stack The error stack trace.
    */
   async rewriteError(stack, on_rewrite = false) {
-    this.jsl._console.log(stack);
+    this.jsl._console.log(stack, on_rewrite);
     
     const regex_normal = /at\s(.*?)\s\((.*\\.*?):(\d+):(\d+)\)/;
     const regex_eval = /eval at evalString\s*\(.*:(\d+):(\d+)\)$/;
@@ -178,23 +189,19 @@ class PRDC_JSLAB_EVAL {
     
     if(on_rewrite) {
       msg = msg.replace(/\(\d+:\d+\)/g, '');
-      msg += "\n  "+language.string(114)+" ";
       let matchs = lines[0].match(regex_rewrite);
-      let line = parseInt(matchs[1]);
-      let column = parseInt(matchs[2]);
-      var result = await this.getOriginalPosition(end(this.source_maps), line, column);
-      
-      msg += "(" + this.jsl.current_script + ") "+language.string(112)+": " + result.line + ", "+language.string(113)+": " +  result.column;
+      if(matchs) {
+        let line = parseInt(matchs[1]);
+        let column = parseInt(matchs[2]);
+        
+        msg += "\n  "+language.string(114)+" ";
+        msg += "(" + this.jsl.current_script + ") "+language.string(112)+": " + line + ", "+language.string(113)+": " +  column;
+      }
       throw {
         name: 'JslabError',
         message: msg
       };
     } else {
-      if(lines[3] == '    at PRDC_JSLAB_LIB.eval [as _eval] (<anonymous>)') {
-        this.jsl.env.error(msg + ' (' + this.jsl.current_script + ')', false);
-        return;
-      }
-      
       for(let i = 1; i < lines.length; i++) {
         if(lines[i].includes("eval at evalString (")) {
           msg += "\n  "+language.string(114)+" ";
@@ -212,10 +219,8 @@ class PRDC_JSLAB_EVAL {
             let expression = matchs[1];
             let path = matchs[2];
             let line = parseInt(matchs[3]);
-            let column = parseInt(matchs[4]);
-            var result = await this.getOriginalPosition(end(this.source_maps), line, column);
-            
-            msg += expression + " (" + path + ") "+language.string(112)+": " + result.line + ", "+language.string(113)+": " +  result.column;
+            let column = parseInt(matchs[4]);            
+            msg += expression + " (" + path + ") "+language.string(112)+": " + line + ", "+language.string(113)+": " +  column;
           }
         }
       }
@@ -268,7 +273,7 @@ class PRDC_JSLAB_EVAL {
    */
   async getOriginalPosition(map, line, column) {
     this.jsl.override.withoutCheckStop = true;
-    var smc = await new this.jsl.env.SourceMapConsumer(end(this.source_maps));
+    var smc = await new this.jsl.env.SourceMapConsumer(map);
     this.jsl.override.withoutCheckStop = false;
     var result = smc.originalPositionFor({ line: line, column: column });
     smc.destroy();
@@ -307,9 +312,9 @@ class PRDC_JSLAB_EVAL {
     if(config.DEBUG_PRE_TRANSFORMED_CODE) {
       obj.jsl._console.log(code);
     }
-    
+
     // Parse the code into an AST using Recast with Babel parser
-    var ast;
+    let ast;
     try {
       ast = this.jsl.env.recast.parse(code, {
         parser: {
@@ -325,14 +330,15 @@ class PRDC_JSLAB_EVAL {
                 'nullishCoalescingOperator',
                 "@babel/plugin-syntax-top-level-await"
               ],
+              tolerant: true
             });
           },
         },
         sourceFileName: "source.js"
       });
-    } catch(e) {
-      this.jsl._console.log(e);
-      this.rewriteError(e.stack, true);
+    } catch(err) {
+      this.rewriteError(err.stack, true);
+      return false;
     }
 
     // Function to check for forbidden names in patterns
@@ -407,7 +413,6 @@ class PRDC_JSLAB_EVAL {
     });
 
     const b = this.jsl.env.recast.types.builders;
-    const transformedBody = [];
 
     // Helper function to transform patterns to assign to jsl.context
     function transformPatternToContext(pattern) {
@@ -428,7 +433,7 @@ class PRDC_JSLAB_EVAL {
               prop.key,
               transformPatternToContext(prop.value),
               prop.computed,
-              false // Shorthand is false because we've replaced the identifier
+              false
             );
           })
         );
@@ -451,20 +456,141 @@ class PRDC_JSLAB_EVAL {
       }
       return pattern;
     }
-    
-    var tempVarCounter = 0;
-    // Transform top-level variable declarations and handle imports
-    ast.program.body.forEach((node) => {
-      if(node.type === 'VariableDeclaration') {
+
+    let tempVarCounter = 0;
+    let functionDepth = 0;
+
+    // Helpers to track function-like scopes
+    function enterFunctionScope() {
+      functionDepth++;
+    }
+    function leaveFunctionScope() {
+      functionDepth--;
+    }
+
+    const visitObj = {
+      // If top-level, after the function declaration, assign it to jsl.context
+      visitFunctionDeclaration(path) {
+        const node = path.node;
+        if(functionDepth === 0 && node.id) {
+          enterFunctionScope();
+          this.traverse(path);
+          leaveFunctionScope();
+
+          // Insert assignment after the function declaration
+          const funcName = node.id.name;
+          const assignment = b.expressionStatement(
+            b.assignmentExpression(
+              '=',
+              b.memberExpression(
+                b.memberExpression(b.identifier('jsl'), b.identifier('context')),
+                b.identifier(funcName)
+              ),
+              b.identifier(funcName)
+            )
+          );
+          path.insertAfter(assignment);
+
+          return false;
+        } else {
+          enterFunctionScope();
+          this.traverse(path);
+          leaveFunctionScope();
+          return false;
+        }
+      },
+
+      // Same logic for arrow functions and others - no change required
+      visitFunctionExpression(path) {
+        enterFunctionScope();
+        this.traverse(path);
+        leaveFunctionScope();
+        return false;
+      },
+      visitArrowFunctionExpression(path) {
+        enterFunctionScope();
+        this.traverse(path);
+        leaveFunctionScope();
+        return false;
+      },
+      visitClassMethod(path) {
+        enterFunctionScope();
+        this.traverse(path);
+        leaveFunctionScope();
+        return false;
+      },
+      visitObjectMethod(path) {
+        enterFunctionScope();
+        this.traverse(path);
+        leaveFunctionScope();
+        return false;
+      },
+      visitClassPrivateMethod(path) {
+        enterFunctionScope();
+        this.traverse(path);
+        leaveFunctionScope();
+        return false;
+      },
+
+      // If top-level class declaration, after it assign it to jsl.context
+      visitClassDeclaration(path) {
+        const node = path.node;
+        if(functionDepth === 0 && node.id) {
+          enterFunctionScope();
+          this.traverse(path);
+          leaveFunctionScope();
+
+          const className = node.id.name;
+          const assignment = b.expressionStatement(
+            b.assignmentExpression(
+              '=',
+              b.memberExpression(
+                b.memberExpression(b.identifier('jsl'), b.identifier('context')),
+                b.identifier(className)
+              ),
+              b.identifier(className)
+            )
+          );
+          path.insertAfter(assignment);
+
+          return false;
+        } else {
+          enterFunctionScope();
+          this.traverse(path);
+          leaveFunctionScope();
+          return false;
+        }
+      },
+
+      visitVariableDeclaration(path) {
+        const node = path.node;
+        const parentType = path.parent.node.type;
+
+        // Determine if we should rewrite based on kind and scope
+        // var: rewrite only if top-level (functionDepth === 0)
+        // let/const: rewrite only if top-level (parent is Program)
+        const isTopLevel = (functionDepth === 0);
+        const shouldRewrite =
+          ((node.kind === 'var') && isTopLevel) ||
+          ((node.kind === 'let' || node.kind === 'const') && parentType === 'Program');
+
+        if(!shouldRewrite) {
+          // Just keep as is
+          this.traverse(path);
+          return false;
+        }
+
+        const newAssignments = [];
+
         node.declarations.forEach((decl) => {
           if(decl.id.type === 'ArrayPattern') {
             // Handle ArrayPattern by creating a temporary variable and individual assignments
             const tempVarName = `__temp${tempVarCounter++}`;
-            // const __tempX = <init>;
-            const tempVarDeclaration = b.variableDeclaration(node.kind, [
-              b.variableDeclarator(b.identifier(tempVarName), decl.init),
+            // Create a temporary init variable if needed
+            const tempDecl = b.variableDeclaration('var', [
+              b.variableDeclarator(b.identifier(tempVarName), decl.init)
             ]);
-            transformedBody.push(tempVarDeclaration);
+            newAssignments.push(tempDecl);
 
             // For each element in the ArrayPattern, assign to jsl.context
             decl.id.elements.forEach((element, index) => {
@@ -477,12 +603,13 @@ class PRDC_JSLAB_EVAL {
                 const rightAccess = b.memberExpression(
                   b.identifier(tempVarName),
                   b.numericLiteral(index),
-                  true // Computed property (array index)
+                  true
                 );
-                const assignment = b.expressionStatement(
-                  b.assignmentExpression('=', transformedLeft, rightAccess)
+                newAssignments.push(
+                  b.expressionStatement(
+                    b.assignmentExpression('=', transformedLeft, rightAccess)
+                  )
                 );
-                transformedBody.push(assignment);
               } else if(element && element.type === 'RestElement') {
                 // Handle RestElement (e.g., ...rest)
                 const transformedLeft = transformPatternToContext(element.argument);
@@ -494,27 +621,58 @@ class PRDC_JSLAB_EVAL {
                   ),
                   [b.numericLiteral(index)]
                 );
-                const assignment = b.expressionStatement(
-                  b.assignmentExpression('=', transformedLeft, rightSlice)
+                newAssignments.push(
+                  b.expressionStatement(
+                    b.assignmentExpression('=', transformedLeft, rightSlice)
+                  )
                 );
-                transformedBody.push(assignment);
               }
-              // Handle other element types (e.g., AssignmentPattern, nested patterns) as needed
             });
+
           } else {
-            // Existing handling for other patterns
+            // For normal patterns or single identifiers
             const transformedId = transformPatternToContext(decl.id);
             const assignment = b.expressionStatement(
-              b.assignmentExpression(
-                '=',
-                transformedId,
-                decl.init || b.identifier('undefined')
-              )
+              b.assignmentExpression('=', transformedId, decl.init || b.identifier('undefined'))
             );
-            transformedBody.push(assignment);
+            newAssignments.push(assignment);
           }
         });
-      } else if(node.type === 'ImportDeclaration') {
+
+        // Check if this declaration is part of a ForStatement init
+        if(path.parent.node.type === 'ForStatement' && path.parent.node.init === node) {
+          // For a ForStatement init, we need a single expression, not multiple statements
+          const exprs = [];
+          newAssignments.forEach((stmt) => {
+            if(stmt.type === 'VariableDeclaration' && stmt.declarations.length === 1) {
+              // Convert var temp = init into (temp = init)
+              const declInit = stmt.declarations[0].init || b.identifier('undefined');
+              exprs.push(b.assignmentExpression('=', b.identifier(stmt.declarations[0].id.name), declInit));
+            } else if(stmt.type === 'ExpressionStatement') {
+              exprs.push(stmt.expression);
+            }
+          });
+
+          let initExpr;
+          if(exprs.length === 1) {
+            initExpr = exprs[0];
+          } else {
+            initExpr = b.sequenceExpression(exprs);
+          }
+
+          path.replace(initExpr);
+          return false;
+        } else {
+          // Normal top-level or block-level declaration: replace with multiple statements
+          path.replace(...newAssignments);
+          return false;
+        }
+      },
+
+      visitImportDeclaration(path) {
+        const node = path.node;
+        const newStatements = [];
+
         node.specifiers.forEach((specifier) => {
           let requireCall;
           if(specifier.type === 'ImportDefaultSpecifier') {
@@ -537,55 +695,59 @@ class PRDC_JSLAB_EVAL {
 
           const right =
             specifier.type === 'ImportDefaultSpecifier' ? requireCall
-              : b.memberExpression(requireCall, b.identifier(specifier.imported.name), false);
+            : b.memberExpression(requireCall, b.identifier(specifier.imported.name), false);
 
-          const assignment = b.expressionStatement(
-            b.assignmentExpression('=', left, right)
+          newStatements.push(
+            b.expressionStatement(
+              b.assignmentExpression('=', left, right)
+            )
           );
-
-          transformedBody.push(assignment);
         });
-      } else {
-        transformedBody.push(node);
+
+        path.replace(...newStatements);
+        return false;
       }
-    });
+    };
+
+    this.jsl.env.recast.types.visit(ast, visitObj);
 
     // Ensure the value of the last expression is returned
-    if(transformedBody.length > 0) {
-      const lastNode = transformedBody[transformedBody.length - 1];
+    const finalBody = ast.program.body;
+    if(finalBody.length > 0) {
+      const lastNode = finalBody[finalBody.length - 1];
       if(lastNode.type === 'ExpressionStatement') {
         // Replace it with a return statement
-        transformedBody[transformedBody.length - 1] = b.returnStatement(lastNode.expression);
+        finalBody[finalBody.length - 1] = b.returnStatement(lastNode.expression);
       } else if(lastNode.type !== 'ReturnStatement') {
         // Not an expression or return statement, so append 'return undefined;'
-        transformedBody.push(
+        finalBody.push(
           b.returnStatement(b.identifier('undefined'))
         );
       }
     } else {
       // If the body is empty, add 'return undefined;'
-      transformedBody.push(
+      finalBody.push(
         b.returnStatement(b.identifier('undefined'))
       );
     }
 
     // Reconstruct the AST with the transformed body
-    const transformedAST = b.program(transformedBody);
+    const transformedAST = b.program(finalBody);
 
     // Generate code from the transformed AST with Recast
-    var result = this.jsl.env.recast.print(transformedAST, {
+    const result = this.jsl.env.recast.print(transformedAST, {
       sourceMapName: 'transformed.js.map',
     });
 
     // Wrap the code in an async IIFE to allow top-level await
-    var transformedCode = `(async () => { ${result.code} })()`;
-    
+    const transformedCode = `(async () => { ${result.code} })();`;
+
     if(config.DEBUG_TRANSFORMED_CODE) {
       obj.jsl._console.log(transformedCode);
       obj.jsl._console.log(result.map);
     }
 
-    return {code: transformedCode, map: result.map};
+    return { code: transformedCode, map: result.map };
   }
 }
 

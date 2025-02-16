@@ -108,7 +108,6 @@ class PRDC_JSLAB_TESTS {
    * Creates an instance to manage and store individual tests.
    */
   constructor() {
-    var obj = this;
     this.tests = [];
   }
   

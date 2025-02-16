@@ -22,7 +22,7 @@ class PRDC_JSLAB_WORKSPACE {
     this.workspace_cont = document.getElementById('workspace');
     
     // Workspace clear button click
-    $('#workspace-options .clear').click(function(e){
+    $('#workspace-options .clear').click(function(){
       obj.win.eval.evalCommand('clear');
     });
   }
@@ -65,4 +65,4 @@ class PRDC_JSLAB_WORKSPACE {
   }
 }
 
-exports.PRDC_JSLAB_WORKSPACE = PRDC_JSLAB_WORKSPACE
+exports.PRDC_JSLAB_WORKSPACE = PRDC_JSLAB_WORKSPACE;

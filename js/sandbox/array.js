@@ -66,6 +66,26 @@ class PRDC_JSLAB_LIB_ARRAY {
   row(A, row) {
     return A[row];
   }
+
+  /**
+   * Returns the first N elements from an array.
+   * @param {Array} A - The input array.
+   * @param {number} [N=1] - The number of elements to return from the start.
+   * @returns {Array} - An array containing the first N elements.
+   */
+  first(A, N = 1) {
+    return A.slice(0, N);
+  }
+
+  /**
+   * Returns the last N elements from an array.
+   * @param {Array} A - The input array.
+   * @param {number} [N=1] - The number of elements to return from the end.
+   * @returns {Array} - An array containing the last N elements.
+   */
+  last(A, N = 1) {
+    return A.slice(-N);
+  }
   
   /**
    * Generates an array of indices based on rows and columns.
@@ -134,7 +154,21 @@ class PRDC_JSLAB_LIB_ARRAY {
 
     return (i === index + search_elements.length) ? index : -1;
   }
-  
+
+  /**
+   * Shuffles indices of an array using the Fisher-Yates algorithm.
+   * @param {Array} array Array whose indices are to be shuffled.
+   * @return {Array} Shuffled array of indices.
+   */
+  shuffleIndices(array) {
+    const idx = Array.from(array.keys());
+    for(let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return idx;
+  }
+
   /**
    * Sets a subset of array elements based on provided indices.
    * @param {Array} A - The target array.
@@ -143,11 +177,24 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   setSub(A, indices, B) {
     var j = 0;
+    if(!Array.isArray(B)) {
+      B = createFilledArray(indices.length, B);
+    }
     for(var i = 0; i < indices.length; i++) {
       A[indices[i]] = B[j++];
     }
   }
 
+  /**
+   * Sets a subset of array elements based on provided boolean indices.
+   * @param {Array} A - The target array to modify.
+   * @param {boolean[]} b - A boolean array indicating which elements to set (true = set, false = skip).
+   * @param {Array} B - The array of values to set at the indices determined by `b`.
+   */
+  setSubB(A, b, B) {
+    this.setSub(A, b2i(b), B);
+  }
+  
   /**
    * Retrieves a subset of array elements based on provided indices.
    * @param {Array} A - The source array.
@@ -161,6 +208,16 @@ class PRDC_JSLAB_LIB_ARRAY {
       B[j++] = A[indices[i]];
     }
     return B;
+  }
+  
+  /**
+   * Retrieves a subset of array elements based on provided indices.
+   * @param {Array} A - The source array.
+   * @param {boolean[]} b - A boolean array indicating which elements to retrieve.
+   * @returns {Array} An array containing the retrieved elements.
+   */
+  getSubB(A, b) {
+    return this.getSub(A, b2i(b));
   }
   
   /**
@@ -292,7 +349,16 @@ class PRDC_JSLAB_LIB_ARRAY {
   getVal(A, indices) {
     return this.getValueAt(A, indices);
   }
-
+  
+  /**
+   * Creates a shallow copy of the provided array.
+   * @param {Array} A - The array to clone.
+   * @returns {Array} A new array containing all elements from A.
+   */
+  cloneArray(A) {
+    return [...A];
+  }
+  
   /**
    * Creates an n-dimensional array.
    * @param {number} length - The size of the first dimension.
@@ -517,13 +583,21 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
 
   /**
-   * Performs element-wise multiplication on two arrays or matrices.
-   * @param {Array|Matrix} x - The first array or matrix.
-   * @param {Array|Matrix} y - The second array or matrix.
-   * @returns {Array|Matrix} The result of the element-wise multiplication.
+   * Calculates the dot product of two vectors or matrices.
+   * @param {number[]} x - The first input vector or flat array.
+   * @param {number[]} y - The second input vector or flat array.
+   * @param {number} [cols] - Optional number of columns to reshape the inputs into matrices.
+   * @returns {number | number[][]} The resulting dot product, either as a scalar or a matrix.
    */
-  dot(x, y) {
-    return this.jsl.env.math.dot(x, y);
+  dot(x, y, cols) {
+    if(cols) {
+      var rows = x.length/cols;
+      var x_in = reshape(transpose(x, cols, rows), cols, rows); 
+      var y_in = reshape(transpose(y, cols, rows), cols, rows); 
+      return this.elementWise((a, b) => this.jsl.env.math.dot(a, b), x_in, y_in);
+    } else {
+      return this.jsl.env.math.dot(x, y);
+    }
   }
   
   /**
@@ -534,7 +608,16 @@ class PRDC_JSLAB_LIB_ARRAY {
   lZero(e) { 
     return e > 0; 
   }
-
+  
+  /**
+   * Converts a boolean array into an array of indices where the values are `true`.
+   * @param {boolean[]} arr - The input array of boolean values.
+   * @returns {number[]} An array of indices corresponding to `true` values in the input array.
+   */
+  b2i(arr) { 
+    return arr.map((value, index) => value ? index : -1).filter(index => index !== -1);
+  }
+  
   /**
    * Calculates the average value of an array.
    * @param {Array<number>} arr - The array to average.
@@ -561,6 +644,46 @@ class PRDC_JSLAB_LIB_ARRAY {
       result.push(ema);
     }
     return result;
+  }
+  
+  /**
+   * Applies a moving average filter to an input array while keeping the output array the same size.
+   * @param {number[]} inputArray - The array of numbers to filter.
+   * @param {number} windowSize - The size of the moving window (number of elements to average).
+   * @returns {number[]} The filtered array with the same length as the input array.
+   */
+  averageMoving(inputArray, windowSize) {
+    var result = [];
+    var len = inputArray.length;
+    var halfWindow = Math.floor(windowSize / 2);
+
+    for(var i = 0; i < len; i++) {
+      var start = i - halfWindow;
+      var end = i + halfWindow;
+
+      // Adjust the window if it goes beyond the array bounds
+      if(start < 0) start = 0;
+      if(end >= len) end = len - 1;
+
+      var sum = 0;
+      var count = 0;
+      for(var j = start; j <= end; j++) {
+        sum += inputArray[j];
+        count++;
+      }
+      result.push(sum / count);
+    }
+    return result;
+  }
+  
+  /**
+   * Applies a moving average filter to an input array while keeping the output array the same size.
+   * @param {number[]} inputArray - The array of numbers to filter.
+   * @param {number} windowSize - The size of the moving window (number of elements to average).
+   * @returns {number[]} The filtered array with the same length as the input array.
+   */
+  movmean(inputArray, windowSize) {
+    return this.averageMoving(inputArray, windowSize);
   }
   
   /**
@@ -681,85 +804,103 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
   
   /**
-   * Adds two operands, which can be either scalars or arrays.
-   * If both operands are arrays, they must be of the same length.
-   * @param {number|Array<number>} a - The first operand, scalar or array.
-   * @param {number|Array<number>} b - The second operand, scalar or array.
-   * @returns {number|Array<number>} The result of adding `a` and `b`.
+   * Adds multiple operands, which can be either scalars or arrays.
+   * If multiple operands are arrays, they must be of the same length.
+   * @param {...number|Array<number>} args - The operands, scalar or arrays.
+   * @returns {number|Array<number>} The result of adding all operands.
    * @throws {Error} If input types are invalid or arrays have different lengths.
    */
-  plus(a, b) {
-    if(Array.isArray(a) && Array.isArray(b)) {
-      // Both are arrays
-      if(a.length !== b.length) {
-        this.jsl.env.error('@plus: '+language.string(176));
-      }
-      return a.map((val, idx) => this.plus(val, b[idx]));
-    } else if(Array.isArray(a) && typeof b === 'number') {
-      // 'a' is array, 'b' is scalar
-      return a.map(val => this.plus(val, b));
-    } else if(typeof a === 'number' && Array.isArray(b)) {
-      // 'a' is scalar, 'b' is array
-      return b.map(val => this.plus(a, val));
-    } else if(typeof a === 'number' && typeof b === 'number') {
-      // Both are scalars
-      return a + b;
-    } else {
-      this.jsl.env.error('@plus: '+language.string(177));
+  plus(...args) {
+    if(args.length === 0) {
+      this.jsl.env.error('@plus: No arguments provided');
     }
+
+    // Helper function to add two operands
+    const addTwo = (a, b) => {
+      if(Array.isArray(a) && Array.isArray(b)) {
+        if(a.length !== b.length) {
+          this.jsl.env.error('@plus: ' + language.string(176)); // Arrays have different lengths
+        }
+        return a.map((val, idx) => this.plus(val, b[idx]));
+      } else if(Array.isArray(a) && typeof b === 'number') {
+        return a.map(val => this.plus(val, b));
+      } else if(typeof a === 'number' && Array.isArray(b)) {
+        return b.map(val => this.plus(a, val));
+      } else if(typeof a === 'number' && typeof b === 'number') {
+        return a + b;
+      } else {
+        this.jsl.env.error('@plus: ' + language.string(177)); // Invalid type
+      }
+      return false;
+    };
+
+    // Iterate through all arguments and accumulate the result
+    return args.reduce((acc, current) => addTwo(acc, current));
   }
 
   /**
-   * Adds two operands, which can be either scalars or arrays.
-   * If both operands are arrays, they must be of the same length.
-   * @param {number|Array<number>} a - The first operand, scalar or array.
-   * @param {number|Array<number>} b - The second operand, scalar or array.
-   * @returns {number|Array<number>} The result of adding `a` and `b`.
+   * Adds multiple operands, which can be either scalars or arrays.
+   * If multiple operands are arrays, they must be of the same length.
+   * @param {...number|Array<number>} args - The operands, scalar or arrays.
+   * @returns {number|Array<number>} The result of adding all operands.
    * @throws {Error} If input types are invalid or arrays have different lengths.
    */
-  add(a, b) {
-    return this.plus(a, b);
+  add(...args) {
+    return this.plus(...args);
   }
   
   /**
-   * Subtracts the second operand from the first, which can be either scalars or arrays.
-   * If both operands are arrays, they must be of the same length.
-   * @param {number|Array<number>} a - The first operand, scalar or array.
-   * @param {number|Array<number>} b - The second operand, scalar or array.
-   * @returns {number|Array<number>} The result of subtracting `b` from `a`.
+   * Subtracts multiple operands from the first one, which can be either scalars or arrays.
+   * If multiple operands are arrays, they must be of the same length.
+   * @param {...number|Array<number>} args - The operands, scalar or arrays.
+   * @returns {number|Array<number>} The result of subtracting all subsequent operands from the first one.
    * @throws {Error} If input types are invalid or arrays have different lengths.
    */
-  minus(a, b) {
-    if(Array.isArray(a) && Array.isArray(b)) {
-      // Both are arrays
-      if(a.length !== b.length) {
-        this.jsl.env.error('@minus: '+language.string(176));
-      }
-      return a.map((val, idx) => this.minus(val, b[idx]));
-    } else if(Array.isArray(a) && typeof b === 'number') {
-      // 'a' is array, 'b' is scalar
-      return a.map(val => this.minus(val, b));
-    } else if(typeof a === 'number' && Array.isArray(b)) {
-      // 'a' is scalar, 'b' is array
-      return b.map(val => this.minus(a, val));
-    } else if(typeof a === 'number' && typeof b === 'number') {
-      // Both are scalars
-      return a - b;
-    } else {
-      this.jsl.env.error('@minus: '+language.string(177));
+  minus(...args) {
+    if(args.length === 0) {
+      this.jsl.env.error('@minus: No arguments provided');
     }
+
+    // Helper function to subtract two operands
+    const subtractTwo = (a, b) => {
+      if(Array.isArray(a) && Array.isArray(b)) {
+        if(a.length !== b.length) {
+          this.jsl.env.error('@minus: ' + language.string(176)); // Arrays have different lengths
+        }
+        return a.map((val, idx) => this.minus(val, b[idx]));
+      } else if(Array.isArray(a) && typeof b === 'number') {
+        return a.map(val => this.minus(val, b));
+      } else if(typeof a === 'number' && Array.isArray(b)) {
+        // Subtracting an array from a scalar: scalar - array
+        return b.map(val => this.minus(a, val));
+      } else if(typeof a === 'number' && typeof b === 'number') {
+        return a - b;
+      } else {
+        this.jsl.env.error('@minus: ' + language.string(177)); // Invalid type
+      }
+      return false;
+    };
+
+    // The first argument is the initial value
+    let result = args[0];
+
+    // Iterate through the rest of the arguments and subtract each from the result
+    for(let i = 1; i < args.length; i++) {
+      result = subtractTwo(result, args[i]);
+    }
+
+    return result;
   }
   
   /**
-   * Subtracts the second operand from the first, which can be either scalars or arrays.
-   * If both operands are arrays, they must be of the same length.
-   * @param {number|Array<number>} a - The first operand, scalar or array.
-   * @param {number|Array<number>} b - The second operand, scalar or array.
-   * @returns {number|Array<number>} The result of subtracting `b` from `a`.
+   * Subtracts multiple operands from the first one, which can be either scalars or arrays.
+   * If multiple operands are arrays, they must be of the same length.
+   * @param {...number|Array<number>} args - The operands, scalar or arrays.
+   * @returns {number|Array<number>} The result of subtracting all subsequent operands from the first one.
    * @throws {Error} If input types are invalid or arrays have different lengths.
    */
-  subtract(a, b) {
-    return this.minus(a, b);
+  subtract(...args) {
+    return this.minus(...args);
   }
   
   /**
@@ -769,7 +910,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @param {number} cols - The number of columns (typically 1 for single vectors).
    * @returns {number[]} The cross product vector.
    */
-  cross3D(A, B, cols) {
+  cross3D(A, B, cols = 1) {
     var C = new Array(3 * cols).fill(0);
     for(var j = 0; j < cols; j++) {
       C[j * 3] = A[j * 3 + 1] * B[j * 3 + 2] - A[j * 3 + 2] * B[j * 3 + 1];
@@ -777,6 +918,21 @@ class PRDC_JSLAB_LIB_ARRAY {
       C[j * 3 + 2] = A[j * 3] * B[j * 3 + 1] - A[j * 3 + 1] * B[j * 3];
     }
     return C;
+  }
+  
+  /**
+   * Computes the inverse of a matrix represented as a flat array.
+   * @param {number[]} A - The input matrix in a flat array format.
+   * @param {number} size - The number of rows and columns in the matrix.
+   * @returns {number[]|false} The inverted matrix as a flat array, or `false` if the matrix is non-invertible.
+   */
+  inv(A, size) {
+    var A_mat = reshape(A, size, size);    
+    try {
+      return reshape(this.jsl.env.math.inv(A_mat), size*size, 1);
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -810,6 +966,15 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} The concatenated matrix.
    */
   concatCol(rows_C, ...args) {
+    return args.flat();
+  }
+
+  /**
+   * Concatenates multiple vectors.
+   * @param {...Array} args - The vectors to concatenate.
+   * @returns {Array} The concatenated vector.
+   */
+  concat(...args) {
     return args.flat();
   }
   
@@ -1021,6 +1186,12 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @throws {Error} If the total number of elements does not match.
    */
   reshape(A, rows, cols) {
+    if(rows == _) {
+      rows = A.length / cols;
+    }
+    if(cols == _) {
+      cols = A.length / rows;
+    }
     let flat_arr = [];
 
     if(Array.isArray(A[0])) {
@@ -1144,6 +1315,29 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
 
   /**
+   * Computes the weighted sum of two vectors and stores the result in the `ret` array.
+   * @param {number[]} ret - The array to store the result.
+   * @param {number} w1 - Weight for the first vector.
+   * @param {number[]} v1 - The first vector.
+   * @param {number} w2 - Weight for the second vector.
+   * @param {number[]} v2 - The second vector.
+   */
+  weightedSum(ret, w1, v1, w2, v2) {
+    for(let j = 0; j < ret.length; ++j) {
+      ret[j] = w1 * v1[j] + w2 * v2[j];
+    }
+  }
+
+  /**
+   * Computes the consecutive differences of elements in an array.
+   * @param {number[]} A - The input array of numbers.
+   * @returns {number[]} An array containing the differences between consecutive elements of the input array.
+   */
+  condiff(A) {
+    return A.slice(1).map((num, i) => num - A[i]);
+  }
+  
+  /**
    * Generates an array with random floating-point numbers within a specified range.
    * @param {number} l - The lower bound of the range.
    * @param {number} u - The upper bound of the range.
@@ -1194,6 +1388,16 @@ class PRDC_JSLAB_LIB_ARRAY {
   dotVector(a, b) {
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
   }
+
+  /**
+   * Calculates the angle between two vectors.
+   * @param {number[]} a - The first vector.
+   * @param {number[]} b - The second vector.
+   * @returns {number} The angle in radians between vectors a and b.
+   */
+  angleVectors(a, b) {
+    return acos(dotVector(a, b)/(norm(a)*norm(b))); 
+  }
   
   /**
    * Creates a skew-symmetric matrix from a 3D vector.
@@ -1209,23 +1413,53 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
 
   /**
-   * Generates coordinate matrices from coordinate vectors.
-   * @param {number[]} x - The x-coordinates.
-   * @param {number[]} y - The y-coordinates.
-   * @returns {Array} The meshgrid arrays [X, Y].
+   * Generates coordinate matrices from coordinate vectors for N dimensions.
+   * @param {...number[]} args - The coordinate vectors.
+   * @returns {Array} The coordinate grids for each dimension.
    */
-  meshgrid(x, y) {
-    // Create X array where each row is a copy of x
-    const X = Array.from({ length: y.length }, () => Array.from(x));
+  meshgrid(...args) {
+    var obj = this;
+    const ndim = args.length;
+    const sizes = args.map(a => a.length);
+    const grids = [];
 
-    // Create Y array where each column is a copy of y
-    const Y = Array.from({ length: y.length }, (_, i) => 
-      Array.from({ length: x.length }, () => y[i])
-    );
+    // Initialize the grids with N-dimensional arrays
+    for(let k = 0; k < ndim; k++) {
+      grids[k] = this.createArray(...sizes);
+    }
 
-    return [ X, Y ];
+    // Recursive function to fill in the grids
+    function fillGrid(indices, dim) {
+      if(dim === ndim) {
+        for(let k = 0; k < ndim; k++) {
+          obj.setValueAt(grids[k], indices, args[k][indices[(k + 1) % ndim]]);
+        }
+      } else {
+        for(let i = 0; i < sizes[dim]; i++) {
+          indices[dim] = i;
+          fillGrid(indices, dim + 1);
+        }
+      }
+    }
+
+    fillGrid(new Array(ndim), 0);
+
+    return grids;
   }
-  
+
+  /**
+   * Determines if two arrays are equal by comparing each element.
+   * @param {Array} A1 - The first array to compare.
+   * @param {Array} A2 - The second array to compare.
+   * @returns {boolean} True if the arrays are equal, otherwise false.
+   */
+  areEqual(A1, A2) {
+    let n;
+    if((n = A1.length) != A2.length) return false;
+    for(let i = 0; i < n; i++) if(A1[i] !== A2[i]) return false;
+    return true;
+  }
+
   /**
    * Displays a matrix with a variable name.
    * @param {string} varname - The name of the variable.

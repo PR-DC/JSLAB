@@ -87,11 +87,12 @@ class PRDC_JSLAB_WIN_MAIN {
           break;
         case 'disp':
           obj.command_window.message(data);
-          ipcRenderer.send('MainProcess', 'focus-win');
+          break;
+        case 'disp-monospaced':
+          obj.command_window.messageMonospaced(data);
           break;
         case 'disp-latex':
           obj.command_window.messageLatex(data);
-          ipcRenderer.send('MainProcess', 'focus-win');
           break;
         case 'error':
           obj.command_window.error(data);
@@ -172,10 +173,10 @@ class PRDC_JSLAB_WIN_MAIN {
 
     // Keyboard events
     document.addEventListener('keydown', function(e) {
-      // Toggle Dev Tools
+      // Show Dev Tools
       if(e.key == 'F12') {
-        ipcRenderer.send('MainProcess', 'toggle-dev-tools');
-        ipcRenderer.send('MainProcess', 'toggle-sandbox-dev-tools');
+        ipcRenderer.send('MainProcess', 'show-dev-tools');
+        ipcRenderer.send('MainProcess', 'show-sandbox-dev-tools');
         e.stopPropagation();
         e.preventDefault();
       } else if(e.ctrlKey && e.key.toLowerCase() == 'c') {
@@ -199,6 +200,11 @@ class PRDC_JSLAB_WIN_MAIN {
       } else if(e.key.toLowerCase() == 's' && e.ctrlKey) {
         // Ctrl + S
         obj.gui.settings();
+        e.stopPropagation();
+        e.preventDefault();
+      } else if(e.key.toLowerCase() == 'd' && e.ctrlKey) {
+        // Ctrl + D
+        obj.eval.evalCommand('openDoc()');
         e.stopPropagation();
         e.preventDefault();
       }
@@ -233,7 +239,7 @@ class PRDC_JSLAB_WIN_MAIN {
       // Check if there is scripts in argument
       if(arg && this.folder_navigation.checkFile(arg)) {
         // Open script in editor
-        ipcRenderer.send('EditorWindow', 'open-script', arg);
+        ipcRenderer.send('EditorWindow', 'open-script', [arg]);
         var dir = path.dirname(arg);
         if(dir !== undefined) {
           this.folder_navigation.setPath(dir);

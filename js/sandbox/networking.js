@@ -5,6 +5,10 @@
  * info@pr-dc.com
  */
 
+var { PRDC_JSLAB_TCP_CLIENT, PRDC_JSLAB_TCP_SERVER } = require('./networking-tcp');
+var { PRDC_JSLAB_UDP, PRDC_JSLAB_UDP_SERVER } = require('./networking-udp');
+var { PRDC_JSLAB_VIDEOCALL } = require('./networking-videocall');
+
 /**
  * Class for JSLAB networking submodule.
  */
@@ -59,6 +63,14 @@ class PRDC_JSLAB_LIB_NETWORKING {
   }
   
   /**
+   * Checks if the environment is currently online.
+   * @returns {boolean} `true` if online, otherwise `false`.
+   */
+  isOnline() {
+    return this.jsl.env.online;
+  }
+  
+  /**
    * Calculates the CRC-16/XMODEM checksum of a byte array.
    * @param {Uint8Array} byte_array - The input data as a byte array.
    * @returns {number} The CRC-16/XMODEM checksum as a numeric value.
@@ -91,7 +103,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    */
   async pingAddressTCP(host, port, timeout = 1000) {
     var obj = this;
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
       const socket = obj.jsl.env.net.createConnection(port, host);
       socket.setTimeout(timeout);
       socket.on('connect', function() {
@@ -189,6 +201,17 @@ class PRDC_JSLAB_LIB_NETWORKING {
   }
    
   /**
+   * Creates a TCP server to listen on a specified port.
+   * @param {string} host - The hostname or IP address.
+   * @param {number} port - The port number.
+   * @param {function} onConnectCallback - A callback function that is called when the connection is successfully established.
+   * @returns {PRDC_JSLAB_TCP_SERVER} An instance of the TCP server.
+   */
+  tcpServer(...args) {
+    return new PRDC_JSLAB_TCP_SERVER(this.jsl, ...args);
+  }
+  
+  /**
    * Creates a UDP client for sending data to a specified host and port.
    * @param {string} host - The hostname or IP address to connect to.
    * @param {number} port - The port number to connect to.
@@ -206,243 +229,22 @@ class PRDC_JSLAB_LIB_NETWORKING {
   udpServer(port) {
     return new PRDC_JSLAB_UDP_SERVER(this.jsl, port);
   }
+   
+  /**
+   * Initializes and returns a new video call instance.
+   * @param {string} type - The call type ('server' or 'client').
+   * @param {string} video_source_type - The video source type ('webcam' or 'desktop').
+   * @param {string} video_id - The video device or source ID.
+   * @param {string} mic_id - The microphone device ID.
+   * @param {string} tcp_host - The TCP host address.
+   * @param {number} tcp_port - The TCP port number.
+   * @param {object} opts - Additional configuration options.
+   * @returns {PRDC_JSLAB_VIDEOCALL} The created video call object.
+   */
+  videoCall(type, video_source_type, video_id, mic_id, tcp_host, tcp_port, opts) {
+    return new PRDC_JSLAB_VIDEOCALL(this.jsl, type, video_source_type, 
+      video_id, mic_id, tcp_host, tcp_port, opts);
+  }
 }
 
 exports.PRDC_JSLAB_LIB_NETWORKING = PRDC_JSLAB_LIB_NETWORKING;
-
-/**
- * Class representing a TCP client for handling network communications.
- */
-class PRDC_JSLAB_TCP_CLIENT {
-  
-  /**
-   * Creates an instance of the TCP client.
-   * @param {Object} jsl Reference to the main JSLAB object.
-   * @param {string} host - The host IP address or hostname to connect to.
-   * @param {number} port - The port number to connect to.
-   * @param {function} onConnectCallback - A callback to execute upon successful connection.
-   */
-  constructor(jsl, host, port, onConnectCallback) {
-    var obj = this;
-    this.jsl = jsl;
-    this.host = host;
-    this.port = port;
-    this.onConnectCallback = onConnectCallback;
-    
-    this.buffer = [];
-    this.active = false;
-    
-    this.com = this.jsl.env.net.createConnection(port, host);
-    this.com.setTimeout(0);
-    this.com.on('connect', function() {
-      obj.onConnect();
-    });
-    this.com.on('data', function(data) {
-      obj.onData(data);
-    });
-    this.com.on('error', function(err) {
-      obj.onError(err);
-    });
-    this.com.on('close', function(err) {
-      if(err) {
-        obj.onError(err);
-      }
-    });
-    this.com.on('end', function() {
-      obj.active = false;
-    });
-  }
-  
-  /**
-   * Handles successful connection establishment by setting the client's active status to true.
-   */
-  onConnect() {
-    this.active = true;
-    if(this.jsl.format.isFunction(this.onConnectCallback)) {
-      this.onConnectCallback();
-    }
-  }
-  
-  /**
-   * Handles errors by setting the client's active status to false and possibly logging the error.
-   * @param {Error} err - The error object that was thrown.
-   */
-  onError(err) {
-    this.active = false;
-  }
-  
-  /**
-   * Handles incoming data by appending it to the buffer.
-   * @param {Buffer} data - The incoming data buffer.
-   */
-  onData(data) {
-    this.buffer.push(...data);
-  }
-  
-  /**
-   * Reads a specified number of bytes from the buffer.
-   * @param {number} [N=Infinity] - The number of bytes to read. Reads all available bytes if not specified.
-   * @returns {Buffer} The data read from the buffer.
-   */
-  read(N = Infinity) {
-    N = Math.min(N, this.buffer.length);
-    return this.buffer.splice(0, N);
-  }
-  
-  /**
-   * Writes data to the TCP connection if the client is active.
-   * @param {Buffer|string} data - The data to send over the TCP connection.
-   */
-  write(data) {
-    if(this.active) {
-      this.com.write(data);
-    }
-  }
-  
-  /**
-   * Returns the number of bytes available in the buffer.
-   * @returns {number} The number of available bytes.
-   */
-  availableBytes() {
-    return this.buffer.length;
-  }
-  
-  /**
-   * Closes the TCP connection and cleans up resources.
-   */
-  close() {
-    this.active = false;
-    if(this.com) {
-      this.com.destroy();
-    }
-  }
-}
-
-/**
- * Class representing a UDP client for handling network communications.
- */
-class PRDC_JSLAB_UDP {
-  
-  /**
-   * Creates an instance of the UDP client.
-   * @param {Object} jsl Reference to the main JSLAB object.
-   * @param {string} host - The host IP address or hostname to connect to.
-   * @param {number} port - The port number to connect to.
-   */
-  constructor(jsl, host, port) {
-    var obj = this;
-    this.jsl = jsl;
-    this.host = host;
-    this.port = port;
-    
-    this.active = false;
-    
-    this.com = this.jsl.env.udp.createSocket('udp4');
-    this.com.connect(port, host, function(err) {
-      if(err) {
-        obj.onError(err);
-      } else {
-        obj.onConnect();
-      }
-    });
-  }
-
-  /**
-   * Handles successful connection establishment by setting the client's active status to true.
-   */
-  onConnect() {
-    this.active = true;
-  }
-  
-  /**
-   * Handles errors by setting the client's active status to false and possibly logging the error.
-   * @param {Error} err - The error object that was thrown.
-   */
-  onError(err) {
-    this.active = false;
-  }
-  
-  /**
-   * Sends data over the UDP connection if the client is active.
-   * @param {Buffer|string} data - The data to send over the UDP connection.
-   */
-  write(data) {
-    if(this.active) {
-      this.com.write(data);
-    }
-  }
-  
-  /**
-   * Closes the UDP connection and cleans up resources.
-   */
-  close() {
-    var obj = this;
-    this.active = false;
-    this.com.close(function() {
-      delete obj.com;
-    });
-  }
-}
-
-/**
- * Represents a UDP server that listens on a specific port.
- */
-class PRDC_JSLAB_UDP_SERVER {
-  
-  /**
-   * Initializes a UDP server that binds to the specified port and listens for incoming messages.
-   * @param {Object} jsl Reference to the main JSLAB object.
-   * @param {number} port - The port number on which the server will listen for incoming UDP packets.
-   */
-  constructor(jsl, port) {
-    var obj = this;
-    this.jsl = jsl;
-    this.port = port;
-    
-    this.buffer = [];
-    
-    this.com = this.jsl.env.udp.createSocket('udp4');
-    
-    this.com.on('message', function(msg, rinfo) {
-      obj.onData(msg);
-    });
-    
-    this.com.bind(port);
-  }
-  
-  /**
-   * Called when data is received. Buffers the incoming data for later retrieval.
-   * @param {Buffer} data - The received data buffer.
-   */
-  onData(data) {
-    this.buffer.push(...data);
-  }
-  
-  /**
-   * Reads a specified number of bytes from the buffer.
-   * @param {number} [N=Infinity] - The maximum number of bytes to read. Reads all available bytes by default.
-   * @returns {Array} An array containing the first N bytes of buffered data.
-   */
-  read(N = Infinity) {
-    N = Math.min(N, this.buffer.length);
-    return this.buffer.splice(0, n);
-  }
-  
-  /**
-   * Returns the number of bytes available in the buffer.
-   * @returns {number} The number of bytes currently stored in the buffer.
-   */
-  availableBytes() {
-    return this.buffer.length;
-  }
-  
-  /**
-   * Closes the UDP server and releases any resources.
-   */
-  close() {
-    var obj = this;
-    this.com.close(function() {
-      delete obj.com;
-    });
-  }
-}

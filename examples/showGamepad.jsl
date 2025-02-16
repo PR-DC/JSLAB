@@ -1,0 +1,54 @@
+/**
+ * @file Show Gamepad data
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+// var gamepads = getGamepads();
+var id = 'Logitech Cordless RumblePad 2 (STANDARD GAMEPAD Vendor: 046d Product: c219)';
+
+disp('Looking for gamepad...');
+var win;
+var win_ready = false;
+var doms = {};
+
+var g = getGamepad(id);
+g.setOnConnect(async function() {
+  disp('Gamepad ' + id + ' found!');
+  win = await openWindowBlank();
+  
+  win.document.body.innerHTML += '<div id="timestamp-cont" style="margin: 5px 20px; padding: 3px; border: 2px solid #ddd; border-radius: 5px; font-weight:bold; color: #333;">t: <span id="timestamp-value">0</span></div>';
+  for(let i = 0; i < g.data.axes.length; i++) {
+    win.document.body.innerHTML += '<div id="axis-'+i+'-cont" style="margin: 5px 20px; padding: 3px; border: 2px solid #ddd; border-radius: 5px; font-weight:bold; color: #333;">A'+(i+1)+': <span id="axis-'+i+'-value">0</span></div>';
+  }
+  for(let i = 0; i < g.data.buttons.length; i++) {
+    win.document.body.innerHTML += '<div id="button-'+i+'-cont" style="margin: 5px 20px; padding: 3px; border: 2px solid #ddd; border-radius: 5px; font-weight:bold; color: #333;">B'+(i+1)+': <span id="button-'+i+'-value">0</span></div>';
+  }
+
+  doms.timestamp = win.document.getElementById('timestamp-value');
+  for(let i = 0; i < g.data.axes.length; i++) {
+    doms['axis-'+i] = win.document.getElementById('axis-'+i+'-value');
+  }
+  for(let i = 0; i < g.data.buttons.length; i++) {
+    doms['button-'+i] = win.document.getElementById('button-'+i+'-value');
+  }
+  win_ready = true;
+  
+  win.setSize(400, (1+g.data.axes.length+g.data.buttons.length)*31+10+35);
+  win.setTitle('Gamepad');
+});
+
+g.setOnData(function(data) {
+  if(win_ready) {
+    doms.timestamp.innerText = data.timestamp;
+    for(let i = 0; i < data.axes.length; i++) {
+      doms['axis-'+i].innerText = data.axes[i];
+    }
+    for(let i = 0; i < data.buttons.length; i++) {
+      doms['button-'+i].innerText = '{p: '+data.buttons[i].pressed+', t: '+data.buttons[i].touched+', v: '+data.buttons[i].value+'}';
+    }
+  }
+});

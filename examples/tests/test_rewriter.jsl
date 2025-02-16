@@ -1,0 +1,57 @@
+/**
+ * @file Test for JSLAB code rewriter
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+// Test local variables
+let b = 5;
+const bb = 11;
+var data_out = [];
+data_out[0] = 1;
+
+for(var i = 0; i < 2; i++) {
+  let c = 6;
+  var data_out = i;
+}
+
+if(i == 2) {
+  let d = 7;
+  const e = 8;
+  var data_out = i;
+}
+
+// Test for local function
+function testFun() {
+  function drugaFun() {
+    disp('drugaFun');
+  }
+  var aa = 5;
+  disp('this is test fun aa = ' + aa);
+}
+
+// Test for local class
+class Rectangle {
+  constructor(height, width) {
+    var aaa = 7;
+    this.height = height;
+    this.width = width;
+  }
+}
+
+// Test for object return
+var obj = {
+  prop1: 1,
+  prop2: 2,
+  prop3: 3
+}
+
+var { prop1, prop2, prop3 } = obj;
+
+// Test for array return
+var arr = [1,2,3];
+
+var [arr1, arr2, arr3] = arr;
+arr3

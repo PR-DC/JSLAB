@@ -1,0 +1,14 @@
+/**
+ * @file Audio Waveform Test
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * Doktorska disertacija
+ * Mašinski fakultet Univerziteta u Beogradu
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+var mic_id = "default";
+
+//getMicrophones();
+
+showAudioWaveform(mic_id);

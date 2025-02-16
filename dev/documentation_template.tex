@@ -13,7 +13,8 @@
 \usepackage{caption}
 \usepackage{hyperref}
 \usepackage{float}
-\usepackage{tcolorbox}
+\usepackage{varwidth}
+\usepackage[most]{tcolorbox}
 
 % Define variables
 \newcommand{\yearvar}{$JSLAB_PUBLISH_YEAR$}
@@ -85,6 +86,23 @@
     top=2pt,
     bottom=2pt,
     box align=base,
+    fontupper=\ttfamily,
+    #1
+}
+
+\newtcbox{\codeBlock}[1][]{%
+    colback=jsl-light-gray,
+    colframe=jsl-light-gray, 
+    boxrule=0pt, 
+    arc=3pt,
+    left=2pt,
+    right=2pt,
+    top=2pt,
+    bottom=2pt,
+    box align=base,
+    breakable,
+    enhanced jigsaw,
+    varwidth upper,
     fontupper=\ttfamily,
     #1
 }
@@ -253,6 +271,8 @@ Welcome to the JSLAB Documentation! This guide provides comprehensive informatio
 The \textbf{JavaScript Laboratory (JSLAB)} is an open-source environment designed for scientific computing, data visualization, and various other computer operations. Inspired by \textit{GNU Octave} and \textit{Matlab}, JSLAB leverages the advantages of JavaScript, including its blazing speed, extensive examples, backing by some of the largest software companies globally, and the vast community of active programmers and software engineers.
 
 The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.
+
+JSLAB offers a streamlined, dual-window interface designed to boost productivity and foster innovation. The main window combines a versatile workspace with a sandbox terminal, allowing users to run, test, and iterate on code in real time. The dedicated editor window introduces the \textbf{.JSL file format}—a plain text format tailored for JSLAB scripts. With advanced linting and intelligent autocompletion, the editor makes it easy to write precise, reusable code with minimal errors.
 
 \subsection{Why Choose JSLAB?}
 
@@ -526,7 +546,7 @@ All PRs are subject to review by the maintainers. Be prepared to make revisions 
 
 \section{Feedback}
 
-Your feedback is invaluable in improving the JSLAB Library. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:
+Your feedback is invaluable in improving the JSLAB application. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:
 
 \begin{itemize}
     \item \textbf{GitHub Issues:} Report bugs or suggest features by opening an issue in the GitHub repository.

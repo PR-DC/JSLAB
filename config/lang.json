@@ -454,7 +454,7 @@
     "rs": "Aktivnost radnog prostora",
     "rsc": "Активност радног простора"
   },
-"92": {
+  "92": {
     "en": "Unable to scan directory",
     "rs": "Nije moguće skenirati direktorijum",
     "rsc": "Није могуће скенирати директоријум"
@@ -1088,5 +1088,40 @@
     "en": "No help found for ",
     "rs": "Nije pronadjena dokumentacija za ",
     "rsc": "Није пронађена документација за "
+  },
+  "219": {
+    "en": "Open documentation",
+    "rs": "Otvorite dokumentaciju",
+    "rsc": "Отворите документацију"
+  },
+  "220": {
+    "en": "No source code found for ",
+    "rs": "Nije pronadjen kod za ",
+    "rsc": "Није пронађен код за "
+  },
+  "221": {
+    "en": "Reset",
+    "rs": "Reset",
+    "rsc": "Ресет"
+  },
+  "222": {
+    "en": "Unable to find audio/video device!",
+    "rs": "Nije moguće pronaći audio/video uređaj!",
+    "rsc": "Није могуће пронаћи аудио/видео уређај!"
+  },
+  "223": {
+    "en": "Number of commands in history",
+    "rs": "Broj komandi u istoriji",
+    "rsc": "Број команди у историји"
+  },
+  "224": {
+    "en": "Program arduino-cli not found.",
+    "rs": "Program arduino-cli nije pronadjen.",
+    "rsc": "Програм arduino-cli није пронађен."
+  },
+  "225": {
+    "en": "Configuration file for arduino-cli not found.",
+    "rs": "Konfiguracioni fajl za arduino-cli nije pronadjen.",
+    "rsc": "Конфигурациони фајл за arduino-cli није пронађен."
   }
 } 

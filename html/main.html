@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>JSLAB | PR-DC</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
+    <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
     <link rel="stylesheet" type="text/css" href="../css/highlight-notepadpp-theme.css">
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/lint/lint.css">
@@ -14,6 +14,7 @@
 		<link type="text/css" rel="stylesheet" href="../css/main.css" />
     <link type="text/css" rel="stylesheet" href="../css/terminal.css" />
     <link type="text/css" rel="stylesheet" href="../font/roboto.css" />
+    <link type="text/css" rel="stylesheet" href="../font/RobotoMono.css" />
     
     <style id="dynamic-style-rules"></style>
   </head>
@@ -285,6 +286,10 @@
                 <td><str sid="83"></str></td>
               </tr>
               <tr>
+                <td>Ctrl + D</td>
+                <td><str sid="219"></str></td>
+              </tr>
+              <tr>
                 <td>Ctrl + S</td>
                 <td><str sid="84"></str></td>
               </tr>
@@ -326,13 +331,14 @@
             <li><a href="https://www.sympy.org/en/index.html">SymPy</a></li>
             <li><a href="https://www.cgal.org/">CGAL</a></li>
             <li><a href="https://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a></li>
+            <li><a href="https://github.com/benfred/fmin">fmin</a></li>
           </ul>  
         </div>
       </div>
     </div>
 
     <div id="settings-container" class="main-dialog" tabindex="0">
-      <div class="page-cont panel">
+      <div class="page-cont options-cont panel">
         <div class="page-header">
           <span><str sid="9"></str></span>
           <img id="settings-close" class="page-close" src="../img/close.svg" title-str="24">
@@ -346,6 +352,11 @@
             </select>
             <label class="float-label" for="set-langauge"><str sid="16"></str></label>
           </div>
+          <div class="float-input" title-str="223">
+            <input autocomplete="off" type="text" name="N-history-max" class="N-history-max" placeholder="20" value="20">
+            <label class="float-label" for="N-history-max"><str sid="223"></str></label>
+          </div>
+          <button class="change-settings"><str sid="57"></str></button>
         </div>
       </div>
     </div>

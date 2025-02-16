@@ -18,6 +18,95 @@ class PRDC_JSLAB_LIB_FORMAT {
     var obj = this;
     this.jsl = jsl;
   }
+
+  /**
+   * Retrieves the MIME type based on the file extension.
+   * @param {string} filePath - The path to the file.
+   * @returns {string} The corresponding MIME type.
+   */
+  getContentType(file_path) {
+    const mime_types = {
+      // Text files
+      '.html': 'text/html',
+      '.htm': 'text/html',
+      '.js': 'text/javascript',
+      '.mjs': 'text/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
+      '.txt': 'text/plain',
+      '.xml': 'application/xml',
+
+      // Image files
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
+
+      // Audio files
+      '.mp3': 'audio/mpeg',
+      '.wav': 'audio/wav',
+      '.ogg': 'audio/ogg',
+      '.m4a': 'audio/mp4',
+
+      // Video files
+      '.mp4': 'video/mp4',
+      '.avi': 'video/x-msvideo',
+      '.mov': 'video/quicktime',
+      '.wmv': 'video/x-ms-wmv',
+      '.flv': 'video/x-flv',
+      '.webm': 'video/webm',
+      '.mkv': 'video/x-matroska',
+
+      // Application files
+      '.pdf': 'application/pdf',
+      '.zip': 'application/zip',
+      '.rar': 'application/vnd.rar',
+      '.7z': 'application/x-7z-compressed',
+      '.tar': 'application/x-tar',
+      '.gz': 'application/gzip',
+      '.exe': 'application/vnd.microsoft.portable-executable',
+      '.msi': 'application/x-msdownload',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xls': 'application/vnd.ms-excel',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.ppt': 'application/vnd.ms-powerpoint',
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.eot': 'application/vnd.ms-fontobject',
+      '.ttf': 'font/ttf',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2',
+
+      // Model files
+      '.glb': 'model/gltf-binary',
+      '.gltf': 'model/gltf+json',
+      '.obj': 'application/octet-stream', // Common for OBJ, but can vary
+      '.fbx': 'application/octet-stream',
+
+      // Others
+      '.csv': 'text/csv',
+      '.md': 'text/markdown',
+      '.apk': 'application/vnd.android.package-archive',
+      '.iso': 'application/x-iso9660-image',
+      '.sh': 'application/x-sh',
+      '.bat': 'application/x-msdownload',
+      '.php': 'application/x-httpd-php',
+      '.asp': 'application/x-aspx',
+      '.aspx': 'application/x-aspx',
+      '.jsp': 'application/java-archive',
+      '.rb': 'application/x-ruby',
+      '.py': 'application/x-python-code',
+      '.swift': 'application/x-swift',
+      '.lua': 'application/x-lua',
+    };
+
+    const ext = String(this.jsl.env.pathExtName(file_path)).toLowerCase();
+    return mime_types[ext] || 'application/octet-stream';
+  }
   
   /**
    * Formats the given byte count into a readable string.
@@ -241,6 +330,15 @@ class PRDC_JSLAB_LIB_FORMAT {
   }
   
   /**
+   * Checks if a string is empty or contains only whitespace.
+   * @param {string} str - The string to check.
+   * @returns {boolean} - True if the string is empty or contains only whitespace, otherwise false.
+   */
+  isEmptyString(str) {
+    return typeof str === 'string' && str.trim().length === 0;
+  }
+
+  /**
    * Determines if the provided value is a function.
    * @param {*} value - The value to check 
    * @returns {boolean} True if the value is a function, false otherwise.
@@ -315,6 +413,16 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   isUndefined(value) {
     return typeof value === 'undefined';
+  }
+  
+  /**
+   * Checks if a string is a valid UUID.
+   * @param {string} str The string to check.
+   * @returns {boolean} True if the string is a valid UUID, false otherwise.
+   */
+  isUUID(str) {
+    var uuid_pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuid_pattern.test(str);
   }
 
   /**
@@ -396,14 +504,10 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {string|*} The JSON string representation of the object or the object itself if not an object.
    */
   stringify(object) {
-    if(typeof object === 'object') {
-      if(typeof object.toPrettyString === 'function') {
-        return object.toPrettyString();
-      }
-      return JSON.stringify(object);
-    } else {
-      return object;
+    if(typeof object.toPrettyString === 'function') {
+      return object.toPrettyString();
     }
+    return JSON.stringify(object);
   }
   
   /**
@@ -445,12 +549,6 @@ class PRDC_JSLAB_LIB_FORMAT {
       });
     }
 
-    function formatPath(path) {
-      return path
-        .map(key => (typeof key === 'symbol' ? `['${key.toString()}']` : `['${key}']`))
-        .join('');
-    }
-
     function helper(value, depth, path) {
       if(depth > depth_limit) {
         return '{...}';
@@ -487,7 +585,7 @@ class PRDC_JSLAB_LIB_FORMAT {
             } else {
               result[key] = '[Unknown Property]';
             }
-          } catch (err) {
+          } catch(err) {
             result[key] = `[Error: ${escapeString(err.message)}]`;
           }
         }
@@ -500,6 +598,85 @@ class PRDC_JSLAB_LIB_FORMAT {
     }
 
     return JSON.stringify(helper(data, 0, []), null, 2);
+  }
+  
+  /**
+   * Escapes special HTML characters in a string to prevent HTML injection.
+   * @param {string} string - The string to escape.
+   * @returns {string} - The escaped string with HTML characters replaced.
+   */
+  escapeHTML(string) {
+    var escapeHtmlMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;',
+      '`': '&#x60;',
+      '=': '&#x3D;'
+    };
+
+    return String(string).replace(/[&<>"'`=\/]/g, function(s) {
+      return escapeHtmlMap[s];
+    });
+  }
+
+  /**
+   * Escapes special LaTeX characters in a string to prevent LaTeX injection.
+   * @param {string} string - The string to escape.
+   * @returns {string} - The escaped string with LaTeX characters replaced.
+   */
+  escapeLatex(string) {
+    if(typeof string !== 'string') {
+      return string;
+    }
+    return string
+      .replace(/\\/g, '\\textbackslash{}')
+      .replace(/&/g, '\\&')
+      .replace(/%/g, '\\%')
+      .replace(/\$/g, '\\$')
+      .replace(/#/g, '\\#')
+      .replace(/_/g, '\\_')
+      .replace(/{/g, '\\{')
+      .replace(/}/g, '\\}')
+      .replace(/~/g, '\\textasciitilde{}')
+      .replace(/\^/g, '\\textasciicircum{}')
+      .replace(/`/g, '\\textasciigrave{}');
+  }
+  
+  /**
+   * Generates a unique object key by appending a number to the original key if it already exists.
+   * @param {string} object - Object to add unique key.
+   * @param {string} key - The original object key.
+   * @returns {string} A unique object key.
+   */
+  getUniqueKey(object, key) {
+    var i = 0;
+    var unique_key = key;
+    while(hasKey(object, unique_key)) {
+      i = i+1;
+      unique_key = key+i;
+    }
+    return unique_key;
+  }
+    
+  /**
+   * Generates a random string of the specified length.
+   * @param {number} num - The desired length of the random string.
+   * @returns {string} A random string.
+   */
+  randomString(num) {
+    return Math.random().toString(36).substr(2, num);
+  }
+  
+  /**
+   * Calculates the number of decimal places in a number.
+   * @param {number} num - The number to evaluate.
+   * @returns {number} The count of decimal places.
+   */
+  countDecimalPlaces(num) {
+    return num > 1 ? 0 : (num.toString().split('.')[1] || '').match(/^0*/)[0].length+1;
   }
 }
 

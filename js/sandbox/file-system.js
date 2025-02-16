@@ -55,7 +55,25 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   deleteDir(file_path) {
     return this.jsl.env.rmSync(file_path);
   }
-  
+
+  /**
+   * Moves a file from source to destination.
+   * @param {string} source - The path to the source file.
+   * @param {string} destination - The path to the destination file.
+   */
+  moveFile(source, destination) {
+    if(comparePaths(source, destination)) {
+      return true;
+    }
+    try {
+      this.jsl.env.copyFileSync(source, destination);
+      this.jsl.env.rmSync(source);
+      return true;
+    } catch(err) {
+      this.jsl.error('@moveFile: ' + err);
+    }
+  }
+
   /**
    * Lists files in a specified folder, optionally filtering by extension.
    * @param {string} folder Path to the folder.
@@ -66,12 +84,32 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     var obj = this;
     var files = this.jsl.env.readdirSync(folder);
     if(Array.isArray(files)) {
-      return files.filter(function(file) { return file.match(new RegExp('\.' + ext + '$')) }).map(function(i) { return folder + obj.jsl.env.getPathSep() + i; });
+      return files
+        .filter(function(file) { 
+          if(!ext) return file.includes('.');
+          return file.endsWith('.' + ext);
+        })
+        .map(function(file) { return obj.jsl.env.pathJoin(folder, file); });
     } else {
       this.jsl.env.error('@filesInFolder: '+language.string(128)+': ' + folder);
     }
+    return false;
   }
 
+  /**
+   * Lists all files in a specified folder
+   * @param {string} folder Path to the folder.
+   * @returns {string[]|void} Array of file names.
+   */
+  allFilesInFolder(folder) {
+    return this.jsl.env.readdirSync(folder).reduce((acc, file) => {
+        const file_path = this.jsl.env.pathJoin(folder, file);
+        return this.jsl.env.checkDirectory(file_path)
+          ? acc.concat(this.allFilesInFolder(file_path))
+          : acc.concat(file);
+      }, []);
+  }
+  
   /**
    * Opens a dialog for the user to choose a file, synchronously.
    * @param {Object} options Configuration options for the dialog.
@@ -177,17 +215,17 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {Array<Object>} - Parsed CSV data as an array of objects.
    */
   readcsv(filePath, delimiter = ',', hasHeader = false) {
-    const data = this.jsl.env.readFileSync(filePath, 'utf-8');
-    const lines = data.split('\n').filter(function(line) { return line.trim() !== ''; });
-    const headers = lines[0].split(delimiter).map(function(header) { return header.trim(); });
-    const result = [];
+    var data = this.jsl.env.readFileSync(filePath, 'utf-8');
+    var lines = data.split('\n').filter(function(line) { return line.trim() !== ''; });
+    var headers = lines[0].split(delimiter).map(function(header) { return header.trim(); });
+    var result = [];
     
     if(hasHeader) {
       // If there is a header, parse as objects
-      const headers = lines[0].split(delimiter).map(header => header.trim());
+      var headers = lines[0].split(delimiter).map(header => header.trim());
       for(let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(delimiter).map(function(cell) { return cell.trim(); });
-        const row_object = {};
+        var row = lines[i].split(delimiter).map(function(cell) { return cell.trim(); });
+        var row_object = {};
         headers.forEach(function(header, index) {
           row_object[header] = row[index];
         });
@@ -196,7 +234,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     } else {
       // If no header, parse as arrays
       for(let i = 0; i < lines.length; i++) {
-        const row = lines[i].split(delimiter).map(function(cell) { return cell.trim(); });
+        var row = lines[i].split(delimiter).map(function(cell) { return cell.trim(); });
         result.push(row);
       }
     }
@@ -205,11 +243,35 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   } 
   
   /**
+   * Checks if the specified file exists.
+   * @param {string} file - The path to the file to check.
+   */
+  checkFile(file) {
+    return this.jsl.env.checkFile(file);
+  }
+  
+  /**
+   * Checks if the specified file exists.
+   * @param {string} file - The path to the file to check.
+   */
+  existFile(file) {
+    return this.checkFile(file);
+  }
+  
+  /**
    * Checks if the specified directory exists.
    * @param {string} directory - The path to the directory to check.
    */
   checkDirectory(directory) {
-    this.jsl.env.checkDirectory(directory);
+    return this.jsl.env.checkDirectory(directory);
+  }
+  
+  /**
+   * Checks if the specified directory exists.
+   * @param {string} directory - The path to the directory to check.
+   */
+  existDirectory(directory) {
+    return this.checkDirectory(directory);
   }
   
   /**
@@ -231,8 +293,8 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
 
     // Iterate through each entry (file or directory)
     for(const entry of entries) {
-      const src_path = this.jsl.env.joinPath(src, entry.name);
-      const dest_path = this.jsl.env.joinPath(dest, entry.name);
+      const src_path = this.jsl.env.pathJoin(src, entry.name);
+      const dest_path = this.jsl.env.pathJoin(dest, entry.name);
 
       if(entry.isDirectory()) {
         // Recursively copy directories
@@ -269,8 +331,8 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   copyDir7z(src, dest) {
     var name = this.jsl.path.pathFileName(src);
-    var ext = this.jsl.path.pathFileExt(src);
-    var filePath = this.jsl.env.joinPath(dest, name + ext);
+    var ext = this.jsl.path.pathExtName(src);
+    var filePath = this.jsl.env.pathJoin(dest, name + ext);
     
     this.jsl.env.copyFileSync(src, filePath);
     this.jsl.env.execSync(`${this.jsl.env.bin7zip } x "${filePath}" -o"${dest}" -y`);

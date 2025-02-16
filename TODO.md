@@ -16,8 +16,6 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 ## 📝 General TODOs
 
-- Add search to HTML documentation.
-
 - Ensure file opening happens in only one instance of the program.
 
 - Assistant - Create a ChatGPT API-based chatbot to assist with programming by answering questions about which function to use for specific tasks (Custom GPT).
@@ -25,10 +23,6 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 - Implement `openSerialTerminal` with window from `openTerminal` that includes a message window and a data input area. It should allow us to pass an encoder and decoder to use SCBP or other protocols.
 
 - Create additional examples, such as graphics, to cover documentation gaps.
-
-- Implement functions `installLocalModule` and `installNpmModule`.
-
-- Package Manager - Implement the `installPackage` function and create a package manager window that shows installed packages and their versions.
 
 - Display vectors horizontally up to a certain length, possibly as an HTML table.
 
@@ -69,6 +63,8 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 ---
 
 ## 💡 Ideas / Future Enhancements
+
+- Module for interactive presentations.
 
 - Implement [SunCalc](https://github.com/mourner/suncalc).
 

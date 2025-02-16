@@ -16,6 +16,13 @@ const { PRDC_APP_CONFIG } = require("../../config/config");
 console.log('[upload-source-code.js] Started');
 var t = performance.now();
 
+if(!process.env.SERVER_PATH) {
+  console.error('Environment variable SERVER_PATH must be defined!');
+}
+if(!process.env.SERVER_LIBS_PATH) {
+  console.error('Environment variable SERVER_LIBS_PATH must be defined!');
+}
+
 // Variables
 var config = new PRDC_APP_CONFIG();
 

@@ -27,7 +27,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
   system(...args) {
     try {
       return this.jsl.env.execSync(...args).toString();
-    } catch (err) {
+    } catch(err) {
       this.jsl.env.error('@system: '+err);
       return false;
     }
@@ -40,7 +40,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
   exec(...args) {
     try {
       return this.jsl.env.exec(...args);
-    } catch (err) {
+    } catch(err) {
       this.jsl.env.error('@exec: '+err);
       return false;
     }
@@ -53,7 +53,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
   spawn(...args) {
     try {
       return this.jsl.env.spawn(...args);
-    } catch (err) {
+    } catch(err) {
       this.jsl.env.error('@spawn: '+err);
       return false;
     }
@@ -66,7 +66,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
   getTaskList() {
     try {
       return this.jsl.env.execSync('tasklist').toString();
-    } catch (err) {
+    } catch(err) {
       this.jsl.env.error('@getTaskList: '+err);
       return false;
     }
@@ -90,7 +90,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
       // Split the output into lines and filter the ones containing the program name
       const lines = output_lower.split('\n');
       const matching_lines = lines.filter(function(line) {
-        return line.includes(program_nameLower)
+        return line.includes(program_nameLower);
       });
 
       // Extract PIDs from the matching lines
@@ -99,12 +99,12 @@ class PRDC_JSLAB_LIB_SYSTEM {
         const columns = line.trim().split(/\s+/);
         return parseInt(columns[1], 10); // PID is the second column
       }).filter(function(pid) { 
-        return !isNaN(pid)
+        return !isNaN(pid);
       }); // Filter out NaN values (if any)
 
       const is_running = pids.length > 0;
       return [is_running, pids];
-    } catch (err) {
+    } catch(err) {
       this.jsl.env.error('@isProgramRunning: '+err);
       return [false, []];
     }
@@ -119,7 +119,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
     try {
       // Execute the tasklist command and get the output
       return this.jsl.env.execSync('taskkill /pid '+pid+' /T /F').toString();
-    } catch (err) {
+    } catch(err) {
       this.jsl.env.error('@killProcess: '+err);
       return false;
     }

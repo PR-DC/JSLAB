@@ -78,7 +78,7 @@ class PRDC_JSLAB_PLOT {
     return await Plotly.toImage(this.plot_cont, {format: ext,
       width: width,
       height: height
-    })
+    });
   }
 }
 
