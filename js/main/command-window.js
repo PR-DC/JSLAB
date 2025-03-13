@@ -236,6 +236,10 @@ class PRDC_JSLAB_COMMAND_WINDOW {
       } }
     });
     
+    $('#command-window-input-submit-cont').click(function() {
+      sendCommand();
+    });
+    
     CodeMirror.keyMap.default['Shift-Tab'] = 'indentLess';
     CodeMirror.keyMap.default['Tab'] = 'indentMore';
 
@@ -489,6 +493,11 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     $(document.body).on('click', '#command-window-messages span.eval-code', function() {
       obj.win.eval.evalCommand(this.innerText);
     });
+    
+    // Open script in editor
+    $(document.body).on('click', '#command-window-messages span.open-editor', function() {
+       ipcRenderer.send('EditorWindow', 'open-script', [$(this).attr('file_path'), $(this).attr('line_number'), $(this).attr('char_pos')]);
+    });
   }
 
   /**
@@ -544,13 +553,18 @@ class PRDC_JSLAB_COMMAND_WINDOW {
   highlightAnsMessage(data) {
     if(data[1]) {
       var el = this.message('ans = ', 'ans = '+data[0]);
-      BigJsonViewerDom.fromData(data[0]).then(function(viewer) {
-        const node = viewer.getRootElement();
-        el[0].appendChild(node);
-        node.openAll(1);
-      }).catch(function(err) {
+      try {
+        var json_data = this.truncateStrings(JSON.parse(data[0]));
+        BigJsonViewerDom.fromObject(json_data).then(function(viewer) {
+          const node = viewer.getRootElement();
+          el[0].appendChild(node);
+          node.openAll(1);
+        }).catch(function(err) {
+          console.log(err);
+        });
+      } catch(err) {
         console.log(err);
-      });
+      }
     } else {
       this.message(this.highlightCode('ans = ' + data[0]), 'ans = ' + data[0]);
     }
@@ -880,6 +894,46 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     } else {
       return String(data);
     }
+  }
+
+  /**
+   * Truncates strings in data to config.MAX_JSON_STRING_LENGTH.
+   * @param {any} data - Data to be processed.
+   * @returns {any} Truncated data.
+   */
+  truncateStrings(data) {
+    if(typeof data === 'string') {
+      if(data.length <= config.MAX_JSON_STRING_LENGTH) return data;
+
+      const suffix_prefix = " ... [truncated | full size: ";
+      const suffix_suffix = "]";
+      
+      let prefix_length = config.MAX_JSON_STRING_LENGTH;
+      while(true) {
+        const full_size_digits = String(data.length).length;
+        const suffix_length = suffix_prefix.length + full_size_digits + suffix_suffix.length;
+        const new_prefix_length = config.MAX_JSON_STRING_LENGTH - suffix_length;
+        if(new_prefix_length >= prefix_length) {
+          prefix_length = new_prefix_length;
+          break;
+        }
+        if(new_prefix_length === prefix_length) break;
+        prefix_length = new_prefix_length;
+      }
+      const suffix = suffix_prefix + data.length + suffix_suffix;
+      return data.slice(0, prefix_length) + suffix;
+    } else if(Array.isArray(data)) {
+      return data.map(item => this.truncateStrings(item));
+    } else if(data !== null && typeof data === 'object') {
+      const new_obj = {};
+      for(const key in data) {
+        if(Object.prototype.hasOwnProperty.call(data, key)) {
+          new_obj[key] = this.truncateStrings(data[key]);
+        }
+      }
+      return new_obj;
+    }
+    return data;
   }
 }
 

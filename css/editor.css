@@ -298,13 +298,12 @@ lang {
 }
 
 #editor-more-popup li {
-  background: #12568a;
   margin: 5px;
-  border-radius: 3px;
-  border: 2px solid #12568a;
-  color: #fff;
+  border-radius: 5px;
+  border: 1px solid #dddddd;
+  color: #999;
   padding: 5px 10px;
-  font-weight: 100;
+  font-weight: 300;
   font-size: 18px;
   cursor: pointer;
   transition: background 0.2s linear;
@@ -312,7 +311,7 @@ lang {
 }
 
 #editor-more-popup li:hover {
-  background: #5187b0;
+  background: #f3f3f3;
 }
 
 #editor-more-popup li img {
@@ -324,6 +323,21 @@ lang {
   -webkit-user-drag: none;
   user-drag: none;
   margin-top: -1px;
+  filter: invert(1);
+  opacity: 0.3;
+}
+
+.arduino {
+  display: none;
+}
+
+.file-ino .arduino {
+  display: block;
+}
+
+.file-ino #run-menu {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 @media only screen and (max-width: 830px) {

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Serial Terminal - JSLAB | PR-DC</title>
+  <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
+  <link rel="stylesheet" type="text/css" href="../css/basic.css" />
+  <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    
+    body {
+      height: calc(100% - 6px);
+    }
+    
+    .clear {
+      clear: both;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #input-container {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: #eee;
+    }
+
+    #input-container textarea {
+      flex: 1;
+      margin-right: 40px;
+      padding: 5px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: none;
+      border-radius: 5px;
+      padding-bottom: 0px;
+    }
+
+    #send-button {
+      position: absolute;
+      right: 10px;
+      z-index: 3;
+      background: #f7df1e;
+      border-radius: 100%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      bottom: 20px;
+    }
+
+    #send-button:hover {
+      opacity: 0.6;
+    }
+
+    #send-button img {
+      width: 18px;
+      padding: 6px;
+    }
+
+    .options .options-right {
+      float: right;
+    }
+
+    .options i#settings {
+      background: url(../img/settings.svg) no-repeat center;
+    }
+
+    .options i#timestamp {
+      background: url(../img/timestamp.svg) no-repeat center;
+    }
+
+    .options i#autoscroll {
+      background: url(../img/autoscroll.svg) no-repeat center;
+    }
+
+    .options i#clear {
+      background: url(../img/clear.svg) no-repeat center;
+    }
+
+    .options i#log {
+      background: url(../img/save-log.svg) no-repeat center;
+    }
+
+    .options i#to-bottom {
+      background: url(../img/to-bottom.svg) no-repeat center;
+    }
+
+    .options i {
+      width: 16px;
+      height: 18px;
+      display: block;
+      background-size: 16px!important;
+      float: left;
+      clear: none;
+      padding: 3px 5px;
+      opacity: 0.3;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .options i:hover {
+      opacity: 1;
+      cursor: pointer;
+    }
+
+    .options i.active {
+      opacity: 0.8;
+    }
+    
+    #save-log, #change-settings {
+      margin-bottom: 0px;
+    }
+    
+    #terminal-options {
+      margin: 5px 10px;
+      margin-bottom: 0px;
+      color: #666;
+      padding-bottom: 3px;
+      border-bottom: 1px solid #f7df1e;
+      font-weight: 300;
+      font-size: 14px;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: calc(100% - 20px);
+      right: 0;
+    }
+
+    #messages-container > div {
+      padding-bottom: 5px;
+      padding-top: 5px;
+      line-height: 22px;
+      padding-left: 105px;
+      padding-right: 10px;
+      position: relative;
+      white-space: pre-wrap;
+      min-height: 32px;
+    }
+
+    #messages-container.no-timestamp > div {
+      padding-left: 5px;
+    }
+
+    #messages-container div:hover {
+      background-color: #f9f9f9;
+    }
+
+    #messages-container.no-timestamp div span.timestamp {
+      display: none;
+    }
+
+    #messages-container div:hover span.timestamp {
+      color: #2e85c7
+    }
+
+    #messages-container div span.timestamp {
+      color: #999;
+      display: block;
+      position: absolute;
+      left: 0px;
+    }
+    
+    #terminal-title {
+      float: left;
+      padding-top: 5px;
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="terminal-options" class="options ui">
+      <div id="terminal-title"></div>
+      <div class="options-right">
+        <i id="settings" title-str="40"></i>
+        <i id="timestamp" class="active" title-str="41"></i>
+        <i id="autoscroll" class="active" title-str="42"></i>
+        <i id="clear" title-str="43"></i>
+        <i id="log" title-str="44"></i>
+        <i id="to-bottom" title-str="45"></i>
+        <br class="clear">
+      </div>
+    </div>
+    
+    <div id="messages-container" class="panel ui"></div>
+    
+    <div id="input-container">
+      <textarea id="message-input" str="234" placeholder=""></textarea>
+      <div id="send-button">
+        <img src="../img/enter.svg" title-str="226">
+      </div>
+    </div>
+    
+    <div id="settings-dialog" class="terminal-dialog options-panel panel ui" tabindex="0">
+      <div class="options-cont ui">
+        <div class="options-header ui"><span><str sid="56"></str></span>
+        <img class="options-close ui" src="../img/close.svg" title-str="46">
+       </div>
+       <div class="float-input ui" title-str="17">
+        <input autocomplete="off" type="text" name="N-messages-max" id="N-messages-max" placeholder="Infinity" value="">
+        <label class="float-label" for="N-messages-max"><str sid="17"></str></label>
+       </div>
+       <button class="change-settings ui blue"><str sid="57"></str></button>
+      </div>
+    </div>
+
+    <div id="log-dialog" class="terminal-dialog options-panel panel ui" tabindex="0">
+      <div class="options-cont ui">
+        <div class="options-header ui">
+          <span><str sid="58"></str></span>
+          <img class="options-close ui" src="../img/close.svg" title-str="18">
+        </div>
+        <label class="checkcont ui"><str sid="59"></str><input id="write-timestamps" type="checkbox" name="write-timestamps" value="1" checked><span class="checkmark"></span></label>
+        <button id="save-log" class="ui blue"><str sid="60"></str></button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

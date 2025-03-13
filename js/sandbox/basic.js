@@ -18,7 +18,7 @@ class PRDC_JSLAB_LIB_BASIC {
     var obj = this;
     this.jsl = jsl;
 
-    this._docs = JSON.parse(this.jsl.env.readFileSync(app_path + '/documentation.json', 'utf8'));
+    this._docs = JSON.parse(this.jsl.env.readFileSync(app_path + '/docs/documentation.json', 'utf8'));
     
     /**
      * Stores the result of the last evaluated expression.

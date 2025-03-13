@@ -231,7 +231,9 @@ class PRDC_JSLAB_ENV {
           };
           
           sub_context.document.addEventListener("keydown", function (e) {
-            if(e.ctrlKey && e.key.toLowerCase() == 'c') {
+            if(e.key == 'F12') {
+              sub_context.openDevTools();
+            } else if(e.ctrlKey && e.key.toLowerCase() == 'c') {
               if(obj.getWinSelectionText(sub_context) == "") {
                 // No selected text
                 obj.jsl.setStopLoop(true);
@@ -390,7 +392,7 @@ class PRDC_JSLAB_ENV {
     if(!global.is_worker) {
       if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
         return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
-          [wid, "setSize", width, height]);
+          [wid, "setSize", width, 49 + height]);
       }
     }
     return false;

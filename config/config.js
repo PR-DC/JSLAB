@@ -55,6 +55,7 @@ class PRDC_APP_CONFIG {
         {name: 'color', file: 'color', class_name: 'PRDC_JSLAB_LIB_COLOR'},
         {name: 'conversion', file: 'conversion', class_name: 'PRDC_JSLAB_LIB_CONVERSION'},
         {name: 'device', file: 'device', class_name: 'PRDC_JSLAB_LIB_DEVICE'},
+        {name: 'serial_device', file: 'serial-device', class_name: 'PRDC_JSLAB_LIB_SERIAL_DEVICE'},
         {name: 'file_system', file: 'file-system', class_name: 'PRDC_JSLAB_LIB_FILE_SYSTEM'},
         {name: 'system', file: 'system', class_name: 'PRDC_JSLAB_LIB_SYSTEM'},
         {name: 'geography', file: 'geography', class_name: 'PRDC_JSLAB_LIB_GEOGRAPHY'},
@@ -64,6 +65,8 @@ class PRDC_APP_CONFIG {
         {name: 'geometry', file: 'geometry', class_name: 'PRDC_JSLAB_LIB_GEOMETRY'},
         {name: 'control', file: 'control', class_name: 'PRDC_JSLAB_LIB_CONTROL'},
         {name: 'optim', file: 'optim', class_name: 'PRDC_JSLAB_LIB_OPTIM'},
+        {name: 'presentation', file: 'presentation', class_name: 'PRDC_JSLAB_LIB_PRESENTATION'},
+        {name: 'mechanics', file: 'mechanics', class_name: 'PRDC_JSLAB_LIB_MECHANICS'},
       ],
       'lib': [
         {name: 'parallel', file: 'parallel', class_name: 'PRDC_JSLAB_PARALLEL'},
@@ -95,6 +98,16 @@ class PRDC_APP_CONFIG {
       {name: 'Gamepad', file: 'device-gamepad', class_name: 'PRDC_JSLAB_DEVICE_GAMEPAD'},
     ];
 
+    this.SOURCE_CODE_BOOK_FILES = [
+      'package.json',
+      'binding.gyp',
+      'config',
+      'cpp',
+      'css',
+      'html',
+      'js'
+    ];
+    
     this.LINT_OPTIONS = {
       overrideConfigFile: true,
       overrideConfig: {
@@ -115,6 +128,7 @@ class PRDC_APP_CONFIG {
     };
 
     this.COMPRESSED_LIBS = [
+      'leaflet-1.9.4',
       'sympy-0.26.2',
       'cgal-6.0.1', 
       'boost-1.86.0', 
@@ -134,7 +148,9 @@ class PRDC_APP_CONFIG {
     // Other
     this.PLOTER = ['plotly', 'echarts'][0];
     this.DOC_LATEX_RERUNS_NUMBER = 3;
+    this.SOURCE_CODE_BOOK_LATEX_RERUNS_NUMBER = 3;
     this.MAX_ACTIVE_WEBGL_CONTEXTS = '128';
+    this.MAX_JSON_STRING_LENGTH = 1000;
     
     // Build sign
     this.COMPANY_NAME = process.env.COMPANY_NAME;
@@ -171,10 +187,13 @@ class PRDC_APP_CONFIG {
       'leaflet-1.9.4',
       'leaflet.rotatedMarker-0.2.0',
       'Cesium-1.124',
+      'mermaid-11.4.1',
+      'jstree-3.3.17',
       'PRDC_APP_LOGGER',  
       'PRDC_PANEL', 
       'PRDC_TABS', 
       'PRDC_POPUP',
+      'PRDC_SVG_VIEWER'
     ];
     
     this.UPLOAD_COMPARE_SIZE = false;

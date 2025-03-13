@@ -37,11 +37,21 @@ class PRDC_JSLAB_EDITOR {
       obj.win.script_manager.openSearchDialog();
       obj.win.editor_more_popup.close();
     });
+    $("#compile-dialog-menu").click(function() { 
+      obj.win.script_manager.compileArduino();
+      obj.win.editor_more_popup.close();
+    });
+    $("#upload-dialog-menu").click(function() { 
+      obj.win.script_manager.uploadArduino();
+      obj.win.editor_more_popup.close();
+    });
     
     // Keydown actions
     document.addEventListener("keydown", function(e) {
       if(e.key == 'F11') {
         obj.toggleFullscreen();
+      } if(e.key == 'F12') {
+        ipcRenderer.send('MainProcess', 'show-dev-tools');
       } else if(e.ctrlKey && e.key.toLowerCase() === "n") {
         obj.win.script_manager.createScript();
       } else if(e.ctrlKey && e.key === "F4") {

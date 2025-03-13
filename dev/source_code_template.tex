@@ -2,6 +2,9 @@
 % Documentation for JSLAB
 % ----------------------------------------
 \documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[serbianc, english]{babel}
 \usepackage{tabularx}
 \usepackage{geometry}
 \usepackage{listings}
@@ -75,6 +78,8 @@
     literate=
         {°}{{\textdegree}}1
         {º}{{\textordmasculine}}1 
+        {©}{{\textcopyright}}1
+        {¶}{{\P}}1
         {š}{{\v{s}}}1
         {Š}{{\v{S}}}1
         {č}{{\v{c}}}1
@@ -83,8 +88,70 @@
         {Ž}{{\v{Z}}}1
         {ć}{{\'{c}}}1
         {Ć}{{\'{C}}}1
+        {đ}{{\dj}}1
+        {Đ}{{\DJ}}1
         {θ}{{$\theta$}}1
         {µ}{{$\micro$}}1 
+        {а}{{\selectfont\char224}}1
+        {б}{{\selectfont\char225}}1
+        {в}{{\selectfont\char226}}1
+        {г}{{\selectfont\char227}}1
+        {д}{{\selectfont\char228}}1
+        {ђ}{{\selectfont\char162}}1
+        {е}{{\selectfont\char229}}1
+        {ж}{{\selectfont\char230}}1
+        {з}{{\selectfont\char231}}1
+        {и}{{\selectfont\char232}}1
+        {ј}{{j}}1
+        {к}{{\selectfont\char234}}1
+        {л}{{\selectfont\char235}}1
+        {љ}{{\selectfont\char167}}1
+        {м}{{\selectfont\char236}}1
+        {н}{{\selectfont\char237}}1
+        {њ}{{\selectfont\char187}}1
+        {о}{{\selectfont\char238}}1
+        {п}{{\selectfont\char239}}1
+        {р}{{\selectfont\char240}}1
+        {с}{{\selectfont\char241}}1
+        {т}{{\selectfont\char242}}1
+        {ћ}{{\selectfont\char163}}1
+        {у}{{\selectfont\char243}}1
+        {ф}{{\selectfont\char244}}1
+        {х}{{\selectfont\char245}}1
+        {ц}{{\selectfont\char246}}1
+        {ч}{{\selectfont\char247}}1
+        {џ}{{\selectfont\char150}}1
+        {ш}{{\selectfont\char248}}1
+        {А}{{\selectfont\char192}}1
+        {Б}{{\selectfont\char193}}1
+        {В}{{\selectfont\char194}}1
+        {Г}{{\selectfont\char195}}1
+        {Д}{{\selectfont\char196}}1
+        {Ђ}{{\selectfont\char130}}1
+        {Е}{{\selectfont\char197}}1
+        {Ж}{{\selectfont\char198}}1
+        {З}{{\selectfont\char199}}1
+        {И}{{\selectfont\char200}}1
+        {Ј}{{J}}1
+        {К}{{\selectfont\char202}}1
+        {Л}{{\selectfont\char203}}1
+        {Љ}{{\selectfont\char135}}1
+        {М}{{\selectfont\char204}}1
+        {Н}{{\selectfont\char205}}1
+        {Њ}{{\selectfont\char155}}1
+        {О}{{\selectfont\char206}}1
+        {П}{{\selectfont\char207}}1
+        {Р}{{\selectfont\char208}}1
+        {С}{{\selectfont\char209}}1
+        {Т}{{\selectfont\char210}}1
+        {Ћ}{{\selectfont\char131}}1
+        {У}{{\selectfont\char211}}1
+        {Ф}{{\selectfont\char212}}1
+        {Х}{{\selectfont\char213}}1
+        {Ц}{{\selectfont\char214}}1
+        {Ч}{{\selectfont\char215}}1
+        {Џ}{{\selectfont\char150}}1
+        {Ш}{{\selectfont\char216}}1
 }
 
 \lstdefinestyle{C++Style}{
@@ -107,7 +174,6 @@
     basicstyle=\fontfamily{pcr}\selectfont\footnotesize,
     keywordstyle=\bf\color{jsl-blue},
     commentstyle=\color{jsl-green},
-	stringstyle=\color{jsl-gray},
     breaklines=true,
     showstringspaces=false,
     captionpos=b,
@@ -115,6 +181,85 @@
     numberstyle=\tiny\color{gray},
     stepnumber=1,
     numbersep=10pt,
+    inputencoding=utf8,
+    extendedchars=true,
+    literate=
+        {°}{{\textdegree}}1
+        {º}{{\textordmasculine}}1 
+        {©}{{\textcopyright}}1
+        {¶}{{\P}}1
+        {š}{{\v{s}}}1
+        {Š}{{\v{S}}}1
+        {č}{{\v{c}}}1
+        {Č}{{\v{C}}}1
+        {ž}{{\v{z}}}1
+        {Ž}{{\v{Z}}}1
+        {ć}{{\'{c}}}1
+        {Ć}{{\'{C}}}1
+        {đ}{{\dj}}1
+        {Đ}{{\DJ}}1
+        {θ}{{$\theta$}}1
+        {µ}{{$\micro$}}1 
+        {а}{{\selectfont\char224}}1
+        {б}{{\selectfont\char225}}1
+        {в}{{\selectfont\char226}}1
+        {г}{{\selectfont\char227}}1
+        {д}{{\selectfont\char228}}1
+        {ђ}{{\selectfont\char162}}1
+        {е}{{\selectfont\char229}}1
+        {ж}{{\selectfont\char230}}1
+        {з}{{\selectfont\char231}}1
+        {и}{{\selectfont\char232}}1
+        {ј}{{j}}1
+        {к}{{\selectfont\char234}}1
+        {л}{{\selectfont\char235}}1
+        {љ}{{\selectfont\char167}}1
+        {м}{{\selectfont\char236}}1
+        {н}{{\selectfont\char237}}1
+        {њ}{{\selectfont\char187}}1
+        {о}{{\selectfont\char238}}1
+        {п}{{\selectfont\char239}}1
+        {р}{{\selectfont\char240}}1
+        {с}{{\selectfont\char241}}1
+        {т}{{\selectfont\char242}}1
+        {ћ}{{\selectfont\char163}}1
+        {у}{{\selectfont\char243}}1
+        {ф}{{\selectfont\char244}}1
+        {х}{{\selectfont\char245}}1
+        {ц}{{\selectfont\char246}}1
+        {ч}{{\selectfont\char247}}1
+        {џ}{{\selectfont\char150}}1
+        {ш}{{\selectfont\char248}}1
+        {А}{{\selectfont\char192}}1
+        {Б}{{\selectfont\char193}}1
+        {В}{{\selectfont\char194}}1
+        {Г}{{\selectfont\char195}}1
+        {Д}{{\selectfont\char196}}1
+        {Ђ}{{\selectfont\char130}}1
+        {Е}{{\selectfont\char197}}1
+        {Ж}{{\selectfont\char198}}1
+        {З}{{\selectfont\char199}}1
+        {И}{{\selectfont\char200}}1
+        {Ј}{{J}}1
+        {К}{{\selectfont\char202}}1
+        {Л}{{\selectfont\char203}}1
+        {Љ}{{\selectfont\char135}}1
+        {М}{{\selectfont\char204}}1
+        {Н}{{\selectfont\char205}}1
+        {Њ}{{\selectfont\char155}}1
+        {О}{{\selectfont\char206}}1
+        {П}{{\selectfont\char207}}1
+        {Р}{{\selectfont\char208}}1
+        {С}{{\selectfont\char209}}1
+        {Т}{{\selectfont\char210}}1
+        {Ћ}{{\selectfont\char131}}1
+        {У}{{\selectfont\char211}}1
+        {Ф}{{\selectfont\char212}}1
+        {Х}{{\selectfont\char213}}1
+        {Ц}{{\selectfont\char214}}1
+        {Ч}{{\selectfont\char215}}1
+        {Џ}{{\selectfont\char150}}1
+        {Ш}{{\selectfont\char216}}1
 }
 
 \lstdefinestyle{CSSStyle}{
@@ -122,7 +267,6 @@
     basicstyle=\fontfamily{pcr}\selectfont\footnotesize,
     keywordstyle=\bf\color{jsl-blue},
     commentstyle=\color{jsl-green},
-	stringstyle=\color{jsl-gray},
     breaklines=true,
     showstringspaces=false,
     captionpos=b,
@@ -130,6 +274,7 @@
     numberstyle=\tiny\color{gray},
     stepnumber=1,
     numbersep=10pt,
+    inputencoding=utf8,
 }
 
 \newtcbox{\code}[1][]{%

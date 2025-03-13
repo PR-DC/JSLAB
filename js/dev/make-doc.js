@@ -86,7 +86,7 @@ async function processDoc(module) {
   
   // Make JSON documentation
   console.log(' Making documentation.json');
-  fs.writeFileSync('documentation.json', JSON.stringify(jslab_doc, null, 2));
+  fs.writeFileSync('docs/documentation.json', JSON.stringify(jslab_doc, null, 2));
   
   // Make HTML documentation
   console.log(' Making documentation.html');
@@ -94,7 +94,7 @@ async function processDoc(module) {
   html_template = html_template.replaceAll('$JSLAB_CODE_DATA$', JSON.stringify(jslab_doc_flat, null, 2));
   html_template = html_template.replaceAll('$JSLAB_APP_VERSION$', '"v'+app_version+'"');
   html_template = html_template.replaceAll('$JSLAB_PUBLISH_YEAR$', '"'+year+'"');
-  fs.writeFileSync('documentation.html', html_template);
+  fs.writeFileSync('docs/documentation.html', html_template);
   
   // Make tex
   console.log(' Making documentation.tex');
@@ -223,7 +223,7 @@ async function processDoc(module) {
     latex_text += getLatexByCodeCategory(category);
   }
   latex_template = latex_template.replaceAll('$JSLAB_CODE_DATA$', latex_text);
-  fs.writeFileSync('documentation.tex', latex_template);
+  fs.writeFileSync('docs/documentation.tex', latex_template);
 
   // Make pdf
   console.log(' Making documentation.pdf');
@@ -231,19 +231,28 @@ async function processDoc(module) {
   var dir = __dirname + '/../../dev/latex/';
   var file = dir + 'documentation.tex';
   fs.mkdirSync(dir, { recursive: true });
-  fs.copyFileSync('documentation.tex', file);
-  try {
-    for(var i = 0; i < config.DOC_LATEX_RERUNS_NUMBER; i++) {
+  fs.copyFileSync('docs/documentation.tex', file);
+  fs.cpSync('docs/resources/', dir + 'resources/', { recursive: true });
+  
+  for(var i = 0; i < config.DOC_LATEX_RERUNS_NUMBER; i++) {
+    console.log(' Run ' + (i+1) + '/' + config.DOC_LATEX_RERUNS_NUMBER);
+    try {
       cp.execSync('cd ' + dir + ' & pdflatex documentation.tex --interaction=nonstopmode', { cwd: dir });
+    } catch(e) {
+      if(!fs.existsSync(dir + 'documentation.pdf') || (e.output && 
+          e.output.toString().trim().split('\n').pop().toLowerCase().includes('fatal'))) {
+        console.log(' LaTeX compile failed! Add path to pdflatex to environment variables and try again with MiKTeX 24.1 or later. Output: ');
+        if(e.output) {
+          console.log(e.output.toString());
+        } else {
+          console.log(e);
+        }
+        break;
+      }
     }
-    fs.copyFileSync(dir + 'documentation.pdf', 'documentation.pdf');
-  } catch(e) {
-    console.log(' LaTeX compile failed! Add path to pdflatex to environment variables and try again with MiKTeX 24.1 or later. Output: ');
-    if(e.output) {
-      console.log(e.output.toString());
-    } else {
-      console.log(e);
-    }
+  }
+  if(fs.existsSync(dir + 'documentation.pdf')) {
+    fs.copyFileSync(dir + 'documentation.pdf', 'docs/documentation.pdf');
   }
   rimraf.sync(dir);
 

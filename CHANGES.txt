@@ -3,7 +3,21 @@ JSLAB
 JavaScript LABoratory environment.
 --------------------
 
-Release v1.0.1, xx.12.2024.
+Release v1.0.2, 13.03.2025.
+
+- Bug fixes and new features.
+- Added source code book generator.
+- Added command window submit button.
+- Implemented truncating of long strings in objects for display. 
+- Adapted Editor for c++ Arduino code.
+- Implemented option to open file in Editor on click (used to point to error in c++ code).
+- Removed dependency to WMIC (fix for win11).
+- Added serial-device module and implemented Serial Terminal with port and baudrate choose dialog.
+- Added initial module for presentations.
+- Added initial module for mechanics.
+- Added functions gridGradient and gridData.
+
+Release v1.0.1, 16.02.2025.
 
 - Bug fixes and new features.
 - Added dispMonospaced function.

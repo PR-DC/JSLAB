@@ -1,6 +1,6 @@
 {
   "name": "JSLAB",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "JavaScript LABoratory environment",
   "main": "js/init.js",
   "repository": "https://github.com/PR-DC/JSLAB",
@@ -116,7 +116,7 @@
       "multiLanguageInstaller": true,
       "warningsAsErrors": false
     },
-    "artifactName": "JSLAB_1.0.1.${ext}"
+    "artifactName": "JSLAB_1.0.2.${ext}"
   },
   "devDependencies": {
     "electron": "29.1.2",

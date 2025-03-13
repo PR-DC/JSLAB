@@ -1,0 +1,109 @@
+.prdc-svg-viewer {
+  width: 100%;
+  height: auto;
+  border-top: 1px solid #ddd;
+  overflow: hidden;
+  position: relative;
+}
+
+.data-card .prdc-svg-viewer {
+  background: #fff;
+}
+
+.prdc-svg-viewer iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.prdc-svg-viewer.autoheight iframe {
+  height: auto;
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls {
+  position: absolute;
+  top: 5px;
+  right: 20px;
+  user-select: none;
+}
+
+body:not(.touchscreen) .prdc-svg-viewer .prdc-svg-viewer-controls > div:hover {
+  border: 1px solid #2e85c7;
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls > div:active {
+  opacity: 0.5;
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls > div {
+  display: inline-block;
+  height: 36px;
+  padding: 5px 10px;
+  margin: 5px 2px;
+  border-radius: 3px;
+  color: #ccc;
+  vertical-align: top;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  transition: border .2s linear;
+  width: 36px;
+  background-color: rgba(255,255,255,0.9);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls .prdc-svg-viewer-control-zoom-plus {
+  background-image: url('../img/zoom-plus.svg');
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls .prdc-svg-viewer-control-zoom-minus {
+  background-image: url('../img/zoom-minus.svg');
+}
+      
+.prdc-svg-viewer .prdc-svg-viewer-controls .prdc-svg-viewer-control-autoscale {
+  background-image: url('../img/autoscale.svg');
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls .prdc-svg-viewer-control-reset {
+  background-image: url('../img/reset2.svg');
+}
+
+.prdc-svg-viewer .prdc-svg-viewer-controls .prdc-svg-viewer-control-layers {
+  background-image: url('../img/layers.svg');
+}
+
+.prdc-svg-viewer.no-layers .prdc-svg-viewer-controls .prdc-svg-viewer-control-layers {
+  display: none;
+}
+
+.prdc-svg-viewer-layers-popup {
+  position: absolute;
+  display: none;
+  border-radius: 5px;
+  width: 400px;
+  top: 56px;
+  right: 20px;
+  background: #fffffff5;
+  border: 1px solid #ddd;
+  color: #fff;
+  pointer-events: all;
+  cursor: pointer;
+  min-height: 100px;
+}
+
+.prdc-svg-viewer-layers-popup .popup-triangle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #ccc transparent;
+  margin-right: 5px;
+  top: -11px;
+  right: 3px;
+}
+
+.prdc-svg-viewer-layers-popup-cont {
+  overflow-y: auto;
+  max-height: 400px;
+}

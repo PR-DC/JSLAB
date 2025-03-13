@@ -1464,6 +1464,12 @@ label.float-label, .float-input input, .float-input textarea {
   cursor: pointer;
 }
 
+#command-window-messages span.open-editor {
+  color: #12568a;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 @media only screen and (max-width: 900px) {
   .page-cont.wide {
     width: 460px;

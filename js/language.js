@@ -85,6 +85,13 @@ class PRDC_JSLAB_LANGUAGE {
       });
     }
 
+    document.querySelectorAll(cont + ' textarea[str]').forEach(function(el) {
+      var id = el.getAttribute('str');
+      if(id in obj.s) {
+        el.setAttribute('placeholder', obj.s[id][obj.lang]);
+      }
+    });
+    
     document.querySelectorAll(cont + ' input[str]').forEach(function(el) {
       var id = el.getAttribute('str');
       if(id in obj.s) {

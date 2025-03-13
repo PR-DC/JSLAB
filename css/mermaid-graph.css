@@ -1,0 +1,29 @@
+body {
+  height: 100vh;
+}
+
+.graph.prdc-svg-viewer {
+  height: 100%;
+  width: 100%;
+}
+
+.graph.prdc-svg-viewer iframe {
+  height: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.graph.prdc-svg-viewer svg {
+  height: 100%;
+}
+
+.graph .node rect, 
+.graph .node circle, 
+.graph .node ellipse, 
+.graph .node polygon, 
+.graph .node path,
+.graph .actor, 
+.graph .actor-line {
+  fill: #73add938!important;
+  stroke: #2e85c7!important;
+}

@@ -27,6 +27,35 @@ class PRDC_JSLAB_LIB_GEOMETRY {
   spaceSearch(...args) {
     return new PRDC_JSLAB_GEOMETRY_SPACE_SERACH(...args);
   }
+    
+  /**
+   * Finds the nearest points in points2 for each point in points1.
+   * @param {Array[]} points1 - Array of points.
+   * @param {Array[]} points2 - Reference points.
+   * @returns {number[]} Array of indices for nearest points.
+   */
+  findNearestPoints(points1, points2) {
+    var L;
+    var id = this.jsl.array.createFilledArray(points1.length, -1);
+    for(var i = 0; i < points1.length; i++) {
+      var L_min;
+      for(var j = 0; j < points2.length; j++) {
+        if(points1[0].length == 3) {
+          L = Math.sqrt(Math.pow(points1[i][0] - points2[j][0], 2) + 
+                        Math.pow(points1[i][1] - points2[j][1], 2) + 
+                        Math.pow(points1[i][2] - points2[j][2], 2));
+        } else {
+          L = Math.sqrt(Math.pow(points1[i][0] - points2[j][0], 2) + 
+                        Math.pow(points1[i][1] - points2[j][1], 2));
+        }
+        if(j == 0 || L < L_min){
+          L_min = L;
+          id[i] = j;
+        }
+      }
+    }
+    return id;
+  }
   
   /**
    * Returns the shortest distance from point P to the line defined by (A, i)
@@ -285,6 +314,66 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       P1: closestP1,
       P2: closestP2
     };
+  }
+  
+  /**
+   * Creates a new triangle instance.
+   * @param {Array} p1 - First vertex.
+   * @param {Array} p2 - Second vertex.
+   * @param {Array} p3 - Third vertex.
+   * @returns {PRDC_JSLAB_TRIANGLE} Triangle instance.
+   */
+  triangle(p1, p2, p3) {
+    return new PRDC_JSLAB_TRIANGLE(this.jsl, p1, p2, p3);
+  }
+  
+  /**
+   * Performs Delaunay triangulation on a set of points.
+   * @param {Array[]} points - Array of points.
+   * @returns {PRDC_JSLAB_TRIANGLE[]} Array of triangles.
+   */
+  delaunayTriangulation(points) {
+    var min_x = Math.min(...points.map(p => p[0]));
+    var min_y = Math.min(...points.map(p => p[1]));
+    var max_x = Math.max(...points.map(p => p[0]));
+    var max_y = Math.max(...points.map(p => p[1]));
+
+    var dx = max_x - min_x, dy = max_y - min_y;
+    var delta_max = Math.max(dx, dy) * 2;
+    var p1 = [min_x - delta_max, min_y - delta_max, 0];
+    var p2 = [min_x + delta_max * 2, min_y - delta_max, 0];
+    var p3 = [min_x + dx / 2, min_y + delta_max * 2, 0];
+
+    var triangles = [this.triangle(p1, p2, p3)];
+    
+    for(var point of points) {
+      var bad_triangles = triangles.filter(tri => tri.circumcircleContains(point));
+
+      var edges = [];
+      for(var tri of bad_triangles) {
+        edges.push(...tri.edges);
+      }
+
+      var unique_edges = edges.filter((edge, index, arr) =>
+        arr.filter(e => (e[0] === edge[1] && e[1] === edge[0]) || 
+                        (e[0] === edge[0] && e[1] === edge[1])).length === 1
+      );
+
+      triangles = triangles.filter(tri => !bad_triangles.includes(tri));
+
+      for(var edge of unique_edges) {
+        triangles.push(this.triangle(edge[0], edge[1], point));
+      }
+    }
+
+    var final_triangles = [];
+    for(var tri of triangles){
+      if(tri.p1 == p1 || tri.p2 == p1 || tri.p3 == p1) continue;
+      if(tri.p1 == p2 || tri.p2 == p2 || tri.p3 == p2) continue;
+      if(tri.p1 == p3 || tri.p2 == p3 || tri.p3 == p3) continue;
+      final_triangles.push(tri);
+    }
+    return final_triangles;
   }
   
   /**
@@ -993,3 +1082,103 @@ class PRDC_JSLAB_LIB_GEOMETRY {
 }
 
 exports.PRDC_JSLAB_LIB_GEOMETRY = PRDC_JSLAB_LIB_GEOMETRY;
+
+/**
+ * Class for JSLAB triangle.
+ */
+class PRDC_JSLAB_TRIANGLE {
+  
+  #jsl;
+  
+  /**
+   * Creates a new triangle instance.
+   * @constructor
+   * @param {Object} jsl - Reference to the main JSLAB object.
+   * @param {Array} p1 - First vertex.
+   * @param {Array} p2 - Second vertex.
+   * @param {Array} p3 - Third vertex.
+   */
+  constructor(jsl, v1, v2, v3) {
+    this.#jsl = jsl;
+    this._set(v1, v2, v3);
+  }
+  
+  /**
+   * Sets the triangle vertices and edges.
+   * @param {Array} v1 - First vertex.
+   * @param {Array} v2 - Second vertex.
+   * @param {Array} v3 - Third vertex.
+   */
+  _set(v1, v2, v3) {
+    if(Array.isArray(v1[0])) {
+      v3 = v1[2];
+      v2 = v1[1];
+      v1 = v1[0];
+    }
+    
+    this.v1 = v1 || [];
+    this.v2 = v2 || [];
+    this.v3 = v3 || [];
+    this.edges = [
+      [v1, v2], [v2, v3], [v3, v1]
+    ];
+  }
+  
+  /**
+   * Checks if the triangle's circumcircle contains a point.
+   * @param {Array} point - The point to test.
+   * @returns {boolean} True if inside the circumcircle.
+   */
+  circumcircleContains(point) {
+    var ax = this.v1[0], ay = this.v1[1];
+    var bx = this.v2[0], by = this.v2[1];
+    var cx = this.v3[0], cy = this.v3[1];
+    var dx = point[0], dy = point[1];
+
+    var ax_ = ax - dx, ay_ = ay - dy;
+    var bx_ = bx - dx, by_ = by - dy;
+    var cx_ = cx - dx, cy_ = cy - dy;
+
+    var det = (ax_ * ax_ + ay_ * ay_) * (bx_ * cy_ - cx_ * by_) -
+              (bx_ * bx_ + by_ * by_) * (ax_ * cy_ - cx_ * ay_) +
+              (cx_ * cx_ + cy_ * cy_) * (ax_ * by_ - bx_ * ay_);
+
+    return det > 0;
+  }
+  
+  /**
+   * Determines if a point is inside the triangle.
+   * @param {Array} point - The point to check.
+   * @returns {boolean} True if the point is inside.
+   */
+  contains(point) {
+    var sign = (v1, v2, v3) =>
+      (v1[0] - v3[0]) * (v2[1] - v3[1]) - (v2[0] - v3[0]) * (v1[1] - v3[1]);
+
+    var d1 = sign(point, this.v1, this.v2);
+    var d2 = sign(point, this.v2, this.v3);
+    var d3 = sign(point, this.v3, this.v1);
+
+    return (d1 >= 0 && d2 >= 0 && d3 >= 0) 
+      || (d1 <= 0 && d2 <= 0 && d3 <= 0);
+  }
+  
+  /**
+   * Computes the interpolated value at a point using barycentric coordinates.
+   * @param {Array} point - The query point.
+   * @returns {number} Interpolated value.
+   */
+  valueAt(point) {
+    const denom = ((this.v2[1] - this.v3[1]) * (this.v1[0] - this.v3[0]) +
+                   (this.v3[0] - this.v2[0]) * (this.v1[1] - this.v3[1]));
+    
+    // Compute barycentric coordinates
+    const alpha = ((this.v2[1] - this.v3[1]) * (point[0] - this.v3[0]) +
+                   (this.v3[0] - this.v2[0]) * (point[1] - this.v3[1])) / denom;
+    const beta = ((this.v3[1] - this.v1[1]) * (point[0] - this.v3[0]) +
+                  (this.v1[0] - this.v3[0]) * (point[1] - this.v3[1])) / denom;
+    const gamma = 1 - alpha - beta;
+    
+    return alpha * this.v1[2] + beta * this.v2[2] + gamma * this.v3[2];
+  }
+}

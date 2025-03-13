@@ -528,10 +528,7 @@ class PRDC_JSLAB_LIB {
    * Lists all subprocesses.
    */
   listSubprocesses() {
-    var output = this.env.execSync(`wmic process where (ParentProcessId=${this.env.process_pid}) get ProcessId,CommandLine`).toString();
-    var pids = output.match(/(?<=\s)\d+(?=\s*$)/gm);
-    pids.pop();
-    return pids.map((pid) => Number(pid));
+    return this.env.native_module.listSubprocesses(this.env.process_pid);
   }
   
   /**

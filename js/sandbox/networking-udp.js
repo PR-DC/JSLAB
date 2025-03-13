@@ -99,6 +99,10 @@ class PRDC_JSLAB_UDP_SERVER {
     });
     
     this.com.bind(port);
+    
+    this.jsl.addForCleanup(this, function() {
+      obj.close();
+    });
   }
   
   /**

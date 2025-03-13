@@ -52,6 +52,10 @@ You can install `JSLAB` by either downloading the latest stable release from Git
 
 <summary>Click here to get started with JSLAB!</summary>
 
+---
+
+## Main Window
+
 The image below shows the main window of the `JSLAB` program.
 
 <p align="center">
@@ -114,6 +118,45 @@ The editor also includes additional advanced features for code input, such as se
 Most importantly, code can be executed in two ways:
 - By entering commands in the command input field of the command window.
 - By running a script using the `run()` function or directly from the editor window.
+
+---
+
+## Programming
+
+Programming in `JSLAB` is based on the full feature set of **JavaScript** and **Node.js**, combined with **HTML** and **CSS** for building graphical user interfaces (GUI). The application also provides a range of **built-in functions** that simplify certain tasks—like plotting with the `plot()` function. All implemented functions and classes are documented for easy reference.
+
+### Accessing Documentation
+
+Multiple approaches are available to view documentation directly from **JSLAB**:
+
+- **Built-in help functions:** `help()`, `doc()`, `documentation()`, `helpSearch()`, `docSearch()`, `documentationSearch()`
+- **HTML documentation:** Openable via the `openDoc()` or `openDocumentation()` functions
+- **Function source code:** See the implementation of a built-in function with `source("<functionName>")` (e.g., `source("plot")`)
+
+### Working with Scripts and Examples
+
+**JSLAB** scripts typically use a **.jsl** extension to distinguish them from standard `.js` files. You can run scripts from the command window with `run("<scriptPath>")`, or open them in the built-in editor (using the `editor` command or the `edit("<scriptName>.jsl")` function).
+
+For bundled example scripts:
+
+- **List examples:** `getExamples()`
+- **Open a specific example:** `openExample("exampleName")`
+- **Open the examples folder:** `openExamplesFolder()`
+- **Navigate to the examples folder:** `goToExamplesFolder()`
+
+### Resetting the Environment
+
+- **Reset workspace (sandbox):** `resetSandbox()` clears current workspace variables.  
+- **Reset the entire application:** `resetApp()` returns the application to its initial state.
+
+### Advanced Chromium Tools
+
+Since **JSLAB** is built on **Chromium**, you can leverage its powerful developer tools for debugging and performance analysis:
+
+- **Open Developer Tools:** `openDevTools()`
+- **Open Window Developer Tools:** `openWindowDevTools()`
+
+The **Performance** tab in the developer tools is particularly useful for optimizing your scripts, helping to identify potential slow-downs and bottlenecks.
 
 </details>
 
@@ -503,7 +546,7 @@ We encourage active participation and appreciate all forms of feedback that help
 ## License
 
 ```
-Copyright (C) 2024 PR-DC <info@pr-dc.com>
+Copyright (C) 2025 PR-DC <info@pr-dc.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as

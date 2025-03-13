@@ -129,6 +129,16 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
   
   /**
+   * Returns the index of a value in an array.
+   * @param {Array} A - Array to search.
+   * @param {*} value - Value to locate.
+   * @returns {number} Index of value or -1.
+   */
+  indexOf(A, value) {
+    return A.indexOf(value);
+  }
+  
+  /**
    * Finds the index of a sequence of elements in the array.
    * @param {Array} A - The array to search.
    * @param {Array} search_elements - The sequence of elements to find.
@@ -351,12 +361,24 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
   
   /**
+   * Returns the intersection of two arrays.
+   * @param {Array} A - First array.
+   * @param {Array} B - Second array.
+   * @returns {Array} Common elements.
+   */
+  arrayIntersect(A, B) {
+    if (A.length > B.length) [A, B] = [B, A];
+    const set_B = new Set(B);
+    return [...A.filter(item => set_B.has(item))];
+  }
+  
+  /**
    * Creates a shallow copy of the provided array.
    * @param {Array} A - The array to clone.
    * @returns {Array} A new array containing all elements from A.
    */
   cloneArray(A) {
-    return [...A];
+    return structuredClone(A);
   }
   
   /**
@@ -1057,9 +1079,9 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(rows).fill(0);
     for(var i = 0; i < rows; i++) {
       for(var j = 0; j < cols; j++) {
-        C[i] += pow(A[i*cols+j], 2);
+        C[i] += Math.pow(A[i*cols+j], 2);
       }
-      C[i] = sqrt(C[i]);
+      C[i] = Math.sqrt(C[i]);
     }
     return C;
   }
@@ -1075,9 +1097,9 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(cols).fill(0);
     for(var j = 0; j < cols; j++) {
       for(var i = 0; i < rows; i++) {
-        C[j] += pow(A[j*rows+i], 2);
+        C[j] += Math.pow(A[j*rows+i], 2);
       }
-      C[j] = sqrt(C[j]);
+      C[j] = Math.sqrt(C[j]);
     }
     return C;
   }

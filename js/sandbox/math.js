@@ -1,10 +1,10 @@
+
 /**
  * @file JSLAB library math submodule
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
-
 
 /**
  * Class for JSLAB math submodule.
@@ -73,32 +73,42 @@ class PRDC_JSLAB_LIB_MATH {
   interp(x, y, xq, mode = 'none') {
     // Helper function for scalar interpolation
     const interpolate = (xqi) => {
-      var i = x.indexOf(xqi);
+      // Use lastIndexOf to get the last occurrence of an exact match.
+      const i = x.lastIndexOf(xqi);
       if(i >= 0) {
         return y[i];
       }
 
-      var x1 = [...x].reverse().find(v => v <= xqi);
-      var x2 = x.find(v => v >= xqi);
+      // Find the closest points for interpolation
+      let x1 = null, x2 = null;
+      for(let v of x) {
+        if(v < xqi && (x1 === null || v > x1)) {
+          x1 = v;
+        }
+        if(v > xqi && (x2 === null || v < x2)) {
+          x2 = v;
+        }
+      }
 
       // Handle extrapolation if mode is 'extrap'
       if(mode === 'extrap') {
         if(xqi < x[0]) {
-          // Left-side extrapolation
           const gradient = (y[1] - y[0]) / (x[1] - x[0]);
           return y[0] + (xqi - x[0]) * gradient;
         } else if(xqi > x[x.length - 1]) {
-          // Right-side extrapolation
           const lastIdx = x.length - 1;
           const gradient = (y[lastIdx] - y[lastIdx - 1]) / (x[lastIdx] - x[lastIdx - 1]);
           return y[lastIdx] + (xqi - x[lastIdx]) * gradient;
         }
       }
 
-      // Handle interpolation inside the data range
-      if(x1 !== undefined && x2 !== undefined && x1 !== x2) {
-        var y1 = y[x.indexOf(x1)];
-        var y2 = y[x.indexOf(x2)];
+      // Interpolate between x1 and x2
+      if(x1 !== null && x2 !== null && x1 !== x2) {
+        // Use the last occurrence for x1 and the first occurrence for x2
+        const idx1 = x.lastIndexOf(x1);
+        const idx2 = x.indexOf(x2);
+        const y1 = y[idx1];
+        const y2 = y[idx2];
         return y1 + (xqi - x1) * (y2 - y1) / (x2 - x1);
       }
 
@@ -106,14 +116,297 @@ class PRDC_JSLAB_LIB_MATH {
       return NaN;
     };
 
-    // Check if xq is an array
-    if(Array.isArray(xq)) {
-      return xq.map(interpolate);
-    } else {
-      return interpolate(xq);
-    }
+    // If xq is an array, map over each element
+    return Array.isArray(xq) ? xq.map(interpolate) : interpolate(xq);
   }
 
+  /**
+   * Computes the gradient of a 2D grid.
+   * @param {Array} x - X coordinates.
+   * @param {Array} y - Y coordinates.
+   * @param {Array[]} z - 2D data array.
+   * @param {number} [N_a=11] - Neighborhood size.
+   * @returns {Array[]} Gradient components [dz_x, dz_y].
+   */
+  gridGradient(x, y, z, N_a = 11) {
+    var obj = this;
+    var hx = x[1]-x[0]; 
+    var hy = y[1]-y[0];
+    var N_a_c = Math.floor(N_a / 2); 
+    
+    var n = z.length;
+    var m = z[0].length;
+        
+    var dz_x = zeros(n, m);
+    var dz_y = zeros(n, m);
+    var dz_x_m = zeros(n, m);
+    var dz_y_m = zeros(n, m);
+
+    // Compute the gradient at a single point (x,y)
+    // In our function, x is the horizontal index and y is the vertical index.
+    function pointGradient(x, y) {
+      if(x < 0 || x >= m || y < 0 || y >= n) return;
+      // Check if gradients are already calculated
+      if(dz_x[y][x] !== 0 || dz_y[y][x] !== 0) return;
+
+      if(obj.jsl._isNaN(z[y][x])) {
+        // If the current value is NaN or Inf, try using central differences if available
+        // x component:
+        if(x === 0 || x === m - 1) {
+          dz_x[y][x] = 0;
+        } else if(!obj.jsl._isNaN(z[y][x - 1]) && !obj.jsl._isNaN(z[y][x + 1])) {
+          dz_x[y][x] = (z[y][x + 1] - z[y][x - 1]) / 2;
+        } else {
+          dz_x[y][x] = 0;
+        }
+        // y component:
+        if(y === 0 || y === n - 1) {
+          dz_y[y][x] = 0;
+        } else if(!obj.jsl._isNaN(z[y - 1][x]) && !obj.jsl._isNaN(z[y + 1][x])) {
+          dz_y[y][x] = (z[y + 1][x] - z[y - 1][x]) / 2;
+        } else {
+          dz_y[y][x] = 0;
+        }
+      } else {
+        // If the value is valid, use one-sided differences on the boundaries
+        // x component:
+        if(x === 0 || x === m - 1) {
+          if(x === 0 && !obj.jsl._isNaN(z[y][x + 1])) {
+            dz_x[y][x] = z[y][x + 1] - z[y][x];
+          } else if(x === m - 1 && !obj.jsl._isNaN(z[y][x - 1])) {
+            dz_x[y][x] = z[y][x] - z[y][x - 1];
+          } else {
+            dz_x[y][x] = 0;
+          }
+        } else {
+          if(!obj.jsl._isNaN(z[y][x - 1]) && !obj.jsl._isNaN(z[y][x + 1])) {
+            dz_x[y][x] = (z[y][x + 1] - z[y][x - 1]) / 2;
+          } else if(!obj.jsl._isNaN(z[y][x + 1])) {
+            dz_x[y][x] = z[y][x + 1] - z[y][x];
+          } else if(!obj.jsl._isNaN(z[y][x - 1])) {
+            dz_x[y][x] = z[y][x] - z[y][x - 1];
+          } else {
+            dz_x[y][x] = 0;
+          }
+        }
+        // y component:
+        if(y === 0 || y === n - 1) {
+          if(y === 0 && !obj.jsl._isNaN(z[y + 1][x])) {
+            dz_y[y][x] = z[y + 1][x] - z[y][x];
+          } else if(y === n - 1 && !obj.jsl._isNaN(z[y - 1][x])) {
+            dz_y[y][x] = z[y][x] - z[y - 1][x];
+          } else {
+            dz_y[y][x] = 0;
+          }
+        } else {
+          if(!obj.jsl._isNaN(z[y - 1][x]) && !obj.jsl._isNaN(z[y + 1][x])) {
+            dz_y[y][x] = (z[y + 1][x] - z[y - 1][x]) / 2;
+          } else if(!obj.jsl._isNaN(z[y + 1][x])) {
+            dz_y[y][x] = z[y + 1][x] - z[y][x];
+          } else if(!obj.jsl._isNaN(z[y - 1][x])) {
+            dz_y[y][x] = z[y][x] - z[y - 1][x];
+          } else {
+            dz_y[y][x] = 0;
+          }
+        }
+      }
+      // Scale the gradients by the grid spacing
+      dz_x[y][x] /= hx;
+      dz_y[y][x] /= hy;
+    }
+    
+
+    // Compute the mean gradient at a point using its neighborhood
+    function meanGradient(x, y) {
+      // Check if already calculated
+      if(dz_x_m[y][x] !== 0 || dz_y_m[y][x] !== 0) return;
+      var sum_x = 0, sum_y = 0, count_x = 0, count_y = 0;
+      for(var p = 0; p < N_a; p++) {
+        for(var q = 0; q < N_a; q++) {
+          var nx = x + q - N_a_c;
+          var ny = y + p - N_a_c;
+          if(!(nx < 0 || nx >= m || ny < 0 || ny >= n)) {
+            if(dz_x[ny][nx] !== 0) {
+              sum_x += dz_x[ny][nx];
+              count_x++;
+            }
+            if(dz_y[ny][nx] !== 0) {
+              sum_y += dz_y[ny][nx];
+              count_y++;
+            }
+          }
+        }
+      }
+      dz_x_m[y][x] = count_x > 1 ? sum_x / count_x : sum_x;
+      dz_y_m[y][x] = count_y > 1 ? sum_y / count_y : sum_y;
+    }
+
+    for(var y = 0; y < n; y++) {
+      for(var x = 0; x < m; x++) {
+        pointGradient(x, y);
+      }
+    }
+    // Calculate mean gradient for all points
+    for(var y = 0; y < n; y++) {
+      for(var x = 0; x < m; x++) {
+        meanGradient(x, y);
+      }
+    }
+    
+    return [dz_x_m, dz_y_m];
+  }
+  
+  /**
+   * Interpolates grid data using the specified method.
+   * @param {Array} x - X coordinates.
+   * @param {Array} y - Y coordinates.
+   * @param {Array} z - Data values.
+   * @param {Array} xq - Query X coordinates.
+   * @param {Array} yq - Query Y coordinates.
+   * @param {string} [method="linear"] - Interpolation method.
+   * @param {Object} [opts_in] - Optional settings.
+   * @returns {Array[]} Interpolated grid [xq, yq, zq].
+   */
+  gridData(x, y, z, xq, yq, method = "linear", opts_in) {
+    var opts = {
+      N_a: 11,
+      k_e: 0.05,
+      Ngx: 5,
+      Ngy: 1,
+      extrap: true,
+      ...opts_in
+    };
+    
+    function isBetween(A, a, b){
+      var B = [];
+      for(var i = 0; i < A.length; i += 1){
+        if(A[i] >= (a - (b - a) * opts.k_e) && 
+           A[i] <= (b + (b - a) * opts.k_e)) B.push(i);
+      }
+      return B;
+    }
+
+    var q_ids = [];
+    var i_ids = [];
+
+    var limits_x = linspace(xq[0], end(xq), opts.Ngx + 1);
+    var limits_y = linspace(yq[0], end(yq), opts.Ngy + 1);
+    
+    for(var i = 0; i < opts.Ngx; i++){
+      var i_idx = isBetween(x, limits_x[i], limits_x[i + 1]);
+      for(var j = 0; j < opts.Ngy; j++){
+        var i_idy = isBetween(y, limits_y[j], limits_y[j + 1]);
+        var i_id = this.jsl.array.arrayIntersect(i_idx, i_idy);
+        i_ids.push(structuredClone(i_id));
+        
+        var q_ids_ij = [];
+        for(var k = 0; k < xq.length; k++){
+          for(var m = 0; m < yq.length; m++){
+            if(limits_x[i] <= xq[k] && 
+                 xq[k] <= limits_x[i + 1] &&
+                 limits_y[j] <= yq[m] && 
+                 yq[m] <= limits_y[j + 1]){
+              q_ids_ij.push([k, m]);
+            } 
+          }
+        }
+        q_ids.push([...q_ids_ij]);
+      }
+    }
+    
+    // Interpolation
+    var zq = this.jsl.array.NaNs(yq.length, xq.length);
+    if(method == 'nearest') {
+      for(var i = 0; i < q_ids.length; i++) {
+        var gc_q_ids = q_ids[i];
+        var gc_i_ids = i_ids[i];
+        for(var j = 0; j < gc_q_ids.length; j++) {
+          var L_min;
+          for(var k = 0; k < gc_i_ids.length; k++) {
+            var L = Math.sqrt(Math.pow(x[gc_i_ids[k]] - xq[gc_q_ids[j][0]], 2) + 
+                              Math.pow(y[gc_i_ids[k]] - yq[gc_q_ids[j][1]], 2));
+            if(k == 0 || L < L_min){
+              L_min = L;
+              zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = z[gc_i_ids[k]];
+            }
+          }
+        }
+      }
+    } else if(method == 'linear') {
+      for(var i = 0; i < q_ids.length; i++) {
+        var gc_q_ids = q_ids[i];
+        var gc_i_ids = i_ids[i];
+        
+        // Delaunay triangulation
+        var points = [];
+        for(var j = 0; j < gc_i_ids.length; j++) {
+          points.push([x[gc_i_ids[j]], y[gc_i_ids[j]], z[gc_i_ids[j]]]);
+        }
+        var triangles = this.jsl.geometry.delaunayTriangulation(points);
+        
+        // Locate point (xq, yq) in triangle and calculate zq
+        for(var j = 0; j < gc_q_ids.length; j++) {
+          var point = [xq[gc_q_ids[j][0]], yq[gc_q_ids[j][1]], 0];
+          for(var k = 0; k < triangles.length; k++) {
+           if(triangles[k].contains(point)) {
+             zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = triangles[k].valueAt(point);
+             break; 
+           }
+          }
+        }        
+      }
+
+      if(opts.extrap) {
+        // Extrapolation
+        var zq0 = structuredClone(zq);
+        
+        // Calculate dz/dx and dz/dy for grid
+        var [dz_x, dz_y] = this.gridGradient(xq, yq, zq, opts.N_a);
+        
+        for(var i = 0; i < q_ids.length; i++) {
+          var gc_q_ids = q_ids[i];
+          
+          // Find nearest point with dz/dx and dz/dy
+          for(var j = 0; j < gc_q_ids.length; j++) {
+            var point = [
+              xq[gc_q_ids[j][0]], 
+              yq[gc_q_ids[j][1]], 
+              zq[gc_q_ids[j][1]][gc_q_ids[j][0]]
+             ];
+            if(this.jsl._isNaN(point[2])) {
+              var L_min;
+              var k_min = -1;
+              for(var k = 0; k < gc_q_ids.length; k++) {
+                if(!this.jsl._isNaN(zq0[gc_q_ids[k][1]][gc_q_ids[k][0]])) {
+                  var L = Math.sqrt(Math.pow(point[0] - xq[gc_q_ids[k][0]], 2) + 
+                                   Math.pow(point[1] - yq[gc_q_ids[k][1]], 2));
+                  if(k_min == -1 || L < L_min){
+                    L_min = L;
+                    k_min = k;
+                  }
+                }
+              }
+              if(k_min >= 0) {
+                // Calculate dz and z
+                var dz_x_i = dz_x[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]];
+                var dz_y_i = dz_y[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]];
+                
+                var dx = xq[gc_q_ids[k_min][0]] - point[0];
+                var dy = yq[gc_q_ids[k_min][1]] - point[1];
+                zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = 
+                  zq[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]] - 
+                  dx * dz_x_i - dy * dz_y_i;
+              }
+            }
+          }
+        }
+      }
+    } else {
+      this.jsl.env.error('@gridData: '+language.string(235));
+    }
+    return [xq, yq, zq];
+  }
+  
   /**
    * Calculates the output of a bilinear function based on input value, midpoint, and mid-value.
    * @param {number} x - The input value for the function.

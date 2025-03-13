@@ -1,0 +1,36 @@
+/**
+ * @file Show Grid Data
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var data = JSON.parse(readFile(pwd + 'resources/plotdata.json'));
+
+var method = ['linear', 'nearest'][0];
+var Ng = 151;
+var xq = linspace(min(data.x), max(data.x), Ng);
+var yq = linspace(1, 1.6, Ng);
+
+var [xi, yi, zi] = gridData(data.x, data.y, data.z, xq, yq, method, {
+ //extrap: false 
+});
+
+figure(1);
+plot([{
+  x: xi, y: yi, z: zi, type: "heatmap", 
+  colorscale: 'Jet', 
+  lighting: { ambient: 1 }, 
+  colorbar: { title: 'z' }
+}], {'showLegend': false, 'font': {'family': 'LatinModern', 'size': 14}});
+xlabel('x');
+ylabel('y');
+zlabel('z');
+
+// End of program
+disp(' The program was executed successfully... ');
+disp(' Execution time: ' + num2str(toc(), 2) + ' seconds');
+disp(' -------------------- ');

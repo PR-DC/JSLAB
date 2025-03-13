@@ -333,11 +333,11 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * Opens window with documentation
    */
   async openDocumentation(query) {
-    var wid = this.openWindow('../documentation.html');
+    var wid = this.openWindow('../docs/documentation.html');
     var win = this.open_windows[wid];
     await win.ready;
     if(query) {
-      win.context.location.href = '../documentation.html#'+encodeURI(query);
+      win.context.location.href = '../docs/documentation.html#'+encodeURI(query);
       win.context.location.reload(true);
     }
     win.setTitle('JSLAB / DOCUMENTATION');
@@ -450,7 +450,37 @@ class PRDC_JSLAB_LIB_WINDOWS {
   async openWindowBlank() {
     var wid = this.openWindow('blank.html');
     await this.open_windows[wid].ready;
-    return this.open_windows[wid].context;
+    var context = this.open_windows[wid].context;
+    context.document.custom_style = context.document.getElementById('custom-style');
+    return context;
+  }
+  
+  /**
+   * Renders a Mermaid diagram in a new window.
+   * @param {string} graph_definition - The Mermaid graph definition.
+   * @returns {Promise<Object>} A promise that resolves to the window context once the graph is rendered.
+   */
+  async showMermaidGraph(graph_definition) {
+    var wid = this.openWindow('mermaid_graph.html');
+    await this.open_windows[wid].ready;
+    var context = this.open_windows[wid].context;
+    context.document.custom_style = context.document.getElementById('custom-style');
+    var graph = context.document.getElementById('graph');
+    while(!graph.svg_viewer) {
+      await this.jsl.non_blocking.waitMSeconds(1);
+    }
+    try {
+      var res = await context.mermaid.parse(graph_definition);
+      if(res) {
+        var { svg } = await context.mermaid.render('id1', graph_definition);
+        graph.innerHTML = svg;
+        graph.svg_viewer.attach();
+        graph.style.display = 'block';
+      }
+    } catch(err) {
+      error('@showGraph: '+err);
+    }
+    return context;
   }
   
   /**
@@ -537,9 +567,13 @@ class PRDC_JSLAB_WINDOW {
    */
   async open(file) {
     if(!this.opened) {
+      var obj = this;
       this.opened = true;
       var [context, ready] = this.#jsl.env.openWindow(this.wid, file);
       this.context = context;
+      this.context.getWindow = function() {
+        return obj;
+      }
       await ready;
       this.dom = this.context.document;
       this._onReady();
@@ -707,6 +741,35 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.promiseOrStoped(this.ready);
     return this.#jsl.env.openWindowDevTools(this.wid);
   }
+
+  /**
+   * Appends a script to the document head.
+   * @param {string} script_path The script's URL.
+   */
+  addScript(script_path) {
+    const script = this.context.document.createElement("script");
+    script.src = script_path;
+    this.context.document.head.appendChild(script);
+  }
+
+  /**
+   * Appends a stylesheet link to the document head.
+   * @param {string} stylesheet_path The stylesheet's URL.
+   */
+  addLinkStylesheet(stylesheet_path) {
+    const link = this.context.document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = stylesheet_path;
+    this.context.document.head.appendChild(link);
+  }
+  
+  /**
+   * Loads the UI script.
+   */
+  addUI() {
+    this.addScript("../js/windows/ui.js");
+    this.addLinkStylesheet("../css/ui.css");
+  }
   
   /**
    * Handles actions to perform when the window is ready.
@@ -743,6 +806,27 @@ class PRDC_JSLAB_WINDOW {
       var id = el.getAttribute('title-str');
       if(id in language.s) {
         el.setAttribute('title', language.s[id][language.lang]);
+      }
+    });
+    
+    this.dom.querySelectorAll('textarea[str]').forEach(function(el) {
+      var id = el.getAttribute('str');
+      if(id in language.s) {
+        el.setAttribute('placeholder', language.s[id][language.lang]);
+      }
+    });
+    
+    this.dom.querySelectorAll('input[str]').forEach(function(el) {
+      var id = el.getAttribute('str');
+      if(id in language.s) {
+        el.setAttribute('placeholder', language.s[id][language.lang]);
+      }
+    });
+
+    this.dom.querySelectorAll('option[str]').forEach(function(el) {
+      var id = el.getAttribute('str');
+      if(id in language.s) {
+        el.textContent = language.s[id][language.lang];
       }
     });
   }

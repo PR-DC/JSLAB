@@ -51,7 +51,8 @@ class PRDC_JSLAB_PLOTER {
     figure.layout_3d = false;
     
     plot_traces.forEach(function(trace_options) {
-      if(!figure.layout_3d && trace_options.hasOwnProperty('z')) {
+      if(!figure.layout_3d && (trace_options.hasOwnProperty('z') && 
+          (trace_options.hasOwnProperty('type') && trace_options.type != 'heatmap'))) {
         figure.layout_3d = true; // It is 3D plot
       }
       
@@ -87,6 +88,7 @@ class PRDC_JSLAB_PLOTER {
           }
           trace.line.color = obj.jsl.color.colororder[ci];
           ci += 1;
+          trace.cliponaxis = false;
         }
         traces.push(trace);
       } else {
@@ -240,7 +242,7 @@ class PRDC_JSLAB_PLOTER {
             r: 15,
             b: 60,
             t: 15,
-            pad: 5
+            pad: 0
           },
           xaxis: {
             showgrid: true,
@@ -253,7 +255,8 @@ class PRDC_JSLAB_PLOTER {
             tickwidth: 0.5,
             tickcolor: '#000',
             linecolor: '#000',
-            linewidth: 0.5
+            linewidth: 0.5,
+            exponentformat: 'power'
           },
           yaxis: {
             showgrid: true,
@@ -266,7 +269,8 @@ class PRDC_JSLAB_PLOTER {
             tickwidth: 0.5,
             tickcolor: '#000',
             linecolor: '#000',
-            linewidth: 0.5
+            linewidth: 0.5,
+            exponentformat: 'power'
           }
         }
       );

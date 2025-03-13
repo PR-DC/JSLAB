@@ -62,6 +62,7 @@
   background-position: left 12px top 12px;
   background-size: 15px;
   background-repeat: no-repeat;
+  padding-right: 45px;
 }
 
 #command-window-input {
@@ -198,6 +199,26 @@
 }
 #command-window-messages.messages:hover div:hover {
   filter: none;
+}
+
+#command-window-input-submit-cont {
+  position: absolute;
+  right: 10px;
+  z-index: 3;
+  background: #f7df1e;
+  border-radius: 100%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+#command-window-input-submit-cont:hover {
+  opacity: 0.6;
+}
+
+#command-window-input-submit-cont img {
+  width: 18px;
+  padding: 6px;
 }
 
 /* #command-window-messages.messages:hover div {

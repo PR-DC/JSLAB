@@ -11,6 +11,7 @@ const fs = require('fs');
 const { pathEqual } = require('path-equal');
 const Store = require('electron-store');
 const { ESLint } = require("eslint");
+const path = require("path");
 
 const store = new Store();
 
@@ -85,6 +86,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
         }
         script.show();
       }
+      obj.updateActiveExtension(script);
     });
 
     
@@ -151,6 +153,20 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   }
   
   /**
+   * Compiles arduino code.
+   */
+  compileArduino() {
+    this.getScriptByTab(this.active_tab)[0].compileArduino();
+  }
+  
+  /**
+   * Uploads arduino code.
+   */
+  uploadArduino() {
+    this.getScriptByTab(this.active_tab)[0].uploadArduino();
+  }
+  
+  /**
    * Opens a script file from the filesystem into the editor.
    */
   openScriptFile() {
@@ -159,7 +175,6 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       title: language.currentString(146),
       buttonLabel: language.currentString(147),
       filters: [
-        { name: "jsl", extensions: ["jsl", "txt"] },
         { name: "All Files", extensions: ["*"] },
       ],
     };
@@ -186,15 +201,16 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   openScript(data) {
     var script_path = data[0];
     var script_lineno = data[1];
+    var script_charpos = data[2];
     var lstat = fs.lstatSync(script_path, {throwIfNoEntry: false});
     if(lstat && lstat.isFile()) {
       var [script, i] = this.getScriptByPath(script_path);
       if(script == undefined) {
-        this.createScript(script_path, script_lineno);
+        this.createScript(script_path, script_lineno, script_charpos);
       } else {
         this.win.editor.disp("@editor/openScript: "+language.string(133)+" "+script_path+" "+language.string(134)+"!", false);
         script.activate();
-        script.setLine(script_lineno);
+        script.setLine(script_lineno, script_charpos);
       }
     }
   }
@@ -210,11 +226,12 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    * Creates a new script tab and editor instance, loading the script from the given path.
    * @param {string} path - The file path of the script to load.
    * @param {number} lineno - The line number to navigate to in the newly created script.
+   * @param {number} charpos - The char position to navigate to in the newly created script.
    */
-  createScript(path, lineno) {
+  createScript(path, lineno, charpos) {
     this.tab = this.tabs.addTab();
     var script = new PRDC_JSLAB_EDITOR_SCRIPT(this.win, this, path, this.tab);
-    script.setLine(lineno);
+    script.setLine(lineno, charpos);
     this.scripts.push(script);
   }
   
@@ -363,6 +380,17 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     }
     if(this.close_window && script_path !== undefined) {
       this.last_script_paths.push(script_path);
+    }
+  }
+  
+  /**
+   * Updates body class based on active extension of script 
+   */
+  updateActiveExtension(script) {
+    if(script && (typeof script.path === 'string' || script.path instanceof String)) {
+      $(document.body).attr("class", 'file-' + path.extname(script.path).substring(1));
+    } else {
+      $(document.body).attr("class", '');
     }
   }
 }

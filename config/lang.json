@@ -130,19 +130,19 @@
     "rsc": "Отворите нову скрипту"
   },
   "27": {
-    "en": "Open script from file",
-    "rs": "Otvorite skriptu iz datoteke",
-    "rsc": "Отворите скрипту из датотеке"
+    "en": "Open file",
+    "rs": "Otvorite datoteku",
+    "rsc": "Отворите датотеку"
   },
   "28": {
-    "en": "Save script",
-    "rs": "Sačuvaj skriptu",
-    "rsc": "Сачувај скрипту"
+    "en": "Save file",
+    "rs": "Sačuvaj datoteku",
+    "rsc": "Сачувај датотеку"
   },
   "29": {
-    "en": "Script save as",
-    "rs": "Skript sačuvaj kao",
-    "rsc": "Скрипт сачувај као"
+    "en": "File save as",
+    "rs": "Datoteku sačuvaj kao",
+    "rsc": "Датотеку сачувај као"
   },
   "30": {
     "en": "Save script and run",
@@ -715,24 +715,24 @@
     "rsc": "Сачувајте график"
   },
   "144": {
-    "en": "Save script to file",
-    "rs": "Sačuvajte skriptu u datoteku",
-    "rsc": "Сачувајте скрипту у датотеку"
+    "en": "Save file",
+    "rs": "Sačuvajte datoteku",
+    "rsc": "Сачувајте датотеку"
   },
   "145": {
-    "en": "Save script",
-    "rs": "Sačuvajte skriptu",
-    "rsc": "Сачувајте скрипту"
+    "en": "Save file",
+    "rs": "Sačuvajte datoteku",
+    "rsc": "Сачувајте датотеку"
   },
   "146": {
-    "en": "Load script from file",
-    "rs": "Učitajte skriptu iz datoteke",
-    "rsc": "Учитајте скрипту из датотеке"
+    "en": "Load from file",
+    "rs": "Učitajte iz datoteke",
+    "rsc": "Учитајте из датотеке"
   },
   "147": {
-    "en": "Load script",
-    "rs": "Učitajte skriptu",
-    "rsc": "Учитајте скрипту"
+    "en": "Load file",
+    "rs": "Učitajte datoteku",
+    "rsc": "Учитајте датотеку"
   },
   "148": {
     "en": "Choose working directory",
@@ -1123,5 +1123,55 @@
     "en": "Configuration file for arduino-cli not found.",
     "rs": "Konfiguracioni fajl za arduino-cli nije pronadjen.",
     "rsc": "Конфигурациони фајл за arduino-cli није пронађен."
+  },
+  "226": {
+    "en": "Submit command to workspace.",
+    "rs": "Pošalji komandu radnom prostoru.",
+    "rsc": "Пошаљи команду радном простору."
+  },
+  "227": {
+    "en": "Compile",
+    "rs": "Kompajliraj",
+    "rsc": "Компајлирај"
+  },
+  "228": {
+    "en": "Upload",
+    "rs": "Otpremi",
+    "rsc": "Отпреми"
+  },
+  "229": {
+    "en": "Program file for arduino-cli not found.",
+    "rs": "Fajl programa za arduino-cli nije pronadjen.",
+    "rsc": "Фајл програма за arduino-cli није пронађен."
+  },
+  "230": {
+    "en": "No available ports.",
+    "rs": "Nema dostupnih portova.",
+    "rsc": "Нема доступних портова."
+  },
+  "231": {
+    "en": "Choose",
+    "rs": "Izaberi",
+    "rsc": "Изабери"
+  },
+  "232": {
+    "en": "Port",
+    "rs": "Port",
+    "rsc": "Порт"
+  },
+  "233": {
+    "en": "Baudrate",
+    "rs": "Brzina",
+    "rsc": "Брзина"
+  },
+  "234": {
+    "en": "Type your message...",
+    "rs": "Unesite svoju poruku...",
+    "rsc": "Унесите своју поруку..."
+  },
+  "235": {
+    "en": "Unknown method!",
+    "rs": "Nepoznati metod!",
+    "rsc": "Непознати метод!"
   }
 } 

@@ -393,7 +393,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     }
     var s1 = arrayRand(zeros(nvars), ones(nvars), nvars, nMutants, this.rand);
     var r = arrayRand(zeros(nvars), ones(nvars), nvars, nMutants, this.rand);
-    var s = elementWise((a, b) => pow(a, b), s1, p);
+    var s = elementWise((a, b) => Math.pow(a, b), s1, p);
      
     var parents = getSub(this.state.Population, 
       getSub(sParents, index(range(0, nvars - 1), sParents, nvars)));
@@ -733,8 +733,8 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
       
       // Use first values of the first generation for normalization of
       // constraints until there is a feasible solution
-      var l = elementWise((a) => sqrt(a), 
-        sumRow(elementWise((a) => pow(a, 2), ConNormVal), m, n));
+      var l = elementWise((a) => Math.sqrt(a), 
+        sumRow(elementWise((a) => Math.pow(a, 2), ConNormVal), m, n));
       var I = indexOfAll(l, 0);
       setSub(l, I, ones(I.length));
       if(isEmpty(this.l)) {

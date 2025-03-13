@@ -9,6 +9,10 @@
 .cm-s-notepadpp span.cm-string {
   color: #808080;
 }
+.cm-s-notepadpp span.cm-string-2 {
+  color: #060683;
+}
+
 .cm-s-notepadpp span.cm-builtin {
   line-height: 1em;
   font-weight: bold;
@@ -30,8 +34,13 @@
   color: #0000ff;
 }
 .cm-s-notepadpp span.cm-meta {
-  color: #555;
+  color: #814203;
 }
+
+.cm-s-notepadpp span.cm-type {
+  color: #8206ff;
+}
+
 .cm-s-notepadpp span.cm-link {
   color: #3a3;
 }

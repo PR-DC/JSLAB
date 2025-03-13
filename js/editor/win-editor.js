@@ -89,7 +89,6 @@ class PRDC_JSLAB_WIN_EDITOR {
     document.addEventListener("drop", function(e) {
       e.stopPropagation();
       e.preventDefault();
-      console.log(e.dataTransfer.files);
       
       for(const f of e.dataTransfer.files) {
         obj.script_manager.openScript([f.path]);

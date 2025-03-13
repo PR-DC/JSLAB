@@ -34,48 +34,6 @@ class PRDC_JSLAB_LIB_DEVICE {
   }
 
   /**
-   * Checks if there is a USB device connected with the specified Vendor ID and Product ID.
-   * @param {string} VID - Vendor ID of the USB device.
-   * @param {string} PID - Product ID of the USB device.
-   * @returns {boolean} True if the device is found, false otherwise.
-   */
-  checkDeviceUSB(VID, PID){
-    var val = this.jsl.env.execSync('wmic path win32_pnpsigneddriver get deviceid, driverversion | find "USB\\VID_' + VID + '&PID_' + PID + '"');
-    if(val.state == 'success') {
-      if(val.data.length) {
-        if(this.jsl.debug) {
-          this.jsl.env.disp('@checkDeviceUSB: ' + val.data);
-        }
-        return true; 
-      } else {
-        return false; 
-      }
-    } else {
-      if(this.jsl.debug) {
-        this.jsl.env.error('@checkDeviceUSB: ' + val.data);
-      }
-      return false; 
-    }
-  }
-
-  /**
-   * Checks for a connected USB device by STM and an optional Product ID.
-   * @param {string} [PID='5740'] - Product ID of the USB device, default is for Virtual COM Port.
-   * @returns {boolean} True if the device is found, false otherwise.
-   */
-  checkDeviceSTM(PID = '5740') {
-    return this.checkDeviceUSB('0483', PID);
-  }
- 
-  /**
-   * Checks if there is a USB device connected using a CH340 chip.
-   * @returns {boolean} True if the device is found, false otherwise.
-   */
-  checkDeviceCH340() {
-    return this.checkDeviceUSB('1A86', '7523');
-  }
-
-  /**
    * Checks if a specific driver is installed on the system.
    * @param {string} driver_name - Name of the driver to check.
    * @returns {boolean} True if the driver is found, false otherwise.
@@ -163,6 +121,7 @@ class PRDC_JSLAB_LIB_DEVICE {
       return false;
     }
     
+    this.checkArduino();
     try {
       var config = JSON.parse(this.jsl.env.readFileSync(config_file))
       var build_property_str = '';
@@ -174,11 +133,7 @@ class PRDC_JSLAB_LIB_DEVICE {
         encoding: 'utf8',
         stdio: 'pipe'
       });
-      if(output.stdout) {
-        return JSON.parse(output.stdout);
-      } else if(output.stderr) {
-        return JSON.parse(output.stderr);
-      }
+      return this.parseArduinoOtuput(output);
     } catch(err) {
       this.jsl.env.error('@compileArduino: Error: '+err.toString());
     }
@@ -197,6 +152,7 @@ class PRDC_JSLAB_LIB_DEVICE {
       return false;
     }
     
+    this.checkArduino();
     try {
       var config = JSON.parse(this.jsl.env.readFileSync(config_file));
       var build_property_str = '';
@@ -206,59 +162,40 @@ class PRDC_JSLAB_LIB_DEVICE {
       var port_str = '';
       if(port) {
         port_str = `-p "${port}"`;
+      } else if(config.port) {
+        port_str = `-p "${config.port}"`;
       }
       var output = this.jsl.env.spawnSync(`arduino-cli compile --json -u -t -b "${config.b}" ${build_property_str} ${port_str} "${dir}"`, {
         shell: true,
         encoding: 'utf8',
         stdio: 'pipe'
       });
-      if(output.stdout) {
-        return JSON.parse(output.stdout);
-      } else if(output.stderr) {
-        return JSON.parse(output.stderr);
-      }
+      return this.parseArduinoOtuput(output);
     } catch(err) {
       this.jsl.env.error('@uploadArduino: Error: '+err.toString());
     }
   }
   
   /**
-   * Retrieves all available serial ports.
-   * @returns {Promise<Array>} Resolves with an array of serial port info.
+   * Parses Arduino output from stdout or stderr.
+   * @param {object} output
+   * @returns {object}
    */
-  async listSerialPorts() {
-    return await this.jsl.env.SerialPort.list();
-  }
-
-  /**
-   * Opens a serial port.
-   * @param {string} port - Port path.
-   * @param {number} [baudrate=9600] - Baud rate.
-   * @param {object} [opts={}] - Additional options.
-   * @returns {SerialPort} The opened SerialPort instance.
-   */
-  async connectSerialPorts(port, baudrate = 9600, opts_in = {}) {
-    var opts = { 
-      dataBits: 8, 
-      parity: 'none', 
-      stopBits: 1, 
-      flowControl: false,
-      ...opts_in
+  parseArduinoOtuput(output) {
+    var data_string;
+    if(output.stdout) {
+      data_string = output.stdout;
+    } else if(output.stderr) {
+      data_string = output.stderr;
     }
-    var sp = new this.jsl.env.SerialPort({
-      path: port,
-      baudRate: baudrate,
-      ...opts
-    });
-    sp.on('open', function() {
-      try {
-        sp.set({
-          dtr: true,
-          rts: false
-        });
-      } catch(err) {}
-    });
-    return sp;
+    
+    var data = JSON.parse(data_string);
+    if(!data.success) {
+      this.jsl.env.warn('@parseArduinoOtuput: Compile failed!');
+      this.jsl.env.disp(`@parseArduinoOtuput: Compiler error:
+${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
+    }
+    return data;
   }
   
   /**

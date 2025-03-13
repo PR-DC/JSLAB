@@ -112,6 +112,10 @@ class PRDC_JSLAB_WIN_MAIN {
           obj.eval.evalScript(script_path, lines);
           ipcRenderer.send('MainProcess', 'focus-win');
           break;
+        case 'eval-command':
+          obj.eval.evalCommand(data[0]);
+          ipcRenderer.send('MainProcess', 'focus-win');
+          break;
         case 'help':
           obj.gui.help();
           break;
@@ -225,7 +229,7 @@ class PRDC_JSLAB_WIN_MAIN {
     // Focus code input
     obj.command_window.code_input.focus();
     obj.command_window.code_input.setCursor(
-      obj.command_window.code_input.lineCount(), 0);
+    obj.command_window.code_input.lineCount(), 0);
   }
 
   /**

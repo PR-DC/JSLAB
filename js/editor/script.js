@@ -98,7 +98,6 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     this.code_editor.on("change", function() {
       obj.codeChanged();
     });
-    this.updateEditorMode();
     
     this.show();
   }
@@ -128,6 +127,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     }
     $(this.code_editor.display.wrapper).show();
     this.code_editor.focus();
+    this.updateEditorMode();
   }
 
   /**
@@ -181,7 +181,6 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       defaultPath: script_path,
       buttonLabel: language.currentString(145),
       filters: [
-        { name: "jsl", extensions: ["jsl", "txt"] },
         { name: "All Files", extensions: ["*"] },
       ],
     };
@@ -271,10 +270,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
   /**
    * Sets the cursor in the code editor to the specified line number.
    * @param {number} lineno - The line number to navigate to (1-based index).
+   * @param {number} charpos - The char position to navigate to in the newly created script.
    */
-  setLine(lineno) {
+  setLine(lineno, charpos = 0) {
     if(isFinite(lineno)) {
-      this.code_editor.setCursor({ line: lineno-1, ch: 0 });
+      this.code_editor.setCursor({ line: lineno - 1, ch: charpos - 1 });
     }
   }
   
@@ -309,10 +309,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
    */
   updateEditorMode() {
     var obj = this;
-    if(typeof this.path === 'string' || this.path instanceof String) {
-      var file_extension = path.extname(this.path);
+    this.script_manager.updateActiveExtension(this);
+    if(typeof this.name === 'string' || this.name instanceof String) {
+      var file_extension = path.extname(this.name);
       if(['.cpp', '.c', '.ino', '.h', '.hpp'].includes(file_extension.toLowerCase())) {
-        this.code_editor.setOption("mode", "clike");
+        this.code_editor.setOption("mode", "text/x-csrc");
         this.code_editor.setOption("lint", {});
         return;
       }
@@ -333,7 +334,6 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       },
       async: true
     });
-      
   }
   
   /**
@@ -341,6 +341,28 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
    */
   openSearchDialog() {
     this.code_editor.execCommand('showSearchDialog');
+  }
+  
+  /**
+   * Compiles arduino code.
+   */
+  compileArduino() {
+    if(typeof this.path === 'string' || this.path instanceof String) {
+      ipcRenderer.send("MainWindow", "eval-command", [`compileArduino('${path.dirname(this.path).replace(/\\(?!\\)/g, "\\\\")}')`]);
+    } else {
+      this.win.editor.disp("@editor/compileArduino: "+language.string(229));
+    }
+  }
+  
+  /**
+   * Uploads arduino code.
+   */
+  uploadArduino() {
+    if(typeof this.path === 'string' || this.path instanceof String) {
+      ipcRenderer.send("MainWindow", "eval-command", [`uploadArduino('${path.dirname(this.path).replace(/\\(?!\\)/g, "\\\\")}')`]);
+    } else {
+      this.win.editor.disp("@editor/uploadArduino: "+language.string(229));
+    }
   }
 }
 

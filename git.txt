@@ -1,0 +1,5 @@
+Name: JSLAB
+About: JavaScript LABoratory environment
+Commit: Initial commit
+Topics: javascript numerical-computations plotting data-visualization graphics numeric-computing-environment javascript-environment interactive-computing
+Releases: Initial release 1.0.1

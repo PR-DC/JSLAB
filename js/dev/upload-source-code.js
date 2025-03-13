@@ -14,7 +14,7 @@ const path = require('path');
 const { PRDC_APP_CONFIG } = require("../../config/config");
 
 console.log('[upload-source-code.js] Started');
-var t = performance.now();
+var start = performance.now();
 
 if(!process.env.SERVER_PATH) {
   console.error('Environment variable SERVER_PATH must be defined!');
@@ -87,4 +87,6 @@ if(result.differences) {
 } else {
   console.log('No different files...');
 }
-console.log('[upload-source-code.js] Execution done in ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
+
+let d = new Date(), t = ((performance.now()-start)/1000).toFixed(3);
+console.log(`[upload-source-code.js] Execution done in ${t}s - ${('0'+d.getHours()).slice(-2)}:${('0'+d.getMinutes()).slice(-2)}:${('0'+d.getSeconds()).slice(-2)}.${('00'+d.getMilliseconds()).slice(-3)} ${('0'+d.getDate()).slice(-2)}/${('0'+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()}`);

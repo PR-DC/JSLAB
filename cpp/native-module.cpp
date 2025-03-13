@@ -85,6 +85,7 @@ Napi::Object NativeModule::Init(Napi::Env env, Napi::Object exports) {
                      InstanceMethod("roots", &NativeModule::roots),
                      InstanceMethod("cumtrapz", &NativeModule::cumtrapz),
                      InstanceMethod("trapz", &NativeModule::trapz),
+                     InstanceMethod("listSubprocesses", &NativeModule::listSubprocesses),
                    });
                    
   Napi::FunctionReference* constructor = new Napi::FunctionReference();
@@ -331,6 +332,53 @@ Napi::Value NativeModule::trapz(const Napi::CallbackInfo& info) {
   }
 
   return Napi::Number::New(env, total);
+}
+
+// listSubprocesses() function
+// --------------------
+Napi::Value NativeModule::listSubprocesses(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+
+  // Ensure at least one argument is provided
+  if(info.Length() < 1) {
+    Napi::TypeError::New(env, "listSubprocesses expects at least one argument").ThrowAsJavaScriptException();
+    return env.Null();
+  }
+
+  // Ensure the first argument is an number
+  if(!info[0].IsNumber()) {
+    Napi::TypeError::New(env, "First argument must be an number").ThrowAsJavaScriptException();
+    return env.Null();
+  }
+  
+  uint32_t parent_pid = info[0].As<Napi::Number>().Uint32Value();
+  uint32_t i = 0;
+  Napi::Array jsResult = Napi::Array::New(env);
+
+  // Create a snapshot of all processes in the system.
+  HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if(hSnapshot == INVALID_HANDLE_VALUE) {
+    Napi::Error::New(env, "Unable to create process snapshot.").ThrowAsJavaScriptException();
+    return jsResult;
+  }
+
+  PROCESSENTRY32 pe;
+  pe.dwSize = sizeof(PROCESSENTRY32);
+
+  // Retrieve the first process.
+  if(Process32First(hSnapshot, &pe)) {
+    do {
+      if(pe.th32ParentProcessID == parent_pid) {
+        jsResult.Set(i, Napi::Number::New(env, pe.th32ProcessID));
+        i = i+1;
+      }
+    } while(Process32Next(hSnapshot, &pe));
+  } else {
+    Napi::Error::New(env, "Unable to retrieve process information").ThrowAsJavaScriptException();
+  }
+
+  CloseHandle(hSnapshot);
+  return jsResult;
 }
 
 Napi::Object InitAll(Napi::Env env, Napi::Object exports) {

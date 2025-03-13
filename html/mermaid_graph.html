@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Graph - JSLAB | PR-DC</title>
+  <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
+  <link rel="stylesheet" type="text/css" href="../css/basic.css" />
+  <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
+  <link rel="stylesheet" type="text/css" href="../font/LatinModern.css" />
+  <link rel="stylesheet" type="text/css" href="../css/svg-viewer.css" />
+  <link rel="stylesheet" type="text/css" href="../css/mermaid-graph.css" />
+  <style id="custom-style"></style>
+</head>
+<body>
+  <div id="graph" class="graph mermaid prdc-svg-viewer no-layers"></div>
+  
+  <script>if(typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script type="text/javascript" src="../lib/jquery-3.7.0/jquery-3.7.0.min.js"></script>
+  <script type="text/javascript" src="../lib/jstree-3.3.17/jstree-3.3.17.min.js"></script>
+  <script type="text/javascript" src="../lib/d3-7.8.5/d3-7.8.5.min.js"></script>
+  <script type="text/javascript" src="../lib/PRDC_SVG_VIEWER/PRDC_SVG_VIEWER.js"></script>
+  <script type="text/javascript" src="../lib/mermaid-11.4.1/mermaid-11.4.1.min.js"></script>
+  
+  <script type="module">
+    mermaid.initialize({ 
+      flowchart: {
+        useMaxWidth: false,
+        rankSpacing: 300
+      },
+      startOnLoad: false,
+      securityLevel: 'loose'
+    });
+  </script>
+</body>
+</html>

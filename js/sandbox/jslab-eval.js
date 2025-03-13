@@ -564,24 +564,36 @@ class PRDC_JSLAB_EVAL {
 
       visitVariableDeclaration(path) {
         const node = path.node;
-        const parentType = path.parent.node.type;
+        const parent = path.parent.node;
+        const parentType = parent.type;
+        const isTopLevel = (functionDepth === 0); // Only transform top-level declarations
 
-        // Determine if we should rewrite based on kind and scope
-        // var: rewrite only if top-level (functionDepth === 0)
-        // let/const: rewrite only if top-level (parent is Program)
-        const isTopLevel = (functionDepth === 0);
+        // Handle variable declarations in for‑of and for‑in loops only if at top level.
+        if(
+          isTopLevel &&
+          (parentType === 'ForOfStatement' || parentType === 'ForInStatement') &&
+          parent.left === node
+        ) {
+          if(node.declarations.length !== 1) {
+            throw new Error("Unexpected multiple declarations in for loop");
+          }
+          // Replace the parent's left with the transformed identifier, without the var keyword.
+          parent.left = transformPatternToContext(node.declarations[0].id);
+          return false;
+        }
+
+        // Existing logic for top-level declarations:
         const shouldRewrite =
           ((node.kind === 'var') && isTopLevel) ||
           ((node.kind === 'let' || node.kind === 'const') && parentType === 'Program');
 
         if(!shouldRewrite) {
-          // Just keep as is
           this.traverse(path);
           return false;
         }
 
         const newAssignments = [];
-
+  
         node.declarations.forEach((decl) => {
           if(decl.id.type === 'ArrayPattern') {
             // Handle ArrayPattern by creating a temporary variable and individual assignments

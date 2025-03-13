@@ -15,6 +15,7 @@
 #include <chrono>
 #include <thread>
 #include <Windows.h>
+#include <tlhelp32.h>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -41,6 +42,7 @@ class NativeModule : public Napi::ObjectWrap<NativeModule> {
   Napi::Value roots(const Napi::CallbackInfo& info);
   Napi::Value cumtrapz(const Napi::CallbackInfo& info);
   Napi::Value trapz(const Napi::CallbackInfo& info);
+  Napi::Value listSubprocesses(const Napi::CallbackInfo& info);
 };
 
 }// namespace native_module_ns

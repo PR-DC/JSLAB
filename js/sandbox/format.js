@@ -518,7 +518,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {string} A JSON string representation of the object, with special handling for deep objects, circular references, and HTML escaping of strings.
    */
   safeStringify(data, depth_limit = 3) {
-    if(typeof data != 'object') {
+    if(data == null || typeof data != 'object') {
       return data;
     }
     if(typeof data.toPrettyString === 'function') {
@@ -677,6 +677,19 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   countDecimalPlaces(num) {
     return num > 1 ? 0 : (num.toString().split('.')[1] || '').match(/^0*/)[0].length+1;
+  }
+  
+  /**
+   * Replaces file links in a text with HTML span elements.
+   * @param {string} text - The multiline error log text.
+   * @returns {string} The updated text with file links replaced by HTML spans.
+   */
+  replaceEditorLinks(text) {
+    var regex = /(.+?):(\d+):(\d+):/g;
+    
+    return text.replace(regex, (match, filePath, lineNumber, charPos) => {
+      return `<span class="open-editor" file_path="${filePath}" line_number="${lineNumber}" char_pos="${charPos}">${match}</span>`;
+    });
   }
 }
 
