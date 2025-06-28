@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>%title%</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
+    <style>
+    html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+    
+    #figure-content {
+      margin: 30px auto;
+      position: relative;
+      border: 1px solid #6f6f6f;
+      box-shadow: 0px 0px 20px #c1c1c1;
+      width: max-content;
+    }
+    
+    #figure-header {
+      background: #12568a;
+      background: linear-gradient(to left, #2e85c7, #12568a);
+      color: #fff;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      max-height: 40px;
+      overflow: hidden;
+      transition: all .2s linear;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+    }
+    
+    #jslab-logo svg {
+      height: 30px;
+      float: left;
+      padding: 5px 10px;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      width: 23px;
+      background: #00000047;
+    }
+    
+    #company-logo svg {
+      filter: invert(1);
+      height: 30px;
+      float: left;
+      padding: 5px;
+      padding-left: 10px;
+      user-select: none;
+      -webkit-user-drag: none;
+      user-drag: none;
+      width: 54px;
+    }
+    
+    #title {
+      font-family: 'Helvetica';
+      font-size: 20px;
+      padding: 3px 10px;
+      margin: 7px 0;
+      float: left;
+      font-weight: 400;
+      opacity: 0.8;
+      color: #ffffff;
+      border-left: 2px solid #fff;
+      margin-left: 5px;
+    }
+    
+    #plot-cont {
+      padding-top: 40px;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="figure-content">
+      <div id="figure-header">
+        <a href="https://pr-dc.com/jslab" title="JSLAB">
+          <div id="jslab-logo">
+            <svg
+               version="1.1"
+               viewBox="0 0 630 630"
+               xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+               xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+               xmlns="http://www.w3.org/2000/svg"
+               xmlns:svg="http://www.w3.org/2000/svg"
+               xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+               xmlns:cc="http://creativecommons.org/ns#"
+               xmlns:dc="http://purl.org/dc/elements/1.1/">
+              <metadata
+                 id="metadata12">
+                <rdf:RDF>
+                  <cc:Work
+                     rdf:about="">
+                    <dc:format>image/svg+xml</dc:format>
+                    <dc:type
+                       rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+                  </cc:Work>
+                </rdf:RDF>
+              </metadata>
+              <defs
+                 id="defs10" />
+              <rect
+                 id="background"
+                 x="0"
+                 y="0"
+                 width="630"
+                 height="630"
+                 fill="#f7df1e"
+                 rx="50"
+                 ry="50" />
+              <path
+                 d="m 132.3099,593 c 42.69727,0 71.96556,-22.72597 71.96556,-72.65424 v -164.5911 h -48.2066 v 163.90243 c 0,24.1033 -9.98565,30.30129 -25.82496,30.30129 -16.52798,0 -23.41463,-11.36298 -30.989963,-24.79196 L 60,548.92539 C 71.362984,573.0287 93.744617,593 132.3099,593 Z"
+                 style="font-size:341.94px;line-height:1.05;font-family:'Neutra Text';-inkscape-font-specification:'Neutra Text';word-spacing:0px;fill:#000000;fill-opacity:1;stroke-width:8.60834"
+                 id="path850" />
+              <path
+                 d="m 318.24908,593 c 45.79626,0 79.88522,-23.75897 79.88522,-67.14491 0,-40.28695 -23.0703,-58.19225 -64.04591,-75.75323 l -12.05165,-5.16499 c -20.65997,-8.95266 -29.61263,-14.80631 -29.61263,-29.26829 0,-11.70732 8.95266,-20.65997 23.0703,-20.65997 13.77332,0 22.72597,5.85365 30.98996,20.65997 l 37.53228,-24.1033 C 368.17734,363.67432 346.14004,353 315.49441,353 c -43.0416,0 -70.58823,27.54663 -70.58823,63.70158 0,39.25394 23.0703,57.84791 57.84792,72.65422 l 12.05165,5.165 c 22.0373,9.64132 35.12195,15.49498 35.12195,32.02295 0,13.77332 -12.74032,23.75897 -32.71162,23.75897 -23.75897,0 -37.18795,-12.39598 -47.51793,-29.26829 L 230.4442,543.76039 C 244.56185,571.65136 273.48581,593 318.24908,593 Z"
+                 style="font-size:341.94px;line-height:1.05;font-family:'Neutra Text';-inkscape-font-specification:'Neutra Text';word-spacing:0px;fill:#000000;fill-opacity:1;stroke-width:8.60834"
+                 id="path852" />
+              <path
+                 d="M 435.66613,589.901 H 589.92724 V 547.54805 H 483.87273 V 355.75466 h -48.2066 z"
+                 style="font-size:341.94px;line-height:1.05;font-family:'Neutra Text';-inkscape-font-specification:'Neutra Text';word-spacing:0px;fill:#000000;fill-opacity:1;stroke-width:8.60834"
+                 id="path854" />
+            </svg>
+          </div>
+        </a>
+        <a href="https://pr-dc.com/" title="PR-DC Company">
+          <div id="company-logo">
+            <svg
+               width="160mm"
+               height="90mm"
+               viewBox="0 0 160 90"
+               version="1.1"
+               id="svg869"
+               xmlns="http://www.w3.org/2000/svg"
+               xmlns:svg="http://www.w3.org/2000/svg"
+               xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+               xmlns:cc="http://creativecommons.org/ns#"
+               xmlns:dc="http://purl.org/dc/elements/1.1/">
+              <defs
+                 id="defs863" />
+              <metadata
+                 id="metadata866">
+                <rdf:RDF>
+                  <cc:Work
+                     rdf:about="">
+                    <dc:format>image/svg+xml</dc:format>
+                    <dc:type
+                       rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+                  </cc:Work>
+                </rdf:RDF>
+              </metadata>
+              <g
+                 id="layer1">
+                <path
+                   id="path847"
+                   style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.999999px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                   d="M 483.13281 17.101562 C 483.13281 17.101562 455.74781 17.701959 428.36328 17.615234 C 425.51072 17.606164 422.57229 17.604649 419.5625 17.613281 C 374.41441 17.745451 313.17548 18.456471 280.00586 28.585938 C 219.34388 47.111121 185.96586 73.091557 158.50391 103.79688 C 153.5363 109.42942 147.05989 117.97425 139.72266 128.92188 C 143.64779 137.54078 145.61523 147.65489 145.61523 159.27539 C 145.61523 172.166 143.27648 183.00438 138.59766 191.78906 C 133.91885 200.57382 127.9503 207.49589 120.69336 212.55664 C 113.5319 217.52192 106.22722 220.81618 98.779297 222.43945 C 95.807549 223.02819 92.396307 223.51965 88.642578 223.93555 C 75.710747 253.86377 63.915338 287.36997 55.78125 322.60352 L 449.07422 322.89844 C 452.91989 288.9274 456.14589 259.97604 459.13281 232.99414 C 454.31399 221.25319 451.90039 207.64528 451.90039 192.16211 C 451.90039 165.94179 458.11321 145.11257 470.5293 129.66602 C 474.28218 95.661149 478.18692 60.495264 483.13281 17.101562 z M 539.49609 115.06445 C 519.44401 115.06445 503.26564 121.67252 490.96094 134.88867 C 478.65626 148.03972 472.50391 166.52928 472.50391 190.35742 C 472.50391 212.88348 478.62368 230.65689 490.86328 243.67773 C 503.10285 256.63347 518.72784 263.11133 537.73828 263.11133 C 553.10287 263.11133 565.76562 259.33529 575.72656 251.7832 C 585.75262 244.16601 592.91407 232.54493 597.21094 216.91992 L 569.18359 208.0332 C 566.77472 218.51498 562.80339 226.19726 557.26953 231.08008 C 551.73567 235.96289 545.12761 238.4043 537.44531 238.4043 C 527.02866 238.4043 518.56513 234.56315 512.05469 226.88086 C 505.54427 219.19856 502.28906 206.30796 502.28906 188.20898 C 502.28906 171.15168 505.57682 158.81446 512.15234 151.19727 C 518.79297 143.58007 527.41927 139.77148 538.03125 139.77148 C 545.71354 139.77148 552.22394 141.91992 557.5625 146.2168 C 562.96614 150.51367 566.51431 156.37304 568.20703 163.79492 L 596.82031 156.95898 C 593.56511 145.50064 588.68231 136.71159 582.17188 130.5918 C 571.23438 120.24023 557.00914 115.06445 539.49609 115.06445 z M 14.216797 117.50586 L 14.216797 260.66992 L 43.123047 260.66992 L 43.123047 206.66602 L 61.970703 206.66602 C 75.05665 206.66602 85.050127 205.98242 91.951172 204.61523 C 97.0293 203.50846 102.00976 201.26237 106.89258 197.87695 C 111.8405 194.42643 115.9095 189.70638 119.09961 183.7168 C 122.28971 177.72721 123.88477 170.3379 123.88477 161.54883 C 123.88477 150.15559 121.11784 140.87826 115.58398 133.7168 C 110.05013 126.49023 103.18165 121.80273 94.978516 119.6543 C 89.639971 118.222 78.181651 117.50586 60.603516 117.50586 L 14.216797 117.50586 z M 157.9082 117.50586 L 218.74805 117.50586 C 234.04754 117.50586 245.14779 118.80794 252.04883 121.41211 C 259.01499 123.95116 264.58138 128.50844 268.74805 135.08398 C 272.91471 141.65949 274.99805 149.17908 274.99805 157.64258 C 274.99805 168.38479 271.84049 177.27149 265.52539 184.30273 C 259.21025 191.26886 249.77016 195.66342 237.20508 197.48633 C 243.45506 201.1321 248.59831 205.13606 252.63477 209.49805 C 256.73635 213.86 262.23763 221.60745 269.13867 232.74023 L 286.61914 260.66992 L 252.04883 260.66992 L 231.15039 229.51758 C 223.72849 218.38483 218.65039 211.38606 215.91602 208.52148 C 213.18164 205.59178 210.2845 203.60613 207.22461 202.56445 C 204.16471 201.45769 199.31446 200.9043 192.67383 200.9043 L 186.81445 200.9043 L 186.81445 260.66992 L 157.9082 260.66992 L 157.9082 117.50586 z M 322.95312 117.50586 L 375.78516 117.50586 C 387.69921 117.50586 396.78123 118.41729 403.03125 120.24023 C 411.4297 122.7142 418.62367 127.10873 424.61328 133.42383 C 430.60285 139.73889 435.16017 147.48634 438.28516 156.66602 C 441.41018 165.78061 442.97266 177.04361 442.97266 190.45508 C 442.97266 202.23893 441.50783 212.39517 438.57812 220.92383 C 434.99745 231.34047 429.88672 239.77153 423.24609 246.2168 C 418.23308 251.09964 411.46225 254.9082 402.93359 257.64258 C 396.55341 259.66081 388.02475 260.66992 377.34766 260.66992 L 322.95312 260.66992 L 322.95312 117.50586 z M 43.123047 141.72461 L 57.087891 141.72461 C 67.504562 141.72461 74.43815 142.05013 77.888672 142.70117 C 82.576175 143.54753 86.449868 145.66341 89.509766 149.04883 C 92.569664 152.43425 94.099609 156.73112 94.099609 161.93945 C 94.099609 166.17123 92.99284 169.88216 90.779297 173.07227 C 88.630857 176.26237 85.636071 178.60612 81.794922 180.10352 C 77.953775 181.60091 70.336597 182.34961 58.943359 182.34961 L 43.123047 182.34961 L 43.123047 141.72461 z M 186.81445 141.72461 L 186.81445 178.05273 L 208.20117 178.05273 C 222.06836 178.05273 230.72721 177.4668 234.17773 176.29492 C 237.62825 175.12304 240.33009 173.10485 242.2832 170.24023 C 244.23635 167.37565 245.21289 163.79492 245.21289 159.49805 C 245.21289 154.68032 243.91081 150.80665 241.30664 147.87695 C 238.76755 144.88217 235.15428 142.99412 230.4668 142.21289 C 228.12304 141.88747 221.0918 141.72461 209.37305 141.72461 L 186.81445 141.72461 z M 351.85938 141.72461 L 351.85938 236.54883 L 373.44141 236.54883 C 381.51433 236.54883 387.34115 236.09311 390.92188 235.18164 C 395.60935 234.00976 399.48306 232.02411 402.54297 229.22461 C 405.66796 226.42511 408.20709 221.8353 410.16016 215.45508 C 412.1133 209.00977 413.08984 200.25325 413.08984 189.18555 C 413.08984 178.11784 412.1133 169.62179 410.16016 163.69727 C 408.20709 157.77282 405.47267 153.15039 401.95703 149.83008 C 398.44139 146.50976 393.98179 144.26368 388.57812 143.0918 C 384.54168 142.18033 376.63151 141.72461 364.84766 141.72461 L 351.85938 141.72461 z M 275.35742 187.93945 L 311.72266 187.93945 L 311.72266 206.12305 L 275.35742 206.12305 L 275.35742 187.93945 z "
+                   transform="scale(0.26458333)" />
+                <g
+                   aria-label="PR DC"
+                   id="text865"
+                   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:52.9167px;line-height:1.25;font-family:arial;-inkscape-font-specification:arial;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+                   transform="translate(-26.307505,-2.9264341)" />
+              </g>
+            </svg>
+          </div>
+        </a>
+        <div id="title">
+          %title%
+        </div>
+      </div>
+      <div id="plot-cont"></div>
+    </div>
+    <script src="https://cdn.plot.ly/plotly-2.24.2.min.js"></script>
+    <script>
+      var figure = %figure_data%;
+      Plotly.newPlot('plot-cont', figure);
+    </script>
+  </body>
+</html>

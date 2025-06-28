@@ -11,7 +11,7 @@ const path = require('path');
 const cp = require("child_process");
 const rimraf = require('rimraf');
 
-const { PRDC_APP_CONFIG } = require('../../config/config');
+require('../init-config.js');
 
 console.log('[make-source-code-book.js] Started');
 var t = performance.now();
@@ -20,10 +20,17 @@ var package_data = JSON.parse(fs.readFileSync('package.json'));
 var app_version = package_data.version;
 var year = new Date().getFullYear();
 
-var config = new PRDC_APP_CONFIG();
 var levels = ['\\section', '\\subsection', '\\subsubsection'];
 var latex = '';
-  
+
+var SOURCE_CODE_BOOK_FILES_EXCLUDE = config.SOURCE_CODE_BOOK_FILES_EXCLUDE.map(p => path.resolve(p));
+
+// Helper function for excluding
+function isExcluded(absolutePath) {
+  if(SOURCE_CODE_BOOK_FILES_EXCLUDE.includes(absolutePath)) return true;
+  return SOURCE_CODE_BOOK_FILES_EXCLUDE.some(dir => absolutePath.startsWith(dir + path.sep));
+}
+
 // Helper function to escape LaTeX special characters
 function escapeLatex(string) {
   if(typeof string !== 'string') {
@@ -53,6 +60,8 @@ async function buildFileStructure(pathsList) {
 
   for(const itemPath of pathsList) {
     const absolutePath = path.resolve(itemPath);
+    if(isExcluded(absolutePath)) continue;
+    
     const stats = await fs.promises.lstat(absolutePath);
 
     if(stats.isDirectory()) {
@@ -72,6 +81,8 @@ async function buildFileStructure(pathsList) {
  * @returns {Promise<Object>} - An object representing the directory structure.
  */
 async function traverseDirectory(dirPath) {
+  if(isExcluded(dirPath)) return {};
+  
   const dirContents = await fs.promises.readdir(dirPath, { withFileTypes: true });
   const dirObject = {};
 
@@ -82,13 +93,14 @@ async function traverseDirectory(dirPath) {
   // Process files first
   for(const file of files) {
     const fullPath = path.join(dirPath, file.name);
+    if(isExcluded(fullPath)) continue;
     dirObject[file.name] = await fs.promises.readFile(fullPath, 'utf-8');
   }
 
   // Then process directories
   for(const directory of directories) {
     const fullPath = path.join(dirPath, directory.name);
-    // Recursively process subdirectories
+    if(isExcluded(fullPath)) continue;
     dirObject[directory.name] = await traverseDirectory(fullPath);
   }
 

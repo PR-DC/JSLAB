@@ -29,6 +29,18 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   }
 
   /**
+   * Extract substring from file using range
+   * @param {string} filepath - Path to file
+   * @param {Array} range - Character range [start, end]
+   * @returns {string} - Extracted substring
+   */
+  getContentFromCharRange(filepath, range) {
+    const fileContent = this.readFile(filepath, "utf8");
+    const [start, end] = range;
+    return fileContent.slice(start, end);
+  }
+
+  /**
    * Writes data to a specified file synchronously. This method should overwrite the file if it already exists.
    * @param {string} file_path The path to the file where data will be written.
    * @param {Buffer|string} data The data to write to the file.
@@ -46,7 +58,16 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   deleteFile(file_path) {
     return this.jsl.env.rmSync(file_path);
   }
-
+  
+  /**
+   * Reads the contents of a directory synchronously.
+   * @param {string} folder The path to the directory.
+   * @returns {string[]|false} An array of filenames or false in case of an error.
+   */
+	readDir(...args) {
+    return this.jsl.env.readDir(...args);
+  }
+  
   /**
    * Deletes a specified file synchronously.
    * @param {string} file_path The path to the file that should be deleted.
@@ -75,6 +96,23 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   }
 
   /**
+   * Copies a file from source to destination.
+   * @param {string} source - The path to the source file.
+   * @param {string} destination - The path to the destination file.
+   */
+  copyFile(source, destination) {
+    if(comparePaths(source, destination)) {
+      return true;
+    }
+    try {
+      this.jsl.env.copyFileSync(source, destination);
+      return true;
+    } catch(err) {
+      this.jsl.error('@copyFile: ' + err);
+    }
+  }
+
+  /**
    * Lists files in a specified folder, optionally filtering by extension.
    * @param {string} folder Path to the folder.
    * @param {string} ext File extension filter.
@@ -82,7 +120,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   filesInFolder(folder, ext) {
     var obj = this;
-    var files = this.jsl.env.readdirSync(folder);
+    var files = this.jsl.env.readDir(folder);
     if(Array.isArray(files)) {
       return files
         .filter(function(file) { 
@@ -102,7 +140,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string[]|void} Array of file names.
    */
   allFilesInFolder(folder) {
-    return this.jsl.env.readdirSync(folder).reduce((acc, file) => {
+    return this.jsl.env.readDir(folder).reduce((acc, file) => {
         const file_path = this.jsl.env.pathJoin(folder, file);
         return this.jsl.env.checkDirectory(file_path)
           ? acc.concat(this.allFilesInFolder(file_path))
@@ -118,12 +156,30 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   chooseFile(options) {
     var file_path = this.jsl.env.showOpenDialogSync(options);
     if(file_path === undefined) {
-      this.jsl.env.error('@chooseFileSync: '+language.string(126));
+      this.jsl.env.error('@chooseFile: '+language.string(126));
       return [];
     }
     return file_path;
   }
-
+  
+  /**
+   * Opens a dialog for the user to choose a folder, synchronously.
+   * @param {Object} options Configuration options for the dialog.
+   * @returns {string|string[]} The selected folder path(s) or an empty array if canceled.
+   */
+  chooseFolder(options_in) {
+    var options = {
+      properties: ['openDirectory'],
+      ...options_in
+    };
+    var file_path = this.jsl.env.showOpenDialogSync(options);
+    if(file_path === undefined) {
+      this.jsl.env.error('@chooseFolder: '+language.string(126));
+      return [];
+    }
+    return file_path;
+  }
+  
   /**
    * Retrieves a default path based on a specified type.
    * @param {string} type Type of the default path (e.g., 'root', 'documents').
@@ -289,7 +345,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     this.jsl.env.makeDirectory(dest);
 
     // Read all the files and directories in the source directory
-    const entries = this.jsl.env.readdirSync(src, { withFileTypes: true });
+    const entries = this.jsl.env.readDir(src, { withFileTypes: true });
 
     // Iterate through each entry (file or directory)
     for(const entry of entries) {

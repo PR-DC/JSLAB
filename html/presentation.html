@@ -1,19 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Presentation - JSLAB | PR-DC</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
-    <link rel="stylesheet" type="text/css" href="../css/figure.css" />
-    <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
-    <link rel="stylesheet" type="text/css" href="../font/LatinModern.css" />
-    
-    <style id="dynamic-style-rules"></style>
-  </head>
-  <body>
-    <div id="slides-cont"></div>
-    
-    <script type="text/javascript" src="../lib/plotly-2.24.2/plotly-2.24.2.min.js"></script>
-    <script type="text/javascript" src="../js/windows/presentation.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Presentation - JSLAB | PR-DC</title>
+  <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
+  
+<!-- CSS files begin -->
+  %presentation_stylesheets%
+  <link rel="stylesheet" type="text/css" href="./res/internal/presentation.css" />
+  <link rel="stylesheet" type="text/css" href="./main.css" />
+<!-- CSS files end -->
+  
+  <style id="dynamic-style-rules"></style>
+</head>
+<body>
+<div id="slides-cont">
+<!-- Slides begin -->
+  <slide>
+    Slide <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
+  </slide>
+  
+  <slide>
+    Slide <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
+  </slide>
+  
+  <slide>
+    Slide <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
+  </slide>
+<!-- Slides end -->
+</div>
+  
+<!-- JS files begin -->
+  %presentation_scripts%
+  <script type="text/javascript" src="./res/internal/presentation.js"></script>
+  <script type="text/javascript" src="./main.js"></script>
+<!-- JS files end -->
+</body>
 </html>

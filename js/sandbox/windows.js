@@ -55,7 +55,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     this.jsl.ignore_output = true;
     return wid;
   }
-
+  
   /**
    * Opens the developer tools for a specified window by ID if it exists.
    * @param {string} wid - The window ID.
@@ -64,6 +64,33 @@ class PRDC_JSLAB_LIB_WINDOWS {
   openWindowDevTools(wid) {
     if(this.open_windows.hasOwnProperty(wid)) {
       return this.open_windows[wid].openDevTools();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns media source id for a specified window in the renderer process.
+   * @param {string} wid - The window ID.
+   * @returns {String|boolean} Media source id if there is window; otherwise, false.
+   */
+  getWindowMediaSourceId(wid) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].getMediaSourceId();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Starts video recording of the window.
+   * @param {string} wid - The window ID.
+   * @param {Object} - Optional settings. 
+   * @returns {Object|boolean} - Returns recorder object if there is window; otherwise, false.
+   */
+  startWindowVideoRecording(wid, opts) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].startVideoRecording(opts);
     } else {
       return false;
     }
@@ -289,6 +316,20 @@ class PRDC_JSLAB_LIB_WINDOWS {
   }
   
   /**
+   * Sets the fullscreen state of the specified window.
+   * @param {number} wid - The ID of the window.
+   * @param {number} state - The fullscreen state
+   * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setFullscreen() method.
+   */
+  setWindowFullscreen(wid, state) {
+    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].setFullscreen(state);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
    * Sets the position of the specified window.
    * @param {number} wid - The ID of the window.
    * @param {number} left - The new left position of the window.
@@ -330,6 +371,20 @@ class PRDC_JSLAB_LIB_WINDOWS {
   }
 
   /**
+   * Prints window to PDF format.
+   * @param {string} wid - The window ID.
+   * @param {Object} options - Options for printing
+   * @returns {Buffer} Generated PDF data.
+   */
+  printWindowToPdf(wid, options) {
+    if(this.open_windows.hasOwnProperty(wid)) {
+      return this.open_windows[wid].printToPdf(options);
+    } else {
+      return false;
+    }
+  }
+  
+  /**
    * Opens window with documentation
    */
   async openDocumentation(query) {
@@ -356,6 +411,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {Promise<Object>} A promise that resolves to the window object once imports are ready.
    */
   async openWindow3D(imports = []) {
+    var obj = this;
     var wid = this.openWindow('three.html');
     await this.open_windows[wid].ready;
     var context = this.open_windows[wid].context;
@@ -397,6 +453,47 @@ class PRDC_JSLAB_LIB_WINDOWS {
     context.document.body.appendChild(script);
     while(!context.imports_ready) {
       await this.jsl.non_blocking.waitMSeconds(1);
+    }
+    context.sceneToJSON = function(file_path, scene = context.scene) {
+      if(!scene) return;
+      if(!file_path) {
+        let options = {
+         title: language.currentString(144),
+         defaultPath: 'window-3d.json',
+         buttonLabel: language.currentString(144),
+         filters :[
+          {name: 'json', extensions: ['json']},
+         ]
+        };
+        file_path = obj.jsl.env.showSaveDialogSync(options);
+        if(!file_path) return;
+      }
+      var scene_json = scene.toJSON();
+      obj.jsl.env.writeFileSync(file_path, JSON.stringify(scene_json));
+    }
+    
+    context.sceneFromJSON = function(file_path) {
+      if(!file_path) {
+        var options = {
+          title: language.currentString(247),
+          buttonLabel: language.currentString(231)
+        };
+        file_path = obj.jsl.env.showOpenDialogSync(options);
+        if(file_path === undefined) {
+          obj.jsl.env.error('@openWindow3D.fromJSON: '+language.string(132)+'.');
+          return false;
+        } else {
+          file_path = file_path[0];
+        }
+      }    
+      if(!obj.jsl.file_system.existFile(pwd + file_path)) {
+        obj.jsl.env.error('@openWindow3D.fromJSON: '+language.string(248));
+        return false;
+      }
+      var data = JSON.parse(obj.jsl.env.readFileSync(pwd + file_path).toString());
+
+      const loader = new context.THREE.ObjectLoader();
+      return loader.parse(data)
     }
     return context;
   }
@@ -469,17 +566,20 @@ class PRDC_JSLAB_LIB_WINDOWS {
     while(!graph.svg_viewer) {
       await this.jsl.non_blocking.waitMSeconds(1);
     }
-    try {
-      var res = await context.mermaid.parse(graph_definition);
-      if(res) {
-        var { svg } = await context.mermaid.render('id1', graph_definition);
-        graph.innerHTML = svg;
-        graph.svg_viewer.attach();
-        graph.style.display = 'block';
+    context.showGraph = async function(graph_definition) {
+      try {
+        var res = await context.mermaid.parse(graph_definition);
+        if(res) {
+          var { svg } = await context.mermaid.render('id1', graph_definition);
+          graph.innerHTML = svg;
+          graph.svg_viewer.attach();
+          graph.style.display = 'block';
+        }
+      } catch(err) {
+        error('@showGraph: '+err);
       }
-    } catch(err) {
-      error('@showGraph: '+err);
     }
+    await context.showGraph(graph_definition);
     return context;
   }
   
@@ -561,8 +661,8 @@ class PRDC_JSLAB_WINDOW {
   }
 
   /**
-   * Opens the window with the specified file.
-   * @param {string} file - The path to the HTML file to open in the window.
+   * Opens the window with the specified file or url.
+   * @param {string} file - The path to the HTML file or url to open in the window.
    * @returns {Promise<void>} A promise that resolves when the window is opened and ready.
    */
   async open(file) {
@@ -579,7 +679,7 @@ class PRDC_JSLAB_WINDOW {
       this._onReady();
     }
   }
-
+  
   /**
    * Shows the window.
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was shown successfully, or `false` if the window ID is invalid.
@@ -695,6 +795,16 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.promiseOrStoped(this.ready);
     return this.#jsl.env.setWindowOpacity(this.wid, opacity);
   }
+
+  /**
+   * Sets the fullscreen state of the window.
+   * @param {number} state - State of fullscreen
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the fullscreen was set successfully, or `false` if the window ID is invalid.
+   */
+  async setFullscreen(state) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.setWindowFullscreen(this.wid, state);
+  }
   
   /**
    * Sets the title of the current window.
@@ -704,6 +814,16 @@ class PRDC_JSLAB_WINDOW {
   async setTitle(title) {
     await this.#jsl.promiseOrStoped(this.ready);
     return this.#jsl.env.setWindowTitle(this.wid, title);
+  }
+
+  /**
+   * Prints the current window to PDF.
+   * @param {Object} options - Options for printing.
+   * @returns {Buffer} Generated PDF data.
+   */
+  async printToPdf(options) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.printWindowToPdf(this.wid, options);
   }
   
   /**
@@ -742,6 +862,25 @@ class PRDC_JSLAB_WINDOW {
     return this.#jsl.env.openWindowDevTools(this.wid);
   }
 
+  /**
+   * Returns media source id for this window.
+   * @returns {String|boolean} Media source id if there is window; otherwise, false.
+   */
+  async getMediaSourceId() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return this.#jsl.env.getWindowMediaSourceId(this.wid);
+  }
+
+  /**
+   * Starts video recording of this window.
+   * @param {Object} - Optional settings. 
+   * @returns {Object|boolean} - Returns recorder object.
+   */
+  async startVideoRecording(opts) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.device.startVideoRecording(this.#jsl.env.getWindowMediaSourceId(this.wid), opts);
+  }
+  
   /**
    * Appends a script to the document head.
    * @param {string} script_path The script's URL.

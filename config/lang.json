@@ -106,7 +106,7 @@
   },
   "22": {
     "en": "Close help",
-    "rs": "Zatvori pomoć",
+    "rs": "Zatvori pomoć",
     "rsc": "Затвори помоћ"
   },
   "23": {
@@ -686,7 +686,7 @@
   },
   "138": {
     "en": "This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.",
-    "rs": "Ovaj program se distribuira u nadi da će biti koristan, ali BEZ IKAKVE GARANCIJE; čak i bez implicitne garancije o PRODAJNOSTI ili PRIKLADNOSTI ZA ODREĐENU NAMENU. Pogledajte GNU manje opštu javnu licencu za više detalja.",
+    "rs": "Ovaj program se distribuira u nadi da će biti koristan, ali BEZ IKAKVE GARANCIJE; čak i bez implicitne garancije o PRODAJNOSTI ili PRIKLADNOSTI ZA ODREĐENU NAMENU. Pogledajte GNU manje opštu javnu licencu za više detalja.",
     "rsc": "Овај програм се дистрибуира у нади да ће бити користан, али БЕЗ ИКАКВЕ ГАРАНЦИЈЕ; чак и без имплицитне гаранције о ПРОДАЈНОСТИ или ПРИКЛАДНОСТИ ЗА ОДРЕЂЕНУ НАМЕНУ. Погледајте ГНУ мање општу јавну лиценцу за више детаља."
   },
   "139": {
@@ -1106,7 +1106,7 @@
   },
   "222": {
     "en": "Unable to find audio/video device!",
-    "rs": "Nije moguće pronaći audio/video uređaj!",
+    "rs": "Nije moguće pronaći audio/video uređaj!",
     "rsc": "Није могуће пронаћи аудио/видео уређај!"
   },
   "223": {
@@ -1173,5 +1173,70 @@
     "en": "Unknown method!",
     "rs": "Nepoznati metod!",
     "rsc": "Непознати метод!"
+  },
+  "236": {
+    "en": "Save video",
+    "rs": "Sačuvajte video",
+    "rsc": "Сачувајте видео"
+  },
+  "237": {
+    "en": "Unable to check for update without internet.",
+    "rs": "Nije moguće proveriti da li postoji novija verzija bez interneta.",
+    "rsc": "Није могуће проверити да ли постоји новија верзија без интернета."
+  },
+  "238": {
+    "en": "Update available at: ",
+    "rs": "Novija verzija dostupna na: ",
+    "rsc": "Новија верзија доступна на: "
+  },
+  "239": {
+    "en": "Choose presentation folder",
+    "rs": "Izaberi folder prezentacije",
+    "rsc": "Изабери фолдер презентације"
+  },
+  "240": {
+    "en": "Invalid presentation folder!",
+    "rs": "Neispravan folder prezentacije!",
+    "rsc": "Неисправан фолдер презентације!"
+  },
+  "241": {
+    "en": "Packed presentation available at: ",
+    "rs": "Spakovana prezentacija je dostupna na adresi: ",
+    "rsc": "Спакована презентација је доступна на адреси: "
+  },
+  "242": {
+    "en": "Presentation display",
+    "rs": "Prikaz prezentacije",
+    "rsc": "Приказ презентације"
+  },
+  "243": {
+    "en": "Presentation code",
+    "rs": "Kod prezentacije",
+    "rsc": "Код презентације"
+  },
+  "244": {
+    "en": "PDF presentation available at: ",
+    "rs": "PDF prezentacija je dostupna na adresi: ",
+    "rsc": "PDF презентација је доступна на адреси: "
+  },
+  "245": {
+    "en": "Fold slides",
+    "rs": "Preklopi slajdove",
+    "rsc": "Преклопи слајдове"
+  },
+  "246": {
+    "en": "Unfold slides",
+    "rs": "Otklopi slajdove",
+    "rsc": "Отклопи слајдове"
+  },
+  "247": {
+    "en": "Choose JSON file",
+    "rs": "Izaberite JSON dokument",
+    "rsc": "Изаберите JSON документ"
+  },
+  "248": {
+    "en": "Invalid file!",
+    "rs": "Neispravan dokument!",
+    "rsc": "Неисправан документ!"
   }
 } 

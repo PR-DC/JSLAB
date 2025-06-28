@@ -438,9 +438,9 @@ class PRDC_JSLAB_PLOTER {
       layout.margin.t = 40;
     }
     
-    if(plot.hasOwnProperty('legend_state') && 
-        ['on', 'off', 1, 0].includes(plot.legend_state)) {
-      layout.showlegend = plot.legend_state == 'on' || plot.legend_state;
+    if(plot.hasOwnProperty('legend_state_val') && 
+        ['on', 'off', 1, 0].includes(plot.legend_state_val)) {
+      layout.showlegend = plot.legend_state_val == 'on' || plot.legend_state_val;
     }
     
     if(figure.layout_3d) {
@@ -598,7 +598,7 @@ class PRDC_JSLAB_PLOTER {
       context_plot.resize();
     }
   }
-  
+
   /**
    * Updates plot data for a specified figure.
    * @param {string} fid - The identifier of the figure to update.
@@ -611,7 +611,21 @@ class PRDC_JSLAB_PLOTER {
       return;
     }
     var figure = this.jsl.figures.open_figures[fid];
-    figure.context.plot.restyle(traces, [N]);
+    figure.context.plot.updateData(traces, N);
+  }
+  
+  /**
+   * Updates plot data for a specified figure.
+   * @param {string} fid - Identifier of the figure to update.
+   * @param {Object|Object[]} data - Single trace or array of traces, each with an `id` and properties to restyle.
+   */
+  updateDataById(fid, data) {
+    if(!this.jsl.figures.open_figures.hasOwnProperty(fid)) {
+      this.jsl.env.error('@ploter/updateDataById: '+language.string(172));
+      return;
+    }
+    var figure = this.jsl.figures.open_figures[fid];
+    figure.context.plot.updateDataById(data);
   }
   
   /**
@@ -641,6 +655,163 @@ class PRDC_JSLAB_PLOTER {
     if(plot_cont) {
       plot_cont.remove();
     }
+  }
+  
+  /**
+   * Sets the plot data from JSON.
+   * @param {number} fid - The identifier for the figure to update.
+   * @param {Array} data Data for the plot.
+   */
+  async fromJSON(fid, data) {
+    var figure = this.jsl.figures.open_figures[fid];
+    var plot = figure.plot;
+    var context_plot = figure.context.plot;
+    
+    var plot_cont = figure.dom.querySelector('#figure-content .plot-cont');
+    if(!plot_cont) {
+      context_plot.setCont();
+    }
+
+    plot.traces = data.data;
+    this._JsonToOptions(figure, data);
+    await context_plot.fromJSON(data);
+  }
+  
+  /**
+   * Sets the plot data from JSON.
+   * @param {Array} fig Data for the plot.
+   * @returns {Boolean} - Returns true if the figure is 3D.
+   */
+  _is3DFigure(fig) {
+    var types_3d = new Set([
+      'scatter3d', 'surface', 'mesh3d',
+      'cone', 'streamtube', 'volume', 'isosurface'
+    ]);
+    var trace_is_3d = fig.data?.some(t => types_3d.has(t.type));
+    var layout_has_scene = Object.keys(fig.layout || {})
+                                 .some(k => k.startsWith('scene'));
+    return trace_is_3d || layout_has_scene;
+  }
+  
+  /**
+   * Re-creates plot.options and the extra “synthetic” fields
+   * (title_val, xlim_val, …) from a saved Plotly figure JSON.
+   *
+   * @param {Object} figure  – runtime figure wrapper (has .plot, .dom, …)
+   * @param {Object} data    – JSON produced by Plotly.toJSON / graphJson
+   */
+  _JsonToOptions(figure, data) {
+    var plot = figure.plot;
+    var layout = data.layout ?? {};
+
+    figure.layout_3d = this._is3DFigure(data);
+
+    figure.dom.getElementById('figure-menu').className =
+        figure.layout_3d ? 'figure-3d' : 'figure-2d';
+
+    if(!plot.axis_style_val) {
+      plot.axis_style_val = figure.layout_3d ? 'equal' : 'normal';
+    }
+
+    var options = {};
+
+    if(typeof layout.showlegend === 'boolean') {
+      options.showLegend      = layout.showlegend;
+      plot.legend_state_val   = layout.showlegend ? 'on' : 'off';
+    }
+
+    if(layout.legend && Object.keys(layout.legend).length) {
+      var lg = JSON.parse(JSON.stringify(layout.legend));
+      options.legend = lg;
+
+      if(lg.orientation)
+        options.legendOrientation =
+          lg.orientation === 'h' ? 'horizontal' : 'vertical';
+
+      {
+        var { x=0, y=0 } = lg;
+        var outsideX = x < 0 || x > 1;
+        var outsideY = y < 0 || y > 1;
+
+        var dirNS = y <= (outsideY ? -0.02 : 0.02) ? 'south'
+                    : y >= (outsideY ? 1.02 : 0.98) ? 'north' : '';
+        var dirEW = x <= (outsideX ? -0.02 : 0.02) ? 'west'
+                    : x >= (outsideX ? 1.02 : 0.98) ? 'east' : '';
+
+        let loc = (dirNS + dirEW) || 'north';
+        if (outsideX || outsideY) loc += 'outside';
+        options.legendLocation = loc.toLowerCase();
+      }
+    }
+
+    if(figure.layout_3d) {
+      var sc = layout.scene ?? {};
+      if(sc.xaxis?.range) options.xlim = plot.xlim_val = [...sc.xaxis.range];
+      if(sc.yaxis?.range) options.ylim = plot.ylim_val = [...sc.yaxis.range];
+      if(sc.zaxis?.range) options.zlim = plot.zlim_val = [...sc.zaxis.range];
+    } else {
+      if(layout.xaxis?.range) options.xlim = plot.xlim_val = [...layout.xaxis.range];
+      if(layout.yaxis?.range) options.ylim = plot.ylim_val = [...layout.yaxis.range];
+    }
+
+    if(layout.font)   options.font   = JSON.parse(JSON.stringify(layout.font));
+    if(layout.margin) {
+      var {t, b, l, r} = layout.margin;
+      options.margin = {
+        ...(t != null && { top: t }),
+        ...(b != null && { bottom: b }),
+        ...(l != null && { left: l }),
+        ...(r != null && { right: r })
+      };
+    }
+
+    if(layout.title?.text) plot.title_val  = layout.title.text;
+
+    if(figure.layout_3d) {
+      var sc = layout.scene ?? {};
+      if(sc.xaxis?.title?.text) plot.xlabel_val = sc.xaxis.title.text;
+      if(sc.yaxis?.title?.text) plot.ylabel_val = sc.yaxis.title.text;
+      if(sc.zaxis?.title?.text) plot.zlabel_val = sc.zaxis.title.text;
+    } else {
+      if(layout.xaxis?.title?.text) plot.xlabel_val = layout.xaxis.title.text;
+      if(layout.yaxis?.title?.text) plot.ylabel_val = layout.yaxis.title.text;
+    }
+
+    if(figure.layout_3d) {
+      var sc = layout.scene ?? {};
+
+      if(sc.aspectratio) {
+        var {x = 1, y = 1, z = 1} = sc.aspectratio;
+        var minAR = Math.min(x,y,z), maxAR = Math.max(x,y,z);
+        var approxEqual = (maxAR - minAR) < 1e-6;
+        plot.axis_style_val = approxEqual ? 'equal' : 'normal';
+      }
+
+      if(sc.camera?.eye) {
+        var {x: ex = 1, y: ey = 1, z: ez = 1} = sc.camera.eye;
+        var radius = Math.hypot(ex, ey, ez);
+        var azimuth = (Math.atan2(ey, ex) * 180 / Math.PI + 360) % 360;
+        var elevation = Math.asin(ez / radius) * 180 / Math.PI;
+        plot.view_val = [azimuth, elevation];
+
+        if(sc.aspectratio && plot.xlim_val && plot.ylim_val && plot.zlim_val) {
+          var dx = Math.abs(plot.xlim_val[1] - plot.xlim_val[0]);
+          var dy = Math.abs(plot.ylim_val[1] - plot.ylim_val[0]);
+          var dz = Math.abs(plot.zlim_val[1] - plot.zlim_val[0]);
+          var maxRange = Math.max(dx, dy, dz);
+          var intrinsicAR = { x: dx/maxRange, y: dy/maxRange, z: dz/maxRange };
+          var {x: ax = 1, y: ay = 1, z: az = 1} = sc.aspectratio;
+          var zoom = (ax/(intrinsicAR.x || 1) +
+                        ay/(intrinsicAR.y || 1) +
+                        az/(intrinsicAR.z || 1)) / 3;
+          plot.zoom_val = zoom;
+        }
+      }
+    } else {
+      plot.axis_style_val =
+        layout.yaxis?.scaleanchor === 'x' ? 'equal' : 'normal';
+    }
+    figure.plot.options = options;
   }
 }
 

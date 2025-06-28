@@ -20,7 +20,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - Assistant - Create a ChatGPT API-based chatbot to assist with programming by answering questions about which function to use for specific tasks (Custom GPT).
 
-- Implement `openSerialTerminal` with window from `openTerminal` that includes a message window and a data input area. It should allow us to pass an encoder and decoder to use SCBP or other protocols.
+- ~~Implement `openSerialTerminal` with window from `openTerminal` that includes a message window and a data input area. It should allow us to pass an encoder and decoder to use SCBP or other protocols.~~
 
 - Create additional examples, such as graphics, to cover documentation gaps.
 
@@ -38,7 +38,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - Adjust plot legend width to work better with Latin Modern Math font.
 
-- Utilize Arduino CLI.
+- ~~Utilize Arduino CLI.~~
 
 - Enable saving and loading of the workspace; investigate how MATLAB's save/load functions work. For custom classes, save the definition location and load it if possible (try using `flatted`). For built-in classes like matrices, save only the name. Consider a `saveObject` function to store the class type and last known path to load with `loadClass` or inform the user if unknown.
 
@@ -46,7 +46,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - Enable saving and loading of objects using [class-transformer](https://github.com/typestack/class-transformer).
 
-- Create figures with UI controls.
+- ~~Create figures with UI controls.~~
 
 - Implement a LaTeX editor and compiler (requires MiKTeX path).
 
@@ -58,13 +58,13 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - Write additional unit tests.
 
-- Add a "Check for Updates" feature.
+- ~~Add a "Check for Updates" feature.~~
 
 ---
 
 ## 💡 Ideas / Future Enhancements
 
-- Module for interactive presentations.
+- ~~Module for interactive presentations.~~
 
 - Implement [SunCalc](https://github.com/mourner/suncalc).
 

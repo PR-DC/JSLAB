@@ -52,3 +52,12 @@
   outline: 1px solid grey;
   color: black !important;
 }
+
+.cm-s-notepadpp span.cm-tag, .cm-s-notepadpp span.cm-def {
+  color: #0000ff;
+}
+
+.cm-s-notepadpp span.cm-attribute, .cm-s-notepadpp span.cm-qualifier {
+  color: #ff2324ff;
+}
+

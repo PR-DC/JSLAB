@@ -8,7 +8,7 @@
 // Modules
 // --------------------
 const helper = require("../js/helper.js");
-const { PRDC_APP_CONFIG } = require('../config/config');
+require("../js/init-config.js");
 const { PRDC_JSLAB_LANGUAGE } = require('../js/language');
 
 global.app_path = process.argv.find(e => e.startsWith('--app-path=')).split('=')[1].replace(/\\js\\?$/, '');
@@ -16,9 +16,8 @@ global.app_path = process.argv.find(e => e.startsWith('--app-path=')).split('=')
 const { PRDC_JSLAB_LIB } = require('../js/sandbox/jslab');
 
 // Global variables
-var config = new PRDC_APP_CONFIG();
 global.language = new PRDC_JSLAB_LANGUAGE();
-var jsl = new PRDC_JSLAB_LIB(config);
+var jsl = new PRDC_JSLAB_LIB();
 
 if(config.TEST) {
   const { PRDC_JSLAB_TESTER } = require("../js/tester.js");

@@ -599,6 +599,95 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
     
     return { win, stop, reset };
   }
+  
+  /**
+   * Records video from the specified canvas element, webcam deviceId, or desktop sourceId and returns a MediaRecorder augmented with an async stopRecording() that finalizes and saves the file. 
+   * @param {(HTMLCanvasElement|string)} source - Canvas element, webcam deviceId, or desktop sourceId to capture. 
+   * @param {Object} [opts={}] - Optional settings: type ('canvas' | 'webcam' | 'desktop'), fps, mimeType, and videoBitsPerSecond. 
+   * @returns {MediaRecorder} - MediaRecorder that streams the capture and provides a helper to stop and save.
+   */
+  async startVideoRecording(source, opts = {}) {
+    var obj = this;
+    var preferredMime = 'video/mp4;codecs="avc1.640028"';
+    var fallbackMime  = 'video/webm;codecs=vp9,opus';
+
+    var standardMimeType = MediaRecorder.isTypeSupported(preferredMime) ? 
+      preferredMime : fallbackMime;
+    
+    var stream;
+    if(opts.type == 'canvas') {
+      stream = source.captureStream(opts.fps);
+    } else {
+      var constraints;
+      if(opts.type === 'webcam') {
+        constraints = {
+          video: { 
+            deviceId: { exact: source },
+            ...opts.constrains_opts
+          },
+          audio: false
+        };
+      } else {
+        constraints = {
+          video: {
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: source
+            },
+            ...opts.constrains_opts
+          },
+          audio: false
+        };
+      }
+      try {
+        stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+      } catch(err) {
+        this.jsl._console.log(err);
+        this.jsl._console.log(constraints);
+        this.jsl.env.error('@startVideoRecording: '+language.string(222));
+      }
+    }
+
+    var mimeType = opts.mimeType || standardMimeType;
+    var ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    var recorder = new MediaRecorder(stream, {
+      mimeType: mimeType,
+      videoBitsPerSecond: opts.videoBitsPerSecond || 8_000_000
+    });
+    
+    var chunks = [];
+    recorder.ondataavailable = function(e) {
+      chunks.push(e.data)
+    }
+    
+    recorder.onstop = async function() {
+      var blob = new Blob(chunks, { type: mimeType });
+      var buffer = Buffer.from(await blob.arrayBuffer());
+
+      var options = {
+       title: language.currentString(236),
+       buttonLabel: language.currentString(236),
+       filters :[
+        {name: ext, extensions: [ext]},
+       ]
+      };
+      var video_path = obj.jsl.env.showSaveDialogSync(options);
+      if(video_path) {
+        obj.jsl.env.writeFileSync(video_path, buffer);
+      }
+    }
+    
+    var recording = true;
+    recorder.start(1000);
+    
+    recorder.stopRecording = async function() {
+      if(recording) {
+        recording = false;
+        recorder.stop();
+      }
+    }
+    return recorder;
+  }
 }
 
 exports.PRDC_JSLAB_LIB_DEVICE = PRDC_JSLAB_LIB_DEVICE;

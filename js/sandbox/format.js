@@ -691,6 +691,34 @@ class PRDC_JSLAB_LIB_FORMAT {
       return `<span class="open-editor" file_path="${filePath}" line_number="${lineNumber}" char_pos="${charPos}">${match}</span>`;
     });
   }
+  
+  /**
+   * Checks that an input contains a finite number
+   * @param {HTMLInputElement} n  Target input element.
+   * @returns {boolean} True when the value is valid.
+   */
+  numberValidator(n) {
+    var str = n.value.trim();
+    var num = Number(str);
+    return str !== '' && Number.isFinite(num);
+  }
+  
+  /**
+   * Checks that an input contains a finite number
+   * and—if supplied—is within the inclusive range [min, max].
+   * @param {HTMLInputElement} n  Target input element.
+   * @param {number} [min]        Minimum allowed value (optional).
+   * @param {number} [max]        Maximum allowed value (optional).
+   * @returns {boolean}           True when the value is valid.
+   */
+  limitedNumberValidator(n, min, max) {
+    var str = n.value.trim();
+    var num = Number(str);
+    if(str === '' || !Number.isFinite(num)) return false;
+    if(min !== undefined && num < min) return false;
+    if(max !== undefined && num > max) return false;
+    return true;
+  }
 }
 
 exports.PRDC_JSLAB_LIB_FORMAT = PRDC_JSLAB_LIB_FORMAT;

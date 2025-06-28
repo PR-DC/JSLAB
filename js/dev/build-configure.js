@@ -10,12 +10,10 @@
 const fs = require('fs');
 
 global.process_arguments = process.argv;
-const { PRDC_APP_CONFIG } = require('../../config/config');
+require('../init-config.js');
 
 console.log('[build-configure.js] Started');
 var t = performance.now();
-
-var config = new PRDC_APP_CONFIG();
 
 // Change package.json
 console.log('Changing package.json...');

@@ -8,6 +8,16 @@ body {
   padding-top: 5px;
 }
 
+sup {
+  vertical-align: super;
+  font-size: smaller;
+}
+
+sub {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
 button.ui {
   text-align: center;
   text-transform: uppercase;
@@ -60,6 +70,14 @@ label.ui {
   font-size: 14px;
   margin-bottom: 3px;
   margin-left: 5px;
+}
+
+input.ui.warning {
+  border-color: #fff800!important;
+}
+
+input.ui.error {
+  border-color: #f00!important;
 }
 
 select.ui, input.ui, button.ui, div.result.ui {
@@ -183,7 +201,7 @@ li.ui:hover {
   display: flex;
   flex-flow: column-reverse;
   position: relative;
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
 .ui.float-select {
@@ -201,16 +219,20 @@ li.ui:hover {
 .ui label.float-label {
   pointer-events: none;
   position: absolute;
-  top: -13px;
+  top: -11px;
   margin-left: 12px!important;
   padding: 1px 8px;
   border-radius: 3px;
+  background: #fff;
+}
+
+.ui.options-cont .ui label.float-label {
   color: #777!important;
   font-weight: bold;
   background: #eee;
 }
 
-.ui.float-select label.float-label {
+.ui.options-cont .ui.float-select label.float-label {
   color: #777;
   font-weight: bold;
   background: #eee;
@@ -255,6 +277,14 @@ li.ui:hover {
 .ui.float-input textarea:-webkit-autofill + label.float-label {
   transform: translate(0, 0) scale(1);
   cursor: pointer;
+}
+
+.ui.options-cont .ui.float-input input:not(:placeholder-shown) + label.float-label,
+.ui.options-cont .ui.float-input input:focus + label.float-label,
+.ui.options-cont .ui.float-input textarea:not(:placeholder-shown) + label.float-label,
+.ui.options-cont .ui.float-input textarea:focus + label.float-label,
+.ui.options-cont .ui.float-input input:-webkit-autofill + label.float-label
+.ui.options-cont .ui.float-input textarea:-webkit-autofill + label.float-label {
   background: #eee;
 }
 
@@ -264,10 +294,18 @@ li.ui:hover {
 .ui.float-input textarea:focus + label.float-label,
 .ui.float-input input:-webkit-autofill + label.float-label,
 .ui.float-input textarea:-webkit-autofill + label.float-label{
+  display: inline-block;
+}
+
+.ui.options-cont .ui.float-input input:not(:placeholder-shown) + label.float-label,
+.ui.options-cont .ui.float-input input:focus + label.float-label,
+.ui.options-cont .ui.float-input textarea:not(:placeholder-shown) + label.float-label,
+.ui.options-cont .ui.float-input textarea:focus + label.float-label,
+.ui.options-cont .ui.float-input input:-webkit-autofill + label.float-label,
+.ui.options-cont .ui.float-input textarea:-webkit-autofill + label.float-label{
   color: #777!important;
   font-weight: bold;
   background: #eee;
-  display: inline-block;
 }
 
 .ui.options-cont ::placeholder, 
@@ -369,6 +407,34 @@ li.ui:hover {
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
+}
+
+.ui.float-input input[type="text"], 
+.ui.float-input input[type="number"], 
+.ui.float-input input[type="submit"], 
+.ui.float-input input[type="password"], 
+.ui.float-input textarea, 
+.ui.float-input select, 
+.ui.float-input button {
+  font-family: 'Roboto';
+  border: 1px solid #ccc;
+  color: #333;
+  font-size: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  width: calc(100% - 24px);
+  transition: all 0.2s linear;
+  -webkit-transition: all 0.2s linear;
+  border-radius: 3px;
+  -webkit-appearance: none;
+  background: #fff;
+  font-family: 'Roboto';
+  -webkit-box-sizing:content-box;
+  box-sizing:content-box;
+  cursor: pointer;
+  line-height: 18px;
 }
 
 .ui.options-cont input[type="text"], 
@@ -503,4 +569,156 @@ li.ui:hover {
 .ui.panel::-webkit-scrollbar-button {
   width:0;
   height:0;
+}
+
+.ui.tab-names {
+  display: flex;
+  gap: 5px;
+  margin-bottom: -1px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.ui.tab-name {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  border-radius: 5px 5px 0 0;
+  background: #f5f5f5;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ui.tab-name.active {
+  border-bottom: none;
+  background: #fff;
+}
+
+.ui.tab {
+  display: none;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  background: #fff;
+  margin: 0 5px 5px 5px;
+}
+
+.ui.divider {
+  border-bottom: 1px solid #ccc;
+  margin: 5px;
+}
+
+.ui.group {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  background: #fff;
+  margin: 5px;
+  margin-top: 10px;
+}
+
+.ui.group-title {
+  width: max-content;
+  padding: 5px 10px;
+  margin-top: -18px;
+  background: #fff;
+  margin-left: 5px;
+}
+
+.ui.columns-container {
+  display: flex;
+}
+
+.ui.columns-container .column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ui.columns-container .row {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 5px;
+}
+
+.ui.text-center {
+  text-align: center;
+}
+
+.ui.float-input.text-center input {
+  text-align: center;
+}
+
+.ui.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  width: 300px;
+  outline: none;
+  background: #ddd;
+  border-radius: 5px;
+  z-index: 2;
+  position: relative;
+}
+
+.ui.slider.vertical {
+  writing-mode: vertical-lr;
+  height: 300px;
+  width: 20px;
+  display: inline-block;
+  transform: rotate(180deg);
+}
+
+.ui.slider::-webkit-slider-runnable-track {
+  cursor: pointer;
+}
+
+.ui.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 60px;
+  background-color: #2e85c7;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.4s;
+  border: 2px solid #fff;
+  background-image: linear-gradient(to right, transparent 0 2px, #ffffff75 2px 4px, transparent 4px 6px, #ffffff75 6px 8px, transparent 8px 10px, #ffffff75 10px 12px, transparent 12px 14px);
+  background-repeat: no-repeat;
+  background-size: 14px 90% ;
+  background-position: center;
+}
+
+.ui.slider.vertical::-webkit-slider-thumb {
+  width: 60px;
+  height: 30px;
+  background-image: linear-gradient(to bottom, transparent 0 2px, #ffffff75 2px 4px, transparent 4px 6px, #ffffff75 6px 8px, transparent 8px 10px, #ffffff75 10px 12px, transparent 12px 14px);
+  background-size: 90% 14px;
+}
+
+.ui.slider:disabled::-webkit-slider-thumb {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);
+  background-size: 30px 30px;
+  background-repeat: repeat;
+}
+
+.ui.slider-wrapper {
+  position: relative;
+  text-align: center;
+}
+
+.ui.slider-wrapper .slider-midpoint.vertical {
+  background: #999;
+  height: 4px;
+  width: 100%;
+  top: 50%;
+  left: 50%;
+  position: absolute;
+  transform: translateY(-50%) translatex(-50%);
+  z-index: 0;
+  border-radius: 2px;
 }

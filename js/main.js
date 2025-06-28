@@ -6,7 +6,7 @@
  */
 
 const { app, BrowserWindow, ipcMain, dialog, powerSaveBlocker, shell, 
-  MenuItem , desktopCapturer, screen } = require('electron');
+  MenuItem , desktopCapturer, screen, webContents } = require('electron');
 
 const contextMenu = require('electron-context-menu');
 const fs = require('fs');
@@ -29,10 +29,6 @@ class PRDC_JSLAB_MAIN {
    */
   constructor() {
     var obj = this;
-    this.show_inspect_element = false;
-    if(!config.PRODUCTION && config.DEBUG) {
-      this.show_inspect_element = true;
-    }
 
     this.store = new Store();
     this.debounce_save_win_time = config.WIN_SAVE_DEBOUNCE_TIME;
@@ -71,45 +67,57 @@ class PRDC_JSLAB_MAIN {
       Bugsnag.start({ apiKey: config.BUGSNAG_API_KEY });
     }
     
-    function canToggleComment(parameters) {
-      if(parameters.formControlType == 'text-area' &&
-          parameters.pageURL.endsWith('/editor.html')) {
-        return true;  
-      }
-      return false;
-    }
-    
     // Context menu
     contextMenu({
-      append: function(default_actions, parameters) {
+      append: function(default_actions, p, win) {
         return [
           new MenuItem({
             label: 'Toggle Comment',
             click: function() {
               obj.win_editor.send('EditorWindow', 'toggle-comment');
             },
-            visible: canToggleComment(parameters)
+            visible: p.formControlType == 'text-area' &&
+              p.pageURL.endsWith('/editor.html')
+          }),
+          new MenuItem({
+            label: 'Go To Code',
+            click: function() {
+              win.webContents.send('PresentationEditorWindow', 'go-to-code');
+            },
+            visible: p.pageURL.endsWith('/presentation-editor.html') && 
+              p.frameURL != p.pageURL
+          }),
+          new MenuItem({
+            label: 'Go To Slide',
+            click: function() {
+              win.webContents.send('PresentationEditorWindow', 'go-to-slide');
+            },
+            visible: p.formControlType == 'text-area' &&
+              p.titleText == 'html' &&
+              p.pageURL.endsWith('/presentation-editor.html')
           }),
           new MenuItem({
             role: 'selectAll',
             label: 'Select All',
-            visible: parameters.editFlags.canSelectAll
+            visible: p.editFlags.canSelectAll
           }),
           new MenuItem({
             role: 'delete',
             label: 'Delete',
-            visible: parameters.editFlags.canDelete
+            visible: p.editFlags.canDelete
           })
         ];
       },
       showLookUpSelection: false,
       showSearchWithGoogle: false,
       showCopyImage: false,
-      showInspectElement: obj.show_inspect_element
+      showInspectElement: false
     });
-   
+  
     // Disable renderer backgrounding
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
+    app.commandLine.appendSwitch('disable-background-timer-throttling');
+    app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch("disable-http-cache");
 
     // Prevent sleep
@@ -253,26 +261,24 @@ class PRDC_JSLAB_MAIN {
     
     // Sub windows
     this.win_sandbox.webContents.setWindowOpenHandler(function(handler) {
-      if(handler.url.startsWith('file://')) {
-        return {
-          action: 'allow',
-          overrideBrowserWindowOptions: {
-            minWidth: 250,
-            minHeight: 50,
-            icon: obj.app_icon, // png to ico https://icoconvert.com/
-            show: false,
-            backgroundColor: '#ffffff',
-            opacity: obj.win_opacity,
-            webPreferences: {
-              nodeIntegration: true,
-              nodeIntegrationInWorker: true,
-              contextIsolation: false,
-              backgroundThrottling: false
-            }
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          minWidth: 250,
+          minHeight: 50,
+          icon: obj.app_icon, // png to ico https://icoconvert.com/
+          show: false,
+          backgroundColor: '#ffffff',
+          opacity: obj.win_opacity,
+          webPreferences: {
+            nodeIntegration: true,
+            nodeIntegrationInWorker: true,
+            contextIsolation: false,
+            backgroundThrottling: false,
+            webviewTag: true
           }
-        };
-      }
-      return { action: 'deny' };
+        }
+      };
     }); 
     
     this.sandbox_sub_wins = {};
@@ -293,7 +299,26 @@ class PRDC_JSLAB_MAIN {
           obj.openDevTools(sub_win);
         }
       });
-      
+     
+      sub_win.webContents.on('did-attach-webview', (_e, wc) => {
+        if(wc.getUserAgent() == 'presentation-editor-preview') {
+          contextMenu({ 
+            window: wc,
+            append: function(default_actions, p, win) {
+              return [
+                new MenuItem({
+                  label: 'Go To Slide',
+                  click: function() {
+                    sub_win.webContents.send('PresentationEditorWindow', 'go-to-code');
+                  },
+                  visible: true
+                })
+              ]
+            }
+          });
+        }
+      });
+  
       // Close all windows
       sub_win.on('close', function(e) {
         e.preventDefault();
@@ -301,6 +326,7 @@ class PRDC_JSLAB_MAIN {
         sub_win.hide();
         sub_win.forClose = true;
       });
+      
     });
     
     this.win_sandbox.webContents.on('render-process-gone', function(event, details) {
@@ -419,6 +445,14 @@ class PRDC_JSLAB_MAIN {
     ipcMain.on('get-desktop-sources', async function(e) {
       e.returnValue = await desktopCapturer.getSources({ types: ['screen', 'window'] });
     });
+
+    ipcMain.handle('print-to-pdf', async function(e, options) {
+      return await e.sender.printToPDF(options);
+    });
+    
+    ipcMain.handle('print-sub-win-to-pdf', async function(e, wid, options) {
+      return await obj.sandbox_sub_wins[wid].webContents.printToPDF(options);
+    });
     
     ipcMain.on('dialog', function(e, method, params) {
       if(!params || params && !params.hasOwnProperty('icon')) {
@@ -490,6 +524,13 @@ class PRDC_JSLAB_MAIN {
           if(obj.sandbox_sub_wins.hasOwnProperty(data)) {
             obj.openDevTools(obj.sandbox_sub_wins[data]);
             retval = true;
+          } else {
+            retval = false;
+          }
+          break;
+        case 'get-sub-win-source-id':
+          if(obj.sandbox_sub_wins.hasOwnProperty(data)) {
+            retval = obj.sandbox_sub_wins[data].getMediaSourceId();
           } else {
             retval = false;
           }

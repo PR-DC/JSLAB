@@ -62,9 +62,13 @@ class PRDC_JSLAB_PARALLEL {
       Object.assign(self, ${JSON.stringify(context)});
             
       // Reconstruct and execute the setup function if provided
-      ${setup_function_str}.then(function() {
+      (async () => {
+        const __setup = ${setup_function_str || 'null'};
+        if (typeof __setup === 'function') {
+          await __setup.call(self);
+        }
         self.postMessage({ type: 'ready' });
-      });
+      })();
     `;
   }
 
@@ -85,7 +89,7 @@ class PRDC_JSLAB_PARALLEL {
       ${this.jsl.getWorkerInit()}
       ${this.workerFunction(context, setup_function_str)}
     `;
-
+    
     if(config.DEBUG_PARALLEL_WORKER_SETUP_FUN) {
       this.jsl._console.log(worker_script);
     }

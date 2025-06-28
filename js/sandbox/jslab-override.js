@@ -41,7 +41,7 @@ class PRDC_JSLAB_OVERRIDE {
     this.jsl._isNaN = this.jsl.context.isNaN;
     
     // Add toJSON methods to some classes
-    if(!Gamepad.prototype.toJSON) {
+    if(typeof Gamepad != 'undefined' && !Gamepad.prototype.toJSON) {
       Gamepad.prototype.toJSON = function() {
         return {
           id: this.id,
@@ -57,7 +57,7 @@ class PRDC_JSLAB_OVERRIDE {
         };
       };
     }
-    if(!MediaDeviceInfo.prototype.toJSON) {
+    if(typeof MediaDeviceInfo != 'undefined' && !MediaDeviceInfo.prototype.toJSON) {
       MediaDeviceInfo.prototype.toJSON = function() {
         return {
           deviceId: this.deviceId,

@@ -16,12 +16,10 @@ class PRDC_JSLAB_LIB {
   
   /**
    * Constructs the JSLAB library environment, initializing submodules and setting up the execution context.
-   * @param {Object} config Configuration options for the JSLAB library.
    */
-  constructor(config) {
+  constructor() {
     var obj = this;
     this.ready = false;
-    this.config = config;
     
     // Library built in properties
     this.previous_workspace = {};
@@ -54,9 +52,9 @@ class PRDC_JSLAB_LIB {
     this.debug = this.env.debug;
     this.includes_path = this.env.getDefaultPath('includes');
     
-    if(this.config.PLOTER == 'plotly') {
+    if(config.PLOTER == 'plotly') {
       var { PRDC_JSLAB_PLOTER } = require('./jslab-ploter-plotly');
-    } else if(this.config.PLOTER == 'echarts') {
+    } else if(config.PLOTER == 'echarts') {
       var { PRDC_JSLAB_PLOTER } = require('./jslab-ploter-echarts');
     }
     this.ploter = new PRDC_JSLAB_PLOTER(this);
@@ -239,7 +237,7 @@ class PRDC_JSLAB_LIB {
       
       
       const helper = require(app_path + "/js/helper.js");
-      const { PRDC_APP_CONFIG } = require(app_path + '/config/config');
+      require(app_path + "/js/init-config.js");
 
       importScripts(app_path + '/lib/luxon-3.4.4/luxon-3.4.4.min.js');
       importScripts(app_path + '/lib/math-11.8.2/math-11.8.2.min.js');
@@ -249,8 +247,7 @@ class PRDC_JSLAB_LIB {
       const { PRDC_JSLAB_LIB } = require(app_path + '/js/sandbox/jslab');
 
       // Global variables
-      var config = new PRDC_APP_CONFIG();
-      var jsl = new PRDC_JSLAB_LIB(config);
+      var jsl = new PRDC_JSLAB_LIB();
       jsl.current_path = ${JSON.stringify(this.current_path)};
       jsl.includes_path = ${JSON.stringify(this.includes_path)};
       jsl.saved_paths = JSON.parse('${JSON.stringify(this.saved_paths)}');

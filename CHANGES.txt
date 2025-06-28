@@ -3,6 +3,17 @@ JSLAB
 JavaScript LABoratory environment.
 --------------------
 
+Release v1.0.3, 28.06.2025.
+
+- Bug fixes and new features.
+- Added module for gui.
+- Implemented basic presentations.
+- Improved ui.js and ui.css for windows.
+- Save and load figures as JSON.
+- Save and load 3D window scene.
+- Interactive HTML figures.
+
+--------------------
 Release v1.0.2, 13.03.2025.
 
 - Bug fixes and new features.
@@ -17,6 +28,7 @@ Release v1.0.2, 13.03.2025.
 - Added initial module for mechanics.
 - Added functions gridGradient and gridData.
 
+--------------------
 Release v1.0.1, 16.02.2025.
 
 - Bug fixes and new features.

@@ -11,7 +11,7 @@ const fs = require('fs');
 const cp = require("child_process");
 const rimraf = require('rimraf');
 
-const { PRDC_APP_CONFIG } = require('../../config/config');
+require('../init-config.js');
 
 console.log('[make-doc.js] Started');
 var t = performance.now();
@@ -20,7 +20,6 @@ var package_data = JSON.parse(fs.readFileSync('package.json'));
 var app_version = package_data.version;
 var year = new Date().getFullYear();
 
-var config = new PRDC_APP_CONFIG();
 var jslab_doc = {
   'global': {},
   'lib': {}

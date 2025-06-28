@@ -33,6 +33,7 @@ const recast = require('recast');
 const babel_parser = require('@babel/parser');
 var SourceMapConsumer = require("source-map").SourceMapConsumer;
 var { SerialPort } = require('serialport');
+const jsdoc = require('jsdoc-api');
 
 /**
  * Class for JSLAB electron environment.
@@ -58,6 +59,13 @@ class PRDC_JSLAB_ENV {
       this.speech.voice = speechSynthesis.getVoices()[0];
       this.navigator = navigator;
       this.processors_number = navigator.hardwareConcurrency;
+      this.Cesium = Cesium;
+      this.online = this.navigator.onLine;
+      function onOnlineChange() {
+        obj.online = obj.navigator.onLine;
+      }
+      this.context.addEventListener('online', onOnlineChange);
+      this.context.addEventListener('offline', onOnlineChange);
     } else {
       this.context = global;
       this.debug = global.debug;
@@ -65,6 +73,7 @@ class PRDC_JSLAB_ENV {
       this.exe_path = undefined;
       this.platform = global.platform;
       this.processors_number = undefined;
+      this.Cesium = {};
     }
     this.native_module = new NativeModule();
     this.AlphaShape3D = AlphaShape3D;
@@ -72,7 +81,6 @@ class PRDC_JSLAB_ENV {
     this.seedRandom = seedrandom;
     this.extractFull = extractFull;
     
-    this.Cesium = Cesium;
     this.process_pid = process.pid;
     this.math = this.context.math;
     this.fmin = this.context.fmin;
@@ -90,13 +98,7 @@ class PRDC_JSLAB_ENV {
       "lib/mappings.wasm": app_path+'/node_modules/source-map/lib/mappings.wasm',
     });
     this.SerialPort = SerialPort;
-
-    this.online = this.navigator.onLine;
-    function onOnlineChange() {
-      obj.online = obj.navigator.onLine;
-    }
-    this.context.addEventListener('online', onOnlineChange);
-    this.context.addEventListener('offline', onOnlineChange);
+    this.jsdoc = jsdoc;
     
     this.context.freecad_link = new PRDC_JSLAB_FREECAD_LINK(this.jsl);
     this.context.om_link = new PRDC_JSLAB_OPENMODELICA_LINK(this.jsl);
@@ -215,6 +217,9 @@ class PRDC_JSLAB_ENV {
           sub_context.setOpacity = function(opacity) {
             return obj.jsl.windows.open_windows[wid].setOpacity(opacity);
           };
+          sub_context.setFullscreen = function(state) {
+            return obj.jsl.windows.open_windows[wid].setFullscreen(state);
+          };
           sub_context.setTitle = function(title) {
             return obj.jsl.windows.open_windows[wid].setTitle(title);
           };
@@ -228,6 +233,10 @@ class PRDC_JSLAB_ENV {
           
           sub_context.openDevTools = function() {
             return obj.jsl.windows.open_windows[wid].openDevTools();
+          };
+
+          sub_context.printToPdf = function(options) {
+            return obj.jsl.windows.open_windows[wid].printToPdf(options);
           };
           
           sub_context.document.addEventListener("keydown", function (e) {
@@ -479,6 +488,22 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
+
+  /**
+   * Sets state of fullscreen of window if not running in a worker thread.
+   * @param {string} wid - The window ID.
+   * @param {string} state - fullscreen state.
+   * @returns {boolean|undefined} False if the window does not exist, undefined if in a worker thread.
+   */
+  setWindowFullscreen(wid, state) {
+    if(!global.is_worker) {
+      if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+          [wid, "setFullScreen", state]);
+      }
+    }
+    return false;
+  }
   
   /**
    * Sets the title of the specified window if not running in a worker thread.
@@ -535,6 +560,21 @@ class PRDC_JSLAB_ENV {
     if(!global.is_worker) {
       if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
         return ipcRenderer.sendSync("sync-message", "open-sub-win-devtools", wid);
+      }
+    }
+    return false;
+  }
+  
+  /**
+   * Returns media source id for a specified window in the renderer process.
+   * Only available if not in a worker context.
+   * @param {string} wid - The window ID.
+   * @returns {String|boolean} Media source id if there is window; otherwise, false.
+   */
+  getWindowMediaSourceId(wid) {
+    if(!global.is_worker) {
+      if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+        return ipcRenderer.sendSync("sync-message", "get-sub-win-source-id", wid);
       }
     }
     return false;
@@ -629,7 +669,7 @@ class PRDC_JSLAB_ENV {
    * Retrieves the platform-specific path separator.
    * @returns {string} The path separator.
    */
-  pathGetSep() {
+  pathSep() {
     return path.sep;
   }
   
@@ -678,6 +718,16 @@ class PRDC_JSLAB_ENV {
     return path.resolve(path_in);
   }
     
+  /**
+   * Computes the relative path from one path to another. 
+   * @param {string} from - The starting path.
+   * @param {string} to - The target path.
+   * @returns {string} - The relative path from the `from` path to the `to` path.
+   */
+  pathRelative(from, to) {
+    return path.relative(from, to);
+  }
+  
   /**
    * Normalizes a given path, resolving '..' and '.' segments.
    * @param {string} path - The path to normalize.
@@ -760,18 +810,18 @@ class PRDC_JSLAB_ENV {
       return false;
     }
   }
-
+  
   /**
    * Reads the contents of a directory synchronously.
    * @param {string} folder The path to the directory.
    * @returns {string[]|false} An array of filenames or false in case of an error.
    */
-	readdirSync(...args) {
+	readDir(...args) {
     try {
       return fs.readdirSync(...args);
     } catch(err) {
       this.jsl._console.log(err);
-      this.error('@readdirSync: '+err);
+      this.error('@readDir: '+err);
       return false;
     }
   }
@@ -1190,6 +1240,19 @@ class PRDC_JSLAB_ENV {
   getDesktopSources() {
     if(!global.is_worker) {
       return ipcRenderer.sendSync("get-desktop-sources");
+    }
+    return false;
+  }
+  
+  /**
+   * Prints window to PDF format.
+   * @param {string} wid - The window ID.
+   * @param {Object} options - Options for printing
+   * @returns {Buffer} Generated PDF data.
+   */
+  printWindowToPdf(wid, options) {
+    if(!global.is_worker) {
+      return ipcRenderer.invoke('print-sub-win-to-pdf', wid, options);
     }
     return false;
   }

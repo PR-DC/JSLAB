@@ -503,6 +503,10 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(typeof opts == 'object') {
       Object.assign(vectors.line, opts);
       Object.assign(vectors.head, opts);
+      if(opts.hasOwnProperty('id')) {
+        vectors.line.id = opts.id + '-line';
+        vectors.head.id = opts.id + '-head';
+      }
     }
     
     var vertex_index = 0;
@@ -581,7 +585,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     return vectors;
   }
-        
+  
   /**
    * Creates 3D disks for plotting based on provided parameters.
    * @param {number[]} xi - X coordinates of disk centers.
@@ -594,7 +598,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @param {Object} opts - Additional plotting options.
    * @returns {Object} - An object containing line and area trace data for plotting.
    */
-  createDisks3D(xi, yi, zi, ri, ui, vi, wi, opts) {
+  createDisks3D(xi, yi, zi, ri, ui, vi, wi, opts = {}) {
     if(!Array.isArray(xi)) xi = [xi];
     if(!Array.isArray(yi)) yi = [yi];
     if(!Array.isArray(zi)) zi = [zi];
@@ -629,6 +633,10 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(typeof opts == 'object') {
       Object.assign(disks.line, opts);
       Object.assign(disks.area, opts);
+      if(opts.hasOwnProperty('id')) {
+        disks.line.id = opts.id + '-line';
+        disks.area.id = opts.id + '-area';
+      }
     }
     
     var vertex_index = 0;
@@ -752,6 +760,10 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(typeof opts === 'object') {
       Object.assign(planes.line, opts);
       Object.assign(planes.area, opts);
+      if(opts.hasOwnProperty('id')) {
+        planes.line.id = opts.id + '-line';
+        planes.area.id = opts.id + '-area';
+      }
     }
 
     // Reference axis (z-axis) that our rectangle initially lies in (XY-plane).

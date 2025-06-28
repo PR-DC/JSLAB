@@ -1,0 +1,270 @@
+#code {
+  height: calc(100vh - 83px);
+}
+
+.CodeMirror {
+  height: calc(100% - 6px);
+  margin: 5px;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  font-size: 16px;
+  margin-top: 1px;
+}
+
+.CodeMirror div {
+  z-index: auto;
+}
+
+.CodeMirror-gutter-wrapper, .CodeMirror-cursor {
+  z-index: 4!important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar,
+.CodeMirror-vscrollbar::-webkit-scrollbar-button,
+.CodeMirror-vscrollbar::-webkit-scrollbar-track,
+.CodeMirror-vscrollbar::-webkit-scrollbar-track-piece,
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+.CodeMirror-vscrollbar::-webkit-scrollbar-corner,
+.CodeMirror-vscrollbar::-webkit-resizer {
+  background: transparent;
+}
+
+.CodeMirror-vscrollbar {
+  z-index: 3!important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar {
+  width:  12px;
+  height: 12px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-track-piece {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 5px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-button {
+  width:0;
+  height:0;
+}
+
+.CodeMirror-ruler {
+  z-index: 1!important;
+}
+
+.CodeMirror-foldmarker {
+  color: #000;
+  text-shadow: none;
+}
+
+.CodeMirror-lint-tooltip {
+  background-color: #fff;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  color: #666;
+  font-family: Roboto;
+  line-height: 16px;
+}
+
+.CodeMirror-lint-tooltip {
+  background-color: #fff;
+  border: 1px solid #f7df1e;
+  border-radius: 3px;
+  color: #666;
+  font-family: Roboto;
+  line-height: 16px;
+}
+
+.CodeMirror-hint {
+  line-height: 16px;
+}
+
+.CodeMirror-focused .cm-matchhighlight {
+  background-color: #0f0;
+}
+
+.CodeMirror-search-match {
+  background: gold;
+  border-top: 1px solid orange;
+  border-bottom: 1px solid orange;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  opacity: .5;
+}
+
+.CodeMirror-selection-highlight-scrollbar {
+  background-color: #0f0;
+  width: 13px!important;
+  z-index: 100!important;
+}
+
+.CodeMirror-selected, .CodeMirror-focused .CodeMirror-selected {
+  background-color: #c0c0c0!important;
+}
+
+.CodeMirror-hints::-webkit-scrollbar,
+.CodeMirror-hints::-webkit-scrollbar-button,
+.CodeMirror-hints::-webkit-scrollbar-track,
+.CodeMirror-hints::-webkit-scrollbar-track-piece,
+.CodeMirror-hints::-webkit-scrollbar-thumb,
+.CodeMirror-hints::-webkit-scrollbar-corner,
+.CodeMirror-hints::-webkit-resizer {
+  background: transparent;
+}
+
+.CodeMirror-hints::-webkit-scrollbar {
+  width:  12px;
+  height: 12px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-hints::-webkit-scrollbar-track-piece {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.CodeMirror-hints::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 5px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.CodeMirror-hints::-webkit-scrollbar-button {
+  width:0;
+  height:0;
+}
+
+.CodeMirror-search-dialog {
+  font-family: Roboto;
+  font-size: 16px;
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 15px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 0 10px #00000026;
+  z-index: 3!important;
+}
+
+.CodeMirror-search-find, .CodeMirror-search-replace {
+  margin: 0;
+  border: 1px solid #ddd;
+  padding: 3px 5px;
+  display: block;
+  font-size: 16px;
+  border-radius: 3px;
+  margin-right: 10px;
+  float: left;
+  margin-bottom: 10px;
+  font-weight: 100;
+}
+
+.CodeMirror-search-find::placeholder, .CodeMirror-search-replace::placeholder {
+  font-weight: 100;
+  color: #999;
+}
+
+.CodeMirror-search-find:focus, .CodeMirror-search-replace:focus {
+  border: 1px solid #f7df1e;
+}
+
+.CodeMirror-search-find-prev-btn, .CodeMirror-search-find-next-btn,
+.CodeMirror-search-replace-btn, .CodeMirror-search-replace-all-btn {
+  cursor: pointer;
+  background-size: 20px;
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  display: block;
+  float: left;
+  margin-top: 3px;
+}
+
+.CodeMirror-search-find-prev-btn:hover, .CodeMirror-search-find-next-btn:hover,
+.CodeMirror-search-replace-btn:hover, .CodeMirror-search-replace-all-btn:hover {
+  opacity: 1;
+}
+
+.CodeMirror-search-find-prev-btn {
+  background-image: url(../img/arrow.svg);
+  transform: rotate(90deg);
+  margin-right: 10px;
+}
+
+.CodeMirror-search-find-next-btn {
+  background-image: url(../img/arrow.svg);
+  transform: rotate(-90deg);
+}
+
+.CodeMirror-search-replace-btn {
+  background-image: url(../img/replace.svg);
+  margin-right: 10px;
+}
+
+.CodeMirror-search-replace-all-btn {
+  background-image: url(../img/replace-all.svg);
+}
+
+.CodeMirror-search-case-btn, .CodeMirror-search-regex-btn {
+  cursor: pointer;
+  background-size: 20px;
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  display: block;
+  float: left;
+}
+
+.CodeMirror-search-case-btn:hover, .CodeMirror-search-regex-btn:hover {
+  opacity: 0.7;
+}
+
+.CodeMirror-search-case-btn.active, .CodeMirror-search-regex-btn.active {
+  opacity: 1;
+}
+
+.CodeMirror-search-case-btn {
+  margin-left: 5px;
+  margin-right: 10px;
+  background-image: url(../img/match-case.svg);
+}
+
+.CodeMirror-search-regex-btn {
+  background-image: url(../img/regex.svg);
+}
+
+.CodeMirror-search-bottom-right {
+  float: right;
+  margin-top: 5px;
+  font-weight: 100;
+  color: #999;
+}
+
+.CodeMirror-search-close-btn {
+  cursor: pointer;
+  background-size: 15px;
+  height: 15px;
+  width: 15px;
+  opacity: 0.4;
+  display: block;
+  float: right;
+  background-image: url(../img/close.svg);
+  margin-left: 10px;
+}
+
+.CodeMirror-search-close-btn:hover {
+  opacity: 1;
+}

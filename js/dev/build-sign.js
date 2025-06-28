@@ -6,8 +6,7 @@
  * @version 0.0.1
  */
  
-// Import the filesystem module
-const { PRDC_APP_CONFIG } = require('../../config/config.js');
+require('../init-config.js');
 
 console.log('[build-sign.js] Started');
 var t = performance.now();
@@ -21,8 +20,6 @@ if(!process.env.TIMESTAMP_SERVER) {
 if(!process.env.SIGN_TOOL_PATH) {
   console.error('Environment variable SIGN_TOOL_PATH must be defined!');
 }
-
-var config = new PRDC_APP_CONFIG();
 
 const { execSync } = require('child_process');
 

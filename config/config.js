@@ -67,6 +67,7 @@ class PRDC_APP_CONFIG {
         {name: 'optim', file: 'optim', class_name: 'PRDC_JSLAB_LIB_OPTIM'},
         {name: 'presentation', file: 'presentation', class_name: 'PRDC_JSLAB_LIB_PRESENTATION'},
         {name: 'mechanics', file: 'mechanics', class_name: 'PRDC_JSLAB_LIB_MECHANICS'},
+        {name: 'gui', file: 'gui', class_name: 'PRDC_JSLAB_LIB_GUI'},
       ],
       'lib': [
         {name: 'parallel', file: 'parallel', class_name: 'PRDC_JSLAB_PARALLEL'},
@@ -106,6 +107,10 @@ class PRDC_APP_CONFIG {
       'css',
       'html',
       'js'
+    ];
+    
+    this.SOURCE_CODE_BOOK_FILES_EXCLUDE = [
+      'html/io_html_figure.html'
     ];
     
     this.LINT_OPTIONS = {
@@ -159,7 +164,7 @@ class PRDC_APP_CONFIG {
     
     // Upload and download libs from server
     this.SERVER_SOURCE_PATH = process.env.SERVER_PATH + "JSLAB/";
-    this.SOURCE_UPLOAD_EXCLUDE = ['/bin', '/build', '/dist', '/node_modules', '/package-lock.json', '/binding.gyp', '/lib'];
+    this.SOURCE_UPLOAD_EXCLUDE = ['/bin', '/build', '/dist', '/node_modules', '/package-lock.json', '/binding.gyp', '/lib', '*.obj'];
     this.SERVER_LIBS_PATH = process.env.SERVER_LIBS_PATH;
 
     this.USED_LIBS = [
@@ -200,20 +205,6 @@ class PRDC_APP_CONFIG {
     this.UPLOAD_COMPARE_CONTENT = true;
     this.UPLOAD_COMPARE_DATE = false;
     this.UPLOAD_COMPARE_SIZE_ON_DISTINCT = false;
-    
-    // Conditional variables
-    if(typeof process_arguments != 'undefined') {
-      var args = process_arguments.map(function(e) { return e.toLowerCase(); });
-      if(args.includes("--debug-app")) {
-        this.DEBUG = true;
-      }
-      if(args.includes("--test-app")) {
-        this.TEST = true;
-      }
-      if(args.includes("--sign-build")) {
-        this.SIGN_BUILD = true;
-      }
-    }
     
     this.PANEL_RESIZER_WIDTH = 10;
     this.PANEL_MIN_SIZE = 10;

@@ -358,6 +358,103 @@ class PRDC_JSLAB_LIB_BASIC {
     }
     this.jsl.env.error('@source: ' + language.string(220) + name);
   }
+
+  /**
+   * Showing graph of function.
+   * @param {string} name - The name of the function.
+   */
+  async docGraph(name) {
+    var obj = this;
+    function _docGraph(name) {
+      var result;
+      const parts = name.split(".");
+      if(parts.length === 2) {
+        const [libName, itemName] = parts;
+        const data = obj._docs.lib[libName];
+        if(data.hasOwnProperty(itemName)) {
+          result = data[itemName];
+        }
+      } else {
+        for(const category in obj._docs.global) {
+          const categoryData = obj._docs.global[category];
+          if(categoryData.hasOwnProperty(name)) {
+            result = categoryData[name];
+          }
+        }
+      }
+      
+      var source;
+      var called = new Set();
+      if(result) {
+        if(result.source_range && result.kind == 'function') {
+          source = obj.jsl.file_system.getContentFromCharRange(
+            app_path + '/js/sandbox/' + result.source_filename, result.source_range);
+            
+          var ast = obj.jsl.env.recast.parse('function ' + source, {
+            parser: {
+              parse(src) {
+                return obj.jsl.env.babel_parser.parse(src, {
+                  sourceType: 'module',
+                  allowReturnOutsideFunction: true,
+                  plugins: [
+                    'jsx',
+                    'typescript',
+                    'classProperties',
+                    'dynamicImport',
+                    'optionalChaining',
+                    'nullishCoalescingOperator',
+                  ],
+                });
+              },
+            },
+          });
+
+          obj.jsl.env.recast.visit(ast, {
+            visitCallExpression(path) {
+              var { callee } = path.node;
+              var name;
+
+              if(callee.type === 'Identifier') {
+                name = callee.name;
+              } else if(
+                callee.type === 'MemberExpression' &&
+                callee.property.type === 'Identifier'
+              ) {
+                name = callee.property.name;
+              }
+
+              if(name) called.add(name);
+              this.traverse(path);
+            },
+          });
+        }
+
+        var lines = [`graph TD`, `  root["${name}"]`];
+        var id = 0;
+        for(var fn of called) {
+          id = id + 1;
+          lines.push(`  root --> id${id}["${fn}"]`);
+        }
+        return lines.join('\n');
+      }
+      obj.jsl.env.error('@docGraph: ' + language.string(218) + name);
+      return false;
+    }
+    
+    var graph = _docGraph(name);
+    if(graph) {
+      var graph_win = await this.jsl.windows.showMermaidGraph(graph);
+      graph_win.document.custom_style.textContent += '.node { cursor: pointer; }';
+      graph_win.document.addEventListener('click', async (e) => {
+        var node = e.target.closest('.node');
+        if(!node) return;
+        const labelEl = node.querySelector('.nodeLabel');
+        if(!labelEl) return;
+        const new_graph = _docGraph(labelEl.textContent.trim());
+        if(new_graph) await graph_win.showGraph(new_graph);
+      });
+    }
+  }
   
   /**
    * Retrieves the file name of the currently active JSL script.
@@ -671,7 +768,7 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   getExamples() {
     var obj = this;
-    return this.jsl.env.readdirSync(app_path + '/examples')
+    return this.jsl.env.readDir(app_path + '/examples')
         .filter(function(file) { return file.match(new RegExp('\.jsl$')); }).map(function(i) { return folder + '\\' + i; });
   }
 
@@ -874,6 +971,69 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   strcmp(x, y) {
     return this.jsl.env.math.compareText(x, y);
+  }
+    
+  /**
+   * Compare two version strings (e.g. "1.4.2", "v2.0.0-beta.1").
+   * @param {string} a First version.
+   * @param {string} b Second version.
+   * @returns {number} -1 if a < b, 0 if equal, 1 if a > b.
+   */
+  compareVersions(a, b) {
+    var clean = v => v.replace(/^v/i, '').split(/[-+]/)[0];
+    var toNums = v => clean(v).split('.').map(Number);
+
+    var x = toNums(a);
+    var y = toNums(b);
+    const len = Math.max(x.length, y.length);
+
+    for(let i = 0; i < len; i++) {
+      var xi = x[i] ?? 0;
+      var yi = y[i] ?? 0;
+      if (xi > yi) return 1;
+      if (xi < yi) return -1;
+    }
+    return 0;
+  }
+  
+  /**
+   * Checks if there is available update
+   * @returns {boolean} True if there is available update; otherwise, false.
+   */
+  async checkForUpdate() {
+    if(this.jsl.networking.isOnline()) {
+      try {
+        var api_base = 'https://api.github.com/repos/PR-DC/JSLAB';
+
+        const rel = await fetch(`${api_base}/releases/latest`, {
+          headers: { 'Accept': 'application/vnd.github+json' }
+        });
+        
+        var latest_version;
+        if(rel.ok) {
+          const { tag_name } = await rel.json();   // e.g. "v1.5.0"
+          latest_version = tag_name;
+        } else if (rel.status === 404) {
+          const tagRes = await fetch(`${api_base}/tags?per_page=1`);
+          const [ { name } ] = await tagRes.json(); // e.g. "v1.5.0-beta.1"
+          latest_version = name;
+        } else {
+          this.jsl._console.log(rel);
+          this.jsl.env.error('@checkForUpdate: '+language.string(237));
+        }
+
+        var check = this.compareVersions(this.jsl.env.version, latest_version) === -1;
+        if(check) {
+          this.jsl.env.disp('@checkForUpdate: '+language.string(238) + '<a href="https://github.com/PR-DC/JSLAB/releases" class="external-link">https://github.com/PR-DC/JSLAB/releases</a>');
+        }
+        return check;
+      } catch(err) {
+        this.jsl._console.log(err);
+        this.jsl.env.error('@checkForUpdate: '+language.string(237));
+      }
+    } else {
+      this.jsl.env.error('@checkForUpdate: '+language.string(237));
+    }
   }
 
   /**

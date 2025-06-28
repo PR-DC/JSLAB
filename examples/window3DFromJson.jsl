@@ -1,0 +1,41 @@
+/**
+ * @file Simple test for 3D window from JSON
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+var win = await openWindow3D();
+win.document.title = "Test 3D Window from JSON - JSLAB | PR-DC";
+var THREE = win.THREE;
+
+const width = win.innerWidth, height = win.innerHeight;
+
+// init
+const camera = new THREE.PerspectiveCamera( 70, width / height, 0.01, 10 );
+camera.position.z = 1;
+
+const scene = win.sceneFromJSON('./resources/window-3d.json');
+
+const renderer = new THREE.WebGLRenderer( { antialias: true } );
+renderer.setSize( width, height );
+renderer.setAnimationLoop( animate );
+win.document.body.appendChild( renderer.domElement );
+
+// Handle window resizing
+win.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+  camera.aspect = win.innerWidth / win.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(win.innerWidth, win.innerHeight);
+}
+
+function animate( time ) {
+  scene.children[0].rotation.x = time / 2000;
+  scene.children[0].rotation.y = time / 1000;
+  renderer.render( scene, camera );
+}
+
+win.scene = scene;

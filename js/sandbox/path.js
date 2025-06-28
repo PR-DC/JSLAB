@@ -42,7 +42,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {String} The path separator character used by the system.
    */
   pathSep() {
-    return this.jsl.env.pathGetSep();
+    return this.jsl.env.pathSep();
   }
   
   /**
@@ -51,6 +51,15 @@ class PRDC_JSLAB_LIB_PATH {
    */
   isAbsolutePath() {
     return this.jsl.env.pathIsAbsolute();
+  }
+  
+  /**
+   * Joins all given path segments together using the platform-specific separator as a delimiter.
+   * @param {...string} paths The path segments to join.
+   * @returns {string} The combined path.
+   */
+  pathJoin(...args) {
+    return this.jsl.env.pathJoin(...args);
   }
   
   /**
@@ -81,12 +90,31 @@ class PRDC_JSLAB_LIB_PATH {
   }
   
   /**
+   * Retrieves the file extension from the provided file path.
+   * @param {string} path - The complete file path.
+   * @returns {string} The file extension extracted from the path.
+   */
+  pathExtName(path) {
+    return this.jsl.env.pathExtName(path);
+  }
+  
+  /**
    * Resolves a sequence of path segments into an absolute path using the environment's path resolver.
    * @param {string} path - The path or sequence of paths to resolve.
    * @returns {string} - The resolved absolute path.
    */
   pathResolve(path) {
     return this.jsl.env.pathResolve(path);
+  }
+  
+  /**
+   * Computes the relative path from one path to another. 
+   * @param {string} from - The starting path.
+   * @param {string} to - The target path.
+   * @returns {string} - The relative path from the `from` path to the `to` path.
+   */
+  pathRelative(from, to) {
+    return this.jsl.env.pathRelative(from, to);
   }
   
   /**

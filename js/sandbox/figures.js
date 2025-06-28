@@ -22,7 +22,9 @@ class PRDC_JSLAB_LIB_FIGURES {
     this._fonts = [];
     this._fid = 0;
     this._pid = 0;
-    this._html_figure = this.jsl.env.readFileSync(app_path+'/html/html_figure.html').toString();
+    this._html_figure = this.jsl.env.readFileSync(app_path + '/html/html_figure.html').toString();
+    this._i_html_figure = this.jsl.env.readFileSync(app_path + '/html/i_html_figure.html').toString();
+    this._io_html_figure = this.jsl.env.readFileSync(app_path + '/html/io_html_figure.html').toString();
 
     /**
      * Array of open figures.
@@ -245,7 +247,34 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
+  
+  /**
+   * Retrieves the media source id of a specified figure.
+   * @param {number} fid - The ID of the figure.
+   * @returns {String|boolean} - Returns Media soruce id or false if the figure ID is invalid.
+   */
+  getFigureMediaSourceId(fid) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].getMediaSourceId();
+    } else {
+      return false;
+    }
+  }
 
+  /**
+   * Starts video recording of a specified figure.
+   * @param {number} fid - The ID of the figure.
+   * @param {Object} - Optional settings. 
+   * @returns {Object|boolean} - Returns recorder object or false if the figure ID is invalid.
+   */
+  startFigureVideoRecording(fid, opts) {
+    if(this.open_figures.hasOwnProperty(fid)) {
+      return this.open_figures[fid].startVideoRecording(opts);
+    } else {
+      return false;
+    }
+  }
+  
   /**
    * Closes a specified figure.
    * @param {number} fid - The ID of the figure to close.
@@ -293,7 +322,10 @@ class PRDC_JSLAB_LIB_FIGURES {
       {name: 'png', extensions: ['png']},
       {name: 'jpg', extensions: ['jpg', 'jpeg']},
       {name: 'webp', extensions: ['webp']},
-      {name: 'html', extensions: ['html']}
+      {name: 'json', extensions: ['json']},
+      {name: 'static html', extensions: ['html']},
+      {name: 'interactive html', extensions: ['i.html']},
+      {name: 'interactive offline html', extensions: ['io.html']}
      ]
     };
     var figure_path = this.jsl.env.showSaveDialogSync(options);
@@ -312,8 +344,19 @@ class PRDC_JSLAB_LIB_FIGURES {
     var pdf_flag = false;
     var html_flag = false;
     var ext = figure_path.split('.').pop();
-    if(['svg', 'pdf', 'png', 'jpg', 'jpeg', 'webp', 'html'].includes(ext)) {
-      if(ext == 'jpg') {
+    if(['svg', 'pdf', 'png', 'jpg', 'jpeg', 'webp', 'html', 'json'].includes(ext)) {
+      if(ext == 'json' || figure_path.endsWith('.i.html') || figure_path.endsWith('.io.html')) {
+        var data = this.open_figures[fid].context.plot.toJSON();
+        if(figure_path.endsWith('.i.html')) {
+          var html = this._i_html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
+          data = html.replace('%figure_data%', data);
+        } else if(figure_path.endsWith('.io.html')) {
+          var html = this._io_html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
+          data = html.replace('%figure_data%', data);
+        }
+        this.jsl.env.writeFileSync(figure_path, data);
+        return;
+      } else if(ext == 'jpg') {
         ext = 'jpeg';
       } else if(ext == 'pdf') {
         pdf_flag = true;
@@ -327,7 +370,8 @@ class PRDC_JSLAB_LIB_FIGURES {
       var data;
       if(ext == 'svg') {
         if(html_flag) {
-          data = this._makeFigureHTML(fid, data_url);
+          var html = this._html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
+          data = html.replace('%image_source%', data_url);
         } else {
           data = decodeURIComponent(data_url.replace('data:image/svg+xml,',''));
         }
@@ -528,6 +572,87 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.ignore_output = true;
     return this.open_figures[fid].plot;
   }
+
+  /**
+   * Updates plot data by delegating to the `update` method.
+   * @param {Object} traces - The trace data to be updated in the plot.
+   * @param {number} N - The data length or index for updating the plot.
+   */
+  updatePlot(traces, N) {
+    if(this.active_figure >= 0 && this.open_figures[this.active_figure].plot) {
+      this.open_figures[this.active_figure].plot.update(data);
+    }
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+  }
+  
+  /**
+   * Updates plot data by id by delegating to the `updateById` method.
+   * @param {Object|Object[]} data - Trace update object(s) to apply to the active plot.
+   */
+  updatePlotById(data) {
+    if(this.active_figure >= 0 && this.open_figures[this.active_figure].plot) {
+      this.open_figures[this.active_figure].plot.updateById(data);
+    }
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+  }
+  
+  /**
+   * Hides figure menu.
+   */
+  hideFigureMenu() {
+    if(this.active_figure >= 0) {
+      this.open_figures[this.active_figure].hideMenu();
+    }
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+  }
+  
+  
+  /**
+   * Shows figure menu.
+   */
+  showFigureMenu() {
+    if(this.active_figure >= 0) {
+      this.open_figures[this.active_figure].showMenu();
+    }
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+  }
+  
+  /**
+   * Loads figure from JSON file
+   * @param {String} file_path - Absolute or relative path to the JSON file of figure.
+   * @param {Number} id Identifier for the figure.
+   * @returns {Number} The identifier of the opened or updated figure.
+   */
+  loadJsonFigure(fid, file_path) {
+    if(!file_path) {
+      var options = {
+        title: language.currentString(247),
+        buttonLabel: language.currentString(231)
+      };
+      file_path = this.jsl.env.showOpenDialogSync(options);
+      if(file_path === undefined) {
+        this.jsl.env.error('loadJsonFigure: '+language.string(132)+'.');
+        return false;
+      } else {
+        file_path = file_path[0];
+      }
+    }    
+    if(!this.jsl.file_system.existFile(file_path)) {
+      this.jsl.env.error('@loadJsonFigure: '+language.string(248));
+      return false;
+    }
+    var data = JSON.parse(this.jsl.env.readFileSync(file_path).toString());
+
+    this._pid += 1;
+
+    fid = this.figure(fid);
+    this.open_figures[fid]._fromJSON(this._pid, data);
+    return fid;
+  }
   
   /**
    * Updates the language of the text elements within all open figures.
@@ -639,17 +764,6 @@ class PRDC_JSLAB_LIB_FIGURES {
       doc.end();
     });
   }
-  
-  /**
-   * Generates HTML content for a figure.
-   * @param {String} fid - The figure identifier.
-   * @param {String} data - The data used to generate the HTML.
-   * @returns {String} Generated HTML content.
-   */
-  _makeFigureHTML(fid, data) {
-    var html = this._html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
-    return html.replace('%image_source%', data);
-  }
 }
 
 exports.PRDC_JSLAB_LIB_FIGURES = PRDC_JSLAB_LIB_FIGURES;
@@ -677,13 +791,6 @@ class PRDC_JSLAB_FIGURE {
     
     this.context;
     this.dom;
-    this.name;
-    this.size;
-    this.position;
-    this.grid = 'on';
-    this.box = 'on';
-    this.hold = 'off';
-    this.zeroline = 'off';
     this.fig_ready = false;
     this.opened = false;
     
@@ -767,6 +874,25 @@ class PRDC_JSLAB_FIGURE {
     await this.#jsl.promiseOrStoped(this.ready);
     return await this.#jsl.windows.open_windows[this.wid].getPos();
   }
+
+  /**
+   * Retrieves the media source id of the figure.
+   * @returns {String} - Media source id.
+   */
+  async getMediaSourceId() {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].getMediaSourceId();
+  }
+
+  /**
+   * Starts video recording of the figure.
+   * @param {Object} - Optional settings. 
+   * @returns {Object|boolean} - Returns recorder object.
+   */
+  async startVideoRecording(opts) {
+    await this.#jsl.promiseOrStoped(this.ready);
+    return await this.#jsl.windows.open_windows[this.wid].startVideoRecording(opts);
+  }
   
   /**
    * Closes the window.
@@ -775,6 +901,26 @@ class PRDC_JSLAB_FIGURE {
   async close() {
     await this.#jsl.promiseOrStoped(this.ready);
     return await this.#jsl.windows.open_windows[this.wid].close();
+  }
+  
+  /**
+   * Hides figure menu.
+   */
+  hideMenu() {
+    if(this.dom) {
+      this.dom.getElementById('figure-menu-button').style.display = 'none';
+      this.dom.getElementById('figure-menu-container').style.display = 'none';
+    }
+  }
+  
+  /**
+   * Shows figure menu.
+   */
+  showMenu() {
+    if(this.dom) {
+      this.dom.getElementById('figure-menu-button').style.display = ''; 
+      this.dom.getElementById('figure-menu-container').style.display = ''; 
+    }
   }
   
   /**
@@ -788,6 +934,22 @@ class PRDC_JSLAB_FIGURE {
       this.plot.remove();
     }
     this.plot = new PRDC_JSLAB_PLOT(this.#jsl, this.fid, id, traces, options);
+    if(this.fig_ready) {
+      this.plot._onFigureReady();
+    }
+  }
+  
+  /**
+   * Creates a new plot in the figure based on JSON file data.
+   * @param {Number} id Identifier for the new plot.
+   * @param {Array} data Data for the plot.
+   */
+  async _fromJSON(id, data) {
+    if(this.plot) {
+      this.plot.remove();
+    }
+    this.plot = new PRDC_JSLAB_PLOT(this.#jsl, this.fid, id);
+    this.plot.fromJSON(data);
     if(this.fig_ready) {
       this.plot._onFigureReady();
     }
@@ -952,7 +1114,7 @@ class PRDC_JSLAB_PLOT {
    * @param {Array} traces Data traces to be displayed in the plot.
    * @param {Object} options Configuration options for the plot.
    */
-  constructor(jsl, fid, id, traces, options) {
+  constructor(jsl, fid, id, traces = [], options = []) {
     var obj = this;
     
     this.#jsl = jsl;
@@ -960,9 +1122,6 @@ class PRDC_JSLAB_PLOT {
     this.id = id;
     this.traces = traces;
     this.options = options;
-    
-    this.size;
-    this.position;
     
     this.title_val;
     this.xlabel_val;
@@ -974,7 +1133,8 @@ class PRDC_JSLAB_PLOT {
     this.view_val = [37.5+180, 30];
     this.zoom_val = 1;
     this.axis_style_val;
-    this.legend_state;
+    this.json_val;
+    this.legend_state_val;
     
     this.plot_ready = false;
     this.lim_update = false;
@@ -989,7 +1149,7 @@ class PRDC_JSLAB_PLOT {
    * @param {String} label Label text for the x-axis.
    */
   legend(state) {
-    this.legend_state = state;
+    this.legend_state_val = state;
     if(this.plot_ready) {
       this.#jsl.ploter.updatePlotLayout(this.fid);
     }
@@ -1110,6 +1270,17 @@ class PRDC_JSLAB_PLOT {
   }
   
   /**
+   * Sets the plot data from JSON.
+   * @param {Array} data Data for the plot.
+   */
+  fromJSON(data) {
+    this.json_val = data;
+    if(this.plot_ready) {
+      this.#jsl.ploter.fromJSON(data);
+    }
+  }
+  
+  /**
    * Adds a print job to the queue and prints it if the system is ready.
    * @param {String} filename - The filename for the print job.
    * @param {Object} options - Options for the print job.
@@ -1137,6 +1308,14 @@ class PRDC_JSLAB_PLOT {
   update(traces, N) {
     this.#jsl.ploter.updateData(this.fid, traces, N);
   }
+
+  /**
+   * Updates plot data by delegating to the `updateDataById` method.
+   * @param {Object|Object[]} data - Trace update object(s) addressed by `id`.
+   */
+  updateById(data) {
+    this.#jsl.ploter.updateDataById(this.fid, data);
+  }
   
   /**
    * Removes the plot from the figure, cleaning up any resources associated with it.
@@ -1151,10 +1330,16 @@ class PRDC_JSLAB_PLOT {
    * Called when the figure containing this plot is ready, allowing for final adjustments or updates before displaying.
    */
   async _onFigureReady() {
-    await this.#jsl.ploter.plot(this.fid);
-    this.plot_ready = true;
-    this.#jsl.ploter.updatePlotLayout(this.fid);
-    this._readyResolve(true);
+    if(this.json_val) {
+      await this.#jsl.ploter.fromJSON(this.fid, this.json_val);
+      this.plot_ready = true;
+      this._readyResolve(true);
+    } else {
+      await this.#jsl.ploter.plot(this.fid);
+      this.plot_ready = true;
+      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this._readyResolve(true);
+    }
   }
   
   /**

@@ -10,7 +10,7 @@
 const { ipcRenderer } = require('electron');
 
 const helper = require("../js/helper.js");
-const { PRDC_APP_CONFIG } = require('../config/config');
+require("../js/init-config.js");
 const { PRDC_APP_LOGGER } = require('../lib/PRDC_APP_LOGGER/PRDC_APP_LOGGER');
 const { PRDC_JSLAB_LANGUAGE } = require('../js/language');
 
@@ -23,7 +23,6 @@ const log_file = ipcRenderer.sendSync('sync-message', 'get-log-file');
 const app_logger = new PRDC_APP_LOGGER(log_file);
 
 // Global variables
-const config = new PRDC_APP_CONFIG();
 var language = new PRDC_JSLAB_LANGUAGE();
 var win_editor = new PRDC_JSLAB_WIN_EDITOR();
 

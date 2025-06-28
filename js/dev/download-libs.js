@@ -17,14 +17,12 @@ const path = require('path');
 const { extractFull } = require('node-7z');
 const bin_path = require('7zip-bin').path7za;
 
-const { PRDC_APP_CONFIG } = require("../../config/config");
+require('../init-config.js');
 
 console.log('[dev-download-libs.js] Started');
 var t = performance.now();
 
 // Variables
-var config = new PRDC_APP_CONFIG();
-
 var force = process.argv.includes('--force');
 var confirm = process.argv.includes('--confirm');
 

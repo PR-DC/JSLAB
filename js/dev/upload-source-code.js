@@ -11,7 +11,7 @@ const fs = require('fs');
 const dircompare = require('dir-compare');
 const path = require('path');
 
-const { PRDC_APP_CONFIG } = require("../../config/config");
+require('../init-config.js');
 
 console.log('[upload-source-code.js] Started');
 var start = performance.now();
@@ -24,8 +24,6 @@ if(!process.env.SERVER_LIBS_PATH) {
 }
 
 // Variables
-var config = new PRDC_APP_CONFIG();
-
 const options = { 
   compareSize: config.UPLOAD_COMPARE_SIZE,
   compareContent: config.UPLOAD_COMPARE_CONTENT,

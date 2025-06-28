@@ -18,7 +18,7 @@
 
 % Define variables
 \newcommand{\yearvar}{2025}
-\newcommand{\appversion}{v1.0.2}
+\newcommand{\appversion}{v1.0.3}
 
 % Colors
 \definecolor{jsl-blue}{cmyk}{1,1,0,0}
@@ -1279,6 +1279,17 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent Opens the source file and navigates to the specified line based on the provided name.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{docGraph(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: The name of the function.
+\end{itemize}
+
+\noindent Showing graph of function.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{jslFileName()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -1543,6 +1554,28 @@ If an error occurs during file reading or parsing, it logs an error message.
 \noindent \textbf{Returns:} \texttt{<number>}: The result of the comparison.
 
 \noindent Compares two strings lexicographically.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{compareVersions(a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{a} \texttt{<string>}: First version.
+  \item \texttt{b} \texttt{<string>}: Second version.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: -1 if a < b, 0 if equal, 1 if a > b.
+
+\noindent Compare two version strings (e.g. "1.4.2", "v2.0.0-beta.1").
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{checkForUpdate()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True if there is available update; otherwise, false.
+
+\noindent Checks if there is available update
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{unrequire(module)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2351,6 +2384,19 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent Determines if the current path is absolute.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{pathJoin(paths)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{paths} \texttt{<string>}: The path segments to join.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The combined path.
+
+\noindent Joins all given path segments together using the platform-specific separator as a delimiter.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{pathFileName(path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -2390,6 +2436,19 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent Retrieves the file extension from the provided file path.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{pathExtName(path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path} \texttt{<string>}: The complete file path.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The file extension extracted from the path.
+
+\noindent Retrieves the file extension from the provided file path.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{pathResolve(path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -2401,6 +2460,20 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent \textbf{Returns:} \texttt{<string>}: - The resolved absolute path.
 
 \noindent Resolves a sequence of path segments into an absolute path using the environment's path resolver.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{pathRelative(from, to)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{from} \texttt{<string>}: The starting path.
+  \item \texttt{to} \texttt{<string>}: The target path.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: - The relative path from the \textasciigrave{}from\textasciigrave{} path to the \textasciigrave{}to\textasciigrave{} path.
+
+\noindent Computes the relative path from one path to another.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{pathNormalize(path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2499,6 +2572,33 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the developer tools were opened; otherwise, false.
 
 \noindent Opens the developer tools for a specified window by ID if it exists.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getWindowMediaSourceId(wid)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{wid} \texttt{<string>}: The window ID.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<String>}: Media source id if there is window; otherwise, false.
+
+\noindent Returns media source id for a specified window in the renderer process.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{startWindowVideoRecording(wid, opts)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{wid} \texttt{<string>}: The window ID.
+  \item \texttt{opts} \texttt{<Object>}: Optional settings.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: - Returns recorder object if there is window; otherwise, false.
+
+\noindent Starts video recording of the window.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{closeWindows(wid)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2716,6 +2816,20 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent Sets the opacity of the specified window.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{setWindowFullscreen(wid, state)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{wid} \texttt{<number>}: The ID of the window.
+  \item \texttt{state} \texttt{<number>}: The fullscreen state
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: - Returns false if the window ID is invalid, otherwise the result of the setFullscreen() method.
+
+\noindent Sets the fullscreen state of the specified window.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{setWindowTitle(wid, left, top)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -2755,6 +2869,20 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent \textbf{Returns:} \texttt{<Array>}: - An array [left, top] if the window exists, otherwise false.
 
 \noindent Retrieves the position of the specified window.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{printWindowToPdf(wid, options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{wid} \texttt{<string>}: The window ID.
+  \item \texttt{options} \texttt{<Object>}: Options for printing
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Buffer>}: Generated PDF data.
+
+\noindent Prints window to PDF format.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openDocumentation()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -3033,6 +3161,33 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent Retrieves the position of a specified figure.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{getFigureMediaSourceId(fid)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{fid} \texttt{<number>}: The ID of the figure.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<String>}: - Returns Media soruce id or false if the figure ID is invalid.
+
+\noindent Retrieves the media source id of a specified figure.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{startFigureVideoRecording(fid, opts)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{fid} \texttt{<number>}: The ID of the figure.
+  \item \texttt{opts} \texttt{<Object>}: Optional settings.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: - Returns recorder object or false if the figure ID is invalid.
+
+\noindent Starts video recording of a specified figure.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{closeFigure(fid)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -3228,6 +3383,55 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent \textbf{Returns:} \texttt{<Number>}: The plot identifier.
 
 \noindent Plots data on the active figure.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{updatePlot(traces, N)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{traces} \texttt{<Object>}: The trace data to be updated in the plot.
+  \item \texttt{N} \texttt{<number>}: The data length or index for updating the plot.
+\end{itemize}
+
+\noindent Updates plot data by delegating to the \textasciigrave{}update\textasciigrave{} method.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{updatePlotById(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{data} \texttt{<Object>}: Trace update object(s) to apply to the active plot.
+\end{itemize}
+
+\noindent Updates plot data by id by delegating to the \textasciigrave{}updateById\textasciigrave{} method.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{hideFigureMenu()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Hides figure menu.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{showFigureMenu()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Shows figure menu.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{loadJsonFigure(file\_path, id)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Absolute or relative path to the JSON file of figure.
+  \item \texttt{id} \texttt{<Number>}: Identifier for the figure.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Number>}: The identifier of the opened or updated figure.
+
+\noindent Loads figure from JSON file
 
 
 \subsection{time}
@@ -5609,6 +5813,20 @@ Each key in the object represents a column in the CSV. This function handles une
 
 \noindent Displays an audio waveform on the canvas.
 
+\vspace{5mm}
+\noindent \codeBlock{\texttt{startVideoRecording(source, [opts])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{source} \texttt{<HTMLCanvasElement>}: Canvas element, webcam deviceId, or desktop sourceId to capture.
+  \item \texttt{opts} \texttt{<Object>}: Optional settings: type ('canvas' | 'webcam' | 'desktop'), fps, mimeType, and videoBitsPerSecond.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<MediaRecorder>}: - MediaRecorder that streams the capture and provides a helper to stop and save.
+
+\noindent Records video from the specified canvas element, webcam deviceId, or desktop sourceId and returns a MediaRecorder augmented with an async stopRecording() that finalizes and saves the file.
+
 
 \subsection{serial\_device}
 \vspace{5mm}
@@ -5729,6 +5947,20 @@ Each key in the object represents a column in the CSV. This function handles une
 \noindent Reads the content of a file at the specified path.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{getContentFromCharRange(filepath, range)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{filepath} \texttt{<string>}: Path to file
+  \item \texttt{range} \texttt{<Array>}: Character range [start, end]
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: - Extracted substring
+
+\noindent Extract substring from file using range
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{writeFile(file\_path, data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -5756,6 +5988,19 @@ Each key in the object represents a column in the CSV. This function handles une
 \noindent Deletes a specified file synchronously.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{readDir(folder)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{folder} \texttt{<string>}: The path to the directory.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: An array of filenames or false in case of an error.
+
+\noindent Reads the contents of a directory synchronously.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{deleteDir(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -5779,6 +6024,18 @@ Each key in the object represents a column in the CSV. This function handles une
 \end{itemize}
 
 \noindent Moves a file from source to destination.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{copyFile(source, destination)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{source} \texttt{<string>}: The path to the source file.
+  \item \texttt{destination} \texttt{<string>}: The path to the destination file.
+\end{itemize}
+
+\noindent Copies a file from source to destination.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{filesInFolder(folder, ext)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5819,6 +6076,19 @@ Each key in the object represents a column in the CSV. This function handles une
 \noindent \textbf{Returns:} \texttt{<string>}: The selected file path(s) or an empty array if canceled.
 
 \noindent Opens a dialog for the user to choose a file, synchronously.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{chooseFolder(options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{options} \texttt{<Object>}: Configuration options for the dialog.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The selected folder path(s) or an empty array if canceled.
+
+\noindent Opens a dialog for the user to choose a folder, synchronously.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getDefaultPath(type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6963,6 +7233,35 @@ It also escapes strings to prevent HTML injection.
 
 \noindent Replaces file links in a text with HTML span elements.
 
+\vspace{5mm}
+\noindent \codeBlock{\texttt{numberValidator(n)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{n} \texttt{<HTMLInputElement>}: Target input element.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when the value is valid.
+
+\noindent Checks that an input contains a finite number
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{limitedNumberValidator(n, [min], [max])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{n} \texttt{<HTMLInputElement>}: Target input element.
+  \item \texttt{min} \texttt{<number>}: Minimum allowed value (optional).
+  \item \texttt{max} \texttt{<number>}: Maximum allowed value (optional).
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when the value is valid.
+
+\noindent Checks that an input contains a finite number
+and—if supplied—is within the inclusive range [min, max].
+
 
 \subsection{render}
 \vspace{5mm}
@@ -7701,6 +8000,81 @@ or indicates no overlap.
 
 
 \subsection{presentation}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{openPresentation(file\_path, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Absolute or relative path to the presentation directory.
+  \item \texttt{type} \texttt{<String>}: Type of presentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the opened presentation.
+
+\noindent Opens an existing presentation in a new window and returns its context.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{editPresentation(file\_path, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Absolute or relative path to the presentation directory.
+  \item \texttt{type} \texttt{<String>}: Type of presentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the editor window.
+
+\noindent Opens the presentation editor for the specified project and returns its context.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{createPresentation(file\_path, [opts\_in], [open\_editor])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Target directory where the presentation project will be created.
+  \item \texttt{opts\_in} \texttt{<Object>}: Extra options
+  \item \texttt{open\_editor} \texttt{<Boolean>}: If true, automatically opens the new project in the editor.
+\end{itemize}
+
+\noindent Creates a new presentation project on disk and optionally opens it in the editor.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{packPresentation(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Path to the presentation directory to be archived.
+\end{itemize}
+
+\noindent Packages an existing presentation directory into a ZIP archive beside it.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{makeStandalonePresentation(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Path to the presentation directory to be archived.
+\end{itemize}
+
+\noindent Converts an existing presentation to standalone presentation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{presentationToPdf(file\_path, run\_make\_standalone)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Path to the presentation directory.
+  \item \texttt{run\_make\_standalone} \texttt{<Boolean>}: Whether to run makeStandalonePresentation method or not.
+\end{itemize}
+
+\noindent Converts an presentation to PDF format.
+
 
 \subsection{mechanics}
 \vspace{5mm}
@@ -7716,6 +8090,209 @@ or indicates no overlap.
 \noindent \textbf{Returns:} \texttt{<Promise.<\{extrems: Array.<String>, context: Object\}>>}: 
 
 \noindent Plots beam diagrams.
+
+
+\subsection{gui}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{escapeHTML(string)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{string} \texttt{<string>}: The raw text whose special characters should be converted to HTML entities.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The sanitized string safe for insertion into the DOM.
+
+\noindent Escapes reserved HTML characters in a string to prevent injection or XSS.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isVisible(el)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el} \texttt{<HTMLElement>}: The element to test for visibility in normal document flow.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: \textasciigrave{}true\textasciigrave{} if the element has a non-null \textasciigrave{}offsetParent\textasciigrave{}; otherwise \textasciigrave{}false\textasciigrave{}.
+
+\noindent Reports whether an element participates in layout flow (i.e., is not \textasciigrave{}display:none\textasciigrave{}).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getElVal(el\_or\_sel)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The element itself or a selector/ID string used to locate it.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The escaped string value, or an empty string if the element is not found.
+
+\noindent Reads an input-like element’s value, escapes it for HTML, and returns the result.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getElValNum(el\_or\_sel)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The element itself or a selector/ID string used to locate it.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: The numeric value or \textasciigrave{}NaN\textasciigrave{} if conversion fails.
+
+\noindent Reads an input-like element’s value, converts it to a number, and returns the result.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{onSliderInput(el, fun)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el} \texttt{<string>}: The slider element or a selector for delegated listening.
+  \item \texttt{fun} \texttt{<function>}: The function to invoke each time the slider emits \textasciigrave{}input\textasciigrave{} or \textasciigrave{}change\textasciigrave{}.
+\end{itemize}
+
+\noindent Attaches \textasciigrave{}input\textasciigrave{} and \textasciigrave{}change\textasciigrave{} listeners to a slider and forwards events to a callback.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{onInput(el, fun, [validator])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el} \texttt{<string>}: Target element or CSS selector for delegation.
+  \item \texttt{fun} \texttt{<function>}: Callback executed with \textasciigrave{}this\textasciigrave{} bound to the element that triggered the event.
+  \item \texttt{validator} \texttt{<function>}: Optional predicate that must return \textasciigrave{}true\textasciigrave{} for the callback to fire.
+\end{itemize}
+
+\noindent Fires a callback when an input loses focus or the user presses Enter, with optional delegation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{onInputChange(el, fun, [validator])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el} \texttt{<string>}: Target element or selector for delegated listening.
+  \item \texttt{fun} \texttt{<function>}: Callback executed when the value truly changes.
+  \item \texttt{validator} \texttt{<function>}: Optional predicate to approve or reject the change.
+\end{itemize}
+
+\noindent Detects actual value changes in an input and invokes a callback after validation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{onActiveInputChange(el, fun, [validator])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el} \texttt{<string>}: Target element or selector for delegated listening.
+  \item \texttt{fun} \texttt{<function>}: Callback executed when the value changes during active editing.
+  \item \texttt{validator} \texttt{<function>}: Optional predicate to approve or reject the change.
+\end{itemize}
+
+\noindent Like \textasciigrave{}onInputChange\textasciigrave{} but triggers only while the element remains focused (active input).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setInputValue(el\_or\_sel, val)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The input element or selector identifying it.
+  \item \texttt{val} \texttt{<string>}: The value to assign and remember as the “set” value.
+\end{itemize}
+
+\noindent Programmatically sets an input’s value and records it as the baseline for change tracking.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{updateInputValue(el\_or\_sel, val)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The input element or selector identifying it.
+  \item \texttt{val} \texttt{<string>}: The new value to write and store as the baseline.
+\end{itemize}
+
+\noindent Updates an input’s value only if it is different from the current content, and records it.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{resetInputValue(el\_or\_sel)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The input element or selector identifying it.
+\end{itemize}
+
+\noindent Restores an input to the value previously stored with \textasciigrave{}setInputValue\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{showInputChanged(el\_or\_sel)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The input element or selector identifying it.
+\end{itemize}
+
+\noindent Adds or removes the \textasciigrave{}changed\textasciigrave{} CSS class based on whether the current value differs from the stored baseline.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{validateInputNumber(el\_or\_sel)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The input element or selector identifying it.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array>}: Tuple of the parsed number and a validity flag.
+
+\noindent Validates that an input contains a numeric value and briefly highlights errors.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setInputWithWarning(el\_or\_sel, val)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The input element or selector identifying it.
+  \item \texttt{val} \texttt{<string>}: The value to assign before flashing the warning.
+\end{itemize}
+
+\noindent Sets an input’s value and temporarily applies a \textasciigrave{}warning\textasciigrave{} class for visual feedback.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{addClassMs(node, cls, ms)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{node} \texttt{<HTMLElement>}: The element to which the class will be applied.
+  \item \texttt{cls} \texttt{<string>}: The CSS class name to toggle.
+  \item \texttt{ms} \texttt{<number>}: The number of milliseconds to keep the class before removal.
+\end{itemize}
+
+\noindent Adds a CSS class to an element for a specified duration, then removes it.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{onResize(el\_or\_sel, cb)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{el\_or\_sel} \texttt{<string>}: The element or selector to observe.
+  \item \texttt{cb} \texttt{<function>}: Callback that receives the \textasciigrave{}ResizeObserverEntry.contentRect\textasciigrave{} whenever the element resizes.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<ResizeObserver>}: The observer instance, or \textasciigrave{}undefined\textasciigrave{} if the element is not found.
+
+\noindent Observes an element’s size changes and reports each new \textasciigrave{}contentRect\textasciigrave{} to a callback.
 
 
 \subsection{Matrix}
@@ -8516,12 +9093,12 @@ or indicates no overlap.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{file} \texttt{<string>}: The path to the HTML file to open in the window.
+  \item \texttt{file} \texttt{<string>}: The path to the HTML file or url to open in the window.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves when the window is opened and ready.
 
-\noindent Opens the window with the specified file.
+\noindent Opens the window with the specified file or url.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{show()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8652,6 +9229,19 @@ or indicates no overlap.
 \noindent Sets the opacity of the window.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{setFullscreen(state)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{state} \texttt{<number>}: State of fullscreen
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<(boolean|undefined)>>}: - Resolves to \textasciigrave{}true\textasciigrave{} if the fullscreen was set successfully, or \textasciigrave{}false\textasciigrave{} if the window ID is invalid.
+
+\noindent Sets the fullscreen state of the window.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{setTitle(title)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -8663,6 +9253,19 @@ or indicates no overlap.
 \noindent \textbf{Returns:} \texttt{<Promise.<*>>}: A promise that resolves when the title is set.
 
 \noindent Sets the title of the current window.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{printToPdf(options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{options} \texttt{<Object>}: Options for printing.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Buffer>}: Generated PDF data.
+
+\noindent Prints the current window to PDF.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getSize()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8695,6 +9298,27 @@ or indicates no overlap.
 \noindent \textbf{Returns:} \texttt{<Promise.<boolean>>}: A promise that resolves to true when dev tools are opened.
 
 \noindent Opens the developer tools for the current window asynchronously.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getMediaSourceId()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<String>}: Media source id if there is window; otherwise, false.
+
+\noindent Returns media source id for this window.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{startVideoRecording(opts)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{opts} \texttt{<Object>}: Optional settings.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: - Returns recorder object.
+
+\noindent Starts video recording of this window.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{addScript(script\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8796,12 +9420,45 @@ or indicates no overlap.
 \noindent Retrieves the position of the window.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{getMediaSourceId()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<String>}: - Media source id.
+
+\noindent Retrieves the media source id of the figure.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{startVideoRecording(opts)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{opts} \texttt{<Object>}: Optional settings.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: - Returns recorder object.
+
+\noindent Starts video recording of the figure.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{close()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Returns:} \texttt{<Promise>}: - Resolves when the window is closed.
 
 \noindent Closes the window.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{hideMenu()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Hides figure menu.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{showMenu()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Shows figure menu.
 
 
 \subsection{Plot}
@@ -8928,6 +9585,17 @@ or indicates no overlap.
 \noindent Sets the axis style value and updates the plot layout if the plot is ready.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{fromJSON(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{data} \texttt{<Array>}: Data for the plot.
+\end{itemize}
+
+\noindent Sets the plot data from JSON.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{print(filename, options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -8950,6 +9618,17 @@ or indicates no overlap.
 \end{itemize}
 
 \noindent Updates plot data by delegating to the \textasciigrave{}updateData\textasciigrave{} method.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{updateById(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{data} \texttt{<Object>}: Trace update object(s) addressed by \textasciigrave{}id\textasciigrave{}.
+\end{itemize}
+
+\noindent Updates plot data by delegating to the \textasciigrave{}updateDataById\textasciigrave{} method.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{remove()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

@@ -1,6 +1,6 @@
 {
   "name": "JSLAB",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "JavaScript LABoratory environment",
   "main": "js/init.js",
   "repository": "https://github.com/PR-DC/JSLAB",
@@ -116,42 +116,42 @@
       "multiLanguageInstaller": true,
       "warningsAsErrors": false
     },
-    "artifactName": "JSLAB_1.0.2.${ext}"
+    "artifactName": "JSLAB_1.0.3.${ext}"
   },
   "devDependencies": {
-    "electron": "29.1.2",
-    "electron-builder": "24.13.3"
+    "electron": "36.4.0",
+    "electron-builder": "26.0.12"
   },
   "dependencies": {
-    "@babel/parser": "7.26.2",
+    "@babel/parser": "7.27.5",
     "@babel/plugin-syntax-top-level-await": "7.14.5",
     "7zip-bin": "^5.2.0",
     "big-json-viewer": "0.1.7",
-    "bytenode": "1.5.6",
-    "dir-compare": "4.2.0",
+    "bytenode": "1.5.7",
+    "dir-compare": "5.0.0",
     "electron-context-menu": "3.6.1",
     "electron-store": "8.2.0",
-    "eslint": "9.14.0",
-    "fast-xml-parser": "4.4.1",
+    "eslint": "9.29.0",
+    "fast-xml-parser": "5.2.5",
     "fmin": "0.0.4",
-    "glob": "10.3.10",
+    "glob": "11.0.3",
     "jsdoc-api": "9.3.4",
-    "ml-regression-polynomial": "3.0.1",
+    "ml-regression-polynomial": "3.0.2",
     "node-7z": "^3.0.0",
-    "node-addon-api": "8.0.0",
-    "node-gyp": "10.2.0",
-    "node-mavlink": "2.0.7",
-    "npm": "10.9.0",
+    "node-addon-api": "8.4.0",
+    "node-gyp": "11.2.0",
+    "node-mavlink": "2.1.0",
+    "npm": "11.4.2",
     "path-equal": "1.2.5",
-    "pdfkit": "0.14.0",
-    "recast": "0.23.9",
+    "pdfkit": "0.17.1",
+    "recast": "0.23.11",
     "rimraf": "^5.0.10",
     "seedrandom": "3.0.5",
-    "serialport": "12.0.0",
+    "serialport": "13.0.0",
     "source-map": "0.7.4",
     "svg-to-pdfkit": "0.1.8",
     "tcp-port-used": "1.0.2",
-    "usb": "2.9.0",
+    "usb": "2.15.0",
     "zeromq": "6.0.0-beta.20"
   }
 }

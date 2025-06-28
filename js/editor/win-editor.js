@@ -7,7 +7,7 @@
 
 // Modules
 // --------------------
-const { ipcRenderer } = require('electron');
+const { ipcRenderer, webUtils } = require('electron');
 
 const { PRDC_JSLAB_EDITOR } = require('./editor');
 const { PRDC_JSLAB_EDITOR_SCRIPT_MANAGER } = require('./script-manager');
@@ -67,7 +67,7 @@ class PRDC_JSLAB_WIN_EDITOR {
     
     // On IPC message
     ipcRenderer.on("EditorWindow", function(event, action, data) {
-      switch (action) {
+      switch(action) {
         case "open-script":
           // On open script
           obj.script_manager.openScript(data);
@@ -89,9 +89,10 @@ class PRDC_JSLAB_WIN_EDITOR {
     document.addEventListener("drop", function(e) {
       e.stopPropagation();
       e.preventDefault();
+      console.log(e);
       
       for(const f of e.dataTransfer.files) {
-        obj.script_manager.openScript([f.path]);
+        obj.script_manager.openScript([webUtils.getPathForFile(f)]);
       }
     }, false);
   }

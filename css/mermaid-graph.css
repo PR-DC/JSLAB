@@ -15,6 +15,7 @@ body {
 
 .graph.prdc-svg-viewer svg {
   height: 100%;
+  width: 100%
 }
 
 .graph .node rect, 
