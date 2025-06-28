@@ -111,7 +111,8 @@ class PRDC_JSLAB_PRESENTATION {
     var wheelGuard = false;
     document.addEventListener('wheel', (event) => {
       if(event.target.closest('.js-plotly-plot') ||
-        event.target.closest('input')) return;
+        event.target.closest('input.ui') ||
+        event.target.closest('scene-3d-json')) return;
       if(Math.abs(event.deltaY) < 10 || wheelGuard) {
         return;
       }
@@ -191,7 +192,7 @@ class PRDC_JSLAB_PRESENTATION {
     }
     
     this._attachGestureControl();
-    if(!is_lazy) {
+    if(!is_lazy && window.MathJax && typeof MathJax.typesetPromise === 'function') {
       MathJax.typesetPromise();
     }
   }
@@ -362,6 +363,22 @@ class PRDC_JSLAB_PRESENTATION {
   }
   
   /**
+   * Returns when global variable becomes defined
+   * @param {string} prop - Name of variable
+   */
+  async waitForGlobal(prop) {
+    if(!window[prop]) {
+      await new Promise(resolve => {
+        const check = () => {
+          if(window[prop]) return resolve();
+          requestAnimationFrame(check);
+        };
+        check();
+      });
+    }
+  }
+  
+  /**
    * Builds slides navigation.
    */
   _buildSlideNav() {
@@ -431,7 +448,7 @@ class PRDC_JSLAB_PRESENTATION {
    */
   _lazyRender(slide) {
     if(!slide) return;
-    slide.querySelectorAll('img-pdf, plot-json').forEach(el => {
+    slide.querySelectorAll('img-pdf, plot-json, scene-3d-json').forEach(el => {
       if (el._lazyRendered) return;
       if (typeof el._render === 'function') {
         el._lazyRendered = true;
@@ -549,7 +566,8 @@ class PRDC_JSLAB_PRESENTATION {
 
     slidesArea.addEventListener('pointerdown', e => {
       if(e.target.closest('.js-plotly-plot') ||
-        e.target.closest('input')) return;
+        e.target.closest('input.ui') ||
+        e.target.closest('scene-3d-json')) return;
       if(e.pointerType !== 'mouse' || e.buttons === 1) {
         tracking = true;
         startX = e.clientX;
@@ -559,7 +577,8 @@ class PRDC_JSLAB_PRESENTATION {
 
     slidesArea.addEventListener('pointerup', e => {
       if(e.target.closest('.js-plotly-plot') ||
-        e.target.closest('input')) return;
+        e.target.closest('input.ui') ||
+        e.target.closest('scene-3d-json')) return;
       if(!tracking) return;
       tracking = false;
 
@@ -631,6 +650,7 @@ class ImagePDF extends HTMLElement {
     if(!is_lazy) this._render();
     this.is_connected = true;
   }
+  
   /**
    * Callback called when element's attribute is changed
    */
@@ -707,6 +727,7 @@ class PlotJSON extends HTMLElement {
     if(!is_lazy) this._render();
     this.is_connected = true;
   }
+  
   /**
    * Callback called when element's attribute is changed
    */
@@ -750,3 +771,91 @@ class PlotJSON extends HTMLElement {
 }
 
 customElements.define('plot-json', PlotJSON);
+
+/**
+ * Class for Scene3dJSON HTML element
+ */
+class Scene3dJSON extends HTMLElement {
+  
+  static observedAttributes = ['src', 'width', 'height'];
+  
+  /**
+   * Initializes an instance of the Scene3dJSON class.
+   */
+  constructor() {
+    super();
+    this._canvas = document.createElement('canvas');
+    this.appendChild(this._canvas);
+  }
+  
+  /**
+   * Callback called when element is added to page
+   */
+  connectedCallback() {
+    if(!is_lazy) this._render();
+    this.is_connected = true;
+  }
+  
+  /**
+   * Callback called when element's attribute is changed
+   */
+  attributeChangedCallback() {
+    if(!this.is_connected) return;
+    if(!is_lazy || this.closest('slide')?.classList.contains('active')) {
+      this._render();
+    }
+  }
+
+  /**
+   * Renders element
+   */
+  async _render() {
+    var src_attr = this.getAttribute('src');
+    if(!src_attr) return;
+
+    try {
+      if(this.src !== src_attr) {
+        if(presentation._standalone) {
+          var buf  = await loadFileBuf(src_attr);
+          this.data  = JSON.parse(buf);
+        } else {
+          var resp = await fetch(src_attr, { cache: 'no-store' });
+          this.data  = await resp.json();
+        }
+        this.src = src_attr;
+      }
+
+      var w = presentation.toPixels(this.getAttribute('width') , 'width')  || 640;
+      var h = presentation.toPixels(this.getAttribute('height'), 'height') || 480;
+      
+      await presentation.waitForGlobal('THREE');
+
+      var loader = new window.THREE.ObjectLoader();
+      this.scene = loader.parse(this.data);
+      this.camera = new window.THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+      this.renderer = new window.THREE.WebGLRenderer({ canvas: this._canvas, alpha: true, antialias: true });
+      this.renderer.setSize(w, h);
+      this.renderer.setAnimationLoop(() => { 
+        this.renderer.render(this.scene, this.camera) 
+      });
+
+      var script = this.querySelector('script[type="x-scene-setup"]');
+      if(script) {
+        var AsyncFunction = Object.getPrototypeOf(
+          async function () {}).constructor;
+        var fn = new AsyncFunction(
+          'presentation',
+          script.textContent
+        ).bind(this);
+        await fn(presentation);
+      }
+
+      this.renderer.render(this.scene, this.camera);
+      this._finished_loading = true;
+    } catch(err) {
+      console.error('scene-3d-json:', err);
+    }
+  }
+}
+
+customElements.define('scene-3d-json', Scene3dJSON);

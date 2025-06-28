@@ -9,11 +9,11 @@
   "homepage": "https://pr-dc.com",
   "scripts": {
     "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
-    "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron js/init.js",
-    "start": "electron js/init.js",
-    "debug": "electron js/init.js --debug-app",
-    "test": "electron js/init.js --test-app",
-    "build": "node js/dev/build-configure.js & node-gyp rebuild & electron js/init.js",
+    "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron .",
+    "start": "electron .",
+    "debug": "electron . --debug-app",
+    "test": "electron . --test-app",
+    "build": "node js/dev/build-configure.js & node-gyp rebuild & electron .",
     "pack": "node js/dev/build-configure.js --action pack & node-gyp rebuild & electron-builder --dir",
     "dist": "node js/dev/build-configure.js --action dist & node-gyp rebuild & electron-builder --win",
     "dist-portable": "node js/dev/build-configure.js --action dist-portable & node-gyp rebuild & electron-builder --win portable",
@@ -83,10 +83,14 @@
     "win": {
       "icon": "icons/icon.ico",
       "target": "nsis",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
-      "publisherName": "PR-DC"
+      "signtoolOptions": {
+        "publisherName": [
+          "PR-DC"
+        ],
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      }
     },
     "linux": {
       "icon": "icons/",

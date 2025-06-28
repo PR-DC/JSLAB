@@ -100,7 +100,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   eval(code) {
     this.checkLoaded();
-    if(this.jsl.config.DEBUG_SYM_PYTHON_EVAL_CODE) {
+    if(config.DEBUG_SYM_PYTHON_EVAL_CODE) {
       this.jsl._console.log('@sym: eval: ' + code);
     }
     try {

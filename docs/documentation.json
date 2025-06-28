@@ -14354,7 +14354,7 @@
         "source_lineno": 388,
         "source_range": [
           12349,
-          12701
+          12702
         ]
       }
     },
@@ -19845,7 +19845,7 @@
         "source_lineno": 200,
         "source_range": [
           9309,
-          9807
+          9809
         ]
       },
       "makeStandalonePresentation": {
@@ -19866,8 +19866,8 @@
         "source_filename": "presentation.js",
         "source_lineno": 213,
         "source_range": [
-          9980,
-          10950
+          9982,
+          10952
         ]
       },
       "presentationToPdf": {
@@ -19899,8 +19899,8 @@
         "source_filename": "presentation.js",
         "source_lineno": 244,
         "source_range": [
-          11188,
-          12713
+          11190,
+          12715
         ]
       }
     },
@@ -22458,8 +22458,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 485,
         "source_range": [
-          14235,
-          14335
+          14226,
+          14326
         ]
       },
       "toString": {
@@ -22480,8 +22480,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 494,
         "source_range": [
-          14488,
-          14575
+          14479,
+          14566
         ]
       },
       "toNumeric": {
@@ -22502,8 +22502,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 502,
         "source_range": [
-          14712,
-          14759
+          14703,
+          14750
         ]
       },
       "toJSON": {
@@ -22524,8 +22524,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 510,
         "source_range": [
-          14905,
-          15027
+          14896,
+          15018
         ]
       },
       "toSafeJSON": {
@@ -22546,8 +22546,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 521,
         "source_range": [
-          15168,
-          15212
+          15159,
+          15203
         ]
       },
       "toPrettyString": {
@@ -22568,8 +22568,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 529,
         "source_range": [
-          15361,
-          15411
+          15352,
+          15402
         ]
       }
     },
@@ -38125,7 +38125,7 @@
         "source_lineno": 101,
         "source_range": [
           2978,
-          3267
+          3258
         ]
       },
       "sym": {
@@ -38156,8 +38156,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 119,
         "source_range": [
-          3468,
-          3598
+          3459,
+          3589
         ]
       },
       "syms": {
@@ -38188,8 +38188,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 131,
         "source_range": [
-          3825,
-          4099
+          3816,
+          4090
         ]
       },
       "mat": {
@@ -38220,8 +38220,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 149,
         "source_range": [
-          4372,
-          4680
+          4363,
+          4671
         ]
       },
       "mul": {
@@ -38255,8 +38255,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 167,
         "source_range": [
-          4957,
-          5290
+          4948,
+          5281
         ]
       },
       "div": {
@@ -38290,8 +38290,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 189,
         "source_range": [
-          5554,
-          5887
+          5545,
+          5878
         ]
       },
       "plus": {
@@ -38325,8 +38325,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 211,
         "source_range": [
-          6145,
-          6479
+          6136,
+          6470
         ]
       },
       "minus": {
@@ -38360,8 +38360,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 233,
         "source_range": [
-          6750,
-          7085
+          6741,
+          7076
         ]
       },
       "pow": {
@@ -38405,8 +38405,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 256,
         "source_range": [
-          7419,
-          7697
+          7410,
+          7688
         ]
       },
       "transp": {
@@ -38438,8 +38438,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 275,
         "source_range": [
-          7937,
-          8178
+          7928,
+          8169
         ]
       },
       "inv": {
@@ -38471,8 +38471,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 293,
         "source_range": [
-          8434,
-          8678
+          8425,
+          8669
         ]
       },
       "det": {
@@ -38504,8 +38504,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 311,
         "source_range": [
-          8968,
-          9212
+          8959,
+          9203
         ]
       },
       "diff": {
@@ -38558,8 +38558,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 331,
         "source_range": [
-          9653,
-          9916
+          9644,
+          9907
         ]
       },
       "intg": {
@@ -38611,8 +38611,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 351,
         "source_range": [
-          10453,
-          11021
+          10444,
+          11012
         ]
       },
       "subs": {
@@ -38666,8 +38666,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 381,
         "source_range": [
-          11473,
-          12230
+          11464,
+          12221
         ]
       },
       "simplify": {
@@ -38699,8 +38699,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 416,
         "source_range": [
-          12450,
-          12701
+          12441,
+          12692
         ]
       },
       "showLatex": {
@@ -38722,8 +38722,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 433,
         "source_range": [
-          12887,
-          13002
+          12878,
+          12993
         ]
       },
       "dispLatex": {
@@ -38745,8 +38745,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 442,
         "source_range": [
-          13182,
-          13292
+          13173,
+          13283
         ]
       },
       "clear": {
@@ -38757,8 +38757,8 @@
         "source_filename": "sym-math.js",
         "source_lineno": 450,
         "source_range": [
-          13387,
-          13630
+          13378,
+          13621
         ]
       }
     }

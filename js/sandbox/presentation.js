@@ -118,7 +118,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     js = js.replace('%presentation_config%', JSON.stringify(presentation_config, false, 2));
     this.jsl.file_system.writeFile(this.jsl.env.pathJoin(file_path, 'res/internal/presentation.js'), js);
     
-    this.jsl.file_system.copyFile(this.jsl.env.pathJoin(app_path, 'dev/portable_server/portable_server.exe'),
+    this.jsl.file_system.copyFile(this.jsl.env.pathJoin(app_path, 'lib/portable_server/portable_server.exe'),
       this.jsl.env.pathJoin(file_path, name + '.exe'));
     this.jsl.file_system.copyFile(this.jsl.env.pathJoin(app_path, 'css/presentation.css'),
       this.jsl.env.pathJoin(file_path, 'res/internal/presentation.css'));
@@ -201,7 +201,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     file_path = this._getPath('packPresentation', file_path);
     if(this._checkPresentation('packPresentation', file_path)) {
       var dest = this.jsl.env.pathResolve(this.jsl.env.pathJoin(file_path, '..', this.jsl.env.pathBaseName(file_path) + '.zip'));
-      this.jsl.env.execSync(`${this.jsl.env.bin7zip} a -tzip "${dest}" "${this.jsl.env.pathJoin(file_path, '*')}"`);
+      this.jsl.env.execSync(`"${this.jsl.env.bin7zip}" a -tzip "${dest}" "${this.jsl.env.pathJoin(file_path, '*')}"`);
       this.jsl.env.disp('@packPresentation: ' + language.string(241) + dest);
     }
   }
@@ -411,7 +411,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     var obj = this;
     return new Promise((resolve, reject) => {
       const child = obj.jsl.env.spawn(exe_file, ['--prog'], {
-        stdio: ['ignore', 'pipe', 'inherit']
+        stdio: ['ignore', 'pipe', 'inherit'],
+        windowsHide: true
       });
       
       let buffer = '';

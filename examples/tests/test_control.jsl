@@ -15,7 +15,7 @@ var t = range(0, 49); // Time vector
 var u = ones(t.length); // Unit step input
 
 // Simulate the system response
-var { y } = lsim(num, den, u, t);
+var { y } = lsim(tf(num, den), u, t);
 
 // Log or plot the results
 console.log("Output (y):", y);

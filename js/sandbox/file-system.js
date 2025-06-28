@@ -391,7 +391,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     var filePath = this.jsl.env.pathJoin(dest, name + ext);
     
     this.jsl.env.copyFileSync(src, filePath);
-    this.jsl.env.execSync(`${this.jsl.env.bin7zip } x "${filePath}" -o"${dest}" -y`);
+    this.jsl.env.execSync(`"${this.jsl.env.bin7zip}" x "${filePath}" -o"${dest}" -y`);
     this.jsl.env.rmSync(filePath);
   }
 }

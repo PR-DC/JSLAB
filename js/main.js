@@ -15,10 +15,6 @@ const Store = require('electron-store');
 
 const { PRDC_APP_LOGGER } = require('./../lib/PRDC_APP_LOGGER/PRDC_APP_LOGGER');
 
-var app_version = process.env.npm_package_version;
-
-app.commandLine.appendSwitch('max-active-webgl-contexts', config.MAX_ACTIVE_WEBGL_CONTEXTS);
-
 /**
  * Class for flight control app.
  */
@@ -114,12 +110,13 @@ class PRDC_JSLAB_MAIN {
       showInspectElement: false
     });
   
-    // Disable renderer backgrounding
+    // Comand line switches
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
     app.commandLine.appendSwitch('disable-background-timer-throttling');
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch("disable-http-cache");
-
+    app.commandLine.appendSwitch('max-active-webgl-contexts', config.MAX_ACTIVE_WEBGL_CONTEXTS);
+    
     // Prevent sleep
     powerSaveBlocker.start('prevent-app-suspension');
   
@@ -468,7 +465,7 @@ class PRDC_JSLAB_MAIN {
       var retval;
       switch(action) {
         case 'get-app':
-          retval = {'name': app.getName(), 'version': app_version, 'path': app_path, 'exe_path': app.getPath('exe')};
+          retval = {'name': app.getName(), 'version': app.getVersion(), 'path': app_path, 'exe_path': app.getPath('exe')};
           break;
         case 'get-app-name':
           retval = app.getName();
@@ -477,7 +474,7 @@ class PRDC_JSLAB_MAIN {
           retval = app_path;
           break;
         case 'get-app-version':
-          retval = app_version;
+          retval = app.getVersion();
           break;
         case 'get-platform':
           retval = os.platform();

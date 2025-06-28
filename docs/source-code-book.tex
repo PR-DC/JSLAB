@@ -476,11 +476,11 @@
   "homepage": "https://pr-dc.com",
   "scripts": {
     "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
-    "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron js/init.js",
-    "start": "electron js/init.js",
-    "debug": "electron js/init.js --debug-app",
-    "test": "electron js/init.js --test-app",
-    "build": "node js/dev/build-configure.js & node-gyp rebuild & electron js/init.js",
+    "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron .",
+    "start": "electron .",
+    "debug": "electron . --debug-app",
+    "test": "electron . --test-app",
+    "build": "node js/dev/build-configure.js & node-gyp rebuild & electron .",
     "pack": "node js/dev/build-configure.js --action pack & node-gyp rebuild & electron-builder --dir",
     "dist": "node js/dev/build-configure.js --action dist & node-gyp rebuild & electron-builder --win",
     "dist-portable": "node js/dev/build-configure.js --action dist-portable & node-gyp rebuild & electron-builder --win portable",
@@ -550,10 +550,14 @@
     "win": {
       "icon": "icons/icon.ico",
       "target": "nsis",
-      "signingHashAlgorithms": [
-        "sha256"
-      ],
-      "publisherName": "PR-DC"
+      "signtoolOptions": {
+        "publisherName": [
+          "PR-DC"
+        ],
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      }
     },
     "linux": {
       "icon": "icons/",
@@ -7492,7 +7496,7 @@ body  {
   width: 100vw;
   height: 100vh;
   background: #333;
-  font-size: 3vh; 
+  font-size: 24px; 
 }
 
 table {
@@ -11822,10 +11826,6 @@ const Store = require('electron-store');
 
 const { PRDC_APP_LOGGER } = require('./../lib/PRDC_APP_LOGGER/PRDC_APP_LOGGER');
 
-var app_version = process.env.npm_package_version;
-
-app.commandLine.appendSwitch('max-active-webgl-contexts', config.MAX_ACTIVE_WEBGL_CONTEXTS);
-
 /**
  * Class for flight control app.
  */
@@ -11921,12 +11921,13 @@ class PRDC_JSLAB_MAIN {
       showInspectElement: false
     });
   
-    // Disable renderer backgrounding
+    // Comand line switches
     app.commandLine.appendSwitch('disable-renderer-backgrounding');
     app.commandLine.appendSwitch('disable-background-timer-throttling');
     app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
     app.commandLine.appendSwitch("disable-http-cache");
-
+    app.commandLine.appendSwitch('max-active-webgl-contexts', config.MAX_ACTIVE_WEBGL_CONTEXTS);
+    
     // Prevent sleep
     powerSaveBlocker.start('prevent-app-suspension');
   
@@ -12275,7 +12276,7 @@ class PRDC_JSLAB_MAIN {
       var retval;
       switch(action) {
         case 'get-app':
-          retval = {'name': app.getName(), 'version': app_version, 'path': app_path, 'exe_path': app.getPath('exe')};
+          retval = {'name': app.getName(), 'version': app.getVersion(), 'path': app_path, 'exe_path': app.getPath('exe')};
           break;
         case 'get-app-name':
           retval = app.getName();
@@ -12284,7 +12285,7 @@ class PRDC_JSLAB_MAIN {
           retval = app_path;
           break;
         case 'get-app-version':
-          retval = app_version;
+          retval = app.getVersion();
           break;
         case 'get-platform':
           retval = os.platform();
@@ -25048,7 +25049,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     var filePath = this.jsl.env.pathJoin(dest, name + ext);
     
     this.jsl.env.copyFileSync(src, filePath);
-    this.jsl.env.execSync(`${this.jsl.env.bin7zip } x "${filePath}" -o"${dest}" -y`);
+    this.jsl.env.execSync(`"${this.jsl.env.bin7zip}" x "${filePath}" -o"${dest}" -y`);
     this.jsl.env.rmSync(filePath);
   }
 }
@@ -41559,7 +41560,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     js = js.replace('%presentation_config%', JSON.stringify(presentation_config, false, 2));
     this.jsl.file_system.writeFile(this.jsl.env.pathJoin(file_path, 'res/internal/presentation.js'), js);
     
-    this.jsl.file_system.copyFile(this.jsl.env.pathJoin(app_path, 'dev/portable_server/portable_server.exe'),
+    this.jsl.file_system.copyFile(this.jsl.env.pathJoin(app_path, 'lib/portable_server/portable_server.exe'),
       this.jsl.env.pathJoin(file_path, name + '.exe'));
     this.jsl.file_system.copyFile(this.jsl.env.pathJoin(app_path, 'css/presentation.css'),
       this.jsl.env.pathJoin(file_path, 'res/internal/presentation.css'));
@@ -41642,7 +41643,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     file_path = this._getPath('packPresentation', file_path);
     if(this._checkPresentation('packPresentation', file_path)) {
       var dest = this.jsl.env.pathResolve(this.jsl.env.pathJoin(file_path, '..', this.jsl.env.pathBaseName(file_path) + '.zip'));
-      this.jsl.env.execSync(`${this.jsl.env.bin7zip} a -tzip "${dest}" "${this.jsl.env.pathJoin(file_path, '*')}"`);
+      this.jsl.env.execSync(`"${this.jsl.env.bin7zip}" a -tzip "${dest}" "${this.jsl.env.pathJoin(file_path, '*')}"`);
       this.jsl.env.disp('@packPresentation: ' + language.string(241) + dest);
     }
   }
@@ -41852,7 +41853,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     var obj = this;
     return new Promise((resolve, reject) => {
       const child = obj.jsl.env.spawn(exe_file, ['--prog'], {
-        stdio: ['ignore', 'pipe', 'inherit']
+        stdio: ['ignore', 'pipe', 'inherit'],
+        windowsHide: true
       });
       
       let buffer = '';
@@ -42452,7 +42454,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   eval(code) {
     this.checkLoaded();
-    if(this.jsl.config.DEBUG_SYM_PYTHON_EVAL_CODE) {
+    if(config.DEBUG_SYM_PYTHON_EVAL_CODE) {
       this.jsl._console.log('@sym: eval: ' + code);
     }
     try {
@@ -45287,7 +45289,8 @@ class PRDC_JSLAB_PRESENTATION {
     var wheelGuard = false;
     document.addEventListener('wheel', (event) => {
       if(event.target.closest('.js-plotly-plot') ||
-        event.target.closest('input')) return;
+        event.target.closest('input.ui') ||
+        event.target.closest('scene-3d-json')) return;
       if(Math.abs(event.deltaY) < 10 || wheelGuard) {
         return;
       }
@@ -45367,7 +45370,7 @@ class PRDC_JSLAB_PRESENTATION {
     }
     
     this._attachGestureControl();
-    if(!is_lazy) {
+    if(!is_lazy && window.MathJax && typeof MathJax.typesetPromise === 'function') {
       MathJax.typesetPromise();
     }
   }
@@ -45538,6 +45541,22 @@ class PRDC_JSLAB_PRESENTATION {
   }
   
   /**
+   * Returns when global variable becomes defined
+   * @param {string} prop - Name of variable
+   */
+  async waitForGlobal(prop) {
+    if(!window[prop]) {
+      await new Promise(resolve => {
+        const check = () => {
+          if(window[prop]) return resolve();
+          requestAnimationFrame(check);
+        };
+        check();
+      });
+    }
+  }
+  
+  /**
    * Builds slides navigation.
    */
   _buildSlideNav() {
@@ -45607,7 +45626,7 @@ class PRDC_JSLAB_PRESENTATION {
    */
   _lazyRender(slide) {
     if(!slide) return;
-    slide.querySelectorAll('img-pdf, plot-json').forEach(el => {
+    slide.querySelectorAll('img-pdf, plot-json, scene-3d-json').forEach(el => {
       if (el._lazyRendered) return;
       if (typeof el._render === 'function') {
         el._lazyRendered = true;
@@ -45725,7 +45744,8 @@ class PRDC_JSLAB_PRESENTATION {
 
     slidesArea.addEventListener('pointerdown', e => {
       if(e.target.closest('.js-plotly-plot') ||
-        e.target.closest('input')) return;
+        e.target.closest('input.ui') ||
+        e.target.closest('scene-3d-json')) return;
       if(e.pointerType !== 'mouse' || e.buttons === 1) {
         tracking = true;
         startX = e.clientX;
@@ -45735,7 +45755,8 @@ class PRDC_JSLAB_PRESENTATION {
 
     slidesArea.addEventListener('pointerup', e => {
       if(e.target.closest('.js-plotly-plot') ||
-        e.target.closest('input')) return;
+        e.target.closest('input.ui') ||
+        e.target.closest('scene-3d-json')) return;
       if(!tracking) return;
       tracking = false;
 
@@ -45807,6 +45828,7 @@ class ImagePDF extends HTMLElement {
     if(!is_lazy) this._render();
     this.is_connected = true;
   }
+  
   /**
    * Callback called when element's attribute is changed
    */
@@ -45883,6 +45905,7 @@ class PlotJSON extends HTMLElement {
     if(!is_lazy) this._render();
     this.is_connected = true;
   }
+  
   /**
    * Callback called when element's attribute is changed
    */
@@ -45926,6 +45949,94 @@ class PlotJSON extends HTMLElement {
 }
 
 customElements.define('plot-json', PlotJSON);
+
+/**
+ * Class for Scene3dJSON HTML element
+ */
+class Scene3dJSON extends HTMLElement {
+  
+  static observedAttributes = ['src', 'width', 'height'];
+  
+  /**
+   * Initializes an instance of the Scene3dJSON class.
+   */
+  constructor() {
+    super();
+    this._canvas = document.createElement('canvas');
+    this.appendChild(this._canvas);
+  }
+  
+  /**
+   * Callback called when element is added to page
+   */
+  connectedCallback() {
+    if(!is_lazy) this._render();
+    this.is_connected = true;
+  }
+  
+  /**
+   * Callback called when element's attribute is changed
+   */
+  attributeChangedCallback() {
+    if(!this.is_connected) return;
+    if(!is_lazy || this.closest('slide')?.classList.contains('active')) {
+      this._render();
+    }
+  }
+
+  /**
+   * Renders element
+   */
+  async _render() {
+    var src_attr = this.getAttribute('src');
+    if(!src_attr) return;
+
+    try {
+      if(this.src !== src_attr) {
+        if(presentation._standalone) {
+          var buf  = await loadFileBuf(src_attr);
+          this.data  = JSON.parse(buf);
+        } else {
+          var resp = await fetch(src_attr, { cache: 'no-store' });
+          this.data  = await resp.json();
+        }
+        this.src = src_attr;
+      }
+
+      var w = presentation.toPixels(this.getAttribute('width') , 'width')  || 640;
+      var h = presentation.toPixels(this.getAttribute('height'), 'height') || 480;
+      
+      await presentation.waitForGlobal('THREE');
+
+      var loader = new window.THREE.ObjectLoader();
+      this.scene = loader.parse(this.data);
+      this.camera = new window.THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+      this.renderer = new window.THREE.WebGLRenderer({ canvas: this._canvas, alpha: true, antialias: true });
+      this.renderer.setSize(w, h);
+      this.renderer.setAnimationLoop(() => { 
+        this.renderer.render(this.scene, this.camera) 
+      });
+
+      var script = this.querySelector('script[type="x-scene-setup"]');
+      if(script) {
+        var AsyncFunction = Object.getPrototypeOf(
+          async function () {}).constructor;
+        var fn = new AsyncFunction(
+          'presentation',
+          script.textContent
+        ).bind(this);
+        await fn(presentation);
+      }
+
+      this.renderer.render(this.scene, this.camera);
+      this._finished_loading = true;
+    } catch(err) {
+      console.error('scene-3d-json:', err);
+    }
+  }
+}
+
+customElements.define('scene-3d-json', Scene3dJSON);
 \end{lstlisting}
 
 \begin{lstlisting}[style=JavaScriptStyle, caption={terminal.js}]
