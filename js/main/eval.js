@@ -8,6 +8,23 @@
 const path = require('path');
 
 /**
+ * Resolves ipcRenderer from runtime globals or Electron module.
+ * @returns {Object|null}
+ */
+function getIpcRenderer() {
+  if(typeof globalThis !== 'undefined' && globalThis.ipcRenderer) {
+    return globalThis.ipcRenderer;
+  }
+  try {
+    var electron = require('electron');
+    if(electron && electron.ipcRenderer) {
+      return electron.ipcRenderer;
+    }
+  } catch(err) {}
+  return null;
+}
+
+/**
  * Class for JSLAB eval.
  */
 class PRDC_JSLAB_EVAL {
@@ -35,13 +52,13 @@ class PRDC_JSLAB_EVAL {
       script_path = script_path.replace(/\\/g, '\\\\');
       var cmd;
       if(lines !== undefined) {
-        cmd = 'run("' + script_path + ', ' + lines.toString() + '")';
+        cmd = 'run("' + script_path + '", ' + JSON.stringify(lines) + ')';
       } else {
         cmd = 'run("' + script_path + '")';
       }
       this.evalCommand(cmd);
     } else {
-      this.win.command_window.message('@evalScript: Sandbox is busy...');
+      this.win.command_window.message('@evalScript: ' + language.string(347));
     }
   }
 
@@ -62,7 +79,7 @@ class PRDC_JSLAB_EVAL {
         this.evalCode(cmd, show_output, jsl_file_name);
       }
     } else {
-      this.win.command_window.message('@evalCommand: Sandbox is busy...');
+      this.win.command_window.message('@evalCommand: ' + language.string(348));
     }
   }
 
@@ -75,10 +92,13 @@ class PRDC_JSLAB_EVAL {
   evalCode(code, show_output = true, jsl_file_name = 'jslcmdwindow') {
     if(!this.win.evaluating) {
       this.win.evaluating = true;
-      ipcRenderer.send('SandboxWindow', 'eval-code', 
-        [code, show_output, jsl_file_name]);
+      var ipc = getIpcRenderer();
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('SandboxWindow', 'eval-code',
+          [code, show_output, jsl_file_name]);
+      }
     } else {
-      this.win.command_window.message('@evalCode: Sandbox is busy...');
+      this.win.command_window.message('@evalCode: ' + language.string(349));
     }
   }
 
@@ -87,6 +107,9 @@ class PRDC_JSLAB_EVAL {
    * @param {number} s The button state indicating the action to be performed.
    */
   scriptDirDialogButton(s) {
+    if(typeof this.last_script_path != 'string' || !this.last_script_path.length) {
+      return false;
+    }
     this.win.gui.closeDialog($('#script-path-container'));
     var script_dir = path.dirname(this.last_script_path);
     if(s == 2) {
@@ -97,7 +120,11 @@ class PRDC_JSLAB_EVAL {
       this.win.folder_navigation.savePath(script_dir);
     }
     
-    ipcRenderer.send('SandboxWindow', 'run-last-script'); 
+    var ipc = getIpcRenderer();
+    if(ipc && typeof ipc.send === 'function') {
+      ipc.send('SandboxWindow', 'run-last-script');
+    }
+    return true;
   }
 
 }

@@ -180,6 +180,12 @@ class PRDC_JSLAB_LIB_COLOR {
     this.RE_HSL = /^hsl\(\s*([\d\.]+)\s*,\s*([\d\.]+)%\s*,\s*([\d\.]+)%\s*\)$/;
     this.RE_HSLA = /^hsla\(\s*([\d\.]+)\s*,\s*([\d\.]+)%\s*,\s*([\d\.]+)%\s*,\s*([\d\.]+)\s*\)$/;
     this.RE_HEX = /^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/; // 6 digit
+    var KEYWORDS = colors;
+    var RE_RGB = this.RE_RGB;
+    var RE_RGBA = this.RE_RGBA;
+    var RE_HSL = this.RE_HSL;
+    var RE_HSLA = this.RE_HSLA;
+    var RE_HEX = this.RE_HEX;
     
     // Global object
     var Color = {
@@ -248,7 +254,7 @@ class PRDC_JSLAB_LIB_COLOR {
       mix: function(color1, color2, weight) {
         if(color1 instanceof Color.HSLA) color1 = color1.toRGBA();
         if(color2 instanceof Color.HSLA) color2 = color2.toRGBA();
-        if(isNull(weight) || obj.jsl.format.isUndefined(weight)) weight = 0.5;
+        if(obj.jsl.inter.isNull(weight) || obj.jsl.inter.format.isUndefined(weight)) weight = 0.5;
 
         var w0 = 1 - weight;
         var w = w0 * 2 - 1;
@@ -269,12 +275,12 @@ class PRDC_JSLAB_LIB_COLOR {
      * Color.RGBA
      */
     Color.RGBA = function(r, g, b, a) {
-      if(isArray(r)) {
+      if(obj.jsl.inter.isArray(r)) {
         g = r[1];
         b = r[2];
         a = r[3];
         r = r[0];
-      } else if(isObject(r)) {
+      } else if(obj.jsl.inter.isObject(r)) {
         g = r.g;
         b = r.b;
         a = r.a;
@@ -284,13 +290,13 @@ class PRDC_JSLAB_LIB_COLOR {
       this.r = r || 0;
       this.g = g || 0;
       this.b = b || 0;
-      this.a = !isNumber(a) ? 1 : a;
+      this.a = !obj.jsl.inter.isNumber(a) ? 1 : a;
     };
 
     Color.RGBA.prototype = {        
       toHSLA: function() {
-        var hsl = rgbToHsl(Math.round(this.r), Math.round(this.g), Math.round(this.b));
-        return new Hsla(hsl[0], hsl[1], hsl[2], this.a);
+        var hsl = obj.rgbToHsl(Math.round(this.r), Math.round(this.g), Math.round(this.b));
+        return new Color.HSLA(hsl[0], hsl[1], hsl[2], this.a);
       },
       
       toArray: function() {
@@ -311,12 +317,12 @@ class PRDC_JSLAB_LIB_COLOR {
      * Color.HSLA
      */
     Color.HSLA = function(h, s, l, a) {
-      if(isArray(h)) {
+      if(obj.jsl.inter.isArray(h)) {
         s = h[1];
         l = h[2];
         a = h[3];
         h = h[0];
-      } else if(isObject(h)) {
+      } else if(obj.jsl.inter.isObject(h)) {
         s = h.s;
         l = h.l;
         a = h.a;
@@ -326,13 +332,13 @@ class PRDC_JSLAB_LIB_COLOR {
       this.h = h || 0;
       this.s = s || 0;
       this.l = l || 0;
-      this.a = !isNumber(a) ? 1 : a;
+      this.a = !obj.jsl.inter.isNumber(a) ? 1 : a;
     };
 
     Color.HSLA.prototype = {
       toRGBA: function() {
-        var rgb = this.hslToRgb(this.h, this.s, this.l);
-        return new Rgba(rgb[0], rgb[1], rgb[2], this.a);
+        var rgb = obj.hslToRgb(this.h, this.s, this.l);
+        return new Color.RGBA(rgb[0], rgb[1], rgb[2], this.a);
       },
       
       toArray: function() {
@@ -357,10 +363,10 @@ class PRDC_JSLAB_LIB_COLOR {
   color(id) {
     var c = '#0072BD';
     if(typeof id == 'number') {
-      c = colororder[id % 7];
+      c = this.colororder[id % 7];
     } else if(Array.isArray(id)) {
       if(id.length == 3) {
-        c = rgb2hex(id);
+        c = this.rgb2hex(id);
       }
     } else {
       switch(id) {
@@ -483,7 +489,7 @@ class PRDC_JSLAB_LIB_COLOR {
       h = s = 0;
     } else {
       var d = max - min;
-      switch (max) {
+      switch(max) {
         case r: h = ((g - b) / d * 60 + 360) % 360; break;
         case g: h = (b - r) / d * 60 + 120; break;
         case b: h = (r - g) / d * 60 + 240; break;

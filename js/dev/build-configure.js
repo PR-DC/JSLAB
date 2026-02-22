@@ -10,7 +10,7 @@
 const fs = require('fs');
 
 global.process_arguments = process.argv;
-require('../init-config.js');
+require('../shared/init-config.js');
 
 console.log('[build-configure.js] Started');
 var t = performance.now();
@@ -28,10 +28,25 @@ if(process.argv.length > 3) {
 
 data.build.artifactName = filename+'.${ext}';
 
-if(config.SIGN_BUILD) {
+var sign_env = [
+  {name: 'COMPANY_NAME', value: config.COMPANY_NAME},
+  {name: 'TIMESTAMP_SERVER', value: config.TIMESTAMP_SERVER},
+  {name: 'SIGN_TOOL_PATH', value: config.SIGN_TOOL_PATH},
+];
+var missing_sign_env = sign_env.filter(function(e) {
+  return !e.value || !String(e.value).trim();
+}).map(function(e) {
+  return e.name;
+});
+
+if(config.SIGN_BUILD && missing_sign_env.length === 0) {
   data.build.win.sign = "js/dev/build-sign.js";
 } else {
   delete data.build.win.sign;
+  if(config.SIGN_BUILD) {
+    console.warn('Signing requested, but missing environment variables: '+
+      missing_sign_env.join(', ')+'. Build will continue unsigned.');
+  }
 }
 
 fs.writeFileSync('package.json', JSON.stringify(data, null, 2));

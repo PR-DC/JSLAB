@@ -218,6 +218,24 @@ plot-json .js-plotly-plot, plot-json .plot-container, plot-json .svg-container {
   width: max-content;
 }
 
+.error-element {
+  display: inline-block;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 2px solid #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+  border-radius: 8px;
+}
+
+.error-element div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
 @media print {
   html  { 
     overflow: auto;

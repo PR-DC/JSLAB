@@ -42,7 +42,7 @@ class PRDC_JSLAB_MATRIX_MATH {
       cols = rows;
     }
     return new PRDC_JSLAB_MATRIX(this.jsl, 
-      this.jsl.array.createFilledArray(rows * cols, v), rows, cols);
+      this.jsl.inter.array.createFilledArray(rows * cols, v), rows, cols);
   }
   
   /**
@@ -91,7 +91,7 @@ class PRDC_JSLAB_MATRIX_MATH {
    */
   diag(A) {
     return new PRDC_JSLAB_MATRIX(this.jsl, 
-      this.jsl.array.diag(A, A.length), A.length, A.length);
+      this.jsl.inter.array.diag(A, A.length), A.length, A.length);
   }
   
   /**
@@ -101,7 +101,7 @@ class PRDC_JSLAB_MATRIX_MATH {
    */
   eye(size) {
     return new PRDC_JSLAB_MATRIX(this.jsl, 
-      this.jsl.array.diag(this.jsl.array.ones(size), size), size, size);
+      this.jsl.inter.array.diag(this.jsl.inter.array.ones(size), size), size, size);
   }
   
   /**
@@ -188,7 +188,7 @@ class PRDC_JSLAB_MATRIX {
       this.cols = A[0].length;
     }
     if(Array.isArray(A[0])) {
-      this.data = this.#jsl.array.transpose(A.flat(), this.rows, this.cols);
+      this.data = this.#jsl.inter.array.transpose(A.flat(), this.rows, this.cols);
     } else {
       this.data = [...A];
     }
@@ -200,7 +200,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {Array} The extracted column as an array.
    */
   column(index) {
-    return this.#jsl.array.column(this.toArray(), index);
+    return this.#jsl.inter.array.column(this.toArray(), index);
   }
 
   /**
@@ -209,7 +209,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {Array} The extracted row as an array.
    */
   row(index) {
-    return this.#jsl.array.row(this.toArray(), index);
+    return this.#jsl.inter.array.row(this.toArray(), index);
   }
   
   /**
@@ -249,7 +249,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The reshaped matrix.
    */
   reshape(rows, cols) {
-    return this.#jsl.mat.new(this.#jsl.array.reshape(this.data, 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.reshape(this.data, 
       rows, cols), rows, cols);
   }
   
@@ -262,16 +262,16 @@ class PRDC_JSLAB_MATRIX {
   repmat(rowReps, colReps) {
     var cols;
     if(colReps > 1) {
-      cols = this.#jsl.array.createFilledArray(colReps, this);
-      cols = this.#jsl.mat.concatCol(...cols);
+      cols = this.#jsl.inter.array.createFilledArray(colReps, this);
+      cols = this.#jsl.inter.mat.concatCol(...cols);
     } else {
       cols = this;
     }
     
     var A;
     if(rowReps > 1) {
-      var rows = this.#jsl.array.createFilledArray(rowReps, cols);
-      A = this.#jsl.mat.concatRow(...rows);
+      var rows = this.#jsl.inter.array.createFilledArray(rowReps, cols);
+      A = this.#jsl.inter.mat.concatRow(...rows);
     } else {
       A = cols;
     }
@@ -284,8 +284,13 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The transposed matrix.
    */
   transpose() {
-    return this.#jsl.mat.new(this.#jsl.array.transpose(this.data, this.rows, this.cols), 
-      this.cols, this.rows);
+    var out = new Array(this.rows * this.cols).fill(0);
+    for(var i = 0; i < this.rows; i++) {
+      for(var j = 0; j < this.cols; j++) {
+        out[i * this.cols + j] = this.data[j * this.rows + i];
+      }
+    }
+    return this.#jsl.inter.mat.new(out, this.cols, this.rows);
   }
 
   /**
@@ -293,7 +298,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The inverse matrix.
    */
   inv() {
-    return this.#jsl.mat.new(this.#jsl.env.math.inv(this.toArray()));
+    return this.#jsl.inter.mat.new(this.#jsl.inter.env.math.inv(this.toArray()));
   }
   
   /**
@@ -301,7 +306,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {number} The determinant.
    */
   det() {
-    return this.#jsl.env.math.det(this.toArray());
+    return this.#jsl.inter.env.math.det(this.toArray());
   }
 
   /**
@@ -309,7 +314,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {number} The trace of the matrix.
    */
   trace() {
-    return this.#jsl.env.math.trace(this.toArray());
+    return this.#jsl.inter.env.math.trace(this.toArray());
   }
 
   /**
@@ -317,7 +322,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {number} The Frobenius norm.
    */
   norm(p = 2) {
-    return this.#jsl.env.math.norm(this.toArray(), p);
+    return this.#jsl.inter.env.math.norm(this.toArray(), p);
   }
 
   /**
@@ -326,7 +331,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   powm(p) {
-    return this.#jsl.mat.new(this.#jsl.env.math.pow(this.toArray(), p));
+    return this.#jsl.inter.mat.new(this.#jsl.inter.env.math.pow(this.toArray(), p));
   }
 
   /**
@@ -334,7 +339,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The exponential matrix.
    */
   expm() {
-    return this.#jsl.mat.new(this.#jsl.env.math.expm(this.toArray())._data);
+    return this.#jsl.inter.mat.new(this.#jsl.inter.env.math.expm(this.toArray())._data);
   }
   
   /**
@@ -343,7 +348,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   add(A) {
-    return this.#jsl.mat.new(this.#jsl.array.plus(this.data, A.data), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.plus(this.data, A.data), 
       this.rows, this.cols);
   }
 
@@ -362,7 +367,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   subtract(A) {
-    return this.#jsl.mat.new(this.#jsl.array.minus(this.data, A.data), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.minus(this.data, A.data), 
       this.rows, this.cols);
   }
 
@@ -381,7 +386,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   multiply(A) {
-    return this.#jsl.mat.new(this.#jsl.array.multiply(this.data, A.data, this.rows, this.cols, A.cols), this.rows, A.cols);
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.multiply(this.data, A.data, this.rows, this.cols, A.cols), this.rows, A.cols);
   }
   
   /**
@@ -390,7 +395,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The solution matrix.
    */
   linsolve(B) {
-    return this.#jsl.mat.new(this.#jsl.array.linsolve(this.data, B.data, this.cols), this.rows, 1);
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.linsolve(this.data, B.data, this.cols), this.rows, 1);
   }
   
   /**
@@ -399,11 +404,11 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   divideEl(A) {
-    if(this.#jsl.mat.isMatrix(A)) {
-      return this.#jsl.mat.new(this.#jsl.array.divideEl(this.data, A.data), 
+    if(this.#jsl.inter.mat.isMatrix(A)) {
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.divideEl(this.data, A.data), 
         this.rows, this.cols);
     } else {
-      return this.#jsl.mat.new(this.#jsl.array.scale(this.data, 1 / A), 
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.scale(this.data, 1 / A), 
         this.rows, this.cols);
     }
   }
@@ -414,11 +419,11 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   multiplyEl(A) {
-    if(this.#jsl.mat.isMatrix(A)) {
-      return this.#jsl.mat.new(this.#jsl.array.multiplyEl(this.data, A.data), 
+    if(this.#jsl.inter.mat.isMatrix(A)) {
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.multiplyEl(this.data, A.data), 
         this.rows, this.cols);
     } else {
-      return this.#jsl.mat.new(this.#jsl.array.scale(this.data, A), 
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.scale(this.data, A), 
         this.rows, this.cols);
     }
   }
@@ -429,7 +434,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   powEl(p) {
-    return this.#jsl.mat.new(this.#jsl.array.powEl(this.data, p), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.powEl(this.data, p), 
       this.rows, this.cols);
   }
 
@@ -439,7 +444,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   elementWise(func) {
-    return this.#jsl.mat.new(this.#jsl.array.elementWise((a) => func(a), this.data), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.elementWise((a) => func(a), this.data), 
       this.rows, this.cols);
   }
   
@@ -448,7 +453,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The matrix with reciprocals.
    */
   reciprocal() {
-    return this.#jsl.mat.new(this.#jsl.array.reciprocal(this.data, this.rows * this.cols), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.reciprocal(this.data, this.rows * this.cols), 
       this.rows, this.cols);
   }
   
@@ -457,7 +462,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {number} The sum of all elements.
    */
   sum() {
-    return this.#jsl.env.math.sum(this.toArray());
+    return this.#jsl.inter.env.math.sum(this.toArray());
   }
 
   /**
@@ -466,7 +471,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The sorted matrix.
    */
   sort() {
-    return this.#jsl.env.math.sort(this.data);
+    return this.#jsl.inter.env.math.sort(this.data);
   }
 
   /**
@@ -474,7 +479,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {number} The minimum value.
    */
   min() {
-    return this.#jsl.env.math.min(this.toArray());
+    return this.#jsl.inter.env.math.min(this.toArray());
   }
 
   /**
@@ -482,7 +487,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {number} The maximum value.
    */
   max() {
-    return this.#jsl.env.math.max(this.toArray());
+    return this.#jsl.inter.env.math.max(this.toArray());
   }
   
   /**
@@ -490,7 +495,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} A cloned matrix instance.
    */
   clone() {
-    return this.#jsl.mat.new(this.data, this.rows, this.cols);
+    return this.#jsl.inter.mat.new(this.data, this.rows, this.cols);
   }
 
   /**
@@ -501,13 +506,13 @@ class PRDC_JSLAB_MATRIX {
   index(rows_in, cols_in) {
     var rows;
     var cols;
-    if(rows_in === _) {
-      rows = range(0, this.rows - 1);
+    if(rows_in === this.#jsl.context._) {
+      rows = this.#jsl.inter.array.range(0, this.rows - 1);
     } else {
       rows = rows_in;
     }
-    if(cols_in === _) {
-      cols = range(0, this.cols - 1);
+    if(cols_in === this.#jsl.context._) {
+      cols = this.#jsl.inter.array.range(0, this.cols - 1);
     } else {
       cols = cols_in;
     }
@@ -517,7 +522,7 @@ class PRDC_JSLAB_MATRIX {
     if(!Array.isArray(cols)) {
       cols = [cols];
     }
-    var A = zeros(rows.length * cols.length);
+    var A = this.#jsl.inter.array.zeros(rows.length * cols.length);
     
     var k = 0;
     for(var j = 0; j < cols.length; j++) {
@@ -534,8 +539,9 @@ class PRDC_JSLAB_MATRIX {
    * @param {...*} args - Indices and values to set.
    */
   setSub(...args) {
+    var all_index = this.#jsl.context._;
     var A = args.map(function(a) {
-      if(!Array.isArray(a) && a !== _) {
+      if(!Array.isArray(a) && a !== all_index) {
         a = [a];
       }
       return a;
@@ -548,15 +554,15 @@ class PRDC_JSLAB_MATRIX {
       B = A[2];
     } else {
       indices = A[0];
-      if(indices == _) {
-        indices = range(0, this.rows * this.cols - 1);
+      if(indices == all_index) {
+        indices = this.#jsl.inter.array.range(0, this.rows * this.cols - 1);
       }
       B = A[1];
     }
     
     var j = 0;
     for(var i = 0; i < indices.length; i++) {
-      if(this.#jsl.mat.isMatrix(B[0])) {
+      if(this.#jsl.inter.mat.isMatrix(B[0])) {
         this.data[indices[i]] = B[0].data[j++];
       } else if(Array.isArray(B) && B.length == indices.length) {
         this.data[indices[i]] = B[j++];
@@ -572,11 +578,12 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The subset matrix.
    */
   getSub(...args) {
+    var all_index = this.#jsl.context._;
     var indices;
     var rows;
     var cols;
     var A = args.map(function(a) {
-      if(!Array.isArray(a) && a !== _) {
+      if(!Array.isArray(a) && a !== all_index) {
         a = [a];
       }
       return a;
@@ -587,12 +594,12 @@ class PRDC_JSLAB_MATRIX {
       rows = indices.length;
       cols = 1;
     } else {
-      if(A[0] === _) {
+      if(A[0] === all_index) {
         rows = this.rows;
       } else {
         rows = A[0].length;
       }
-      if(A[1] === _) {
+      if(A[1] === all_index) {
         cols = this.cols;
       } else {
         cols = A[1].length;
@@ -600,12 +607,12 @@ class PRDC_JSLAB_MATRIX {
       indices = this.index(A[0], A[1]);
     }
     
-    var B = this.#jsl.array.createFilledArray(indices.length, 0);
+    var B = this.#jsl.inter.array.createFilledArray(indices.length, 0);
     var j = 0;
     for(var i = 0; i < indices.length; i++) {
       B[j++] = this.data[indices[i]];
     }
-    return this.#jsl.mat.new(B, rows, cols);
+    return this.#jsl.inter.mat.new(B, rows, cols);
   }
   
   /**
@@ -613,7 +620,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {Array} The matrix data as a two-dimensional array.
    */
   toArray() {
-    return this.#jsl.array.reshape(this.data, this.rows, this.cols);
+    return this.#jsl.inter.array.reshape(this.data, this.rows, this.cols);
   }
   
   /**

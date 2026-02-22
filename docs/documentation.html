@@ -410,8 +410,8 @@
     var main_navigation = document.getElementById('main-navigation');
     var code_navigation = document.getElementById('code-navigation');
     
-    var year = "2025";
-    var app_version = "v1.0.3";
+    var year = "2026";
+    var app_version = "v1.0.4";
     
     var current_page;
     var main_pages_data = {
@@ -423,6 +423,8 @@
 <div id="about-logo">${jslab_log}</div>
 
 <p>Welcome to the <strong>JSLAB</strong> Documentation! This guide provides comprehensive information for users and contributors, detailing the features, usage, and contribution guidelines to ensure a consistent and high-quality codebase.</p>
+
+<strong>Quick links:</strong> <a href="https://pr-dc.com/jslab/">Website</a>, <a href="https://discourse.jsl.pr-dc.com/">Discourse</a>, <a href="https://pr-dc.com/jslab/doc/">Documentation</a>, <a href="https://github.com/PR-DC/JSLAB/">Source code</a>, <a href="https://github.com/PR-DC/JSLAB/releases">Releases</a>, <a href="https://github.com/PR-DC/JSLAB/tree/master/examples">Examples</a>
 
 <p>The <strong>JavaScript Laboratory (JSLAB)</strong> is an open-source environment designed for scientific computing, data visualization, and various other computer operations. Inspired by <em>GNU Octave</em> and <em>Matlab</em>, <strong>JSLAB</strong> leverages the advantages of JavaScript, including its blazing speed, extensive examples, backing by some of the largest software companies globally, and the vast community of active programmers and software engineers.</p>
 
@@ -663,7 +665,7 @@ You can install <strong>JSLAB</strong> by either downloading the latest stable r
 <ul>
   <li>Visit the <strong>JSLAB</strong> Releases Page on GitHub Repository: <a href="https://github.com/PR-DC/JSLAB/releases">https://github.com/PR-DC/JSLAB/releases</a></li>
   <li>Download the appropriate installer and install program.</li>
-  <li>Try examples from: <a href="https://github.com/PR-DC/JSLAB/tree/master/examples">https://github.com/PR-DC/JSLAB/tree/master/examples</a></li>
+  <li>Try the examples from: <a href="https://github.com/PR-DC/JSLAB/tree/master/examples">https://github.com/PR-DC/JSLAB/tree/master/examples</a></li>
 </ul>
 
 <h2>Build from Source</h2>
@@ -905,6 +907,8 @@ In order to download necessary tools, clone the repository, and install dependen
       'examples': {
         'title': 'Examples',
         'data': `
+For latest examples, visit our <strong>Discourse <strong> at <a href="https://discourse.jsl.pr-dc.com">https://discourse.jsl.pr-dc.com</a>.
+
 <h2>Animated 2D Plot</h2>
 
 <p>
@@ -1045,7 +1049,7 @@ function animate( time ) {
 // JavaScript Example
 var computeSquare = (i) => i * i;
 
-// Run parallel exectuion 
+// Run parallel execution 
 var results = await parallel.parfor(0, 20, 1, 
   parallel.getProcessorsNum(), {}, undefined, computeSquare);
 disp(results);
@@ -1171,7 +1175,7 @@ var data = {
   'Coordinates': lines,
   'Diameters': d
 };
-beamsFile = pwd + 'out/beams.json';
+var beamsFile = pwd + 'out/beams.json';
 writeFile(beamsFile, stringify(data));
 
 // Run FreeCADLink 
@@ -1180,14 +1184,14 @@ await freecad_link.start(exe, {
   host: host,
   timeout: timeout,
   startup_timeout: startup_timeout
-}); // Start FreeCAD programa
+}); // Start FreeCAD program
 
 await freecad_link.newDocument(part);
 await freecad_link.callScript('MakeNodes', nodesFile, timeout);
 await freecad_link.callScript('MakeBeams', beamsFile, timeout);
 await freecad_link.callScript('MakeFusion', [], timeout);
 await freecad_link.saveAs(model, timeout);
-//await freecad_link.quit(); // Close programa
+//await freecad_link.quit(); // Close program
 
 deleteFile(nodesFile);
 deleteFile(beamsFile);
@@ -1201,7 +1205,7 @@ deleteFile(beamsFile);
 </p>
 <pre>
 // JavaScript Example
-await om_link.start(exe); // Start OpenModelica programa
+await om_link.start(exe); // Start OpenModelica program
 disp(await om_link.sendExpression('getVersion()'));
 
 disp(await om_link.sendExpression("model a end a;"));
@@ -1253,6 +1257,7 @@ await om_link.close();
 <p>Your feedback is invaluable in improving the <strong>JSLAB</strong> application. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:</p>
 <ul>
     <li><strong>GitHub Issues:</strong> Report bugs or suggest features by opening an issue in the GitHub repository.</li>
+    <li><strong>Discourse:</strong> Write a New Topic at \url{<a href="https://discourse.jsl.pr-dc.com/">https://discourse.jsl.pr-dc.com/</a>
     <li><strong>Email:</strong> Contact us directly at <a href="mailto:info@pr-dc.com">info@pr-dc.com</a> or main author at <a href="mailto:mpetrasinovic@pr-dc.com">mpetrasinovic@pr-dc.com</a>.</li>
 </ul>
 <p>We encourage active participation and appreciate all forms of feedback that help us enhance the functionality and usability of <strong>JSLAB</strong>.</p>
@@ -2446,7 +2451,7 @@ await om_link.close();
       "source_lineno": 982,
       "source_range": [
         30834,
-        31236
+        31234
       ]
     },
     "checkForUpdate": {
@@ -2468,8 +2473,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1003,
       "source_range": [
-        31372,
-        32733
+        31370,
+        32730
       ]
     },
     "unrequire": {
@@ -2490,8 +2495,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1043,
       "source_range": [
-        32862,
-        33172
+        32859,
+        33169
       ]
     },
     "resetApp": {
@@ -2502,8 +2507,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1057,
       "source_range": [
-        33207,
-        33252
+        33204,
+        33249
       ]
     },
     "resetSandbox": {
@@ -2514,8 +2519,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1064,
       "source_range": [
-        33328,
-        33381
+        33325,
+        33378
       ]
     },
     "openDevTools": {
@@ -2535,8 +2540,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1072,
       "source_range": [
-        33501,
-        33561
+        33498,
+        33558
       ]
     },
     "compileNapi": {
@@ -2578,8 +2583,51 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1082,
       "source_range": [
-        33870,
-        36601
+        33865,
+        36596
+      ]
+    },
+    "compileWasm": {
+      "name": "compileWasm",
+      "kind": "function",
+      "description": "Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.\nThe method automatically selects `emcc` for native sources and `wasm-pack` when a Cargo.toml is present.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Path to a source file or directory containing sources.",
+          "name": "path"
+        },
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": false,
+          "description": "Whether to display the compiler output.",
+          "name": "show_output"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Tuple `[success, wasm_path|undefined]`."
+        }
+      ],
+      "source_filename": "basic.js",
+      "source_lineno": 1159,
+      "source_range": [
+        37044,
+        42806
       ]
     },
     "installModule": {
@@ -2609,10 +2657,10 @@ await om_link.close();
         }
       ],
       "source_filename": "basic.js",
-      "source_lineno": 1157,
+      "source_lineno": 1308,
       "source_range": [
-        36814,
-        37847
+        43017,
+        44050
       ]
     },
     "addForCleanup": {
@@ -2640,10 +2688,10 @@ await om_link.close();
         }
       ],
       "source_filename": "basic.js",
-      "source_lineno": 1194,
+      "source_lineno": 1345,
       "source_range": [
-        38074,
-        38139
+        44277,
+        44342
       ]
     }
   },
@@ -2948,6 +2996,364 @@ await om_link.close();
         13072
       ]
     },
+    "buildGridFromFlat": {
+      "name": "buildGridFromFlat",
+      "kind": "function",
+      "description": "Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.\nOrdering can be arbitrary. Values that are NaN/Inf are ignored.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Flattened x coordinates (length N).",
+          "name": "xFlat"
+        },
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Flattened y coordinates (length N).",
+          "name": "yFlat"
+        },
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Flattened z values (length N).",
+          "name": "zFlat"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "optional": true,
+          "description": "Optional tolerance settings.",
+          "name": "tolIn"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "description": "Quantization tolerance for x axis detection.",
+          "name": "tolIn.tolX"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "description": "Quantization tolerance for y axis detection.",
+          "name": "tolIn.tolY"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Grid object: { xAxis, yAxis, Z, m, n, filled }."
+        }
+      ],
+      "source_filename": "math.js",
+      "source_lineno": 422,
+      "source_range": [
+        13798,
+        15825
+      ]
+    },
+    "gridSolveYforXZ": {
+      "name": "gridSolveYforXZ",
+      "kind": "function",
+      "description": "Finds y values where z(x0, y) == z0 on a rectilinear grid.\nIf z is a flat array, the function tries to rebuild a grid automatically.\nReturns an array of solutions (can be empty or multiple).",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "X axis (grid) OR flattened x coordinates.",
+          "name": "x"
+        },
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Y axis (grid) OR flattened y coordinates.",
+          "name": "y"
+        },
+        {
+          "type": {
+            "names": [
+              "Array",
+              "Array.<Array>"
+            ]
+          },
+          "description": "Z grid (2D) OR flattened z values.",
+          "name": "z"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Known x.",
+          "name": "x0"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Known z.",
+          "name": "z0"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "optional": true,
+          "description": "Optional settings.",
+          "name": "opts"
+        },
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": false,
+          "description": "Allow x0 outside x-range by clamping to edge.",
+          "name": "opts.extrap"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": "1e-12",
+          "description": "Tolerance for root detection.",
+          "name": "opts.eps"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "optional": true,
+          "description": "Optional tolerances for grid rebuild (passed to buildGridFromFlat).",
+          "name": "opts.tolIn"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": 0.98,
+          "description": "Minimum filled ratio to accept as grid.",
+          "name": "opts.minFill"
+        },
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": false,
+          "description": "If true, allow lower fill ratio.",
+          "name": "opts.allowMissing"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": "0.50",
+          "description": "Minimum filled ratio when allowMissing is true.",
+          "name": "opts.minFillIfMissing"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Array of y solutions."
+        }
+      ],
+      "source_filename": "math.js",
+      "source_lineno": 670,
+      "source_range": [
+        22607,
+        22712
+      ]
+    },
+    "gridSolveXforYZ": {
+      "name": "gridSolveXforYZ",
+      "kind": "function",
+      "description": "Finds x values where z(x, y0) == z0 on a rectilinear grid.\nIf z is a flat array, the function tries to rebuild a grid automatically.\nReturns an array of solutions (can be empty or multiple).",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "X axis (grid) OR flattened x coordinates.",
+          "name": "x"
+        },
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Y axis (grid) OR flattened y coordinates.",
+          "name": "y"
+        },
+        {
+          "type": {
+            "names": [
+              "Array",
+              "Array.<Array>"
+            ]
+          },
+          "description": "Z grid (2D) OR flattened z values.",
+          "name": "z"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Known Y.",
+          "name": "y0"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Known z.",
+          "name": "z0"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "optional": true,
+          "description": "Optional settings.",
+          "name": "opts"
+        },
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": false,
+          "description": "Allow y0 outside y-range by clamping to edge.",
+          "name": "opts.extrap"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": "1e-12",
+          "description": "Tolerance for root detection.",
+          "name": "opts.eps"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "optional": true,
+          "description": "Optional tolerances for grid rebuild (passed to buildGridFromFlat).",
+          "name": "opts.tolIn"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": 0.98,
+          "description": "Minimum filled ratio to accept as grid.",
+          "name": "opts.minFill"
+        },
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": false,
+          "description": "If true, allow lower fill ratio.",
+          "name": "opts.allowMissing"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": "0.50",
+          "description": "Minimum filled ratio when allowMissing is true.",
+          "name": "opts.minFillIfMissing"
+        }
+      ],
+      "source_filename": "math.js",
+      "source_lineno": 691,
+      "source_range": [
+        23782,
+        23887
+      ]
+    },
     "bilinearFunction": {
       "name": "bilinearFunction",
       "kind": "function",
@@ -2992,10 +3398,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 417,
+      "source_lineno": 702,
       "source_range": [
-        13473,
-        13767
+        24288,
+        24582
       ]
     },
     "random": {
@@ -3036,10 +3442,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 436,
+      "source_lineno": 721,
       "source_range": [
-        14024,
-        14177
+        24839,
+        24992
       ]
     },
     "randInt": {
@@ -3080,10 +3486,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 448,
+      "source_lineno": 733,
       "source_range": [
-        14435,
-        14595
+        25250,
+        25410
       ]
     },
     "acosd": {
@@ -3112,10 +3518,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 459,
+      "source_lineno": 744,
       "source_range": [
-        14793,
-        14886
+        25608,
+        25701
       ]
     },
     "acotd": {
@@ -3144,10 +3550,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 468,
+      "source_lineno": 753,
       "source_range": [
-        15093,
-        15186
+        25908,
+        26001
       ]
     },
     "acscd": {
@@ -3176,10 +3582,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 477,
+      "source_lineno": 762,
       "source_range": [
-        15390,
-        15483
+        26205,
+        26298
       ]
     },
     "asecd": {
@@ -3208,10 +3614,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 486,
+      "source_lineno": 771,
       "source_range": [
-        15681,
-        15774
+        26496,
+        26589
       ]
     },
     "asind": {
@@ -3240,10 +3646,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 495,
+      "source_lineno": 780,
       "source_range": [
-        15966,
-        16059
+        26781,
+        26874
       ]
     },
     "atand": {
@@ -3272,10 +3678,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 504,
+      "source_lineno": 789,
       "source_range": [
-        16260,
-        16353
+        27075,
+        27168
       ]
     },
     "atan2d": {
@@ -3313,10 +3719,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 514,
+      "source_lineno": 799,
       "source_range": [
-        16601,
-        16702
+        27416,
+        27517
       ]
     },
     "cosd": {
@@ -3345,10 +3751,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 523,
+      "source_lineno": 808,
       "source_range": [
-        16868,
-        16959
+        27683,
+        27774
       ]
     },
     "cotd": {
@@ -3377,10 +3783,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 532,
+      "source_lineno": 817,
       "source_range": [
-        17120,
-        17211
+        27935,
+        28026
       ]
     },
     "cscd": {
@@ -3409,10 +3815,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 541,
+      "source_lineno": 826,
       "source_range": [
-        17370,
-        17461
+        28185,
+        28276
       ]
     },
     "secd": {
@@ -3441,10 +3847,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 550,
+      "source_lineno": 835,
       "source_range": [
-        17616,
-        17707
+        28431,
+        28522
       ]
     },
     "sind": {
@@ -3473,10 +3879,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 559,
+      "source_lineno": 844,
       "source_range": [
-        17858,
-        17949
+        28673,
+        28764
       ]
     },
     "tand": {
@@ -3505,10 +3911,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 568,
+      "source_lineno": 853,
       "source_range": [
-        18106,
-        18197
+        28921,
+        29012
       ]
     },
     "poly": {
@@ -3537,10 +3943,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 578,
+      "source_lineno": 863,
       "source_range": [
-        18557,
-        18828
+        29372,
+        29643
       ]
     },
     "polyfit": {
@@ -3587,10 +3993,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 601,
+      "source_lineno": 886,
       "source_range": [
-        19237,
-        19403
+        30052,
+        30218
       ]
     },
     "polyval": {
@@ -3628,10 +4034,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 612,
+      "source_lineno": 897,
       "source_range": [
-        19755,
-        20018
+        30570,
+        30833
       ]
     },
     "roots": {
@@ -3660,10 +4066,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 630,
+      "source_lineno": 915,
       "source_range": [
-        20287,
-        20349
+        31102,
+        31164
       ]
     },
     "polystr": {
@@ -3745,10 +4151,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 644,
+      "source_lineno": 929,
       "source_range": [
-        21050,
-        23090
+        31865,
+        33905
       ]
     },
     "polystrc": {
@@ -3787,10 +4193,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 722,
+      "source_lineno": 1007,
       "source_range": [
-        23441,
-        23576
+        34256,
+        34391
       ]
     },
     "polystrtex": {
@@ -3829,10 +4235,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 737,
+      "source_lineno": 1022,
       "source_range": [
-        23915,
-        24056
+        34730,
+        34871
       ]
     },
     "spikeFilter": {
@@ -3879,10 +4285,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 753,
+      "source_lineno": 1038,
       "source_range": [
-        24494,
-        24774
+        35309,
+        35589
       ]
     },
     "magnitude": {
@@ -3912,10 +4318,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 774,
+      "source_lineno": 1059,
       "source_range": [
-        25028,
-        25226
+        35843,
+        36041
       ]
     },
     "compareComplex": {
@@ -3955,10 +4361,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 789,
+      "source_lineno": 1074,
       "source_range": [
-        25495,
-        26162
+        36310,
+        36977
       ]
     },
     "min": {
@@ -3988,10 +4394,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 826,
+      "source_lineno": 1111,
       "source_range": [
-        26805,
-        28012
+        37620,
+        38827
       ]
     },
     "max": {
@@ -4021,10 +4427,60 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 877,
+      "source_lineno": 1162,
       "source_range": [
-        28657,
-        29864
+        39472,
+        40679
+      ]
+    },
+    "clamp": {
+      "name": "clamp",
+      "kind": "function",
+      "description": "Clamps a value to the inclusive range [a, b].\nAssumes a <= b.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The value to clamp.",
+          "name": "v"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The lower bound.",
+          "name": "a"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The upper bound.",
+          "name": "b"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The clamped value."
+        }
+      ],
+      "source_filename": "math.js",
+      "source_lineno": 1210,
+      "source_range": [
+        40945,
+        41005
       ]
     },
     "real": {
@@ -4056,10 +4512,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 924,
+      "source_lineno": 1222,
       "source_range": [
-        30291,
-        30639
+        41430,
+        41778
       ]
     },
     "imag": {
@@ -4091,10 +4547,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 944,
+      "source_lineno": 1242,
       "source_range": [
-        31074,
-        31436
+        42213,
+        42575
       ]
     },
     "cumtrapz": {
@@ -4124,10 +4580,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 962,
+      "source_lineno": 1260,
       "source_range": [
-        31686,
-        31766
+        42825,
+        42905
       ]
     },
     "trapz": {
@@ -4157,10 +4613,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 971,
+      "source_lineno": 1269,
       "source_range": [
-        31983,
-        32057
+        43122,
+        43196
       ]
     },
     "mse": {
@@ -4198,10 +4654,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 982,
+      "source_lineno": 1280,
       "source_range": [
-        32377,
-        32766
+        43516,
+        43875
       ]
     },
     "charpoly": {
@@ -4230,10 +4686,10 @@ await om_link.close();
         }
       ],
       "source_filename": "math.js",
-      "source_lineno": 1006,
+      "source_lineno": 1304,
       "source_range": [
-        33178,
-        33795
+        44287,
+        44880
       ]
     }
   },
@@ -4466,6 +4922,56 @@ await om_link.close();
         3599
       ]
     },
+    "resetTimeout": {
+      "name": "resetTimeout",
+      "kind": "function",
+      "description": "Reset timeout",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "timeout id.",
+          "name": "id"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "timeout function.",
+          "name": "fun"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "timeout dt.",
+          "name": "dt"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "timeout id."
+        }
+      ],
+      "source_filename": "non-blocking.js",
+      "source_lineno": 141,
+      "source_range": [
+        3791,
+        3896
+      ]
+    },
     "initWorker": {
       "name": "initWorker",
       "kind": "function",
@@ -4492,10 +4998,10 @@ await om_link.close();
         }
       ],
       "source_filename": "non-blocking.js",
-      "source_lineno": 139,
+      "source_lineno": 152,
       "source_range": [
-        3811,
-        4011
+        4108,
+        4308
       ]
     }
   },
@@ -5968,6 +6474,53 @@ await om_link.close();
         11938
       ]
     },
+    "openDiscourse": {
+      "name": "openDiscourse",
+      "kind": "function",
+      "description": "Opens window with discourse",
+      "params": [],
+      "async": true,
+      "source_filename": "windows.js",
+      "source_lineno": 411,
+      "source_range": [
+        11987,
+        12175
+      ]
+    },
+    "openWebpage": {
+      "name": "openWebpage",
+      "kind": "function",
+      "description": "Opens window with webpage",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "String"
+            ]
+          },
+          "optional": true,
+          "description": "URL of webpage.",
+          "name": "url"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<Object>"
+            ]
+          },
+          "description": "A promise that resolves to the window context."
+        }
+      ],
+      "async": true,
+      "source_filename": "windows.js",
+      "source_lineno": 422,
+      "source_range": [
+        12346,
+        12487
+      ]
+    },
     "openWindow3D": {
       "name": "openWindow3D",
       "kind": "function",
@@ -5997,10 +6550,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 413,
+      "source_lineno": 433,
       "source_range": [
-        12215,
-        15343
+        12764,
+        15892
       ]
     },
     "openPlotlyjs": {
@@ -6020,10 +6573,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 505,
+      "source_lineno": 525,
       "source_range": [
-        15538,
-        16098
+        16087,
+        16647
       ]
     },
     "openCanvas": {
@@ -6043,10 +6596,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 525,
+      "source_lineno": 545,
       "source_range": [
-        16295,
-        16975
+        16844,
+        17524
       ]
     },
     "openWindowBlank": {
@@ -6066,10 +6619,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 547,
+      "source_lineno": 567,
       "source_range": [
-        17119,
-        17388
+        17668,
+        17937
       ]
     },
     "showMermaidGraph": {
@@ -6099,10 +6652,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 560,
+      "source_lineno": 580,
       "source_range": [
-        17630,
-        18541
+        18179,
+        19090
       ]
     }
   },
@@ -6813,7 +7366,7 @@ await om_link.close();
       "source_lineno": 296,
       "source_range": [
         8588,
-        8910
+        8931
       ]
     },
     "saveFigureDialog": {
@@ -6833,10 +7386,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 314,
+      "source_lineno": 315,
       "source_range": [
-        9036,
-        9817
+        9057,
+        9838
       ]
     },
     "saveFigure": {
@@ -6874,10 +7427,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 343,
+      "source_lineno": 344,
       "source_range": [
-        10113,
-        12479
+        10134,
+        12500
       ]
     },
     "legend": {
@@ -6896,10 +7449,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 408,
+      "source_lineno": 409,
       "source_range": [
-        12609,
-        12841
+        12630,
+        12862
       ]
     },
     "xlabel": {
@@ -6918,10 +7471,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 420,
+      "source_lineno": 421,
       "source_range": [
-        12971,
-        13203
+        12992,
+        13224
       ]
     },
     "ylabel": {
@@ -6940,10 +7493,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 432,
+      "source_lineno": 433,
       "source_range": [
-        13331,
-        13563
+        13352,
+        13584
       ]
     },
     "zlabel": {
@@ -6962,10 +7515,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 444,
+      "source_lineno": 445,
       "source_range": [
-        13691,
-        13923
+        13712,
+        13944
       ]
     },
     "title": {
@@ -6984,10 +7537,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 456,
+      "source_lineno": 457,
       "source_range": [
-        14028,
-        14258
+        14049,
+        14279
       ]
     },
     "xlim": {
@@ -7006,10 +7559,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 468,
+      "source_lineno": 469,
       "source_range": [
-        14352,
-        14576
+        14373,
+        14597
       ]
     },
     "ylim": {
@@ -7028,10 +7581,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 480,
+      "source_lineno": 481,
       "source_range": [
-        14670,
-        14894
+        14693,
+        14917
       ]
     },
     "zlim": {
@@ -7050,10 +7603,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 492,
+      "source_lineno": 493,
       "source_range": [
-        14988,
-        15212
+        15011,
+        15235
       ]
     },
     "view": {
@@ -7081,10 +7634,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 505,
+      "source_lineno": 507,
       "source_range": [
-        15393,
-        15647
+        15419,
+        15673
       ]
     },
     "zoom": {
@@ -7103,10 +7656,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 517,
+      "source_lineno": 519,
       "source_range": [
-        15754,
-        15984
+        15780,
+        16010
       ]
     },
     "axis": {
@@ -7125,10 +7678,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 529,
+      "source_lineno": 531,
       "source_range": [
-        16144,
-        16372
+        16170,
+        16398
       ]
     },
     "printFigure": {
@@ -7157,10 +7710,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 542,
+      "source_lineno": 544,
       "source_range": [
-        16579,
-        16851
+        16605,
+        16877
       ]
     },
     "plot": {
@@ -7198,10 +7751,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 556,
+      "source_lineno": 558,
       "source_range": [
-        17068,
-        17517
+        17094,
+        17543
       ]
     },
     "updatePlot": {
@@ -7229,10 +7782,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 581,
+      "source_lineno": 583,
       "source_range": [
-        17739,
-        17978
+        17765,
+        18004
       ]
     },
     "updatePlotById": {
@@ -7252,10 +7805,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 593,
+      "source_lineno": 595,
       "source_range": [
-        18156,
-        18398
+        18182,
+        18424
       ]
     },
     "hideFigureMenu": {
@@ -7264,10 +7817,10 @@ await om_link.close();
       "description": "Hides figure menu.",
       "params": [],
       "source_filename": "figures.js",
-      "source_lineno": 604,
+      "source_lineno": 606,
       "source_range": [
-        18440,
-        18621
+        18466,
+        18647
       ]
     },
     "showFigureMenu": {
@@ -7276,10 +7829,10 @@ await om_link.close();
       "description": "Shows figure menu.",
       "params": [],
       "source_filename": "figures.js",
-      "source_lineno": 616,
+      "source_lineno": 618,
       "source_range": [
-        18666,
-        18847
+        18692,
+        18873
       ]
     },
     "loadJsonFigure": {
@@ -7317,10 +7870,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 630,
+      "source_lineno": 632,
       "source_range": [
-        19107,
-        19890
+        19133,
+        19916
       ]
     }
   },
@@ -8696,7 +9249,7 @@ await om_link.close();
       "source_lineno": 369,
       "source_range": [
         11140,
-        11293
+        11292
       ]
     },
     "cloneArray": {
@@ -8727,8 +9280,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 380,
       "source_range": [
-        11472,
-        11522
+        11471,
+        11521
       ]
     },
     "createArray": {
@@ -8770,8 +9323,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 390,
       "source_range": [
-        11772,
-        12031
+        11771,
+        12030
       ]
     },
     "createFilledArray": {
@@ -8822,8 +9375,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 409,
       "source_range": [
-        12357,
-        12670
+        12356,
+        12669
       ]
     },
     "fill": {
@@ -8862,8 +9415,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 429,
       "source_range": [
-        12893,
-        12981
+        12892,
+        12980
       ]
     },
     "NaNs": {
@@ -8895,8 +9448,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 440,
       "source_range": [
-        13169,
-        13237
+        13168,
+        13236
       ]
     },
     "zeros": {
@@ -8928,8 +9481,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 449,
       "source_range": [
-        13426,
-        13493
+        13425,
+        13492
       ]
     },
     "ones": {
@@ -8961,8 +9514,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 458,
       "source_range": [
-        13680,
-        13746
+        13679,
+        13745
       ]
     },
     "eye": {
@@ -8993,8 +9546,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 467,
       "source_range": [
-        13928,
-        13988
+        13927,
+        13987
       ]
     },
     "scale": {
@@ -9034,8 +9587,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 477,
       "source_range": [
-        14183,
-        14365
+        14182,
+        14364
       ]
     },
     "linspace": {
@@ -9086,8 +9639,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 495,
       "source_range": [
-        14617,
-        14789
+        14616,
+        14788
       ]
     },
     "range": {
@@ -9119,8 +9672,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 509,
       "source_range": [
-        15027,
-        15113
+        15026,
+        15112
       ]
     },
     "colon": {
@@ -9169,8 +9722,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 520,
       "source_range": [
-        15489,
-        15925
+        15488,
+        15924
       ]
     },
     "elementWise": {
@@ -9211,8 +9764,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 547,
       "source_range": [
-        16237,
-        16734
+        16236,
+        16733
       ]
     },
     "arrayfun": {
@@ -9263,8 +9816,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 573,
       "source_range": [
-        17121,
-        17197
+        17120,
+        17196
       ]
     },
     "divideEl": {
@@ -9307,8 +9860,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 583,
       "source_range": [
-        17472,
-        17538
+        17471,
+        17537
       ]
     },
     "multiplyEl": {
@@ -9351,8 +9904,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 593,
       "source_range": [
-        17816,
-        17886
+        17815,
+        17885
       ]
     },
     "powEl": {
@@ -9396,8 +9949,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 603,
       "source_range": [
-        18224,
-        18284
+        18223,
+        18283
       ]
     },
     "dot": {
@@ -9448,8 +10001,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 614,
       "source_range": [
-        18680,
-        19021
+        18679,
+        19020
       ]
     },
     "lZero": {
@@ -9480,8 +10033,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 630,
       "source_range": [
-        19207,
-        19241
+        19206,
+        19240
       ]
     },
     "b2i": {
@@ -9512,8 +10065,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 639,
       "source_range": [
-        19504,
-        19607
+        19503,
+        19606
       ]
     },
     "average": {
@@ -9544,8 +10097,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 648,
       "source_range": [
-        19770,
-        19874
+        19769,
+        19873
       ]
     },
     "averageEM": {
@@ -9585,8 +10138,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 660,
       "source_range": [
-        20132,
-        20367
+        20131,
+        20366
       ]
     },
     "averageMoving": {
@@ -9626,8 +10179,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 677,
       "source_range": [
-        20736,
-        21309
+        20735,
+        21308
       ]
     },
     "movmean": {
@@ -9667,8 +10220,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 707,
       "source_range": [
-        21678,
-        21770
+        21677,
+        21769
       ]
     },
     "isequal": {
@@ -9708,8 +10261,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 717,
       "source_range": [
-        21981,
-        22146
+        21980,
+        22145
       ]
     },
     "neg": {
@@ -9740,8 +10293,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 729,
       "source_range": [
-        22311,
-        22436
+        22310,
+        22435
       ]
     },
     "all": {
@@ -9772,8 +10325,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 742,
       "source_range": [
-        22641,
-        22779
+        22640,
+        22778
       ]
     },
     "any": {
@@ -9804,8 +10357,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 757,
       "source_range": [
-        22981,
-        23118
+        22980,
+        23117
       ]
     },
     "arrayContains": {
@@ -9845,8 +10398,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 773,
       "source_range": [
-        23348,
-        23591
+        23347,
+        23590
       ]
     },
     "hasDuplicates": {
@@ -9877,8 +10430,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 791,
       "source_range": [
-        23800,
-        23875
+        23799,
+        23874
       ]
     },
     "removeDuplicates": {
@@ -9909,8 +10462,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 800,
       "source_range": [
-        24101,
-        24214
+        24100,
+        24213
       ]
     },
     "fliplr": {
@@ -9941,8 +10494,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 809,
       "source_range": [
-        24415,
-        24462
+        24414,
+        24461
       ]
     },
     "movelr": {
@@ -9982,8 +10535,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 819,
       "source_range": [
-        24761,
-        24968
+        24760,
+        24967
       ]
     },
     "plus": {
@@ -10017,8 +10570,8 @@ await om_link.close();
       "source_filename": "array.js",
       "source_lineno": 835,
       "source_range": [
-        25356,
-        26356
+        25355,
+        26908
       ]
     },
     "add": {
@@ -10050,10 +10603,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 870,
+      "source_lineno": 898,
       "source_range": [
-        26742,
-        26791
+        27294,
+        27343
       ]
     },
     "minus": {
@@ -10085,10 +10638,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 881,
+      "source_lineno": 909,
       "source_range": [
-        27238,
-        28461
+        27790,
+        29486
       ]
     },
     "subtract": {
@@ -10120,10 +10673,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 924,
+      "source_lineno": 979,
       "source_range": [
-        28908,
-        28963
+        29931,
+        29986
       ]
     },
     "cross3D": {
@@ -10171,10 +10724,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 935,
+      "source_lineno": 990,
       "source_range": [
-        29264,
-        29610
+        30287,
+        30633
       ]
     },
     "inv": {
@@ -10213,10 +10766,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 951,
+      "source_lineno": 1006,
       "source_range": [
-        29949,
-        30127
+        30972,
+        31150
       ]
     },
     "concatRow": {
@@ -10255,10 +10808,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 966,
+      "source_lineno": 1021,
       "source_range": [
-        30375,
-        30798
+        31398,
+        31821
       ]
     },
     "concatCol": {
@@ -10297,10 +10850,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 990,
+      "source_lineno": 1045,
       "source_range": [
-        31046,
-        31102
+        32069,
+        32125
       ]
     },
     "concat": {
@@ -10330,10 +10883,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 999,
+      "source_lineno": 1054,
       "source_range": [
-        31259,
-        31304
+        32282,
+        32327
       ]
     },
     "repRow": {
@@ -10371,10 +10924,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1009,
+      "source_lineno": 1064,
       "source_range": [
-        31528,
-        31748
+        32551,
+        32771
       ]
     },
     "repCol": {
@@ -10412,10 +10965,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1026,
+      "source_lineno": 1081,
       "source_range": [
-        31982,
-        32202
+        33005,
+        33225
       ]
     },
     "sumRow": {
@@ -10462,10 +11015,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1044,
+      "source_lineno": 1099,
       "source_range": [
-        32509,
-        32704
+        33532,
+        33727
       ]
     },
     "sumCol": {
@@ -10512,10 +11065,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1061,
+      "source_lineno": 1116,
       "source_range": [
-        33019,
-        33214
+        34042,
+        34237
       ]
     },
     "normRow": {
@@ -10562,10 +11115,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1078,
+      "source_lineno": 1133,
       "source_range": [
-        33534,
-        33773
+        34557,
+        34796
       ]
     },
     "normCol": {
@@ -10612,10 +11165,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1096,
+      "source_lineno": 1151,
       "source_range": [
-        34101,
-        34340
+        35124,
+        35363
       ]
     },
     "transpose": {
@@ -10662,10 +11215,42 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1114,
+      "source_lineno": 1169,
       "source_range": [
-        34649,
-        34868
+        35672,
+        35891
+      ]
+    },
+    "transpose2D": {
+      "name": "transpose2D",
+      "kind": "function",
+      "description": "Transposes a 2D matrix.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Array.<Array>"
+            ]
+          },
+          "description": "Input matrix.",
+          "name": "A"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Array.<Array>"
+            ]
+          },
+          "description": "Transposed matrix."
+        }
+      ],
+      "source_filename": "array.js",
+      "source_lineno": 1184,
+      "source_range": [
+        36021,
+        36266
       ]
     },
     "multiply": {
@@ -10730,10 +11315,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1133,
+      "source_lineno": 1205,
       "source_range": [
-        35300,
-        35620
+        36698,
+        37018
       ]
     },
     "dotColumn": {
@@ -10789,10 +11374,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1153,
+      "source_lineno": 1225,
       "source_range": [
-        36027,
-        36250
+        37425,
+        37648
       ]
     },
     "diag": {
@@ -10830,10 +11415,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1169,
+      "source_lineno": 1241,
       "source_range": [
-        36502,
-        36659
+        37900,
+        38057
       ]
     },
     "linsolve": {
@@ -10880,10 +11465,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1184,
+      "source_lineno": 1256,
       "source_range": [
-        36956,
-        37063
+        38354,
+        38461
       ]
     },
     "reciprocal": {
@@ -10921,10 +11506,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1194,
+      "source_lineno": 1266,
       "source_range": [
-        37353,
-        37500
+        38751,
+        38898
       ]
     },
     "reshape": {
@@ -10971,10 +11556,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1210,
+      "source_lineno": 1282,
       "source_range": [
-        37851,
-        38731
+        39249,
+        40129
       ]
     },
     "maxi": {
@@ -11003,10 +11588,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1258,
+      "source_lineno": 1330,
       "source_range": [
-        39074,
-        39589
+        40472,
+        40953
       ]
     },
     "mini": {
@@ -11035,10 +11620,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1289,
+      "source_lineno": 1361,
       "source_range": [
-        39932,
-        40447
+        41296,
+        41778
       ]
     },
     "sorti": {
@@ -11067,10 +11652,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1319,
+      "source_lineno": 1391,
       "source_range": [
-        40728,
-        41295
+        42059,
+        42626
       ]
     },
     "weightedSum": {
@@ -11125,10 +11710,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1347,
+      "source_lineno": 1419,
       "source_range": [
-        41663,
-        41789
+        42994,
+        43120
       ]
     },
     "condiff": {
@@ -11157,10 +11742,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1358,
+      "source_lineno": 1430,
       "source_range": [
-        42037,
-        42104
+        43368,
+        43435
       ]
     },
     "arrayRand": {
@@ -11227,10 +11812,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1371,
+      "source_lineno": 1443,
       "source_range": [
-        42585,
-        42851
+        43916,
+        44182
       ]
     },
     "arrayRandi": {
@@ -11288,10 +11873,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1386,
+      "source_lineno": 1458,
       "source_range": [
-        43307,
-        43537
+        44638,
+        44868
       ]
     },
     "normalizeVector": {
@@ -11320,10 +11905,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1398,
+      "source_lineno": 1470,
       "source_range": [
-        43684,
-        43828
+        45015,
+        45159
       ]
     },
     "dotVector": {
@@ -11361,10 +11946,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1410,
+      "source_lineno": 1482,
       "source_range": [
-        44039,
-        44106
+        45370,
+        45437
       ]
     },
     "angleVectors": {
@@ -11402,10 +11987,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1420,
+      "source_lineno": 1492,
       "source_range": [
-        44329,
-        44406
+        45660,
+        45737
       ]
     },
     "skewVector": {
@@ -11434,10 +12019,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1429,
+      "source_lineno": 1501,
       "source_range": [
-        44592,
-        44696
+        45923,
+        46027
       ]
     },
     "meshgrid": {
@@ -11467,10 +12052,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1442,
+      "source_lineno": 1514,
       "source_range": [
-        44909,
-        45634
+        46240,
+        46965
       ]
     },
     "areEqual": {
@@ -11508,10 +12093,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1478,
+      "source_lineno": 1550,
       "source_range": [
-        45895,
-        46061
+        47226,
+        47392
       ]
     },
     "dispMatrix": {
@@ -11567,10 +12152,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1493,
+      "source_lineno": 1565,
       "source_range": [
-        46415,
-        46737
+        47746,
+        48068
       ]
     },
     "dispRowVector": {
@@ -11617,10 +12202,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1514,
+      "source_lineno": 1586,
       "source_range": [
-        47036,
-        47260
+        48367,
+        48591
       ]
     },
     "dispColumnVector": {
@@ -11667,10 +12252,10 @@ await om_link.close();
         }
       ],
       "source_filename": "array.js",
-      "source_lineno": 1531,
+      "source_lineno": 1603,
       "source_range": [
-        47571,
-        47808
+        48902,
+        49139
       ]
     }
   },
@@ -11910,7 +12495,7 @@ await om_link.close();
       "source_lineno": 471,
       "source_range": [
         15144,
-        15713
+        15712
       ]
     },
     "hslToRgb": {
@@ -11959,8 +12544,8 @@ await om_link.close();
       "source_filename": "color.js",
       "source_lineno": 504,
       "source_range": [
-        16000,
-        16428
+        15999,
+        16427
       ]
     },
     "hueToRgb": {
@@ -12009,8 +12594,8 @@ await om_link.close();
       "source_filename": "color.js",
       "source_lineno": 530,
       "source_range": [
-        16688,
-        16936
+        16687,
+        16935
       ]
     }
   },
@@ -13237,6 +13822,49 @@ await om_link.close();
         14389
       ]
     },
+    "toRC": {
+      "name": "toRC",
+      "kind": "function",
+      "description": "Converts a value to its equivalent RC (Radio Control) signal value, accounting for an optional deadzone.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The input value to convert.",
+          "name": "val"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": 0,
+          "description": "The deadzone value within which the RC signal should default to 1500.",
+          "name": "deadzone"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The converted RC signal value."
+        }
+      ],
+      "source_filename": "conversion.js",
+      "source_lineno": 468,
+      "source_range": [
+        14726,
+        14861
+      ]
+    },
     "checkValueUpdate": {
       "name": "checkValueUpdate",
       "kind": "function",
@@ -13263,10 +13891,10 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 467,
+      "source_lineno": 480,
       "source_range": [
-        14647,
-        14809
+        15121,
+        15283
       ]
     },
     "resetValue": {
@@ -13285,10 +13913,10 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 480,
+      "source_lineno": 493,
       "source_range": [
-        14979,
-        15062
+        15453,
+        15536
       ]
     },
     "adcToNewtons": {
@@ -13370,10 +13998,10 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 495,
+      "source_lineno": 508,
       "source_range": [
-        15610,
-        16084
+        16084,
+        16558
       ]
     },
     "data2blobUrl": {
@@ -13388,7 +14016,7 @@ await om_link.close();
             ]
           },
           "description": "Relative path from the application's base path to the file.",
-          "name": "path"
+          "name": "file_path_in"
         }
       ],
       "returns": [
@@ -13402,10 +14030,10 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 513,
+      "source_lineno": 526,
       "source_range": [
-        16311,
-        16416
+        16793,
+        17026
       ]
     },
     "trbl2xy": {
@@ -13497,10 +14125,10 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 529,
+      "source_lineno": 546,
       "source_range": [
-        16933,
-        17316
+        17543,
+        17926
       ]
     },
     "simpleObj2Csv": {
@@ -13540,10 +14168,10 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 553,
+      "source_lineno": 570,
       "source_range": [
-        17951,
-        18388
+        18561,
+        18998
       ]
     },
     "simpleArray2Csv": {
@@ -13583,10 +14211,42 @@ await om_link.close();
         }
       ],
       "source_filename": "conversion.js",
-      "source_lineno": 572,
+      "source_lineno": 589,
       "source_range": [
-        18673,
-        19022
+        19283,
+        19632
+      ]
+    },
+    "latexToHtml": {
+      "name": "latexToHtml",
+      "kind": "function",
+      "description": "Converts a subset of LaTeX/TeX math syntax into HTML/Unicode.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "LaTeX/TeX input string.",
+          "name": "latex"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "HTML/Unicode string."
+        }
+      ],
+      "source_filename": "conversion.js",
+      "source_lineno": 605,
+      "source_range": [
+        19814,
+        25954
       ]
     }
   },
@@ -13741,7 +14401,7 @@ await om_link.close();
       "source_lineno": 117,
       "source_range": [
         3615,
-        4450
+        4474
       ]
     },
     "uploadArduino": {
@@ -13783,8 +14443,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 148,
       "source_range": [
-        4651,
-        5666
+        4675,
+        5714
       ]
     },
     "parseArduinoOtuput": {
@@ -13813,8 +14473,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 184,
       "source_range": [
-        5785,
-        6248
+        5833,
+        6304
       ]
     },
     "getGamepads": {
@@ -13835,8 +14495,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 205,
       "source_range": [
-        6390,
-        6519
+        6446,
+        6575
       ]
     },
     "onGamepadConnected": {
@@ -13857,8 +14517,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 215,
       "source_range": [
-        6696,
-        7095
+        6752,
+        7151
       ]
     },
     "onGamepadDisconnected": {
@@ -13879,8 +14539,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 233,
       "source_range": [
-        7278,
-        7686
+        7334,
+        7742
       ]
     },
     "getGamepad": {
@@ -13920,8 +14580,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 253,
       "source_range": [
-        7953,
-        8037
+        8009,
+        8093
       ]
     },
     "getWebcams": {
@@ -13943,8 +14603,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 261,
       "source_range": [
-        8206,
-        8422
+        8262,
+        8478
       ]
     },
     "getMicrophones": {
@@ -13966,8 +14626,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 272,
       "source_range": [
-        8592,
-        8812
+        8648,
+        8868
       ]
     },
     "getAudioOutputs": {
@@ -13989,8 +14649,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 283,
       "source_range": [
-        8972,
-        9194
+        9028,
+        9250
       ]
     },
     "webcam": {
@@ -14022,8 +14682,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 295,
       "source_range": [
-        9486,
-        10469
+        9542,
+        10525
       ]
     },
     "webcamCapture": {
@@ -14063,8 +14723,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 335,
       "source_range": [
-        10787,
-        10920
+        10843,
+        10976
       ]
     },
     "getDesktopSources": {
@@ -14085,8 +14745,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 344,
       "source_range": [
-        11061,
-        11131
+        11117,
+        11187
       ]
     },
     "showDesktopSources": {
@@ -14106,8 +14766,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 352,
       "source_range": [
-        11274,
-        11843
+        11330,
+        11899
       ]
     },
     "desktopCapture": {
@@ -14147,8 +14807,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 368,
       "source_range": [
-        12160,
-        12295
+        12216,
+        12351
       ]
     },
     "capture": {
@@ -14265,8 +14925,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 388,
       "source_range": [
-        13410,
-        16105
+        13466,
+        16161
       ]
     },
     "getCameraResolutions": {
@@ -14298,8 +14958,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 492,
       "source_range": [
-        16302,
-        16945
+        16358,
+        17001
       ]
     },
     "showAudioWaveform": {
@@ -14342,8 +15002,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 520,
       "source_range": [
-        17193,
-        19373
+        17249,
+        19429
       ]
     },
     "startVideoRecording": {
@@ -14387,8 +15047,8 @@ await om_link.close();
       "source_filename": "device.js",
       "source_lineno": 609,
       "source_range": [
-        19945,
-        22225
+        20001,
+        22281
       ]
     }
   },
@@ -14589,7 +15249,7 @@ await om_link.close();
       "source_lineno": 107,
       "source_range": [
         2988,
-        4484
+        4490
       ]
     },
     "chooseSerialOptions": {
@@ -14610,8 +15270,8 @@ await om_link.close();
       "source_filename": "serial-device.js",
       "source_lineno": 159,
       "source_range": [
-        4594,
-        6515
+        4600,
+        6524
       ]
     },
     "openSerialTerminal": {
@@ -14665,8 +15325,8 @@ await om_link.close();
       "source_filename": "serial-device.js",
       "source_lineno": 219,
       "source_range": [
-        6914,
-        10414
+        6923,
+        10435
       ]
     },
     "chooseSerialTerminal": {
@@ -14700,8 +15360,8 @@ await om_link.close();
       "source_filename": "serial-device.js",
       "source_lineno": 341,
       "source_range": [
-        10754,
-        10945
+        10775,
+        10966
       ]
     }
   },
@@ -15619,6 +16279,17 @@ await om_link.close();
     }
   },
   "system": {
+    "open_terminals": {
+      "name": "open_terminals",
+      "kind": "member",
+      "description": "Array of open terminals.",
+      "source_filename": "system.js",
+      "source_lineno": 25,
+      "source_range": [
+        499,
+        523
+      ]
+    },
     "system": {
       "name": "system",
       "kind": "function",
@@ -15647,10 +16318,10 @@ await om_link.close();
         }
       ],
       "source_filename": "system.js",
-      "source_lineno": 27,
+      "source_lineno": 33,
       "source_range": [
-        639,
-        814
+        743,
+        918
       ]
     },
     "exec": {
@@ -15670,10 +16341,10 @@ await om_link.close();
         }
       ],
       "source_filename": "system.js",
-      "source_lineno": 40,
+      "source_lineno": 46,
       "source_range": [
-        905,
-        1061
+        1009,
+        1165
       ]
     },
     "spawn": {
@@ -15693,10 +16364,60 @@ await om_link.close();
         }
       ],
       "source_filename": "system.js",
-      "source_lineno": 53,
+      "source_lineno": 59,
       "source_range": [
-        1152,
-        1311
+        1256,
+        1415
+      ]
+    },
+    "spawnTerminal": {
+      "name": "spawnTerminal",
+      "kind": "function",
+      "description": "Spawns a new PTY-backed terminal session and registers it locally.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Array"
+            ]
+          },
+          "description": "Arguments forwarded to PTY spawn (e.g. [file, argv, options]).",
+          "name": "args"
+        },
+        {
+          "type": {
+            "names": [
+              "function"
+            ]
+          },
+          "description": "Callback invoked on terminal output (string).",
+          "name": "onData"
+        },
+        {
+          "type": {
+            "names": [
+              "function"
+            ]
+          },
+          "description": "Callback invoked when the terminal exits.",
+          "name": "onExit"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "PRDC_JSLAB_SYSTEM_TERMINAL"
+            ]
+          },
+          "description": "Terminal wrapper instance."
+        }
+      ],
+      "source_filename": "system.js",
+      "source_lineno": 75,
+      "source_range": [
+        1815,
+        2050
       ]
     },
     "getTaskList": {
@@ -15715,10 +16436,10 @@ await om_link.close();
         }
       ],
       "source_filename": "system.js",
-      "source_lineno": 66,
+      "source_lineno": 86,
       "source_range": [
-        1486,
-        1667
+        2225,
+        2406
       ]
     },
     "isProgramRunning": {
@@ -15747,10 +16468,10 @@ await om_link.close();
         }
       ],
       "source_filename": "system.js",
-      "source_lineno": 81,
+      "source_lineno": 101,
       "source_range": [
-        2035,
-        3209
+        2774,
+        3948
       ]
     },
     "killProcess": {
@@ -15780,10 +16501,10 @@ await om_link.close();
         }
       ],
       "source_filename": "system.js",
-      "source_lineno": 118,
+      "source_lineno": 138,
       "source_range": [
-        3450,
-        3710
+        4189,
+        4449
       ]
     }
   },
@@ -15888,6 +16609,65 @@ await om_link.close();
         2885
       ]
     },
+    "offsetLatLonEastNorth": {
+      "name": "offsetLatLonEastNorth",
+      "kind": "function",
+      "description": "Calculates a new latitude and longitude based on east and north offsets.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The latitude of the starting point.",
+          "name": "lat"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The longitude of the starting point.",
+          "name": "lon"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The east offset in meters.",
+          "name": "east"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The north offset in meters.",
+          "name": "north"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Array.<number>"
+            ]
+          },
+          "description": "An array containing the latitude and longitude of the calculated point."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 87,
+      "source_range": [
+        3330,
+        3582
+      ]
+    },
     "offsetLatLon": {
       "name": "offsetLatLon",
       "kind": "function",
@@ -15941,10 +16721,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geography.js",
-      "source_lineno": 87,
+      "source_lineno": 101,
       "source_range": [
-        3409,
-        4037
+        4107,
+        4735
       ]
     },
     "latLonDistance": {
@@ -16000,10 +16780,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geography.js",
-      "source_lineno": 107,
+      "source_lineno": 121,
       "source_range": [
-        4467,
-        4814
+        5165,
+        5512
       ]
     },
     "latLonAltDistance": {
@@ -16077,10 +16857,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geography.js",
-      "source_lineno": 125,
+      "source_lineno": 139,
       "source_range": [
-        5422,
-        5597
+        6120,
+        6295
       ]
     },
     "checkNewLatLon": {
@@ -16109,10 +16889,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geography.js",
-      "source_lineno": 135,
+      "source_lineno": 149,
       "source_range": [
-        5899,
-        6210
+        6597,
+        6908
       ]
     },
     "latLonAlt2cartesian": {
@@ -16163,10 +16943,349 @@ await om_link.close();
         }
       ],
       "source_filename": "geography.js",
-      "source_lineno": 152,
+      "source_lineno": 166,
       "source_range": [
-        6626,
-        7004
+        7324,
+        7702
+      ]
+    },
+    "latLonAltTransform": {
+      "name": "latLonAltTransform",
+      "kind": "function",
+      "description": "Transforms a local offset (dx, dy, dz) relative to a specified latitude, longitude, and altitude to a new latitude, longitude, and altitude.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Latitude in degrees.",
+          "name": "lat"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Longitude in degrees.",
+          "name": "lon"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Altitude in meters.",
+          "name": "alt"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Local x offset in meters.",
+          "name": "dx"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Local y offset in meters.",
+          "name": "dy"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Local z offset in meters.",
+          "name": "dz"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Object containing the transformed latitude, longitude, and altitude."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 188,
+      "source_range": [
+        8268,
+        8451
+      ]
+    },
+    "eastNorthUpTransform": {
+      "name": "eastNorthUpTransform",
+      "kind": "function",
+      "description": "Transforms a local offset (dx, dy, dz) relative to a specified East, North, Up position to a new latitude, longitude, and altitude.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Cesium.Cartesian3"
+            ]
+          },
+          "description": "East, North, Up position.",
+          "name": "position"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Local x offset in meters.",
+          "name": "dx"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Local y offset in meters.",
+          "name": "dy"
+        },
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "Local z offset in meters.",
+          "name": "dz"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Object containing the transformed latitude, longitude, and altitude."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 201,
+      "source_range": [
+        8932,
+        9466
+      ]
+    },
+    "computeHeadingPitchFromTo": {
+      "name": "computeHeadingPitchFromTo",
+      "kind": "function",
+      "description": "Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.\rThe angles are calculated in the local East-North-Up (ENU) frame of the starting point.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Cesium.Cartesian3"
+            ]
+          },
+          "description": "The Cartesian coordinates of the starting point.",
+          "name": "from_cartesian"
+        },
+        {
+          "type": {
+            "names": [
+              "Cesium.Cartesian3"
+            ]
+          },
+          "description": "The Cartesian coordinates of the target point.",
+          "name": "to_cartesian"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "An object containing the calculated heading (in radians from North, positive East) and pitch (in radians from the local horizontal, positive Up)."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 217,
+      "source_range": [
+        10084,
+        10786
+      ]
+    },
+    "mslToEllipsoidAlt": {
+      "name": "mslToEllipsoidAlt",
+      "kind": "function",
+      "description": "Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.\rThe conversion can handle single values or arrays of values.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Latitude(s) in degrees.",
+          "name": "lat_deg"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Longitude(s) in degrees.",
+          "name": "lon_deg"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Altitude(s) in meters above MSL.",
+          "name": "h_msl_meters"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Ellipsoid altitude(s) in meters."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 247,
+      "source_range": [
+        11255,
+        12003
+      ]
+    },
+    "ellipsoidToMslAlt": {
+      "name": "ellipsoidToMslAlt",
+      "kind": "function",
+      "description": "Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.\rThe conversion can handle single values or arrays of values.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Latitude(s) in degrees.",
+          "name": "lat_deg"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Longitude(s) in degrees.",
+          "name": "lon_deg"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Altitude(s) in meters above the Ellipsoid.",
+          "name": "h_ellipsoid_meters"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "MSL altitude(s) in meters."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 271,
+      "source_range": [
+        12482,
+        13266
+      ]
+    },
+    "positionToEllipsoid": {
+      "name": "positionToEllipsoid",
+      "kind": "function",
+      "description": "Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.\rThe MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Latitude(s) in degrees.",
+          "name": "lat_deg"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Longitude(s) in degrees.",
+          "name": "lon_deg"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Altitude(s) in meters above MSL.",
+          "name": "h_msl_meters"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Cesium.Cartesian3",
+              "Array.<Cesium.Cartesian3>"
+            ]
+          },
+          "description": "Cartesian coordinate(s) in the WGS84 system."
+        }
+      ],
+      "source_filename": "geography.js",
+      "source_lineno": 295,
+      "source_range": [
+        13813,
+        14419
       ]
     }
   },
@@ -16926,7 +18045,7 @@ await om_link.close();
     "formatFloatDigits": {
       "name": "formatFloatDigits",
       "kind": "function",
-      "description": "Formats a floating-point number to have a fixed number of significant digits.",
+      "description": "Formats a floating-point number to a fixed number of significant digits,\nautomatically adjusting decimal places depending on the integer part length.",
       "params": [
         {
           "type": {
@@ -16945,7 +18064,7 @@ await om_link.close();
           },
           "optional": true,
           "defaultvalue": 1,
-          "description": "The number of significant digits.",
+          "description": "The number of significant digits to produce.",
           "name": "digits"
         }
       ],
@@ -16956,14 +18075,14 @@ await om_link.close();
               "string"
             ]
           },
-          "description": "The formatted number as a string."
+          "description": "A string containing the formatted number."
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 180,
+      "source_lineno": 182,
       "source_range": [
-        5883,
-        6089
+        5984,
+        6190
       ]
     },
     "clip": {
@@ -17021,10 +18140,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 196,
+      "source_lineno": 198,
       "source_range": [
-        6502,
-        6712
+        6603,
+        6813
       ]
     },
     "clipHeight": {
@@ -17075,10 +18194,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 210,
+      "source_lineno": 212,
       "source_range": [
-        7001,
-        7233
+        7102,
+        7334
       ]
     },
     "fieldnames": {
@@ -17107,10 +18226,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 227,
+      "source_lineno": 229,
       "source_range": [
-        7443,
-        7493
+        7544,
+        7594
       ]
     },
     "strrep": {
@@ -17157,10 +18276,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 238,
+      "source_lineno": 240,
       "source_range": [
-        7822,
-        7914
+        7923,
+        8015
       ]
     },
     "clipVal": {
@@ -17211,10 +18330,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 249,
+      "source_lineno": 251,
       "source_range": [
-        8191,
-        8420
+        8292,
+        8521
       ]
     },
     "toFixedIf": {
@@ -17252,10 +18371,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 267,
+      "source_lineno": 269,
       "source_range": [
-        8736,
-        8803
+        8837,
+        8904
       ]
     },
     "getCircularReplacer": {
@@ -17274,10 +18393,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 275,
+      "source_lineno": 277,
       "source_range": [
-        9019,
-        9286
+        9120,
+        9387
       ]
     },
     "isNaN": {
@@ -17306,10 +18425,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 293,
+      "source_lineno": 295,
       "source_range": [
-        9459,
-        9592
+        9560,
+        9693
       ]
     },
     "isObject": {
@@ -17349,10 +18468,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 307,
+      "source_lineno": 309,
       "source_range": [
-        9867,
-        10031
+        9968,
+        10132
       ]
     },
     "isNumber": {
@@ -17381,10 +18500,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 319,
+      "source_lineno": 321,
       "source_range": [
-        10216,
-        10275
+        10317,
+        10376
       ]
     },
     "isString": {
@@ -17413,10 +18532,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 328,
+      "source_lineno": 330,
       "source_range": [
-        10460,
-        10519
+        10561,
+        10620
       ]
     },
     "isEmptyString": {
@@ -17445,10 +18564,42 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 337,
+      "source_lineno": 339,
       "source_range": [
-        10747,
-        10834
+        10848,
+        10935
+      ]
+    },
+    "isEmptyObject": {
+      "name": "isEmptyObject",
+      "kind": "function",
+      "description": "Checks if a object is empty.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The object to check.",
+          "name": "obj"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "description": "- True if the object is empty, otherwise false."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 348,
+      "source_range": [
+        11107,
+        11210
       ]
     },
     "isFunction": {
@@ -17477,10 +18628,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 346,
+      "source_lineno": 357,
       "source_range": [
-        11021,
-        11084
+        11398,
+        11461
       ]
     },
     "isArray": {
@@ -17509,10 +18660,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 355,
+      "source_lineno": 366,
       "source_range": [
-        11269,
-        11360
+        11646,
+        11737
       ]
     },
     "isNull": {
@@ -17541,10 +18692,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 364,
+      "source_lineno": 375,
       "source_range": [
-        11537,
-        11583
+        11914,
+        11960
       ]
     },
     "isEmpty": {
@@ -17573,10 +18724,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 373,
+      "source_lineno": 384,
       "source_range": [
-        11750,
-        11831
+        12127,
+        12208
       ]
     },
     "isInfinity": {
@@ -17607,10 +18758,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 382,
+      "source_lineno": 393,
       "source_range": [
-        12102,
-        12297
+        12479,
+        12674
       ]
     },
     "isNumeric": {
@@ -17639,10 +18790,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 395,
+      "source_lineno": 406,
       "source_range": [
-        12477,
-        12565
+        12854,
+        12942
       ]
     },
     "hasKey": {
@@ -17680,10 +18831,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 405,
+      "source_lineno": 416,
       "source_range": [
-        12853,
-        12917
+        13230,
+        13294
       ]
     },
     "isUndefined": {
@@ -17712,10 +18863,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 414,
+      "source_lineno": 425,
       "source_range": [
-        13102,
-        13167
+        13479,
+        13544
       ]
     },
     "isUUID": {
@@ -17744,10 +18895,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 423,
+      "source_lineno": 434,
       "source_range": [
-        13349,
-        13503
+        13726,
+        13880
       ]
     },
     "normalizeAngle": {
@@ -17776,10 +18927,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 433,
+      "source_lineno": 444,
       "source_range": [
-        13679,
-        13758
+        14056,
+        14135
       ]
     },
     "normalizeAngle360": {
@@ -17808,10 +18959,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 442,
+      "source_lineno": 453,
       "source_range": [
-        13931,
-        14000
+        14308,
+        14377
       ]
     },
     "normalizeLat": {
@@ -17849,10 +19000,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 452,
+      "source_lineno": 463,
       "source_range": [
-        14277,
-        14384
+        14654,
+        14761
       ]
     },
     "normalizeLon": {
@@ -17890,10 +19041,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 462,
+      "source_lineno": 473,
       "source_range": [
-        14667,
-        14763
+        15044,
+        15140
       ]
     },
     "checkUndefined": {
@@ -17922,10 +19073,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 471,
+      "source_lineno": 482,
       "source_range": [
-        15014,
-        15120
+        15391,
+        15497
       ]
     },
     "prettyPrint": {
@@ -17954,10 +19105,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 484,
+      "source_lineno": 495,
       "source_range": [
-        15443,
-        16048
+        15820,
+        16425
       ]
     },
     "stringify": {
@@ -17987,10 +19138,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 506,
+      "source_lineno": 517,
       "source_range": [
-        16321,
-        16477
+        16698,
+        16854
       ]
     },
     "safeStringify": {
@@ -18030,10 +19181,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 520,
+      "source_lineno": 531,
       "source_range": [
-        17008,
-        19432
+        17385,
+        19809
       ]
     },
     "escapeHTML": {
@@ -18062,10 +19213,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 608,
+      "source_lineno": 619,
       "source_range": [
-        19653,
-        19975
+        20030,
+        20352
       ]
     },
     "escapeLatex": {
@@ -18094,24 +19245,24 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 630,
+      "source_lineno": 641,
       "source_range": [
-        20197,
-        20676
+        20574,
+        21053
       ]
     },
     "getUniqueKey": {
       "name": "getUniqueKey",
       "kind": "function",
-      "description": "Generates a unique object key by appending a number to the original key if it already exists.",
+      "description": "Produces a unique key name inside an object. If `key` already exists,\nnumerical suffixes are appended until uniqueness is achieved.",
       "params": [
         {
           "type": {
             "names": [
-              "string"
+              "Object"
             ]
           },
-          "description": "Object to add unique key.",
+          "description": "The object to test for key collisions.",
           "name": "object"
         },
         {
@@ -18120,7 +19271,7 @@ await om_link.close();
               "string"
             ]
           },
-          "description": "The original object key.",
+          "description": "The proposed key name.",
           "name": "key"
         }
       ],
@@ -18131,14 +19282,14 @@ await om_link.close();
               "string"
             ]
           },
-          "description": "A unique object key."
+          "description": "A unique key string not present in the object."
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 654,
+      "source_lineno": 667,
       "source_range": [
-        20945,
-        21127
+        21407,
+        21589
       ]
     },
     "randomString": {
@@ -18167,10 +19318,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 669,
+      "source_lineno": 682,
       "source_range": [
-        21311,
-        21388
+        21773,
+        21850
       ]
     },
     "countDecimalPlaces": {
@@ -18199,10 +19350,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 678,
+      "source_lineno": 691,
       "source_range": [
-        21567,
-        21684
+        22029,
+        22146
       ]
     },
     "replaceEditorLinks": {
@@ -18231,10 +19382,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 687,
+      "source_lineno": 700,
       "source_range": [
-        21900,
-        22189
+        22362,
+        22651
       ]
     },
     "numberValidator": {
@@ -18263,10 +19414,10 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 700,
+      "source_lineno": 713,
       "source_range": [
-        22368,
-        22496
+        22830,
+        22958
       ]
     },
     "limitedNumberValidator": {
@@ -18315,10 +19466,238 @@ await om_link.close();
         }
       ],
       "source_filename": "format.js",
-      "source_lineno": 714,
+      "source_lineno": 727,
       "source_range": [
-        22884,
-        23163
+        23346,
+        23625
+      ]
+    },
+    "bold": {
+      "name": "bold",
+      "kind": "function",
+      "description": "Wraps a string with an HTML <b> tag for bold formatting.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The string to wrap.",
+          "name": "s"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The bold-formatted HTML string."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 741,
+      "source_range": [
+        23803,
+        23842
+      ]
+    },
+    "italic": {
+      "name": "italic",
+      "kind": "function",
+      "description": "Wraps a string with an HTML <i> tag for italic formatting.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The string to wrap.",
+          "name": "s"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The italic-formatted HTML string."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 750,
+      "source_range": [
+        24024,
+        24065
+      ]
+    },
+    "underline": {
+      "name": "underline",
+      "kind": "function",
+      "description": "Wraps a string with an HTML <u> tag for underline formatting.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The string to wrap.",
+          "name": "s"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The underline-formatted HTML string."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 759,
+      "source_range": [
+        24253,
+        24297
+      ]
+    },
+    "strike": {
+      "name": "strike",
+      "kind": "function",
+      "description": "Wraps a string with an HTML <s> tag for strikethrough formatting.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The string to wrap.",
+          "name": "s"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The strikethrough HTML string."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 768,
+      "source_range": [
+        24483,
+        24524
+      ]
+    },
+    "sub": {
+      "name": "sub",
+      "kind": "function",
+      "description": "Wraps a string in an HTML <sub> element (subscript).",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The string to wrap.",
+          "name": "s"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The subscript HTML string."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 777,
+      "source_range": [
+        24693,
+        24735
+      ]
+    },
+    "sup": {
+      "name": "sup",
+      "kind": "function",
+      "description": "Wraps a string in an HTML <sup> element (superscript).",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The string to wrap.",
+          "name": "s"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "The superscript HTML string."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 786,
+      "source_range": [
+        24908,
+        24950
+      ]
+    },
+    "tableprint": {
+      "name": "tableprint",
+      "kind": "function",
+      "description": "Prints a formatted plain-text table and optionally exports a LaTeX table.\n\nColumns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value\npairs or as a final options object.\n\nOptions: VariableNames, RowNames, Format, Save (\"no\"|\"plain\"|\"tex\"), File, rlines, clines,\nalign, float, caption, label, escapeTeX.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Array",
+              "TypedArray",
+              "Object",
+              "string"
+            ]
+          },
+          "variable": true,
+          "description": "Table columns followed by options.",
+          "name": "args"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Result object with `plain` and `tex` strings."
+        }
+      ],
+      "source_filename": "format.js",
+      "source_lineno": 802,
+      "source_range": [
+        25498,
+        34435
       ]
     }
   },
@@ -18451,13 +19830,37 @@ await om_link.close();
     "spaceSearch": {
       "name": "spaceSearch",
       "kind": "function",
-      "description": "Creates an instance of PRDC_JSLAB_LIB_OPTIM_SPACE_SERACH.",
+      "description": "Creates an instance of PRDC_JSLAB_GEOMETRY_SPACE_SEARCH.",
       "params": [],
       "source_filename": "geometry.js",
-      "source_lineno": 27,
+      "source_lineno": 30,
       "source_range": [
-        647,
-        731
+        825,
+        909
+      ]
+    },
+    "boundaryFollow2D": {
+      "name": "boundaryFollow2D",
+      "kind": "function",
+      "description": "Creates an instance of PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D.",
+      "params": [],
+      "source_filename": "geometry.js",
+      "source_lineno": 37,
+      "source_range": [
+        995,
+        1090
+      ]
+    },
+    "boundaryFollow3D": {
+      "name": "boundaryFollow3D",
+      "kind": "function",
+      "description": "Creates an instance of PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D.",
+      "params": [],
+      "source_filename": "geometry.js",
+      "source_lineno": 44,
+      "source_range": [
+        1176,
+        1271
       ]
     },
     "findNearestPoints": {
@@ -18495,10 +19898,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 37,
+      "source_lineno": 54,
       "source_range": [
-        980,
-        1736
+        1518,
+        2274
       ]
     },
     "pointLineDistance": {
@@ -18545,10 +19948,60 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 70,
+      "source_lineno": 87,
       "source_range": [
-        2175,
-        2439
+        2713,
+        2977
+      ]
+    },
+    "pointSegmentDistance": {
+      "name": "pointSegmentDistance",
+      "kind": "function",
+      "description": "Computes the shortest distance from a point to a line segment in 2D.\n\nThe point and segment endpoints are expected as objects with numeric\nproperties {x, y}. The result is the Euclidean distance to the closest\npoint on the segment.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Query point.",
+          "name": "p"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Segment start point.",
+          "name": "a"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Segment end point.",
+          "name": "b"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "The minimal distance from p to the segment a-b."
+        }
+      ],
+      "source_filename": "geometry.js",
+      "source_lineno": 111,
+      "source_range": [
+        3497,
+        3874
       ]
     },
     "lineCircleIntersection": {
@@ -18604,10 +20057,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 93,
+      "source_lineno": 134,
       "source_range": [
-        2982,
-        3586
+        4420,
+        5024
       ]
     },
     "planesIntersection": {
@@ -18663,10 +20116,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 131,
+      "source_lineno": 172,
       "source_range": [
-        4129,
-        6197
+        5567,
+        7635
       ]
     },
     "isPointOnLine": {
@@ -18710,10 +20163,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 213,
+      "source_lineno": 254,
       "source_range": [
-        6445,
-        6846
+        7883,
+        8284
       ]
     },
     "linesOverlap": {
@@ -18764,10 +20217,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 238,
+      "source_lineno": 279,
       "source_range": [
-        7185,
-        7986
+        8623,
+        9424
       ]
     },
     "minPointsDistance3D": {
@@ -18805,10 +20258,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 285,
+      "source_lineno": 326,
       "source_range": [
-        8470,
-        9186
+        9908,
+        10623
       ]
     },
     "triangle": {
@@ -18855,10 +20308,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 326,
+      "source_lineno": 367,
       "source_range": [
-        9415,
-        9499
+        10852,
+        10936
       ]
     },
     "delaunayTriangulation": {
@@ -18887,10 +20340,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 335,
+      "source_lineno": 376,
       "source_range": [
-        9680,
-        11189
+        11117,
+        12626
       ]
     },
     "getRotationMatrix": {
@@ -18928,10 +20381,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 385,
+      "source_lineno": 426,
       "source_range": [
-        11440,
-        13069
+        12877,
+        14506
       ]
     },
     "transform": {
@@ -18987,10 +20440,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 439,
+      "source_lineno": 480,
       "source_range": [
-        13521,
-        13851
+        14958,
+        15288
       ]
     },
     "createVectors3D": {
@@ -19093,10 +20546,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 460,
+      "source_lineno": 501,
       "source_range": [
-        14550,
-        18892
+        15987,
+        20329
       ]
     },
     "createDisks3D": {
@@ -19188,10 +20641,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 601,
+      "source_lineno": 642,
       "source_range": [
-        19591,
-        22968
+        21028,
+        24405
       ]
     },
     "createPlanes3D": {
@@ -19292,10 +20745,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 720,
+      "source_lineno": 761,
       "source_range": [
-        23783,
-        27512
+        25220,
+        28949
       ]
     },
     "createLines3D": {
@@ -19369,10 +20822,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 837,
+      "source_lineno": 878,
       "source_range": [
-        27925,
-        28721
+        29362,
+        30158
       ]
     },
     "createPoints3D": {
@@ -19419,10 +20872,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 875,
+      "source_lineno": 916,
       "source_range": [
-        28971,
-        29598
+        30408,
+        31035
       ]
     },
     "createText3D": {
@@ -19469,10 +20922,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 910,
+      "source_lineno": 951,
       "source_range": [
-        29848,
-        31061
+        31285,
+        32498
       ]
     },
     "symRectangle": {
@@ -19521,10 +20974,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 958,
+      "source_lineno": 999,
       "source_range": [
-        31369,
-        31507
+        32806,
+        32944
       ]
     },
     "circle": {
@@ -19562,10 +21015,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 972,
+      "source_lineno": 1013,
       "source_range": [
-        31775,
-        32013
+        33212,
+        33450
       ]
     },
     "disk": {
@@ -19612,10 +21065,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 988,
+      "source_lineno": 1029,
       "source_range": [
-        32357,
-        32726
+        33794,
+        34163
       ]
     },
     "boundary3D": {
@@ -19655,10 +21108,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 1007,
+      "source_lineno": 1048,
       "source_range": [
-        33045,
-        33571
+        34482,
+        35008
       ]
     },
     "writeOff": {
@@ -19695,10 +21148,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 1033,
+      "source_lineno": 1074,
       "source_range": [
-        33816,
-        33966
+        35253,
+        35403
       ]
     },
     "readOff": {
@@ -19727,10 +21180,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 1045,
+      "source_lineno": 1086,
       "source_range": [
-        34297,
-        35607
+        35734,
+        37044
       ]
     }
   },
@@ -21040,7 +22493,7 @@ await om_link.close();
       "source_lineno": 77,
       "source_range": [
         2863,
-        3837
+        4613
       ]
     },
     "createPresentation": {
@@ -21080,10 +22533,10 @@ await om_link.close();
         }
       ],
       "source_filename": "presentation.js",
-      "source_lineno": 104,
+      "source_lineno": 127,
       "source_range": [
-        4196,
-        9124
+        4972,
+        10257
       ]
     },
     "packPresentation": {
@@ -21102,10 +22555,10 @@ await om_link.close();
         }
       ],
       "source_filename": "presentation.js",
-      "source_lineno": 200,
+      "source_lineno": 234,
       "source_range": [
-        9309,
-        9809
+        10442,
+        10942
       ]
     },
     "makeStandalonePresentation": {
@@ -21124,10 +22577,10 @@ await om_link.close();
         }
       ],
       "source_filename": "presentation.js",
-      "source_lineno": 213,
+      "source_lineno": 247,
       "source_range": [
-        9982,
-        10952
+        11115,
+        12085
       ]
     },
     "presentationToPdf": {
@@ -21157,10 +22610,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "presentation.js",
-      "source_lineno": 244,
+      "source_lineno": 278,
       "source_range": [
-        11190,
-        12715
+        12323,
+        13848
       ]
     }
   },
@@ -21204,7 +22657,7 @@ await om_link.close();
       "source_lineno": 29,
       "source_range": [
         717,
-        4180
+        4183
       ]
     }
   },
@@ -23861,10 +25314,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 668,
+      "source_lineno": 688,
       "source_range": [
-        20589,
-        20943
+        21138,
+        21492
       ]
     },
     "show": {
@@ -23884,10 +25337,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 687,
+      "source_lineno": 707,
       "source_range": [
-        21126,
-        21240
+        21675,
+        21789
       ]
     },
     "hide": {
@@ -23907,10 +25360,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 696,
+      "source_lineno": 716,
       "source_range": [
-        21422,
-        21536
+        21971,
+        22085
       ]
     },
     "focus": {
@@ -23930,10 +25383,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 705,
+      "source_lineno": 725,
       "source_range": [
-        21655,
-        21771
+        22204,
+        22320
       ]
     },
     "minimize": {
@@ -23953,10 +25406,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 714,
+      "source_lineno": 734,
       "source_range": [
-        21960,
-        22082
+        22509,
+        22631
       ]
     },
     "center": {
@@ -23976,10 +25429,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 723,
+      "source_lineno": 743,
       "source_range": [
-        22274,
-        22392
+        22823,
+        22941
       ]
     },
     "moveTop": {
@@ -23999,10 +25452,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 732,
+      "source_lineno": 752,
       "source_range": [
-        22615,
-        22735
+        23164,
+        23284
       ]
     },
     "setSize": {
@@ -24041,10 +25494,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 743,
+      "source_lineno": 763,
       "source_range": [
-        22985,
-        23133
+        23534,
+        23682
       ]
     },
     "setPos": {
@@ -24083,10 +25536,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 754,
+      "source_lineno": 774,
       "source_range": [
-        23401,
-        23539
+        23950,
+        24088
       ]
     },
     "setResizable": {
@@ -24116,10 +25569,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 764,
+      "source_lineno": 784,
       "source_range": [
-        23845,
-        23987
+        24394,
+        24536
       ]
     },
     "setMovable": {
@@ -24149,10 +25602,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 774,
+      "source_lineno": 794,
       "source_range": [
-        24287,
-        24425
+        24836,
+        24974
       ]
     },
     "setAspectRatio": {
@@ -24182,10 +25635,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 784,
+      "source_lineno": 804,
       "source_range": [
-        24732,
-        24892
+        25281,
+        25441
       ]
     },
     "setOpacity": {
@@ -24215,10 +25668,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 794,
+      "source_lineno": 814,
       "source_range": [
-        25223,
-        25365
+        25772,
+        25914
       ]
     },
     "setFullscreen": {
@@ -24248,10 +25701,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 804,
+      "source_lineno": 824,
       "source_range": [
-        25620,
-        25764
+        26169,
+        26313
       ]
     },
     "setTitle": {
@@ -24281,10 +25734,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 814,
+      "source_lineno": 834,
       "source_range": [
-        25958,
-        26092
+        26507,
+        26641
       ]
     },
     "printToPdf": {
@@ -24314,10 +25767,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 824,
+      "source_lineno": 844,
       "source_range": [
-        26243,
-        26385
+        26792,
+        26934
       ]
     },
     "getSize": {
@@ -24337,10 +25790,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 833,
+      "source_lineno": 853,
       "source_range": [
-        26523,
-        26643
+        27072,
+        27192
       ]
     },
     "getPos": {
@@ -24360,10 +25813,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 842,
+      "source_lineno": 862,
       "source_range": [
-        26781,
-        26899
+        27330,
+        27448
       ]
     },
     "close": {
@@ -24383,10 +25836,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 851,
+      "source_lineno": 871,
       "source_range": [
-        27011,
-        27128
+        27560,
+        27677
       ]
     },
     "openDevTools": {
@@ -24406,10 +25859,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 860,
+      "source_lineno": 880,
       "source_range": [
-        27308,
-        27438
+        27857,
+        27987
       ]
     },
     "getMediaSourceId": {
@@ -24430,10 +25883,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 869,
+      "source_lineno": 889,
       "source_range": [
-        27585,
-        27723
+        28134,
+        28272
       ]
     },
     "startVideoRecording": {
@@ -24464,10 +25917,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "windows.js",
-      "source_lineno": 879,
+      "source_lineno": 899,
       "source_range": [
-        27884,
-        28079
+        28433,
+        28628
       ]
     },
     "addScript": {
@@ -24486,10 +25939,10 @@ await om_link.close();
         }
       ],
       "source_filename": "windows.js",
-      "source_lineno": 888,
+      "source_lineno": 908,
       "source_range": [
-        28192,
-        28368
+        28741,
+        28917
       ]
     },
     "addLinkStylesheet": {
@@ -24508,10 +25961,10 @@ await om_link.close();
         }
       ],
       "source_filename": "windows.js",
-      "source_lineno": 898,
+      "source_lineno": 918,
       "source_range": [
-        28496,
-        28710
+        29045,
+        29259
       ]
     },
     "addUI": {
@@ -24520,10 +25973,10 @@ await om_link.close();
       "description": "Loads the UI script.",
       "params": [],
       "source_filename": "windows.js",
-      "source_lineno": 908,
+      "source_lineno": 928,
       "source_range": [
-        28754,
-        28855
+        29303,
+        29404
       ]
     }
   },
@@ -24535,10 +25988,10 @@ await om_link.close();
       "params": [],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 812,
+      "source_lineno": 814,
       "source_range": [
-        24066,
-        24228
+        24092,
+        24254
       ]
     },
     "focus": {
@@ -24548,10 +26001,10 @@ await om_link.close();
       "params": [],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 823,
+      "source_lineno": 825,
       "source_range": [
-        24295,
-        24430
+        24321,
+        24456
       ]
     },
     "setSize": {
@@ -24590,10 +26043,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 834,
+      "source_lineno": 836,
       "source_range": [
-        24670,
-        24835
+        24696,
+        24861
       ]
     },
     "setPos": {
@@ -24632,10 +26085,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 845,
+      "source_lineno": 847,
       "source_range": [
-        25095,
-        25250
+        25121,
+        25276
       ]
     },
     "setTitle": {
@@ -24665,10 +26118,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 855,
+      "source_lineno": 857,
       "source_range": [
-        25444,
-        25595
+        25470,
+        25621
       ]
     },
     "getSize": {
@@ -24688,10 +26141,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 864,
+      "source_lineno": 866,
       "source_range": [
-        25725,
-        25864
+        25751,
+        25890
       ]
     },
     "getPos": {
@@ -24711,10 +26164,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 873,
+      "source_lineno": 875,
       "source_range": [
-        25994,
-        26131
+        26020,
+        26157
       ]
     },
     "getMediaSourceId": {
@@ -24734,10 +26187,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 882,
+      "source_lineno": 884,
       "source_range": [
-        26239,
-        26396
+        26265,
+        26422
       ]
     },
     "startVideoRecording": {
@@ -24768,10 +26221,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 892,
+      "source_lineno": 894,
       "source_range": [
-        26556,
-        26727
+        26582,
+        26753
       ]
     },
     "close": {
@@ -24791,10 +26244,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 901,
+      "source_lineno": 903,
       "source_range": [
-        26831,
-        26966
+        26857,
+        26992
       ]
     },
     "hideMenu": {
@@ -24803,10 +26256,10 @@ await om_link.close();
       "description": "Hides figure menu.",
       "params": [],
       "source_filename": "figures.js",
-      "source_lineno": 909,
+      "source_lineno": 911,
       "source_range": [
-        27008,
-        27204
+        27034,
+        27230
       ]
     },
     "showMenu": {
@@ -24815,10 +26268,10 @@ await om_link.close();
       "description": "Shows figure menu.",
       "params": [],
       "source_filename": "figures.js",
-      "source_lineno": 919,
+      "source_lineno": 921,
       "source_range": [
-        27246,
-        27436
+        27272,
+        27462
       ]
     }
   },
@@ -24839,10 +26292,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1151,
+      "source_lineno": 1153,
       "source_range": [
-        34049,
-        34186
+        34120,
+        34257
       ]
     },
     "xlabel": {
@@ -24861,10 +26314,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1162,
+      "source_lineno": 1164,
       "source_range": [
-        34306,
-        34437
+        34377,
+        34508
       ]
     },
     "ylabel": {
@@ -24883,10 +26336,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1173,
+      "source_lineno": 1175,
       "source_range": [
-        34555,
-        34686
+        34626,
+        34757
       ]
     },
     "zlabel": {
@@ -24905,10 +26358,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1184,
+      "source_lineno": 1186,
       "source_range": [
-        34804,
-        34935
+        34875,
+        35006
       ]
     },
     "title": {
@@ -24927,10 +26380,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1195,
+      "source_lineno": 1197,
       "source_range": [
-        35038,
-        35167
+        35109,
+        35238
       ]
     },
     "xlim": {
@@ -24949,10 +26402,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1206,
+      "source_lineno": 1208,
       "source_range": [
-        35282,
-        35433
+        35353,
+        35504
       ]
     },
     "ylim": {
@@ -24971,10 +26424,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1218,
+      "source_lineno": 1220,
       "source_range": [
-        35548,
-        35699
+        35619,
+        35770
       ]
     },
     "zlim": {
@@ -24993,10 +26446,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1230,
+      "source_lineno": 1232,
       "source_range": [
-        35814,
-        35965
+        35885,
+        36036
       ]
     },
     "view": {
@@ -25024,10 +26477,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1243,
+      "source_lineno": 1245,
       "source_range": [
-        36148,
-        36303
+        36219,
+        36374
       ]
     },
     "zoom": {
@@ -25046,10 +26499,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1254,
+      "source_lineno": 1256,
       "source_range": [
-        36407,
-        36536
+        36478,
+        36607
       ]
     },
     "axis": {
@@ -25068,10 +26521,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1265,
+      "source_lineno": 1267,
       "source_range": [
-        36709,
-        36842
+        36780,
+        36913
       ]
     },
     "fromJSON": {
@@ -25090,10 +26543,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1276,
+      "source_lineno": 1278,
       "source_range": [
-        36939,
-        37056
+        37010,
+        37127
       ]
     },
     "print": {
@@ -25122,10 +26575,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "figures.js",
-      "source_lineno": 1288,
+      "source_lineno": 1290,
       "source_range": [
-        37269,
-        37613
+        37340,
+        37684
       ]
     },
     "update": {
@@ -25153,10 +26606,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1308,
+      "source_lineno": 1310,
       "source_range": [
-        37841,
-        37918
+        37912,
+        37989
       ]
     },
     "updateById": {
@@ -25176,10 +26629,10 @@ await om_link.close();
         }
       ],
       "source_filename": "figures.js",
-      "source_lineno": 1316,
+      "source_lineno": 1318,
       "source_range": [
-        38082,
-        38157
+        38153,
+        38228
       ]
     },
     "remove": {
@@ -25188,10 +26641,10 @@ await om_link.close();
       "description": "Removes the plot from the figure, cleaning up any resources associated with it.",
       "params": [],
       "source_filename": "figures.js",
-      "source_lineno": 1323,
+      "source_lineno": 1325,
       "source_range": [
-        38260,
-        38347
+        38331,
+        38418
       ]
     }
   },
@@ -25284,8 +26737,8 @@ await om_link.close();
         4397
       ]
     },
-    "inputPraser": {
-      "name": "inputPraser",
+    "inputParser": {
+      "name": "inputParser",
       "kind": "function",
       "description": "Parses the input from FreeCAD responses to identify errors and data.\nSplits the message by '|' and checks for error or data messages.",
       "params": [
@@ -25313,7 +26766,7 @@ await om_link.close();
       "source_lineno": 156,
       "source_range": [
         4688,
-        4959
+        4980
       ]
     },
     "showMessage": {
@@ -25334,8 +26787,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 174,
       "source_range": [
-        5181,
-        5368
+        5202,
+        5408
       ]
     },
     "quit": {
@@ -25347,8 +26800,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 185,
       "source_range": [
-        5511,
-        5749
+        5551,
+        5789
       ]
     },
     "open": {
@@ -25379,8 +26832,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 201,
       "source_range": [
-        6035,
-        6426
+        6075,
+        6466
       ]
     },
     "importFile": {
@@ -25411,8 +26864,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 221,
       "source_range": [
-        6731,
-        7130
+        6771,
+        7170
       ]
     },
     "newDocument": {
@@ -25443,8 +26896,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 241,
       "source_range": [
-        7463,
-        7967
+        7503,
+        8007
       ]
     },
     "save": {
@@ -25466,8 +26919,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 265,
       "source_range": [
-        8187,
-        8435
+        8227,
+        8475
       ]
     },
     "saveAs": {
@@ -25498,8 +26951,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 281,
       "source_range": [
-        8742,
-        9016
+        8782,
+        9056
       ]
     },
     "close": {
@@ -25521,8 +26974,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 296,
       "source_range": [
-        9240,
-        9490
+        9280,
+        9530
       ]
     },
     "evaluate": {
@@ -25553,8 +27006,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 312,
       "source_range": [
-        9794,
-        10062
+        9834,
+        10102
       ]
     },
     "callScript": {
@@ -25595,8 +27048,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 329,
       "source_range": [
-        10426,
-        10953
+        10466,
+        10993
       ]
     },
     "getArea": {
@@ -25618,8 +27071,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 352,
       "source_range": [
-        11194,
-        11570
+        11234,
+        11610
       ]
     },
     "getVolume": {
@@ -25641,8 +27094,8 @@ await om_link.close();
       "source_filename": "freecad-link.js",
       "source_lineno": 372,
       "source_range": [
-        11817,
-        12196
+        11857,
+        12236
       ]
     }
   },
@@ -26883,8 +28336,8 @@ await om_link.close();
       "source_filename": "networking-udp.js",
       "source_lineno": 56,
       "source_range": [
-        1407,
-        1480
+        1410,
+        1483
       ]
     },
     "close": {
@@ -26895,8 +28348,8 @@ await om_link.close();
       "source_filename": "networking-udp.js",
       "source_lineno": 65,
       "source_range": [
-        1554,
-        1674
+        1557,
+        1677
       ]
     }
   },
@@ -26919,8 +28372,8 @@ await om_link.close();
       "source_filename": "networking-udp.js",
       "source_lineno": 124,
       "source_range": [
-        2951,
-        3125
+        2954,
+        3128
       ]
     },
     "read": {
@@ -26953,8 +28406,8 @@ await om_link.close();
       "source_filename": "networking-udp.js",
       "source_lineno": 137,
       "source_range": [
-        3388,
-        3490
+        3391,
+        3493
       ]
     },
     "availableBytes": {
@@ -26975,8 +28428,8 @@ await om_link.close();
       "source_filename": "networking-udp.js",
       "source_lineno": 146,
       "source_range": [
-        3641,
-        3694
+        3644,
+        3697
       ]
     },
     "close": {
@@ -26987,8 +28440,8 @@ await om_link.close();
       "source_filename": "networking-udp.js",
       "source_lineno": 153,
       "source_range": [
-        3767,
-        3862
+        3770,
+        3865
       ]
     }
   },
@@ -37307,7 +38760,7 @@ await om_link.close();
       "source_lineno": 139,
       "source_range": [
         4185,
-        5353
+        5254
       ]
     },
     "creationFcn": {
@@ -37318,8 +38771,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 174,
       "source_range": [
-        5408,
-        5467
+        5309,
+        5368
       ]
     },
     "selectionFcn": {
@@ -37330,8 +38783,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 181,
       "source_range": [
-        5533,
-        5598
+        5434,
+        5499
       ]
     },
     "crossoverFcn": {
@@ -37342,8 +38795,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 188,
       "source_range": [
-        5668,
-        5729
+        5569,
+        5630
       ]
     },
     "mutationFcn": {
@@ -37354,8 +38807,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 195,
       "source_range": [
-        5793,
-        5850
+        5694,
+        5751
       ]
     },
     "createPlotFcn": {
@@ -37366,8 +38819,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 202,
       "source_range": [
-        5906,
-        5932
+        5807,
+        5833
       ]
     },
     "plotFcn": {
@@ -37378,8 +38831,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 209,
       "source_range": [
-        6016,
-        6055
+        5917,
+        5956
       ]
     },
     "displayPlot": {
@@ -37390,8 +38843,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 216,
       "source_range": [
-        6107,
-        6127
+        6008,
+        6028
       ]
     },
     "buttonCallback": {
@@ -37402,8 +38855,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 223,
       "source_range": [
-        6204,
-        6247
+        6105,
+        6148
       ]
     },
     "outputFcn": {
@@ -37414,8 +38867,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 230,
       "source_range": [
-        6324,
-        6431
+        6225,
+        6332
       ]
     },
     "displayOutput": {
@@ -37426,8 +38879,8 @@ await om_link.close();
       "source_filename": "optim-rcmiga.js",
       "source_lineno": 239,
       "source_range": [
-        6498,
-        9045
+        6399,
+        9102
       ]
     },
     "creationMixedUniform": {
@@ -37436,10 +38889,10 @@ await om_link.close();
       "description": "Creates the initial population with mixed uniform distribution.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 310,
+      "source_lineno": 312,
       "source_range": [
-        9132,
-        9807
+        9189,
+        9864
       ]
     },
     "binaryTournamentSelection": {
@@ -37448,10 +38901,10 @@ await om_link.close();
       "description": "Performs binary tournament selection of parents.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 333,
+      "source_lineno": 335,
       "source_range": [
-        9879,
-        10411
+        9936,
+        10468
       ]
     },
     "laplaceMixedCrossover": {
@@ -37460,10 +38913,10 @@ await om_link.close();
       "description": "Executes Laplace mixed crossover to generate offspring.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 350,
+      "source_lineno": 352,
       "source_range": [
-        10490,
-        11951
+        10547,
+        12008
       ]
     },
     "powerMixedMutation": {
@@ -37472,10 +38925,10 @@ await om_link.close();
       "description": "Applies power mixed mutation to selected individuals.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 383,
+      "source_lineno": 385,
       "source_range": [
-        12028,
-        13422
+        12085,
+        13479
       ]
     },
     "gaussianMutation": {
@@ -37484,10 +38937,10 @@ await om_link.close();
       "description": "Applies Gaussian mutation to selected individuals.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 421,
+      "source_lineno": 423,
       "source_range": [
-        13496,
-        13525
+        13553,
+        13582
       ]
     },
     "integerRestriction": {
@@ -37496,10 +38949,10 @@ await om_link.close();
       "description": "Ensures integer constraints are met for specific variables.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 428,
+      "source_lineno": 430,
       "source_range": [
-        13608,
-        14183
+        13665,
+        14240
       ]
     },
     "checkBounds": {
@@ -37508,10 +38961,10 @@ await om_link.close();
       "description": "Checks and enforces variable bounds within the population.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 448,
+      "source_lineno": 450,
       "source_range": [
-        14265,
-        14424
+        14322,
+        14481
       ]
     },
     "stoppingCriteria": {
@@ -37530,10 +38983,10 @@ await om_link.close();
         }
       ],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 457,
+      "source_lineno": 459,
       "source_range": [
-        14569,
-        16269
+        14626,
+        16326
       ]
     },
     "initPopulation": {
@@ -37542,10 +38995,10 @@ await om_link.close();
       "description": "Initializes the population for the optimization process.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 505,
+      "source_lineno": 507,
       "source_range": [
-        16349,
-        16505
+        16406,
+        16562
       ]
     },
     "initState": {
@@ -37554,10 +39007,10 @@ await om_link.close();
       "description": "Initializes the internal state of the algorithm.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 516,
+      "source_lineno": 518,
       "source_range": [
-        16577,
-        18868
+        16634,
+        18925
       ]
     },
     "updateState": {
@@ -37567,10 +39020,10 @@ await om_link.close();
       "params": [],
       "async": true,
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 572,
+      "source_lineno": 574,
       "source_range": [
-        18956,
-        19624
+        19013,
+        19681
       ]
     },
     "updatePenalty": {
@@ -37579,10 +39032,10 @@ await om_link.close();
       "description": "Updates penalty values based on constraint violations.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 594,
+      "source_lineno": 596,
       "source_range": [
-        19702,
-        20828
+        19759,
+        20885
       ]
     },
     "evalFitnessFcn": {
@@ -37592,10 +39045,10 @@ await om_link.close();
       "params": [],
       "async": true,
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 624,
+      "source_lineno": 626,
       "source_range": [
-        20910,
-        22299
+        20967,
+        22356
       ]
     },
     "evalConstraintsFcn": {
@@ -37605,10 +39058,10 @@ await om_link.close();
       "params": [],
       "async": true,
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 667,
+      "source_lineno": 669,
       "source_range": [
-        22381,
-        24088
+        22438,
+        24145
       ]
     },
     "normConstraintsFcn": {
@@ -37617,67 +39070,50 @@ await om_link.close();
       "description": "Normalizes constraint values to maintain consistent scaling.",
       "params": [],
       "source_filename": "optim-rcmiga.js",
-      "source_lineno": 717,
+      "source_lineno": 719,
       "source_range": [
-        24172,
-        25494
+        24229,
+        25551
       ]
     }
   },
-  "space_search": {
-    "dispElementSize": {
-      "name": "dispElementSize",
+  "space_search": {},
+  "boundary_follow_2d": {
+    "resetLogs": {
+      "name": "resetLogs",
       "kind": "function",
-      "description": "Displays the size of elements based on bounds and subdivisions.",
+      "description": "Resets logging and optionally clears the feasibility cache.",
       "params": [
         {
           "type": {
             "names": [
-              "Array"
+              "boolean"
             ]
           },
-          "description": "Array of [min, max] for each dimension.",
-          "name": "bounds"
-        },
-        {
-          "type": {
-            "names": [
-              "Array"
-            ]
-          },
-          "description": "Subdivision factors per depth and dimension.",
-          "name": "subdivisionPerDepth"
+          "optional": true,
+          "defaultvalue": false,
+          "name": "keepCache"
         }
       ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 19,
+      "source_filename": "geometry-boundaryfollow2d.js",
+      "source_lineno": 124,
       "source_range": [
-        517,
-        1369
+        3446,
+        3626
       ]
     },
-    "splitSearchSpace": {
-      "name": "splitSearchSpace",
+    "trace": {
+      "name": "trace",
       "kind": "function",
-      "description": "Splits the search space into smaller intervals for parallel processing.",
+      "description": "Main entry (2D).",
       "params": [
         {
           "type": {
             "names": [
-              "Array.<Array.<number>>"
+              "number"
             ]
           },
-          "description": "The limits of the search space, where each sub-array represents [start, end] for a dimension.",
-          "name": "x_lim"
-        },
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "The parameters to optimize.",
-          "name": "k"
+          "name": "dx"
         },
         {
           "type": {
@@ -37685,227 +39121,76 @@ await om_link.close();
               "number"
             ]
           },
-          "description": "The number of processors to divide the work among.",
-          "name": "N_proc"
+          "name": "dy"
+        },
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": "this.opts.ambiguous",
+          "name": "ambiguous"
         }
       ],
       "returns": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "An array containing the split search spaces and the adjusted parameters."
-        }
-      ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 46,
-      "source_range": [
-        1865,
-        2212
-      ]
-    },
-    "runParallel": {
-      "name": "runParallel",
-      "kind": "function",
-      "description": "Executes a provided function in parallel across the split search spaces.",
-      "params": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "The limits of the search space, where each sub-array represents [start, end] for a dimension.",
-          "name": "x_lim"
-        },
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "The parameters to optimize.",
-          "name": "k"
-        },
         {
           "type": {
             "names": [
               "Object"
             ]
           },
-          "description": "The execution context containing necessary configurations and states.",
-          "name": "context"
-        },
-        {
-          "type": {
-            "names": [
-              "function"
-            ]
-          },
-          "description": "The setup function to initialize the parallel environment.",
-          "name": "setup"
-        },
-        {
-          "type": {
-            "names": [
-              "function"
-            ]
-          },
-          "description": "The function to execute in parallel on each split of the search space.",
-          "name": "fun"
+          "description": "- Result object (diagnostics + closed flag)."
         }
       ],
-      "returns": [
-        {
-          "type": {
-            "names": [
-              "Promise.<Array.<Array.<number>>>"
-            ]
-          },
-          "description": "A promise that resolves to arrays of input and output results from the parallel execution."
-        }
-      ],
-      "async": true,
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 68,
+      "source_filename": "geometry-boundaryfollow2d.js",
+      "source_lineno": 683,
       "source_range": [
-        2946,
-        3750
+        20352,
+        21254
       ]
-    },
-    "run": {
-      "name": "run",
+    }
+  },
+  "boundary_follow_3d": {
+    "resetLogs": {
+      "name": "resetLogs",
       "kind": "function",
-      "description": "Executes the space search algorithm.",
+      "description": "Resets logging and optionally clears the feasibility cache.",
       "params": [
         {
           "type": {
             "names": [
-              "Array.<Array.<number>>"
+              "boolean"
             ]
           },
-          "description": "Array of [min, max] for each dimension.",
-          "name": "bounds"
-        },
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "Subdivision factors for each depth and dimension.",
-          "name": "subdivisionPerDepth"
-        },
-        {
-          "type": {
-            "names": [
-              "function"
-            ]
-          },
-          "description": "Function that determines if a point satisfies the condition.",
-          "name": "conditionFunction"
+          "optional": true,
+          "defaultvalue": false,
+          "description": "If true, keeps the feasibility cache; otherwise cache is cleared.",
+          "name": "keepCache"
         }
       ],
       "returns": [
         {
           "type": {
             "names": [
-              "Array.<Array.<number>>"
+              "void"
             ]
           },
-          "description": "- Arrays of points inside and outside the condition."
+          "description": "No return value."
         }
       ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 95,
+      "source_filename": "geometry-boundaryfollow3d.js",
+      "source_lineno": 92,
       "source_range": [
-        4175,
-        5538
+        3718,
+        3898
       ]
     },
-    "makeNodesND": {
-      "name": "makeNodesND",
+    "trace": {
+      "name": "trace",
       "kind": "function",
-      "description": "Recursively creates nodes in N dimensions based on subdivisions.",
-      "params": [
-        {
-          "type": {
-            "names": [
-              "Array.<number>"
-            ]
-          },
-          "description": "Starting coordinates for the current grid.",
-          "name": "startCoordinates"
-        },
-        {
-          "type": {
-            "names": [
-              "Array.<number>"
-            ]
-          },
-          "description": "Values at the boundary points of the current hypercube.",
-          "name": "boundaryValues"
-        },
-        {
-          "type": {
-            "names": [
-              "number"
-            ]
-          },
-          "description": "Current depth of the recursion.",
-          "name": "currentDepth"
-        },
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "Step sizes for each depth.",
-          "name": "stepSizesPerDepth"
-        },
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "Subdivision factors for each depth.",
-          "name": "subdivisionPerDepth"
-        },
-        {
-          "type": {
-            "names": [
-              "function"
-            ]
-          },
-          "description": "User-defined condition function.",
-          "name": "conditionFunction"
-        }
-      ],
-      "returns": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "- Arrays of points inside and outside the condition."
-        }
-      ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 147,
-      "source_range": [
-        6194,
-        9264
-      ]
-    },
-    "generateCornerShifts": {
-      "name": "generateCornerShifts",
-      "kind": "function",
-      "description": "Generates all corner shifts for a hypercube in N dimensions.",
+      "description": "Main entry (3D).",
       "params": [
         {
           "type": {
@@ -37913,171 +39198,43 @@ await om_link.close();
               "number"
             ]
           },
-          "description": "Number of dimensions.",
-          "name": "numDimensions"
-        }
-      ],
-      "returns": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "- Array of shifts for each corner."
-        }
-      ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 250,
-      "source_range": [
-        9467,
-        9778
-      ]
-    },
-    "getCornerIndices": {
-      "name": "getCornerIndices",
-      "kind": "function",
-      "description": "Retrieves the indices of corner points in the grid.",
-      "params": [
-        {
-          "type": {
-            "names": [
-              "Array.<number>"
-            ]
-          },
-          "description": "Shape of the grid.",
-          "name": "gridShape"
-        }
-      ],
-      "returns": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "- List of corner indices."
-        }
-      ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 268,
-      "source_range": [
-        9958,
-        10185
-      ]
-    },
-    "generateIndicesList": {
-      "name": "generateIndicesList",
-      "kind": "function",
-      "description": "Generates a list of indices for nodes that need to be calculated.",
-      "params": [
-        {
-          "type": {
-            "names": [
-              "Array.<number>"
-            ]
-          },
-          "description": "Shape of the grid.",
-          "name": "gridShape"
+          "description": "Fine grid spacing in X (must be >0).",
+          "name": "dx"
         },
         {
           "type": {
             "names": [
-              "Array"
+              "number"
             ]
           },
-          "description": "N-dimensional array indicating nodes to compute.",
-          "name": "nf"
-        }
-      ],
-      "returns": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "- List of node indices where nf is 1."
-        }
-      ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 280,
-      "source_range": [
-        10465,
-        10952
-      ]
-    },
-    "generateInnerCubeIndicesList": {
-      "name": "generateInnerCubeIndicesList",
-      "kind": "function",
-      "description": "Generates a list of starting indices for inner hypercubes.",
-      "params": [
-        {
-          "type": {
-            "names": [
-              "Array.<number>"
-            ]
-          },
-          "description": "Shape of the grid.",
-          "name": "gridShape"
-        }
-      ],
-      "returns": [
-        {
-          "type": {
-            "names": [
-              "Array.<Array.<number>>"
-            ]
-          },
-          "description": "- List of inner cube starting indices."
-        }
-      ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 304,
-      "source_range": [
-        11152,
-        11689
-      ]
-    },
-    "getCubeCorners": {
-      "name": "getCubeCorners",
-      "kind": "function",
-      "description": "Retrieves the corner coordinates and values of a hypercube.",
-      "params": [
-        {
-          "type": {
-            "names": [
-              "Array"
-            ]
-          },
-          "description": "N-dimensional grid.",
-          "name": "N"
+          "description": "Fine grid spacing in Y (must be >0).",
+          "name": "dy"
         },
         {
           "type": {
             "names": [
-              "Array.<number>"
+              "number"
             ]
           },
-          "description": "Starting indices of the hypercube.",
-          "name": "indices"
+          "description": "Fine grid spacing in Z (must be >0).",
+          "name": "dz"
         }
       ],
       "returns": [
         {
           "type": {
             "names": [
-              "Array"
+              "Object"
             ]
           },
-          "description": "- Array of corner coordinates and values."
+          "description": "Result object:\n  - dim: 3\n  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise\n  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise\n  - surfaceCells: number of mixed voxels visited (surface voxel count)\n  - evalCount: total feasibility evaluations performed\n  - N: [feasible_points,infeasible_points], each is an array of [x,y,z]\n  - grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics\n  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)\n  - fineBracket: refined fine flip bracket used to start flood-fill\n  - startVoxel: voxel indices used as flood-fill start"
         }
       ],
-      "source_filename": "geometry-spacesearch.js",
-      "source_lineno": 331,
+      "source_filename": "geometry-boundaryfollow3d.js",
+      "source_lineno": 785,
       "source_range": [
-        11946,
-        12279
+        27500,
+        28515
       ]
     }
   },
@@ -38497,7 +39654,7 @@ await om_link.close();
       "source_lineno": 39,
       "source_range": [
         1057,
-        2160
+        2164
       ]
     },
     "init": {
@@ -38540,8 +39697,8 @@ await om_link.close();
       "source_filename": "parallel.js",
       "source_lineno": 81,
       "source_range": [
-        2495,
-        3269
+        2499,
+        3273
       ]
     },
     "assignTasksToWorkers": {
@@ -38552,8 +39709,8 @@ await om_link.close();
       "source_filename": "parallel.js",
       "source_lineno": 113,
       "source_range": [
-        3341,
-        4523
+        3345,
+        4527
       ]
     },
     "run": {
@@ -38625,8 +39782,8 @@ await om_link.close();
       "source_filename": "parallel.js",
       "source_lineno": 166,
       "source_range": [
-        5052,
-        5845
+        5056,
+        5849
       ]
     },
     "parfor": {
@@ -38730,8 +39887,8 @@ await om_link.close();
       "source_filename": "parallel.js",
       "source_lineno": 206,
       "source_range": [
-        6698,
-        8821
+        6702,
+        8825
       ]
     },
     "terminate": {
@@ -38742,8 +39899,8 @@ await om_link.close();
       "source_filename": "parallel.js",
       "source_lineno": 278,
       "source_range": [
-        8893,
-        9072
+        8897,
+        9076
       ]
     }
   },

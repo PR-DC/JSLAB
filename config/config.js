@@ -21,6 +21,7 @@ class PRDC_APP_CONFIG {
     
     this.GROUP_RAF = true;
     this.OUTPUT_COMPLETE_JSDOC = false;
+    this.REPORT_CRASH = false;
     
     this.DEBUG_FUN_SHADOW = false;
     this.DEBUG_NEW_FUN = false;
@@ -40,11 +41,13 @@ class PRDC_APP_CONFIG {
     };
     
     // JSLAB settings
-    this.FORBIDDEN_NAMES = ['jsl', 'config', 'language', 'app_path', 'packed'];
     this.MATHJS_PREVENT_OVERRIDE = ['config', 'print', 'Infinity', 'NaN', 'isNaN', 'Node'];
     this.SUBMODULES = {
       'builtin': [
         {name: 'basic', file: 'basic', class_name: 'PRDC_JSLAB_LIB_BASIC'},
+        {name: 'compile', file: 'compile', class_name: 'PRDC_JSLAB_LIB_COMPILE'},
+        {name: 'docs', file: 'docs', class_name: 'PRDC_JSLAB_LIB_DOCS'},
+        {name: 'inspector', file: 'inspector', class_name: 'PRDC_JSLAB_LIB_INSPECTOR'},
         {name: 'math', file: 'math', class_name: 'PRDC_JSLAB_LIB_MATH'},
         {name: 'non_blocking', file: 'non-blocking', class_name: 'PRDC_JSLAB_LIB_NON_BLOCKING'},
         {name: 'path', file: 'path', class_name: 'PRDC_JSLAB_LIB_PATH'},
@@ -61,6 +64,7 @@ class PRDC_APP_CONFIG {
         {name: 'geography', file: 'geography', class_name: 'PRDC_JSLAB_LIB_GEOGRAPHY'},
         {name: 'networking', file: 'networking', class_name: 'PRDC_JSLAB_LIB_NETWORKING'},
         {name: 'format', file: 'format', class_name: 'PRDC_JSLAB_LIB_FORMAT'},
+        {name: 'table', file: 'table', class_name: 'PRDC_JSLAB_LIB_TABLE'},
         {name: 'render', file: 'render', class_name: 'PRDC_JSLAB_LIB_RENDER'},
         {name: 'geometry', file: 'geometry', class_name: 'PRDC_JSLAB_LIB_GEOMETRY'},
         {name: 'control', file: 'control', class_name: 'PRDC_JSLAB_LIB_CONTROL'},
@@ -81,6 +85,8 @@ class PRDC_APP_CONFIG {
       {name: 'Matrix', file: 'matrix-math', class_name: 'PRDC_JSLAB_MATRIX'},
       {name: 'Vector', file: 'vector-math', class_name: 'PRDC_JSLAB_VECTOR'},
       {name: 'Symbolic', file: 'sym-math', class_name: 'PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL'},
+      {name: 'Table', file: 'table', class_name: 'PRDC_JSLAB_TABLE'},
+      {name: 'Timetable', file: 'table', class_name: 'PRDC_JSLAB_TIMETABLE'},
       {name: 'Window', file: 'windows', class_name: 'PRDC_JSLAB_WINDOW'},
       {name: 'Figure', file: 'figures', class_name: 'PRDC_JSLAB_FIGURE'},
       {name: 'Plot', file: 'figures', class_name: 'PRDC_JSLAB_PLOT'},
@@ -94,6 +100,8 @@ class PRDC_APP_CONFIG {
       {name: 'mathjs', file: 'mathjs-doc', class_name: 'PRDC_JSLAB_MATHJS_DOC'},
       {name: 'rcmiga', file: 'optim-rcmiga', class_name: 'PRDC_JSLAB_OPTIM_RCMIGA'},
       {name: 'space_search', file: 'geometry-spacesearch', class_name: 'PRDC_JSLAB_GEOMETRY_SPACE_SERACH'},
+      {name: 'boundary_follow_2d', file: 'geometry-boundaryfollow2d', class_name: 'PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D'},
+      {name: 'boundary_follow_3d', file: 'geometry-boundaryfollow3d', class_name: 'PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D'},
       {name: 'map', file: 'geography-map', class_name: 'PRDC_JSLAB_GEOGRAPHY_MAP'},
       {name: 'map_3d', file: 'geography-map-3d', class_name: 'PRDC_JSLAB_GEOGRAPHY_MAP_3D'},
       {name: 'Gamepad', file: 'device-gamepad', class_name: 'PRDC_JSLAB_DEVICE_GAMEPAD'},
@@ -151,60 +159,31 @@ class PRDC_APP_CONFIG {
     this.WIN_SAVE_DEBOUNCE_TIME = 50; // [ms]
     
     // Other
-    this.PLOTER = ['plotly', 'echarts'][0];
+    this.PLOTTER = ['plotly', 'echarts'][0];
     this.DOC_LATEX_RERUNS_NUMBER = 3;
     this.SOURCE_CODE_BOOK_LATEX_RERUNS_NUMBER = 3;
     this.MAX_ACTIVE_WEBGL_CONTEXTS = '128';
     this.MAX_JSON_STRING_LENGTH = 1000;
+    this.ANS_VECTOR_HORIZONTAL_MAX_ITEMS = 50;
+    this.ANS_MATRIX_PRETTY_MAX_ROWS = 10;
+    this.ANS_MATRIX_PRETTY_MAX_COLS = 10;
+    this.ANS_MATRIX_PRETTY_MAX_ITEMS = 100;
+    this.TERMINAL_MIN_MESSAGES_MAX = 5;
+    this.TERMINAL_DOM_MESSAGES_HARD_CAP = 500;
+    this.TERMINAL_RENDER_CHUNK_SIZE = 50;
+    this.TERMINAL_RENDER_SCROLL_THRESHOLD = 150;
+    this.TERMINAL_MERGE_INTERVAL_MS_COMMAND = 1;
+    this.TERMINAL_MERGE_INTERVAL_MS_SERIAL = 5;
+    this.EDITOR_SEARCH_ALL_DEFAULT_HEIGHT = 240;
+    this.EDITOR_SEARCH_ALL_MIN_HEIGHT = 120;
+    this.EDITOR_SEARCH_ALL_MIN_CODE_HEIGHT = 120;
+    this.EDITOR_SEARCH_ALL_LAYOUT_OFFSET = 91;
+    this.EDITOR_SEARCH_ALL_MAX_RENDERED_LINES = 2000;
     
     // Build sign
     this.COMPANY_NAME = process.env.COMPANY_NAME;
     this.TIMESTAMP_SERVER = process.env.TIMESTAMP_SERVER;
     this.SIGN_TOOL_PATH = process.env.SIGN_TOOL_PATH;
-    
-    // Upload and download libs from server
-    this.SERVER_SOURCE_PATH = process.env.SERVER_PATH + "JSLAB/";
-    this.SOURCE_UPLOAD_EXCLUDE = ['/bin', '/build', '/dist', '/node_modules', '/package-lock.json', '/binding.gyp', '/lib', '*.obj'];
-    this.SERVER_LIBS_PATH = process.env.SERVER_LIBS_PATH;
-
-    this.USED_LIBS = [
-      'sprintf-1.1.3',
-      'sympy-0.26.2',
-      'cgal-6.0.1', 
-      'boost-1.86.0', 
-      'codemirror-5.49.2', 
-      'complete.ly.1.0.1', 
-      'd3-7.8.5', 
-      'draggabilly-2.3.0',
-      'eigen-3.4.0',
-      'highlight-11.0.1',
-      'jquery-3.7.0',
-      'jshint-2.13.0',
-      'math-11.8.2', 
-      'tex-mml-chtml-3.2.0',
-      'luxon-3.4.4',
-      'plotly-2.24.2',
-      'three.js-r162',
-      'inflate-0.3.1',
-      'hammer-2.0.8',
-      'anime-3.2.1',
-      'tween.js-23.1.1',
-      'leaflet-1.9.4',
-      'leaflet.rotatedMarker-0.2.0',
-      'Cesium-1.124',
-      'mermaid-11.4.1',
-      'jstree-3.3.17',
-      'PRDC_APP_LOGGER',  
-      'PRDC_PANEL', 
-      'PRDC_TABS', 
-      'PRDC_POPUP',
-      'PRDC_SVG_VIEWER'
-    ];
-    
-    this.UPLOAD_COMPARE_SIZE = false;
-    this.UPLOAD_COMPARE_CONTENT = true;
-    this.UPLOAD_COMPARE_DATE = false;
-    this.UPLOAD_COMPARE_SIZE_ON_DISTINCT = false;
     
     this.PANEL_RESIZER_WIDTH = 10;
     this.PANEL_MIN_SIZE = 10;

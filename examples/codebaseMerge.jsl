@@ -224,7 +224,7 @@ var master_content = "Directory Tree:\n" + directory_tree + "\n\n";
 master_content += aggregateFiles(source_path, source_path);
 
 // Write the master file.
-writeFile(pwd + full_code_file_name, master_content, { encoding: 'utf-8' });
+writeFile(jsl.app_path + '/examples/out/' + full_code_file_name, master_content, { encoding: 'utf-8' });
 disp(`Full code file '${full_code_file_name}' has been created successfully.`);
   
 // End of program

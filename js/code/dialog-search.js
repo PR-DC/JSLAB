@@ -18,12 +18,83 @@
     mod(CodeMirror);
 })(function(CodeMirror) {
   "use strict";
+  
+  var SEARCH_HISTORY_KEY = "editor_search_history";
+  var SEARCH_HISTORY_MAX = 100;
+
+  function loadSearchHistory() {
+    try {
+      var raw = window.localStorage.getItem(SEARCH_HISTORY_KEY);
+      if(!raw) {
+        return [];
+      }
+      var parsed = JSON.parse(raw);
+      if(!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed.filter(function(item) {
+        return typeof item === "string" && item.length > 0;
+      }).slice(0, SEARCH_HISTORY_MAX);
+    } catch(err) {
+      return [];
+    }
+  }
+  
+  function saveSearchHistory(history) {
+    try {
+      window.localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, SEARCH_HISTORY_MAX)));
+    } catch(err) {
+      // Ignore storage failures.
+    }
+  }
+  
+  function addSearchHistoryItem(cm, query) {
+    query = String(query || "").trim();
+    if(!query.length) {
+      return;
+    }
+    var history = cm.search_history || [];
+    var found_index = history.indexOf(query);
+    if(found_index > -1) {
+      history.splice(found_index, 1);
+    }
+    history.unshift(query);
+    if(history.length > SEARCH_HISTORY_MAX) {
+      history.length = SEARCH_HISTORY_MAX;
+    }
+    cm.search_history = history;
+    cm.search_history_index = -1;
+    cm.search_history_draft = "";
+    saveSearchHistory(history);
+  }
 
   CodeMirror.defineOption('searchDialog', false, function(cm, val) {
     if(val) {
       var div = document.createElement('div');
       div.className = 'CodeMirror-search-dialog';
-      div.innerHTML = '<input class="CodeMirror-search-find" value="" placeholder="Find" autocomplete="off" spellcheck="false" title="Find"><i class="CodeMirror-search-find-prev-btn" title="Previous match"></i><i class="CodeMirror-search-find-next-btn" title="Next match"></i><br class="clear"/><input class="CodeMirror-search-replace" value="" placeholder="Replace" autocomplete="off" spellcheck="false" title="Replace"><i class="CodeMirror-search-replace-btn" title="Replace"></i><i class="CodeMirror-search-replace-all-btn" title="Replace All"></i><br class="clear"/><i class="CodeMirror-search-case-btn" title="Match Case"></i><i class="CodeMirror-search-regex-btn" title="Use Regular Expression"></i><div class="CodeMirror-search-bottom-right"><span class="CodeMirror-search-current-match">0</span> of <span class="CodeMirror-search-total-matchs">0</span><i class="CodeMirror-search-close-btn" title="Close Search Dialog"></i></div><br class="clear"/>';
+      var findLabel = language.currentString(336);
+      var prevLabel = language.currentString(337);
+      var nextLabel = language.currentString(338);
+      var replaceLabel = language.currentString(339);
+      var replaceAllLabel = language.currentString(340);
+      var matchCaseLabel = language.currentString(341);
+      var regexLabel = language.currentString(342);
+      var ofLabel = language.currentString(343);
+      var closeLabel = language.currentString(344);
+      div.innerHTML =
+        '<input class="CodeMirror-search-find" value="" placeholder="' + findLabel + '" autocomplete="off" spellcheck="false" title="' + findLabel + '">' +
+        '<i class="CodeMirror-search-find-prev-btn" title="' + prevLabel + '"></i>' +
+        '<i class="CodeMirror-search-find-next-btn" title="' + nextLabel + '"></i>' +
+        '<br class="clear"/>' +
+        '<input class="CodeMirror-search-replace" value="" placeholder="' + replaceLabel + '" autocomplete="off" spellcheck="false" title="' + replaceLabel + '">' +
+        '<i class="CodeMirror-search-replace-btn" title="' + replaceLabel + '"></i>' +
+        '<i class="CodeMirror-search-replace-all-btn" title="' + replaceAllLabel + '"></i>' +
+        '<br class="clear"/>' +
+        '<i class="CodeMirror-search-case-btn" title="' + matchCaseLabel + '"></i>' +
+        '<i class="CodeMirror-search-regex-btn" title="' + regexLabel + '"></i>' +
+        '<div class="CodeMirror-search-bottom-right"><span class="CodeMirror-search-current-match">0</span> ' + ofLabel +
+        ' <span class="CodeMirror-search-total-matchs">0</span><i class="CodeMirror-search-close-btn" title="' + closeLabel + '"></i></div>' +
+        '<br class="clear"/>';
       div.setAttribute('tabindex', 0);
       
       var find_input = div.querySelector('.CodeMirror-search-find');
@@ -38,6 +109,43 @@
       
       cm.search_match_case = false;
       cm.search_regex = false;
+      cm.search_history = loadSearchHistory();
+      cm.search_history_index = -1;
+      cm.search_history_draft = "";
+      
+      function applySearchQuery(query) {
+        clearSearch(cm);
+        var state = getSearchState(cm);
+        state.query = query;
+        doSearch(cm);
+      }
+      
+      function navigateSearchHistory(up) {
+        var history = cm.search_history || [];
+        if(!history.length) {
+          return;
+        }
+        
+        if(cm.search_history_index === -1) {
+          cm.search_history_draft = find_input.value;
+        }
+        
+        if(up) {
+          if(cm.search_history_index < history.length - 1) {
+            cm.search_history_index += 1;
+          }
+        } else {
+          if(cm.search_history_index > -1) {
+            cm.search_history_index -= 1;
+          }
+        }
+        
+        var query = cm.search_history_index === -1 ?
+          cm.search_history_draft : history[cm.search_history_index];
+        find_input.value = query;
+        applySearchQuery(query);
+        find_input.setSelectionRange(query.length, query.length);
+      }
       
       div.addEventListener('keydown', function(e) {
         if(e.key == 'Escape') {
@@ -58,8 +166,32 @@
         }
       });
       
-      find_input.addEventListener('keyup', function() {
+      find_input.addEventListener('keydown', function(e) {
+        if(e.key === 'ArrowUp' && e.altKey) {
+          navigateSearchHistory(true);
+          e.stopPropagation();
+          e.preventDefault();
+        } else if(e.key === 'ArrowDown' && e.altKey) {
+          navigateSearchHistory(false);
+          e.stopPropagation();
+          e.preventDefault();
+        } else if(e.key === 'Enter') {
+          var state = getSearchState(cm);
+          state.query = find_input.value;
+          addSearchHistoryItem(cm, find_input.value);
+          doSearch(cm, e.shiftKey);
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      });
+      
+      find_input.addEventListener('keyup', function(e) {
+        if(((e.key === 'ArrowUp' || e.key === 'ArrowDown') && e.altKey) || e.key === 'Enter') {
+          return;
+        }
         // Find match
+        cm.search_history_index = -1;
+        cm.search_history_draft = this.value;
         clearSearch(cm); 
         var state = getSearchState(cm);
         state.query = this.value;
@@ -68,21 +200,29 @@
       
       find_prev_btn.addEventListener('click', function() {
         // Show previous match
+        var state = getSearchState(cm);
+        state.query = find_input.value;
+        addSearchHistoryItem(cm, find_input.value);
         doSearch(cm, true);
       });
       
       find_next_btn.addEventListener('click', function() {
         // Show next match
+        var state = getSearchState(cm);
+        state.query = find_input.value;
+        addSearchHistoryItem(cm, find_input.value);
         doSearch(cm, false);
       });
       
       replace_btn.addEventListener('click', function() {
         // Replace
+        addSearchHistoryItem(cm, find_input.value);
         replace(cm, replace_input.value, false)
       });
       
       replace_all_btn.addEventListener('click', function() {
         // Replace all
+        addSearchHistoryItem(cm, find_input.value);
         replace(cm, replace_input.value, true)
       });
       
@@ -158,6 +298,12 @@
   }
 
   function parseString(string) {
+    if(string == null) {
+      return "";
+    }
+    if(typeof string !== "string") {
+      string = String(string);
+    }
     return string.replace(/\\([nrt\\])/g, function(match, ch) {
       if(ch == "n") return "\n";
       if(ch == "r") return "\r";
@@ -168,6 +314,18 @@
   }
 
   function parseQuery(cm, query) {
+    if(query == null) {
+      query = "";
+    }
+    if(query instanceof RegExp) {
+      if(cm.search_regex) {
+        return query.test("") ? /x^/ : query;
+      }
+      query = String(query);
+    }
+    if(typeof query !== "string") {
+      query = String(query);
+    }
     if(cm.search_regex) {
       var isRE = query.match(/^\/(.*)\/([a-z]*)$/);
       if(isRE) {

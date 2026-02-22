@@ -8,6 +8,15 @@
 /**
  * Class for JSLAB ui.
  */
+var PRDC_TERMINAL_BUFFER_CLASS = window.PRDC_TERMINAL_BUFFER;
+if(!PRDC_TERMINAL_BUFFER_CLASS && typeof require !== 'undefined') {
+  try {
+    PRDC_TERMINAL_BUFFER_CLASS = require('../shared/terminal-buffer').PRDC_TERMINAL_BUFFER;
+  } catch(err) {
+    console.error(err);
+  }
+}
+
 class PRDC_JSLAB_TERMINAL {
   
   /**
@@ -15,20 +24,68 @@ class PRDC_JSLAB_TERMINAL {
    */
   constructor() {
     var obj = this;
+    var terminalBufferMissingMsg = '';
+    if(typeof language !== 'undefined' && language.currentString) {
+      terminalBufferMissingMsg = language.currentString(511);
+    }
     
     this.messages = document.getElementById('messages-container');
     this.message_input = document.getElementById('message-input');
     this.autoscroll = true;
     this.show_timestamp = true;
     this.write_timestamps = true;
-    this.log = [];
     this.log_dialog = document.getElementById('log-dialog');
     this.settings_dialog = document.getElementById('settings-dialog');
     this.dialogs = [this.log_dialog, this.settings_dialog]
-    this.N_messages = 1;
+    this.N_messages = 0;
     this.N_messages_max = Infinity;
-    this.last_class = null;
-    this.last_tic = 0;
+    this.min_messages_max = 5;
+    this.last_class = undefined;
+    this.last_tic = undefined;
+    if(!PRDC_TERMINAL_BUFFER_CLASS) {
+      throw new Error(terminalBufferMissingMsg);
+    }
+    var dom_messages_hard_cap = 500;
+    var render_chunk_size = 50;
+    var render_scroll_threshold = 150;
+    var merge_interval_ms = 5;
+    if(typeof config !== 'undefined') {
+      var config_min_messages_max = Number(config.TERMINAL_MIN_MESSAGES_MAX);
+      if(isFinite(config_min_messages_max) && config_min_messages_max >= 1) {
+        this.min_messages_max = config_min_messages_max;
+      }
+      var config_cap = Number(config.TERMINAL_DOM_MESSAGES_HARD_CAP);
+      if(isFinite(config_cap) && config_cap >= this.min_messages_max) {
+        dom_messages_hard_cap = config_cap;
+      }
+      var config_chunk_size = Number(config.TERMINAL_RENDER_CHUNK_SIZE);
+      if(isFinite(config_chunk_size) && config_chunk_size >= 1) {
+        render_chunk_size = config_chunk_size;
+      }
+      var config_scroll_threshold = Number(config.TERMINAL_RENDER_SCROLL_THRESHOLD);
+      if(isFinite(config_scroll_threshold) && config_scroll_threshold >= 0) {
+        render_scroll_threshold = config_scroll_threshold;
+      }
+      var config_merge_interval = Number(config.TERMINAL_MERGE_INTERVAL_MS_SERIAL);
+      if(isFinite(config_merge_interval) && config_merge_interval >= 0) {
+        merge_interval_ms = config_merge_interval;
+      }
+    }
+    this.message_merge_interval_ms = merge_interval_ms;
+    this.message_buffer = new PRDC_TERMINAL_BUFFER_CLASS({
+      messages_container: this.messages,
+      scroll_container: this.messages,
+      get_timestamp: () => this.getTimestamp(),
+      is_autoscroll: () => this.autoscroll,
+      get_max_messages: () => this.N_messages_max,
+      render_chunk_size: render_chunk_size,
+      render_scroll_threshold: render_scroll_threshold,
+      dom_messages_hard_cap: dom_messages_hard_cap
+    });
+    this.log = this.message_buffer.log;
+    this.last_class = this.message_buffer.last_class;
+    this.last_tic = this.message_buffer.last_tic;
+    this.N_messages = this.message_buffer.N_messages;
 
     for(var dialog of this.dialogs) {
       dialog.addEventListener('input', function(e) {
@@ -109,7 +166,7 @@ class PRDC_JSLAB_TERMINAL {
       this.setTimestamp(opts.show_timestamp);
     }
     
-    if(opts.hasOwnProperty('show_timestamp')) {
+    if(opts.hasOwnProperty('autoscroll')) {
       this.setAutoscroll(opts.autoscroll);
     }
     
@@ -134,15 +191,18 @@ class PRDC_JSLAB_TERMINAL {
    * Clears all messages from the command window.
    */
   clear() {
-    this.N_messages = 1;
-    this.messages.innerHTML = '';
+    this.message_buffer.clear();
+    this.log = this.message_buffer.log;
+    this.last_class = this.message_buffer.last_class;
+    this.last_tic = this.message_buffer.last_tic;
+    this.N_messages = this.message_buffer.N_messages;
   }
   
   /**
    * Scrolls the command window to the bottom.
    */
-  scrollToBottom() {
-    this.messages.scrollTop = this.messages.scrollHeight;
+  scrollToBottom(show_latest = false) {
+    this.message_buffer.scrollToBottom(show_latest);
   }
   
   /**
@@ -207,15 +267,11 @@ class PRDC_JSLAB_TERMINAL {
     if(!N_messages_max) return;
     this.N_messages_max = N_messages_max;
     const nMessagesMaxInput = document.getElementById('N-messages-max');
-    if(this.N_messages_max < 5) {
-      this.N_messages_max = 5;
+    if(this.N_messages_max < this.min_messages_max) {
+      this.N_messages_max = this.min_messages_max;
     }
-    if(this.N_messages >= this.N_messages_max) {
-      while(this.N_messages > this.N_messages_max) {
-        this.messages.firstChild.remove();
-        this.N_messages -= 1;
-      }
-    }
+    this.message_buffer.enforceRenderedMessagesLimit();
+    this.N_messages = this.message_buffer.N_messages;
     if(nMessagesMaxInput.value != this.N_messages_max) {
       nMessagesMaxInput.value = this.N_messages_max;
     }
@@ -247,56 +303,14 @@ class PRDC_JSLAB_TERMINAL {
    * @returns {HTMLElement} The created message element.
    */
   addMessage(msg_class, data, raw, merge_messages = true) {
-    if(typeof raw === 'undefined') {
-      raw = data;
-    }
-    const t = performance.now();
-    let el;
-    
-    if(msg_class !== this.last_class) {
-      this.last_class = msg_class;
-      this.last_tic = t;
-      const ts = this.getTimestamp();
-      if(this.N_messages < this.N_messages_max) {
-        this.N_messages++;
-      } else if(this.messages.firstChild) {
-        this.messages.firstChild.remove();
-      }
-      
-      el = document.createElement('div');
-      el.className = msg_class;
-      el.innerHTML = `<span class="timestamp">${ts}</span>${data}`;
-      this.messages.appendChild(el);
-      this.log.push({ 'class': msg_class, 'timestamp': ts, 'data': raw });
-      
-    } else {
-      if(!merge_messages || t - this.last_tic > 5) {
-        this.last_tic = t;
-        const ts = this.getTimestamp();
-        if(this.N_messages <= this.N_messages_max) {
-          this.N_messages++;
-        } else if(this.messages.firstChild) {
-          this.messages.firstChild.remove();
-        }
-        
-        el = document.createElement('div');
-        el.className = msg_class;
-        el.innerHTML = `<span class="timestamp">${ts}</span>${data}`;
-        this.messages.appendChild(el);
-        this.log.push({ 'class': msg_class, 'timestamp': ts, 'data': raw });
-      } else {
-        // Merge data with the last message element
-        el = this.messages.querySelector('div:last-child');
-        if(el) {
-          el.innerHTML += data;
-        }
-        this.log[this.log.length - 1].data += raw;
-      }
-    }
-    
-    if(this.autoscroll) {
-      this.scrollToBottom();
-    }
+    const el = this.message_buffer.addMessage(msg_class, data, raw, {
+      merge_messages: merge_messages,
+      merge_interval_ms: this.message_merge_interval_ms
+    });
+    this.log = this.message_buffer.log;
+    this.last_class = this.message_buffer.last_class;
+    this.last_tic = this.message_buffer.last_tic;
+    this.N_messages = this.message_buffer.N_messages;
     return el;
   }
   

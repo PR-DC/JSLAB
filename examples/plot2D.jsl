@@ -13,5 +13,5 @@ xlabel("x");
 ylabel("sin(x)");
 title("Simple 2-D Plot");
 var jsl_file_basename = removeExtension(jsl_file_name);
-printFigure(pwd+'out/'+jsl_file_basename, {type: 'png', size: figure_size});
-printFigure(pwd+'out/'+jsl_file_basename, {type: 'pdf', size: figure_size});
+printFigure(jsl.app_path+'/examples/out/'+jsl_file_basename, {type: 'png', size: figure_size});
+printFigure(jsl.app_path+'/examples/out/'+jsl_file_basename, {type: 'pdf', size: figure_size});

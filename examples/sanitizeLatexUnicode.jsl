@@ -1,0 +1,356 @@
+/**
+ * @file Sanitize Unicode characters for LaTeX
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc;
+disp(' --- ' + jsl_file_name + ' ---');
+
+// If false, a new file with suffix "_latex_clean" is created.
+var overwrite_files = false;
+var output_suffix = '_latex_clean';
+
+// If true, unsupported Unicode is removed. If false, it is replaced with "?".
+var remove_unmapped_unicode = true;
+
+// Direct replacements for frequently problematic Unicode characters.
+// Add your own mappings here if pdflatex reports a new U+XXXX error.
+var direct_replacements = {
+  // Spaces and invisible separators
+  0x00A0: " ",
+  0x00AD: "-",
+  0x2000: " ",
+  0x2001: " ",
+  0x2002: " ",
+  0x2003: " ",
+  0x2004: " ",
+  0x2005: " ",
+  0x2006: " ",
+  0x2007: " ",
+  0x2008: " ",
+  0x2009: " ",
+  0x200A: " ",
+  0x200B: "",
+  0x200C: "",
+  0x200D: "",
+  0x202F: " ",
+  0x205F: " ",
+  0x2060: "",
+  0xFEFF: "",
+
+  // Quotes and dashes
+  0x2010: "-",
+  0x2011: "-",
+  0x2012: "-",
+  0x2013: "--",
+  0x2014: "---",
+  0x2015: "---",
+  0x2018: "`",
+  0x2019: "'",
+  0x201A: ",",
+  0x201B: "'",
+  0x201C: "``",
+  0x201D: "''",
+  0x201E: ",,",
+  0x2026: "...",
+
+  // Common symbols
+  0x00B0: "$^\\circ$",
+  0x00B1: "$\\pm$",
+  0x00B5: "$\\mu$",
+  0x00D7: "$\\times$",
+  0x00F7: "$\\div$",
+  0x2022: "*",
+  0x2212: "-",
+  0x2260: "$\\neq$",
+  0x2264: "$\\leq$",
+  0x2265: "$\\geq$",
+
+  // South Slavic Latin letters (rendered via LaTeX accent commands)
+  0x0106: "\\'{C}",
+  0x0107: "\\'{c}",
+  0x010C: "\\v{C}",
+  0x010D: "\\v{c}",
+  0x0110: "\\DJ{}",
+  0x0111: "\\dj{}",
+  0x0160: "\\v{S}",
+  0x0161: "\\v{s}",
+  0x017D: "\\v{Z}",
+  0x017E: "\\v{z}"
+};
+
+// Combining mark to LaTeX accent conversion template.
+var combining_to_latex = {
+  0x0300: "\\`{%s}",
+  0x0301: "\\'{%s}",
+  0x0302: "\\^{%s}",
+  0x0303: "\\~{%s}",
+  0x0304: "\\={%s}",
+  0x0306: "\\u{%s}",
+  0x0307: "\\.{%s}",
+  0x0308: "\\\"{%s}",
+  0x030A: "\\r{%s}",
+  0x030B: "\\H{%s}",
+  0x030C: "\\v{%s}",
+  0x0327: "\\c{%s}",
+  0x0328: "\\k{%s}"
+};
+
+function isAsciiAllowed(cp) {
+  return cp === 0x09 || cp === 0x0A || cp === 0x0D || (cp >= 0x20 && cp <= 0x7E);
+}
+
+function isAsciiLetter(cp) {
+  return (cp >= 0x41 && cp <= 0x5A) || (cp >= 0x61 && cp <= 0x7A);
+}
+
+function codePointTag(cp) {
+  var hex = cp.toString(16).toUpperCase();
+  while(hex.length < 4) {
+    hex = '0' + hex;
+  }
+  return 'U+' + hex;
+}
+
+function toCodePoints(str) {
+  var list = [];
+  for(var i = 0; i < str.length;) {
+    var cp = str.codePointAt(i);
+    list.push(cp);
+    i += String.fromCodePoint(cp).length;
+  }
+  return list;
+}
+
+function applyCombiningMarks(base_char, marks) {
+  var result = base_char;
+  for(var i = 0; i < marks.length; i++) {
+    var template = combining_to_latex[marks[i]];
+    if(typeof template !== 'string') {
+      return false;
+    }
+    result = template.replace('%s', result);
+  }
+  return result;
+}
+
+function foldUnicodeCharacter(cp) {
+  var original = String.fromCodePoint(cp);
+  var normalized = original.normalize('NFKD');
+  if(normalized === original) {
+    return false;
+  }
+
+  var parts = toCodePoints(normalized);
+  if(parts.length === 0) {
+    return false;
+  }
+
+  var base_cp = parts[0];
+  var base_char = String.fromCodePoint(base_cp);
+  var marks = parts.slice(1);
+
+  if(isAsciiLetter(base_cp) && marks.length > 0) {
+    var accented = applyCombiningMarks(base_char, marks);
+    if(accented !== false) {
+      return accented;
+    }
+  }
+
+  // Last fallback: keep only ASCII characters from the normalized decomposition.
+  var ascii = '';
+  for(var i = 0; i < parts.length; i++) {
+    var part_cp = parts[i];
+    if(isAsciiAllowed(part_cp)) {
+      ascii += String.fromCodePoint(part_cp);
+    }
+  }
+  if(ascii.length > 0) {
+    return ascii;
+  }
+
+  return false;
+}
+
+function recordChange(report, cp, replacement, reason) {
+  var tag = codePointTag(cp);
+  if(!(tag in report)) {
+    report[tag] = {
+      count: 0,
+      replacement: replacement,
+      reason: reason
+    };
+  }
+  report[tag].count += 1;
+}
+
+function sanitizeCharacter(cp, report) {
+  var original = String.fromCodePoint(cp);
+
+  if(isAsciiAllowed(cp)) {
+    return {
+      changed: false,
+      replacement: original,
+      removed: false
+    };
+  }
+
+  if(cp in direct_replacements) {
+    var mapped = direct_replacements[cp];
+    recordChange(report, cp, mapped, 'direct-map');
+    return {
+      changed: true,
+      replacement: mapped,
+      removed: mapped.length === 0
+    };
+  }
+
+  var folded = foldUnicodeCharacter(cp);
+  if(folded !== false) {
+    recordChange(report, cp, folded, 'unicode-fold');
+    return {
+      changed: true,
+      replacement: folded,
+      removed: folded.length === 0
+    };
+  }
+
+  if(remove_unmapped_unicode) {
+    recordChange(report, cp, '', 'removed');
+    return {
+      changed: true,
+      replacement: '',
+      removed: true
+    };
+  }
+
+  recordChange(report, cp, '?', 'fallback-question-mark');
+  return {
+    changed: true,
+    replacement: '?',
+    removed: false
+  };
+}
+
+function sanitizeLatexUtf8(text) {
+  var output = '';
+  var report = {};
+  var replaced_count = 0;
+  var removed_count = 0;
+
+  for(var i = 0; i < text.length;) {
+    var cp = text.codePointAt(i);
+    var char_len = String.fromCodePoint(cp).length;
+    i += char_len;
+
+    var result = sanitizeCharacter(cp, report);
+    output += result.replacement;
+
+    if(result.changed) {
+      replaced_count += 1;
+      if(result.removed) {
+        removed_count += 1;
+      }
+    }
+  }
+
+  return {
+    text: output,
+    report: report,
+    replaced_count: replaced_count,
+    removed_count: removed_count
+  };
+}
+
+function makeOutputPath(file_path) {
+  var ext = pathExtName(file_path);
+  if(ext.length === 0) {
+    return file_path + output_suffix;
+  }
+  return file_path.slice(0, file_path.length - ext.length) + output_suffix + ext;
+}
+
+function replacementPreview(value) {
+  if(value === '') return '[removed]';
+  if(value === ' ') return '[space]';
+  if(value === '\t') return '[tab]';
+  if(value === '\n') return '[newline]';
+  if(value === '\r') return '[carriage-return]';
+  return value;
+}
+
+function printReport(report) {
+  var keys = Object.keys(report);
+  if(keys.length === 0) {
+    disp('  No Unicode replacements needed.');
+    return;
+  }
+
+  keys.sort(function(a, b) {
+    return report[b].count - report[a].count;
+  });
+
+  disp('  Replacement report:');
+  for(var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var item = report[key];
+    disp('   - ' + key + ' x' + item.count + ' -> ' +
+      replacementPreview(item.replacement) + ' [' + item.reason + ']');
+  }
+}
+
+// Choose TeX files
+var options = {
+  title: 'Choose TeX file',
+  buttonLabel: 'Choose TeX file',
+  properties: ['multiSelections'],
+  filters: [
+    {name: 'TeX', extensions: ['tex']},
+    {name: 'All Files', extensions: ['*']}
+  ]
+};
+
+var files = chooseFile(options);
+if(!Array.isArray(files)) {
+  files = [files];
+}
+files = files.filter(function(file_path) {
+  return typeof file_path === 'string' && file_path.length > 0;
+});
+
+if(files.length === 0) {
+  disp(' No files selected.');
+  disp(' -------------------- ');
+} else {
+  tic;
+  for(var i = 0; i < files.length; i++) {
+    var file = files[i];
+    disp(' Sanitizing ' + file + ' (' + (i + 1) + '/' + files.length + ').');
+
+    var input = readFile(file, 'utf8');
+    if(typeof input !== 'string') {
+      disp('  Failed to read file, skipping.');
+      continue;
+    }
+
+    var sanitized = sanitizeLatexUtf8(input);
+    var output_path = overwrite_files ? file : makeOutputPath(file);
+    var ok = writeFile(output_path, sanitized.text, { encoding: 'utf8' });
+
+    if(ok === false) {
+      disp('  Failed to write output file, skipping.');
+      continue;
+    }
+
+    disp('  Saved: ' + output_path);
+    disp('  Characters replaced: ' + sanitized.replaced_count);
+    disp('  Characters removed: ' + sanitized.removed_count);
+    printReport(sanitized.report);
+  }
+
+  disp(' The program was executed successfully...');
+  disp(' Execution time: ' + num2str(toc(), 2) + ' seconds');
+  disp(' -------------------- ');
+}

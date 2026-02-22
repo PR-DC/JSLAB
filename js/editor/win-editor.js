@@ -11,6 +11,8 @@ const { ipcRenderer, webUtils } = require('electron');
 
 const { PRDC_JSLAB_EDITOR } = require('./editor');
 const { PRDC_JSLAB_EDITOR_SCRIPT_MANAGER } = require('./script-manager');
+const { PRDC_JSLAB_EDITOR_SYMBOL_INPUT } = require('./symbol-input');
+const { PRDC_JSLAB_EDITOR_SEARCH_ALL } = require('./search-all');
 
 const { PRDC_POPUP } = require('./../../lib/PRDC_POPUP/PRDC_POPUP');
 
@@ -30,8 +32,17 @@ class PRDC_JSLAB_WIN_EDITOR {
     // Classes
     this.editor = new PRDC_JSLAB_EDITOR(this);
     this.script_manager = new PRDC_JSLAB_EDITOR_SCRIPT_MANAGER(this);
+    this.editor_symbol_input = new PRDC_JSLAB_EDITOR_SYMBOL_INPUT(this);
+    this.editor_search_all = new PRDC_JSLAB_EDITOR_SEARCH_ALL(this);
     this.editor_more_popup = new PRDC_POPUP(document.getElementById('editor-more-icon'),
-      document.getElementById('editor-more-popup'));
+      document.getElementById('editor-more-popup'),
+      function() {
+        if(obj.editor_symbol_popup) {
+          obj.editor_symbol_popup.close();
+        }
+      });
+    this.editor_symbol_popup = new PRDC_POPUP(document.getElementById('symbol-input-menu'),
+      document.getElementById('editor-symbol-popup'));
       
     // Prevent redirects
     preventRedirect();
@@ -78,6 +89,12 @@ class PRDC_JSLAB_WIN_EDITOR {
           break;
         case "set-language":
           language.set(data);
+          if(obj.editor_symbol_input) {
+            obj.editor_symbol_input.render();
+          }
+          if(obj.editor_search_all) {
+            obj.editor_search_all.refreshLanguage();
+          }
           break;
         case "toggle-comment":
           obj.script_manager.toggleComment();

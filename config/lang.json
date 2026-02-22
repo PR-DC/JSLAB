@@ -1,83 +1,83 @@
 {
-	"1": {
-		"en": "Editor",
-		"rs": "Uređivač",
-		"rsc": "Уређивач"
-	},
+  "1": {
+    "en": "Editor",
+    "rs": "Uređivač",
+    "rsc": "Уређивач"
+  },
   "2": {
-		"en": "Help",
-		"rs": "Pomoć",
-		"rsc": "Помоћ"
-	},
+    "en": "Help",
+    "rs": "Pomoć",
+    "rsc": "Помоћ"
+  },
   "3": {
-		"en": "Info",
-		"rs": "Info",
-		"rsc": "Инфо"
-	},
+    "en": "Info",
+    "rs": "Info",
+    "rsc": "Инфо"
+  },
   "4": {
-		"en": "File Browser",
-		"rs": "Pretraživač fajlova",
-		"rsc": "Претраживач фајлова"
-	},
+    "en": "File Browser",
+    "rs": "Pretraživač fajlova",
+    "rsc": "Претраживач фајлова"
+  },
   "5": {
-		"en": "Workspace",
-		"rs": "Radni prostor",
-		"rsc": "Радни простор"
-	},
+    "en": "Workspace",
+    "rs": "Radni prostor",
+    "rsc": "Радни простор"
+  },
   "6": {
-		"en": "Command History",
-		"rs": "Istorija Komandi",
-		"rsc": "Историја Команди"
-	},
+    "en": "Command History",
+    "rs": "Istorija Komandi",
+    "rsc": "Историја Команди"
+  },
   "7": {
-		"en": "Command Window",
-		"rs": "Komandni Prozor",
-		"rsc": "Командни Прозор"
-	},
+    "en": "Command Window",
+    "rs": "Komandni Prozor",
+    "rsc": "Командни Прозор"
+  },
   "8": {
-		"en": "version",
-		"rs": "verzija",
-		"rsc": "верзија"
+    "en": "version",
+    "rs": "verzija",
+    "rsc": "верзија"
   },
   "9": {
-		"en": "Settings",
-		"rs": "Podešavanja",
-		"rsc": "Подешавања"
+    "en": "Settings",
+    "rs": "Podešavanja",
+    "rsc": "Подешавања"
   },
   "10": {
-		"en": "New",
-		"rs": "Nova",
-		"rsc": "Нова"
+    "en": "New",
+    "rs": "Nova",
+    "rsc": "Нова"
   },
   "11": {
-		"en": "Open",
-		"rs": "Otvori",
-		"rsc": "Отвори"
+    "en": "Open",
+    "rs": "Otvori",
+    "rsc": "Отвори"
   },
   "12": {
-		"en": "Save",
-		"rs": "Sačuvaj",
-		"rsc": "Сачувај"
+    "en": "Save",
+    "rs": "Sačuvaj",
+    "rsc": "Сачувај"
   },
   "13": {
-		"en": "Save As",
-		"rs": "Sačuvaj Kao",
-		"rsc": "Сачувај Као"
+    "en": "Save As",
+    "rs": "Sačuvaj Kao",
+    "rsc": "Сачувај Као"
   },
   "14": {
-		"en": "Run",
-		"rs": "Pokreni",
-		"rsc": "Покрени"
+    "en": "Run",
+    "rs": "Pokreni",
+    "rsc": "Покрени"
   },
   "15": {
-		"en": "Sandbox paused",
-		"rs": "Radni prostor pauziran",
-		"rsc": "Радни простор паузиран"
+    "en": "Sandbox paused",
+    "rs": "Radni prostor pauziran",
+    "rsc": "Радни простор паузиран"
   },
   "16": {
-		"en": "Language",
-		"rs": "Jezik",
-		"rsc": "Језик"
+    "en": "Language",
+    "rs": "Jezik",
+    "rsc": "Језик"
   },
   "17": {
     "en": "Number of latest messages",
@@ -1238,5 +1238,1441 @@
     "en": "Invalid file!",
     "rs": "Neispravan dokument!",
     "rsc": "Неисправан документ!"
+  },
+  "249": {
+    "en": "Quick links",
+    "rs": "Brzi linkovi",
+    "rsc": "Брзи линкови"
+  },
+  "250": {
+    "en": "Website",
+    "rs": "Sajt",
+    "rsc": "Сајт"
+  },
+  "251": {
+    "en": "Discourse",
+    "rs": "Forum",
+    "rsc": "Форум"
+  },
+  "252": {
+    "en": "Documentation",
+    "rs": "Dokumentacija",
+    "rsc": "Документација"
+  },
+  "253": {
+    "en": "Source code",
+    "rs": "Izvorni kod",
+    "rsc": "Изворни код"
+  },
+  "254": {
+    "en": "Releases",
+    "rs": "Izdanja",
+    "rsc": "Издања"
+  },
+  "255": {
+    "en": "Examples",
+    "rs": "Primeri",
+    "rsc": "Примери"
+  },
+  "256": {
+    "en": "Path selection cancelled",
+    "rs": "Odabir putanje je otkazan",
+    "rsc": "Одабир путање је отказан"
+  },
+  "257": {
+    "en": "The provided path is not a file or directory",
+    "rs": "Prosleđena putanja nije fajl niti direktorijum",
+    "rsc": "Прослеђена путања није фајл нити директоријум"
+  },
+  "258": {
+    "en": "The selected file is not a supported C/C++ source",
+    "rs": "Odabrana datoteka nije podržan C/C++ izvor",
+    "rsc": "Одабрана датотека није подржан C/C++ извор"
+  },
+  "259": {
+    "en": "No C/C++ sources were found in the selected location",
+    "rs": "U odabranoj lokaciji nisu pronađeni C/C++ izvori",
+    "rsc": "У одабраној локацији нису пронађени C/C++ извори"
+  },
+  "260": {
+    "en": "Unable to read the selected directory",
+    "rs": "Nije moguće pročitati odabrani direktorijum",
+    "rsc": "Није могуће прочитати одабрани директоријум"
+  },
+  "261": {
+    "en": "Failed to compile the Rust crate via wasm-pack",
+    "rs": "Kompajliranje Rust paketa (crate) preko wasm-pack nije uspelo",
+    "rsc": "Компaјлирање Rust пакета (crate) преко wasm-pack није успело"
+  },
+  "262": {
+    "en": "pkg directory not created by wasm-pack",
+    "rs": "wasm-pack nije kreirao pkg direktorijum",
+    "rsc": "wasm-pack није креирао pkg директоријум"
+  },
+  "263": {
+    "en": "Unable to read the wasm-pack pkg directory",
+    "rs": "Nije moguće pročitati wasm-pack pkg direktorijum",
+    "rsc": "Није могуће прочитати wasm-pack pkg директоријум"
+  },
+  "264": {
+    "en": "No .wasm artifact was produced in pkg/",
+    "rs": "U pkg/ nije generisan .wasm artefakt",
+    "rsc": "У pkg/ није генерисан .wasm артефакт"
+  },
+  "265": {
+    "en": "Unable to locate generated .wasm file",
+    "rs": "Nije moguće pronaći generisani .wasm fajl",
+    "rsc": "Није могуће пронаћи генерисани .wasm фајл"
+  },
+  "266": {
+    "en": "Unknown save mode. Use 'plain', 'tex', or 'no'.",
+    "rs": "Nepoznat režim čuvanja. Koristite 'plain', 'tex' ili 'no'.",
+    "rsc": "Непознат режим чувања. Користите 'plain', 'tex' или 'no'."
+  },
+  "267": {
+    "en": "Inputs xFlat, yFlat, and zFlat must have the same length.",
+    "rs": "Ulazi xFlat, yFlat i zFlat moraju imati istu dužinu.",
+    "rsc": "Улази xFlat, yFlat и zFlat морају имати исту дужину."
+  },
+  "268": {
+    "en": "Detected grid requires at least two unique values along both axes.",
+    "rs": "Detektovana mreža zahteva najmanje dve jedinstvene vrednosti duž obe ose.",
+    "rsc": "Детектована мрежа захтева најмање две јединствене вредности дуж обе осе."
+  },
+  "269": {
+    "en": "Both inputs must be arrays.",
+    "rs": "Oba ulaza moraju biti nizovi.",
+    "rsc": "Оба улаза морају бити низови."
+  },
+  "270": {
+    "en": "Input arrays must have the same length.",
+    "rs": "Ulazni nizovi moraju imati istu dužinu.",
+    "rsc": "Улазни низови морају имати исту дужину."
+  },
+  "271": {
+    "en": "Matrix must be square and non-empty.",
+    "rs": "Matrica mora biti kvadratna i ne sme biti prazna.",
+    "rsc": "Матрица мора бити квадратна и не сме бити празна."
+  },
+  "272": {
+    "en": "Lower/upper bound arrays must match the number of variables.",
+    "rs": "Nizovi donjih/gornjih granica moraju odgovarati broju promenljivih.",
+    "rsc": "Низови доњих/горњих граница морају одговарати броју променљивих."
+  },
+  "273": {
+    "en": "UseParallel option must be a boolean.",
+    "rs": "Opcija UseParallel mora biti logička vrednost (true/false).",
+    "rsc": "Опција UseParallel мора бити логичка вредност (true/false)."
+  },
+  "274": {
+    "en": "Options object with opts.bbox is required.",
+    "rs": "Potreban je objekat opcija sa opts.bbox.",
+    "rsc": "Потребан је објекат опција са opts.bbox."
+  },
+  "275": {
+    "en": "Bounding box coordinates must be finite numbers.",
+    "rs": "Koordinate graničnog okvira (bbox) moraju biti konačni brojevi.",
+    "rsc": "Координате граничног оквира (bbox) морају бити коначни бројеви."
+  },
+  "276": {
+    "en": "Reached the maximum of {max} feasible evaluations.",
+    "rs": "Dostignut je maksimum od {max} izvodljivih evaluacija.",
+    "rsc": "Достигнут је максимум од {max} изводљивих евалуација."
+  },
+  "277": {
+    "en": "seedRefine must be between 0 and 1.",
+    "rs": "seedRefine mora biti između 0 i 1.",
+    "rsc": "seedRefine мора бити између 0 и 1."
+  },
+  "278": {
+    "en": "Unable to locate a flip edge with the current refinement.",
+    "rs": "Nije moguće pronaći flip ivicu sa trenutnim rafinisanjem.",
+    "rsc": "Није могуће пронаћи flip ивицу са тренутним рафинисањем."
+  },
+  "279": {
+    "en": "Failed to snap X-oriented coarse edge to the fine grid.",
+    "rs": "Nije uspelo poravnanje grube ivice orijentisane po X osi na finu mrežu.",
+    "rsc": "Није успело поравнање грубе ивице оријентисане по X оси на фину мрежу."
+  },
+  "280": {
+    "en": "Failed to snap Y-oriented coarse edge to the fine grid.",
+    "rs": "Nije uspelo poravnanje grube ivice orijentisane po Y osi na finu mrežu.",
+    "rsc": "Није успело поравнање грубе ивице оријентисане по Y оси на фину мрежу."
+  },
+  "281": {
+    "en": "Failed to snap Z-oriented coarse edge to the fine grid.",
+    "rs": "Nije uspelo poravnanje grube ivice orijentisane po Z osi na finu mrežu.",
+    "rsc": "Није успело поравнање грубе ивице оријентисане по Z оси на фину мрежу."
+  },
+  "282": {
+    "en": "Flood fill exceeded the limit of {max} cells.",
+    "rs": "Flood fill je premašio ograničenje od {max} ćelija.",
+    "rsc": "Flood fill је премашио ограничење од {max} ћелија."
+  },
+  "283": {
+    "en": "Trace step sizes (dx, dy, dz) must be positive.",
+    "rs": "Koraci praćenja (dx, dy, dz) moraju biti pozitivni.",
+    "rsc": "Кораци праћења (dx, dy, dz) морају бити позитивни."
+  },
+  "284": {
+    "en": "Bounding box must have finite xmin/xmax and ymin/ymax values.",
+    "rs": "Granični okvir mora imati konačne vrednosti xmin/xmax i ymin/ymax.",
+    "rsc": "Гранични оквир мора имати коначне вредности xmin/xmax и ymin/ymax."
+  },
+  "285": {
+    "en": "Number of align specifiers must match the number of columns.",
+    "rs": "Broj specifikatora poravnanja mora odgovarati broju kolona.",
+    "rsc": "Број спецификатора поравнања мора одговарати броју колона."
+  },
+  "286": {
+    "en": "Invalid parameter/value pair arguments.",
+    "rs": "Neispravni argumenti para parametar/vrednost.",
+    "rsc": "Неисправни аргументи пара параметар/вредност."
+  },
+  "287": {
+    "en": "Unknown option: {option}.",
+    "rs": "Nepoznata opcija: {option}.",
+    "rsc": "Непозната опција: {option}."
+  },
+  "288": {
+    "en": "Break line is not yet supported.",
+    "rs": "Prelom linije još uvek nije podržan.",
+    "rsc": "Прелом линије још увек није подржан."
+  },
+  "289": {
+    "en": "No available table data.",
+    "rs": "Nema dostupnih podataka za tabelu.",
+    "rsc": "Нема доступних података за табелу."
+  },
+  "290": {
+    "en": "Column {index} must be an Array or TypedArray.",
+    "rs": "Kolona {index} mora biti Array ili TypedArray.",
+    "rsc": "Колона {index} мора бити Array или TypedArray."
+  },
+  "291": {
+    "en": "Multicolumn data is not yet supported.",
+    "rs": "Višekolonski podaci još uvek nisu podržani.",
+    "rsc": "Вишеколонски подаци још увек нису подржани."
+  },
+  "292": {
+    "en": "Columns must have the same number of rows.",
+    "rs": "Kolone moraju imati isti broj redova.",
+    "rsc": "Колоне морају имати исти број редова."
+  },
+  "293": {
+    "en": "Number of variable names must match the number of columns.",
+    "rs": "Broj naziva promenljivih mora odgovarati broju kolona.",
+    "rsc": "Број назива променљивих мора одговарати броју колона."
+  },
+  "294": {
+    "en": "Number of row names must match the number of rows.",
+    "rs": "Broj naziva redova mora odgovarati broju redova.",
+    "rsc": "Број назива редова мора одговарати броју редова."
+  },
+  "295": {
+    "en": "Unexpected multiple declarations in for loop.",
+    "rs": "Neočekivano više deklaracija u for petlji.",
+    "rsc": "Неочекивано више декларација у for петљи."
+  },
+  "296": {
+    "en": "Fine refinement failed on horizontal edge. Increase snapBand or relax dx/dy.",
+    "rs": "Fino rafinisanje nije uspelo na horizontalnoj ivici. Povećajte snapBand ili olabavite dx/dy.",
+    "rsc": "Фино рафинисање није успело на хоризонталној ивици. Повећајте snapBand или олабавите dx/dy."
+  },
+  "297": {
+    "en": "Fine refinement failed on vertical edge. Increase snapBand or relax dx/dy.",
+    "rs": "Fino rafinisanje nije uspelo na vertikalnoj ivici. Povećajte snapBand ili olabavite dx/dy.",
+    "rsc": "Фино рафинисање није успело на вертикалној ивици. Повећајте snapBand или олабавите dx/dy."
+  },
+  "298": {
+    "en": "Could not build start cell from horizontal fine bracket.",
+    "rs": "Nije moguće napraviti početnu ćeliju iz horizontalnog finog bracket-a.",
+    "rsc": "Није могуће направити почетну ћелију из хоризонталног финог bracket-а."
+  },
+  "299": {
+    "en": "Could not build start cell from vertical fine bracket.",
+    "rs": "Nije moguće napraviti početnu ćeliju iz vertikalnog finog bracket-a.",
+    "rsc": "Није могуће направити почетну ћелију из вертикалног финог bracket-а."
+  },
+  "300": {
+    "en": "Option UseParallel is ignored while option UseVectorized is true.",
+    "rs": "Opcija UseParallel se ignoriše dok je opcija UseVectorized postavljena na true.",
+    "rsc": "Опција UseParallel се игнорише док је опција UseVectorized постављена на true."
+  },
+  "301": {
+    "en": "Optimization is initialized!",
+    "rs": "Optimizacija je inicijalizovana!",
+    "rsc": "Оптимизација је иницијализована!"
+  },
+  "302": {
+    "en": "Vectorized functions evaluation in use.",
+    "rs": "Koristi se vektorizovana evaluacija funkcija.",
+    "rsc": "Користи се векторизована евалуација функција."
+  },
+  "303": {
+    "en": "Parallel functions evaluation in use.",
+    "rs": "Koristi se paralelna evaluacija funkcija.",
+    "rsc": "Користи се паралелна евалуација функција."
+  },
+  "304": {
+    "en": "Optimization is done",
+    "rs": "Optimizacija je završena",
+    "rsc": "Оптимизација је завршена"
+  },
+  "305": {
+    "en": "solution found",
+    "rs": "Rešenje je pronađeno",
+    "rsc": "Решење је пронађено"
+  },
+  "306": {
+    "en": "no feasible solution found",
+    "rs": "Nije pronađeno izvodljivo rešenje",
+    "rsc": "Није пронађено изводљиво решење"
+  },
+  "307": {
+    "en": "stopping criteria",
+    "rs": "Kriterijum zaustavljanja",
+    "rsc": "Критеријум заустављања"
+  },
+  "308": {
+    "en": "Required modules",
+    "rs": "Učitani moduli",
+    "rsc": "Учитани модули"
+  },
+  "309": {
+    "en": "Promises",
+    "rs": "Promisi",
+    "rsc": "Промиси"
+  },
+  "310": {
+    "en": "Timeouts",
+    "rs": "Tajmauti",
+    "rsc": "Тајмаути"
+  },
+  "311": {
+    "en": "Immediates",
+    "rs": "setImmediate pozivi",
+    "rsc": "setImmediate позиви"
+  },
+  "312": {
+    "en": "Intervals",
+    "rs": "Intervali",
+    "rsc": "Интервали"
+  },
+  "313": {
+    "en": "Animation frames",
+    "rs": "Kadrovi animacije",
+    "rsc": "Кадрови анимације"
+  },
+  "314": {
+    "en": "Idle callbacks",
+    "rs": "Povratni pozivi u mirovanju",
+    "rsc": "Повратни позиви у мировању"
+  },
+  "315": {
+    "en": "First slide",
+    "rs": "Prvi slajd",
+    "rsc": "Први слајд"
+  },
+  "316": {
+    "en": "Previous",
+    "rs": "Prethodno",
+    "rsc": "Претходно"
+  },
+  "317": {
+    "en": "Next",
+    "rs": "Sledeće",
+    "rsc": "Следеће"
+  },
+  "318": {
+    "en": "Last slide",
+    "rs": "Poslednji slajd",
+    "rsc": "Последњи слајд"
+  },
+  "319": {
+    "en": "Slide",
+    "rs": "Slajd",
+    "rsc": "Слајд"
+  },
+  "320": {
+    "en": "Toggle Comment",
+    "rs": "Prikaži/sakrij komentar",
+    "rsc": "Прикажи/сакриј коментар"
+  },
+  "321": {
+    "en": "Go To Code",
+    "rs": "Idi na kod",
+    "rsc": "Иди на код"
+  },
+  "322": {
+    "en": "Go To Slide",
+    "rs": "Idi na slajd",
+    "rsc": "Иди на слајд"
+  },
+  "323": {
+    "en": "Select All",
+    "rs": "Označi sve",
+    "rsc": "Означи све"
+  },
+  "324": {
+    "en": "Search for:",
+    "rs": "Traži:",
+    "rsc": "Тражи:"
+  },
+  "325": {
+    "en": "Search:",
+    "rs": "Pretraga:",
+    "rsc": "Претрага:"
+  },
+  "326": {
+    "en": "(Use /re/ syntax for regexp search)",
+    "rs": "(Koristite /re/ sintaksu za pretragu regularnim izrazima)",
+    "rsc": "(Користите /re/ синтаксу за претрагу регуларним изразима)"
+  },
+  "327": {
+    "en": "With:",
+    "rs": "Sa:",
+    "rsc": "Са:"
+  },
+  "328": {
+    "en": "Replace?",
+    "rs": "Zameniti?",
+    "rsc": "Заменити?"
+  },
+  "329": {
+    "en": "Yes",
+    "rs": "Da",
+    "rsc": "Да"
+  },
+  "330": {
+    "en": "No",
+    "rs": "Ne",
+    "rsc": "Не"
+  },
+  "331": {
+    "en": "All",
+    "rs": "Sve",
+    "rsc": "Све"
+  },
+  "332": {
+    "en": "Stop",
+    "rs": "Zaustavi",
+    "rsc": "Заустави"
+  },
+  "333": {
+    "en": "Replace all:",
+    "rs": "Zameni sve:",
+    "rsc": "Замени све:"
+  },
+  "334": {
+    "en": "Replace:",
+    "rs": "Zameni:",
+    "rsc": "Замени:"
+  },
+  "335": {
+    "en": "Replace with:",
+    "rs": "Zameni sa:",
+    "rsc": "Замени са:"
+  },
+  "336": {
+    "en": "Find",
+    "rs": "Pronađi",
+    "rsc": "Пронађи"
+  },
+  "337": {
+    "en": "Previous match",
+    "rs": "Prethodno podudaranje",
+    "rsc": "Претходно подударање"
+  },
+  "338": {
+    "en": "Next match",
+    "rs": "Sledeće podudaranje",
+    "rsc": "Следеће подударање"
+  },
+  "339": {
+    "en": "Replace",
+    "rs": "Zameni",
+    "rsc": "Замени"
+  },
+  "340": {
+    "en": "Replace All",
+    "rs": "Zameni sve",
+    "rsc": "Замени све"
+  },
+  "341": {
+    "en": "Match Case",
+    "rs": "Razlikuj velika/mala slova",
+    "rsc": "Разликуј велика/мала слова"
+  },
+  "342": {
+    "en": "Use Regular Expression",
+    "rs": "Koristi regularni izraz",
+    "rsc": "Користи регуларни израз"
+  },
+  "343": {
+    "en": "of",
+    "rs": "od",
+    "rsc": "од"
+  },
+  "344": {
+    "en": "Close Search Dialog",
+    "rs": "Zatvori dijalog pretrage",
+    "rsc": "Затвори дијалог претраге"
+  },
+  "345": {
+    "en": "All Files",
+    "rs": "Sve datoteke",
+    "rsc": "Све датотеке"
+  },
+  "346": {
+    "en": "History is empty!",
+    "rs": "Istorija je prazna!",
+    "rsc": "Историја је празна!"
+  },
+  "347": {
+    "en": "Sandbox is busy...",
+    "rs": "Sandbox je zauzet...",
+    "rsc": "Сандбокс је заузет..."
+  },
+  "348": {
+    "en": "Sandbox is busy...",
+    "rs": "Sandbox je zauzet...",
+    "rsc": "Сандбокс је заузет..."
+  },
+  "349": {
+    "en": "Sandbox is busy...",
+    "rs": "Sandbox je zauzet...",
+    "rsc": "Сандбокс је заузет..."
+  },
+  "350": {
+    "en": "No arguments provided",
+    "rs": "Nisu prosleđeni argumenti",
+    "rsc": "Нису прослеђени аргументи"
+  },
+  "351": {
+    "en": "No arguments provided",
+    "rs": "Nisu prosleđeni argumenti",
+    "rsc": "Нису прослеђени аргументи"
+  },
+  "352": {
+    "en": "Unknown error during WebAssembly compilation.",
+    "rs": "Nepoznata greška tokom kompilacije WebAssembly-a.",
+    "rsc": "Непозната грешка током компилације WebAssembly-а."
+  },
+  "353": {
+    "en": "Error:",
+    "rs": "Greška:",
+    "rsc": "Грешка:"
+  },
+  "354": {
+    "en": "Error:",
+    "rs": "Greška:",
+    "rsc": "Грешка:"
+  },
+  "355": {
+    "en": "Compile failed!",
+    "rs": "Kompilacija nije uspela!",
+    "rsc": "Компилација није успела!"
+  },
+  "356": {
+    "en": "Error =",
+    "rs": "Greška =",
+    "rsc": "Грешка ="
+  },
+  "357": {
+    "en": "Message =",
+    "rs": "Poruka =",
+    "rsc": "Порука ="
+  },
+  "358": {
+    "en": "Altitude must be finite.",
+    "rs": "Nadmorska visina mora biti konačna.",
+    "rsc": "Надморска висина мора бити коначна."
+  },
+  "359": {
+    "en": "Download plot as a svg",
+    "rs": "Preuzmi grafikon kao SVG",
+    "rsc": "Преузми графикон као SVG"
+  },
+  "360": {
+    "en": "Failed to load three.js:",
+    "rs": "Nije uspelo učitavanje three.js:",
+    "rsc": "Није успело учитавање three.js:"
+  },
+  "361": {
+    "en": "Choose serial port",
+    "rs": "Izaberite serijski port",
+    "rsc": "Изаберите серијски порт"
+  },
+  "362": {
+    "en": "Choose serial options",
+    "rs": "Izaberite opcije serijskog porta",
+    "rsc": "Изаберите опције серијског порта"
+  },
+  "363": {
+    "en": "Element Scene3D is not available in local file!",
+    "rs": "Element Scene3D nije dostupan u lokalnoj datoteci!",
+    "rsc": "Елемент Scene3D није доступан у локалној датотеци!"
+  },
+  "364": {
+    "en": "Symbols",
+    "rs": "Simboli",
+    "rsc": "Симболи"
+  },
+  "365": {
+    "en": "Math",
+    "rs": "Matematika",
+    "rsc": "Математика"
+  },
+  "366": {
+    "en": "Greek Lower",
+    "rs": "Grčka mala slova",
+    "rsc": "Грчка мала слова"
+  },
+  "367": {
+    "en": "Greek Upper",
+    "rs": "Grčka velika slova",
+    "rsc": "Грчка велика слова"
+  },
+  "368": {
+    "en": "Logic / Sets",
+    "rs": "Logika / Skupovi",
+    "rsc": "Логика / Скупови"
+  },
+  "369": {
+    "en": "Arrows",
+    "rs": "Strelice",
+    "rsc": "Стрелице"
+  },
+  "370": {
+    "en": "Superscript",
+    "rs": "Gornji indeks",
+    "rsc": "Горњи индекс"
+  },
+  "371": {
+    "en": "Subscript",
+    "rs": "Donji indeks",
+    "rsc": "Доњи индекс"
+  },
+  "372": {
+    "en": "Other",
+    "rs": "Ostalo",
+    "rsc": "Остало"
+  },
+  "373": {
+    "en": "Find in all",
+    "rs": "Pretraga svih",
+    "rsc": "Претрага свих"
+  },
+  "374": {
+    "en": "Search in all",
+    "rs": "Pretraži sve",
+    "rsc": "Претражи све"
+  },
+  "375": {
+    "en": "Search Results",
+    "rs": "Rezultati pretrage",
+    "rsc": "Резултати претраге"
+  },
+  "376": {
+    "en": "Close Search Results",
+    "rs": "Zatvori rezultate pretrage",
+    "rsc": "Затвори резултате претраге"
+  },
+  "377": {
+    "en": "No matches found.",
+    "rs": "Nema podudaranja.",
+    "rsc": "Нема подударања."
+  },
+  "378": {
+    "en": "Run Line",
+    "rs": "Pokreni liniju",
+    "rsc": "Покрени линију"
+  },
+  "379": {
+    "en": "Run Section",
+    "rs": "Pokreni sekciju",
+    "rsc": "Покрени секцију"
+  },
+  "380": {
+    "en": "No runnable lines in current section.",
+    "rs": "Nema linija za pokretanje u trenutnoj sekciji.",
+    "rsc": "Нема линија за покретање у тренутној секцији."
+  },
+  "381": {
+    "en": "Undo",
+    "rs": "Undo",
+    "rsc": "Undo"
+  },
+  "382": {
+    "en": "Redo",
+    "rs": "Redo",
+    "rsc": "Redo"
+  },
+  "383": {
+    "en": "Cut",
+    "rs": "Cut",
+    "rsc": "Cut"
+  },
+  "384": {
+    "en": "Copy",
+    "rs": "Copy",
+    "rsc": "Copy"
+  },
+  "385": {
+    "en": "Paste",
+    "rs": "Paste",
+    "rsc": "Paste"
+  },
+  "386": {
+    "en": "Inspect Variable",
+    "rs": "Ispitaj promenljivu",
+    "rsc": "Ispitaj promenljivu"
+  },
+  "387": {
+    "en": "Delete",
+    "rs": "Obriši",
+    "rsc": "Обриши"
+  },
+  "388": {
+    "en": "Inspector",
+    "rs": "Inspektor",
+    "rsc": "Инспектор"
+  },
+  "390": {
+    "en": "Value",
+    "rs": "Vrednost",
+    "rsc": "Вредност"
+  },
+  "391": {
+    "en": "Apply",
+    "rs": "Primeni",
+    "rsc": "Примени"
+  },
+  "392": {
+    "en": "Filter",
+    "rs": "Filter",
+    "rsc": "Филтер"
+  },
+  "393": {
+    "en": "Clear Filter",
+    "rs": "Obriši filter",
+    "rsc": "Обриши филтер"
+  },
+  "394": {
+    "en": "Filter Expr",
+    "rs": "Filter izraz",
+    "rsc": "Филтер израз"
+  },
+  "395": {
+    "en": "Clear Expr",
+    "rs": "Obriši izraz",
+    "rsc": "Обриши израз"
+  },
+  "396": {
+    "en": "Refresh",
+    "rs": "Osveži",
+    "rsc": "Освежи"
+  },
+  "397": {
+    "en": "Double-click value cells to edit.",
+    "rs": "Dvaput kliknite na polje vrednosti za izmenu.",
+    "rsc": "Двапут кликните на поље вредности за измену."
+  },
+  "398": {
+    "en": "Add Var",
+    "rs": "Dodaj promenljivu",
+    "rsc": "Додај променљиву"
+  },
+  "399": {
+    "en": "Rename Var",
+    "rs": "Preimenuj promenljivu",
+    "rsc": "Преименуј променљиву"
+  },
+  "400": {
+    "en": "Remove Var",
+    "rs": "Ukloni promenljivu",
+    "rsc": "Уклони променљиву"
+  },
+  "401": {
+    "en": "Copy CSV Text",
+    "rs": "Kopiraj CSV tekst",
+    "rsc": "Копирај CSV текст"
+  },
+  "402": {
+    "en": "Inspect",
+    "rs": "Inspektuj",
+    "rsc": "Инспектуј"
+  },
+  "403": {
+    "en": "type",
+    "rs": "tip",
+    "rsc": "тип"
+  },
+  "404": {
+    "en": "size",
+    "rs": "veličina",
+    "rsc": "величина"
+  },
+  "405": {
+    "en": "row times",
+    "rs": "vremena redova",
+    "rsc": "времена редова"
+  },
+  "406": {
+    "en": "types",
+    "rs": "tipovi",
+    "rsc": "типови"
+  },
+  "407": {
+    "en": "rows",
+    "rs": "redovi",
+    "rsc": "редови"
+  },
+  "408": {
+    "en": "fields",
+    "rs": "polja",
+    "rsc": "поља"
+  },
+  "409": {
+    "en": "length",
+    "rs": "dužina",
+    "rsc": "дужина"
+  },
+  "410": {
+    "en": "entries",
+    "rs": "stavke",
+    "rsc": "ставке"
+  },
+  "411": {
+    "en": "No enumerable properties.",
+    "rs": "Nema nabrojivih svojstava.",
+    "rsc": "Нема набројивих својстава."
+  },
+  "412": {
+    "en": "Edit Value",
+    "rs": "Izmeni vrednost",
+    "rsc": "Измени вредност"
+  },
+  "413": {
+    "en": "asc",
+    "rs": "rastuće",
+    "rsc": "растуће"
+  },
+  "414": {
+    "en": "desc",
+    "rs": "opadajuće",
+    "rsc": "опадајуће"
+  },
+  "415": {
+    "en": "showing {shown} of {total} rows",
+    "rs": "prikazano {shown} od {total} redova",
+    "rsc": "приказано {shown} од {total} редова"
+  },
+  "416": {
+    "en": "showing {shown} of {total} columns",
+    "rs": "prikazano {shown} od {total} kolona",
+    "rsc": "приказано {shown} од {total} колона"
+  },
+  "417": {
+    "en": "filter \"{filter}\" matched {matched} of {total} rows",
+    "rs": "filter \"{filter}\" je pogodio {matched} od {total} redova",
+    "rsc": "филтер \"{filter}\" је погодио {matched} од {total} редмова"
+  },
+  "418": {
+    "en": "invalid filter expression: {error}",
+    "rs": "neispravan izraz filtera: {error}",
+    "rsc": "неисправан израз филтера: {error}"
+  },
+  "419": {
+    "en": "expression filter matched {matched} of {total} rows",
+    "rs": "filter izraz je pogodio {matched} od {total} redova",
+    "rsc": "филтер израз је погодио {matched} од {total} редова"
+  },
+  "420": {
+    "en": "Double-click to edit",
+    "rs": "Dvaput kliknite za izmenu",
+    "rsc": "Двапут кликните за измену"
+  },
+  "421": {
+    "en": "Key",
+    "rs": "Kljuć",
+    "rsc": "Кључ"
+  },
+  "422": {
+    "en": "Value",
+    "rs": "Vrednost",
+    "rsc": "Вредност"
+  },
+  "423": {
+    "en": "Filter rows (substring match)",
+    "rs": "Filtriraj redove (podniz)",
+    "rsc": "Филтрирај редове (podniz)"
+  },
+  "424": {
+    "en": "Filter expression (row object available as \"row\")",
+    "rs": "Filter izraz (objekat reda je dostupan kao \"row\")",
+    "rsc": "Филтер израза (објекат реда је доступан као \"row\")"
+  },
+  "425": {
+    "en": "New variable name",
+    "rs": "Novo ime promenljive",
+    "rsc": "Ново име променљиве"
+  },
+  "426": {
+    "en": "Values expression (array or scalar)",
+    "rs": "Izraz vrednosti (niz ili skalar)",
+    "rsc": "Израз вредности (низ или скалар)"
+  },
+  "427": {
+    "en": "Current variable name",
+    "rs": "Trenutno ime promenljive",
+    "rsc": "Тренутно име променљиве"
+  },
+  "428": {
+    "en": "Variable name(s) to remove (comma separated)",
+    "rs": "Ime(na) promenljivih za uklanjanje (odvojeno zarezom)",
+    "rsc": "Име(на) променљивих за уклањање (одвојено зарезом)"
+  },
+  "429": {
+    "en": "Set {variable} at path {path} to expression",
+    "rs": "Postavi {variable} na putanji {path} na izraz",
+    "rsc": "Постави {variable} на путањи {path} на израз"
+  },
+  "430": {
+    "en": "Expression",
+    "rs": "Izraz",
+    "rsc": "Израз"
+  },
+  "431": {
+    "en": "variable name must be a non-empty string.",
+    "rs": "ime promenljive mora biti neprazan string.",
+    "rsc": "име променљиве мора бити непразан string."
+  },
+  "432": {
+    "en": "variable \"{name}\" not found in workspace.",
+    "rs": "promenljiva \"{name}\" nije pronadjena u radnom prostoru.",
+    "rsc": "променљива \"{name}\" није пронађена у радном простору."
+  },
+  "433": {
+    "en": "path must be an array.",
+    "rs": "putanja mora biti niz.",
+    "rsc": "путања мора бити низ."
+  },
+  "434": {
+    "en": "expression must be a string.",
+    "rs": "izraz mora biti string.",
+    "rsc": "израз мора бити string."
+  },
+  "435": {
+    "en": "invalid expression: {error}",
+    "rs": "neispravan izraz: {error}",
+    "rsc": "неисправан израз: {error}"
+  },
+  "436": {
+    "en": "invalid path.",
+    "rs": "neispravna putanja.",
+    "rsc": "неисправна путања."
+  },
+  "437": {
+    "en": "invalid target.",
+    "rs": "neispravan cilj.",
+    "rsc": "неисправан циљ."
+  },
+  "438": {
+    "en": "action must be a non-empty string.",
+    "rs": "akcija mora biti neprazan string.",
+    "rsc": "акција мора бити непразан string."
+  },
+  "439": {
+    "en": "variable \"{name}\" is not a table/timetable.",
+    "rs": "promenljiva \"{name}\" nije table/timetable.",
+    "rsc": "променљива \"{name}\" није table/timetable."
+  },
+  "440": {
+    "en": "addvar requires \"name\".",
+    "rs": "addvar zahteva \"name\".",
+    "rsc": "addvar захтева \"name\"."
+  },
+  "441": {
+    "en": "addvar requires \"expression\".",
+    "rs": "addvar zahteva \"expression\".",
+    "rsc": "addvar захтева \"expression\"."
+  },
+  "442": {
+    "en": "renamevar requires \"old_name\" and \"new_name\".",
+    "rs": "renamevar zahteva \"old_name\" i \"new_name\".",
+    "rsc": "renamevar захтева \"old_name\" и \"new_name\"."
+  },
+  "443": {
+    "en": "removevar requires \"names\".",
+    "rs": "removevar zahteva \"names\".",
+    "rsc": "removevar захтева \"names\"."
+  },
+  "444": {
+    "en": "table2csv is not available.",
+    "rs": "table2csv nije dostupan.",
+    "rsc": "table2csv није доступан."
+  },
+  "445": {
+    "en": "unsupported action \"{action}\".",
+    "rs": "nepodržana akcija \"{action}\".",
+    "rsc": "неподржана акција \"{action}\"."
+  },
+  "446": {
+    "en": "invalid path payload.",
+    "rs": "neispravan payload putanje.",
+    "rsc": "неисправан payload путање."
+  },
+  "447": {
+    "en": "keys",
+    "rs": "ključevi",
+    "rsc": "кључеви"
+  },
+  "448": {
+    "en": "{label} must be an Array or TypedArray.",
+    "rs": "{label} mora biti Array ili TypedArray.",
+    "rsc": "{label} мора бити Array или TypedArray."
+  },
+  "449": {
+    "en": "{error_label} must be an Array or CSV string.",
+    "rs": "{error_label} mora biti Array ili CSV string.",
+    "rsc": "{error_label} мора бити Array или CSV string."
+  },
+  "450": {
+    "en": "empty name at index {index}.",
+    "rs": "prazno ime na indeksu {index}.",
+    "rsc": "празно име на индексу {index}."
+  },
+  "451": {
+    "en": "duplicate name \"{name}\".",
+    "rs": "duplirano ime \"{name}\".",
+    "rsc": "дуплирано име \"{name}\"."
+  },
+  "452": {
+    "en": "unsupported step value \"{step}\".",
+    "rs": "nepodržana vrednost koraka \"{step}\".",
+    "rsc": "неподржана вредност корака \"{step}\"."
+  },
+  "453": {
+    "en": "input must be an Array.",
+    "rs": "ulaz mora biti Array.",
+    "rsc": "улаз мора бити Array."
+  },
+  "454": {
+    "en": "each row must be an Array or TypedArray.",
+    "rs": "svaki red mora biti Array ili TypedArray.",
+    "rsc": "сваки ред мора бити Array или TypedArray."
+  },
+  "455": {
+    "en": "VariableNames size mismatch.",
+    "rs": "neodgovarajuća dužina VariableNames.",
+    "rsc": "неодговарајућа дужина VariableNames."
+  },
+  "456": {
+    "en": "input must be an Array of objects.",
+    "rs": "ulaz mora biti Array objekata.",
+    "rsc": "улаз мора бити Array објеката."
+  },
+  "457": {
+    "en": "row at index {index} must be an object.",
+    "rs": "red na indeksu {index} mora biti objekat.",
+    "rsc": "ред на индексу {index} мора бити објекат."
+  },
+  "458": {
+    "en": "input must be table/timetable.",
+    "rs": "ulaz mora biti table/timetable.",
+    "rsc": "улаз мора бити table/timetable."
+  },
+  "459": {
+    "en": "file_path must be a non-empty string.",
+    "rs": "file_path mora biti neprazan string.",
+    "rsc": "file_path мора бити непразан string."
+  },
+  "460": {
+    "en": "file does not exist: {file_path}",
+    "rs": "fajl ne postoji: {file_path}",
+    "rsc": "фајл не постоји: {file_path}"
+  },
+  "461": {
+    "en": "row times variable \"{name}\" not found.",
+    "rs": "promenljiva vremena redova \"{name}\" nije pronađena.",
+    "rsc": "променљива времена редова \"{name}\" није пронађена."
+  },
+  "462": {
+    "en": "file_path must be a non-empty string.",
+    "rs": "file_path mora biti neprazan string.",
+    "rsc": "file_path мора бити непразан string."
+  },
+  "463": {
+    "en": "invalid row time value.",
+    "rs": "neispravna vrednost vremena reda.",
+    "rsc": "неисправна вредност времена реда."
+  },
+  "464": {
+    "en": "group variable \"{name}\" not found.",
+    "rs": "grupna promenljiva \"{name}\" nije pronađena.",
+    "rsc": "групна променљива \"{name}\" није пронађена."
+  },
+  "465": {
+    "en": "data variable \"{name}\" not found.",
+    "rs": "data promenljiva \"{name}\" nije pronađena.",
+    "rsc": "data променљива \"{name}\" није пронађена."
+  },
+  "466": {
+    "en": "variable \"{name}\" not found.",
+    "rs": "promenljiva \"{name}\" nije pronađena.",
+    "rsc": "променљива \"{name}\" није пронађена."
+  },
+  "467": {
+    "en": "fun must be a function or string.",
+    "rs": "fun mora biti funkcija ili string.",
+    "rsc": "fun мора бити функција или string."
+  },
+  "468": {
+    "en": "VariableNames size mismatch.",
+    "rs": "neodgovarajuća dužina VariableNames.",
+    "rsc": "неодговарајућа дужина VariableNames."
+  },
+  "469": {
+    "en": "options must be provided as name/value pairs.",
+    "rs": "options mora biti zadat kao parovi ime/vrednost.",
+    "rsc": "options мора бити задат као парови име/вредност."
+  },
+  "470": {
+    "en": "invalid option \"{key}\".",
+    "rs": "neispravna opcija \"{key}\".",
+    "rsc": "неисправна опција \"{key}\"."
+  },
+  "471": {
+    "en": "input must be table/timetable.",
+    "rs": "ulaz mora biti table/timetable.",
+    "rsc": "улаз мора бити table/timetable."
+  },
+  "472": {
+    "en": "input must be timetable.",
+    "rs": "ulaz mora biti timetable.",
+    "rsc": "улаз мора бити timetable."
+  },
+  "473": {
+    "en": "unsupported method \"{method}\".",
+    "rs": "nepodržana metoda \"{method}\".",
+    "rsc": "неподржана метода \"{method}\"."
+  },
+  "474": {
+    "en": "LeftKeys and RightKeys size mismatch.",
+    "rs": "LeftKeys i RightKeys nisu iste dužine.",
+    "rsc": "LeftKeys и RightKeys нису исте дужине."
+  },
+  "475": {
+    "en": "no join keys resolved.",
+    "rs": "nije pronađen nijedan ključ za spajanje.",
+    "rsc": "није пронађен ниједан кључ за спајање."
+  },
+  "476": {
+    "en": "left key \"{name}\" not found.",
+    "rs": "levi ključ \"{name}\" nije pronađen.",
+    "rsc": "леви кључ \"{name}\" није пронађен."
+  },
+  "477": {
+    "en": "right key \"{name}\" not found.",
+    "rs": "desni ključ \"{name}\" nije pronađen.",
+    "rsc": "десни кључ \"{name}\" није пронађен."
+  },
+  "478": {
+    "en": "variable \"{key}\" not found.",
+    "rs": "promenljiva \"{key}\" nije pronađena.",
+    "rsc": "променљива \"{key}\" није пронађена."
+  },
+  "479": {
+    "en": "variable name must be non-empty.",
+    "rs": "ime promenljive mora biti neprazno.",
+    "rsc": "име променљиве мора бити непразно."
+  },
+  "480": {
+    "en": "variable \"{key}\" height mismatch.",
+    "rs": "promenljiva \"{key}\" nema odgovarajuću visinu.",
+    "rsc": "променљива \"{key}\" нема одговарајућу висину."
+  },
+  "481": {
+    "en": "variable \"{name}\" not found.",
+    "rs": "promenljiva \"{name}\" nije pronađena.",
+    "rsc": "променљива \"{name}\" није пронађена."
+  },
+  "482": {
+    "en": "old_names/new_names size mismatch.",
+    "rs": "old_names/new_names nemaju istu dužinu.",
+    "rsc": "old_names/new_names немају исту дужину."
+  },
+  "483": {
+    "en": "variable \"{name}\" not found.",
+    "rs": "promenljiva \"{name}\" nije pronađena.",
+    "rsc": "променљива \"{name}\" није пронађена."
+  },
+  "484": {
+    "en": "NewVariableNames size mismatch.",
+    "rs": "NewVariableNames ne odgovara broju promenljivih.",
+    "rsc": "NewVariableNames не одговара броју променљивих."
+  },
+  "485": {
+    "en": "variable \"{name}\" height mismatch.",
+    "rs": "promenljiva \"{name}\" nema odgovarajuću visinu.",
+    "rsc": "променљива \"{name}\" нема одговарајућу висину."
+  },
+  "486": {
+    "en": "predicate must be a function.",
+    "rs": "predicate mora biti funkcija.",
+    "rsc": "predicate мора бити функција."
+  },
+  "487": {
+    "en": "invalid sort key.",
+    "rs": "neispravan ključ sortiranja.",
+    "rsc": "неисправан кључ сортирања."
+  },
+  "488": {
+    "en": "invalid row index.",
+    "rs": "neispravan indeks reda.",
+    "rsc": "неисправан индекс реда."
+  },
+  "489": {
+    "en": "invalid column \"{col}\".",
+    "rs": "neispravna kolona \"{col}\".",
+    "rsc": "неисправна колона \"{col}\"."
+  },
+  "490": {
+    "en": "invalid row index.",
+    "rs": "neispravan indeks reda.",
+    "rsc": "неисправан индекс реда."
+  },
+  "491": {
+    "en": "invalid column \"{col}\".",
+    "rs": "neispravna kolona \"{col}\".",
+    "rsc": "неисправна колона \"{col}\"."
+  },
+  "492": {
+    "en": "all variables must have equal height.",
+    "rs": "sve promenljive moraju imati istu visinu.",
+    "rsc": "све променљиве морају имати исту висину."
+  },
+  "493": {
+    "en": "columns must be Array or plain object.",
+    "rs": "columns mora biti Array ili plain object.",
+    "rsc": "columns мора бити Array или plain object."
+  },
+  "494": {
+    "en": "RowNames size mismatch.",
+    "rs": "RowNames nema odgovarajuću dužinu.",
+    "rsc": "RowNames нема одговарајућу дужину."
+  },
+  "495": {
+    "en": "invalid row index.",
+    "rs": "neispravan indeks reda.",
+    "rsc": "неисправан индекс реда."
+  },
+  "496": {
+    "en": "unsupported row selector.",
+    "rs": "nepodržan selektor redova.",
+    "rsc": "неподржан селектор редова."
+  },
+  "497": {
+    "en": "row_times size mismatch.",
+    "rs": "row_times nema odgovarajuću dužinu.",
+    "rsc": "row_times нема одговарајућу дужину."
+  },
+  "498": {
+    "en": "RowNames size mismatch.",
+    "rs": "RowNames nema odgovarajuću dužinu.",
+    "rsc": "RowNames нема одговарајућу дужину."
+  },
+  "499": {
+    "en": "invalid sort key.",
+    "rs": "neispravan ključ sortiranja.",
+    "rsc": "неисправан кључ сортирања."
+  },
+  "500": {
+    "en": "invalid row index.",
+    "rs": "neispravan indeks reda.",
+    "rsc": "неисправан индекс реда."
+  },
+  "501": {
+    "en": "Unable to load class \"{class_name}\" from path: {class_path}",
+    "rs": "Nije moguće učitati klasu \"{class_name}\" sa putanje: {class_path}",
+    "rsc": "Није могуће учитати класу \"{class_name}\" са путање: {class_path}"
+  },
+  "502": {
+    "en": "invalid line range argument.",
+    "rs": "neispravan argument opsega linija.",
+    "rsc": "неисправан аргумент опсега линија."
+  },
+  "503": {
+    "en": "RowName",
+    "rs": "Ime reda",
+    "rsc": "Име реда"
+  },
+  "504": {
+    "en": "Time",
+    "rs": "Vreme",
+    "rsc": "Време"
+  },
+  "505": {
+    "en": "Main",
+    "rs": "Glavni",
+    "rsc": "Главни"
+  },
+  "506": {
+    "en": "JSLAB / MAIN",
+    "rs": "JSLAB / GLAVNI",
+    "rsc": "JSLAB / ГЛАВНИ"
+  },
+  "507": {
+    "en": "JSLAB / EDITOR",
+    "rs": "JSLAB / UREĐIVAČ",
+    "rsc": "JSLAB / УРЕЂИВАЧ"
+  },
+  "508": {
+    "en": "JavaScript LABoratory",
+    "rs": "JavaScript LABoratory",
+    "rsc": "JavaScript LABoratory"
+  },
+  "509": {
+    "en": "by PR-DC company",
+    "rs": "by PR-DC company",
+    "rsc": "by PR-DC company"
+  },
+  "510": {
+    "en": "Infinity",
+    "rs": "Beskonačno",
+    "rsc": "Бесконачно"
+  },
+  "511": {
+    "en": "PRDC_TERMINAL_BUFFER is not available.",
+    "rs": "PRDC_TERMINAL_BUFFER nije dostupan.",
+    "rsc": "PRDC_TERMINAL_BUFFER није доступан."
+  },
+  "512": {
+    "en": "JSLAB",
+    "rs": "JSLAB",
+    "rsc": "JSLAB"
+  },
+  "513": {
+    "en": "Sandbox | JSLAB",
+    "rs": "Sandbox | JSLAB",
+    "rsc": "Sandbox | JSLAB"
+  },
+  "514": {
+    "en": "Editor | JSLAB",
+    "rs": "Uređivač | JSLAB",
+    "rsc": "Уређивач | JSLAB"
+  },
+  "515": {
+    "en": "Presentation - JSLAB | PR-DC",
+    "rs": "Prezentacija - JSLAB | PR-DC",
+    "rsc": "Презентација - JSLAB | PR-DC"
+  },
+  "516": {
+    "en": "Presentation editor - JSLAB | PR-DC",
+    "rs": "Uređivač prezentacije - JSLAB | PR-DC",
+    "rsc": "Уређивач презентације - JSLAB | PR-DC"
+  },
+  "517": {
+    "en": "Serial Terminal - JSLAB | PR-DC",
+    "rs": "Serijski terminal - JSLAB | PR-DC",
+    "rsc": "Серијски терминал - JSLAB | PR-DC"
+  },
+  "518": {
+    "en": "Editor - JSLAB | PR-DC",
+    "rs": "Uređivač - JSLAB | PR-DC",
+    "rsc": "Уређивач - JSLAB | PR-DC"
+  },
+  "519": {
+    "en": "JSLAB | PR-DC",
+    "rs": "JSLAB | PR-DC",
+    "rsc": "JSLAB | PR-DC"
+  },
+  "520": {
+    "en": "Serial Terminal",
+    "rs": "Serijski terminal",
+    "rsc": "Серијски терминал"
+  },
+  "521": {
+    "en": "Window - JSLAB | PR-DC",
+    "rs": "Prozor - JSLAB | PR-DC",
+    "rsc": "Прозор - JSLAB | PR-DC"
+  },
+  "522": {
+    "en": "Figure - JSLAB | PR-DC",
+    "rs": "Figura - JSLAB | PR-DC",
+    "rsc": "Фигура - JSLAB | PR-DC"
+  },
+  "523": {
+    "en": "Leaflet Plot - JSLAB | PR-DC",
+    "rs": "Leaflet graf - JSLAB | PR-DC",
+    "rsc": "Leaflet граф - JSLAB | PR-DC"
+  },
+  "524": {
+    "en": "Plotlyjs Plot - JSLAB | PR-DC",
+    "rs": "Plotlyjs graf - JSLAB | PR-DC",
+    "rsc": "Plotlyjs граф - JSLAB | PR-DC"
+  },
+  "525": {
+    "en": "D3 Canvas - JSLAB | PR-DC",
+    "rs": "D3 platno - JSLAB | PR-DC",
+    "rsc": "D3 платно - JSLAB | PR-DC"
+  },
+  "526": {
+    "en": "THREE - JSLAB | PR-DC",
+    "rs": "THREE - JSLAB | PR-DC",
+    "rsc": "THREE - JSLAB | PR-DC"
+  },
+  "527": {
+    "en": "URL - JSLAB | PR-DC",
+    "rs": "URL - JSLAB | PR-DC",
+    "rsc": "URL - JSLAB | PR-DC"
+  },
+  "528": {
+    "en": "Graph - JSLAB | PR-DC",
+    "rs": "Graf - JSLAB | PR-DC",
+    "rsc": "Граф - JSLAB | PR-DC"
+  },
+  "529": {
+    "en": "Cesium Plot - JSLAB | PR-DC",
+    "rs": "Cesium graf - JSLAB | PR-DC",
+    "rsc": "Cesium граф - JSLAB | PR-DC"
+  },
+  "530": {
+    "en": "Webcam",
+    "rs": "Veb kamera",
+    "rsc": "Веб камера"
+  },
+  "531": {
+    "en": "Audio Waveform",
+    "rs": "Audio talasni oblik",
+    "rsc": "Аудио таласни облик"
+  },
+  "532": {
+    "en": "Beam Diagrams",
+    "rs": "Dijagrami grede",
+    "rsc": "Дијаграми греде"
+  },
+  "533": {
+    "en": "Video call",
+    "rs": "Video poziv",
+    "rsc": "Видео позив"
+  },
+  "534": {
+    "en": "JSLAB / DOCUMENTATION",
+    "rs": "JSLAB / DOKUMENTACIJA",
+    "rsc": "JSLAB / ДОКУМЕНТАЦИЈА"
+  },
+  "535": {
+    "en": "JSLAB Discourse",
+    "rs": "JSLAB diskusija",
+    "rsc": "JSLAB дискусија"
+  },
+  "536": {
+    "en": "20",
+    "rs": "20",
+    "rsc": "20"
   }
-} 
+}
+

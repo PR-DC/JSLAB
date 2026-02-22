@@ -7,13 +7,13 @@
  */
 "use strict";
 
-global.fs = require('fs');
-global.path = require('path');
-global.app_path = process.argv.find(e => e.startsWith('--app-path=')).split('=')[1].replace(/\\js\\?$/, '');
+const worker_scope = globalThis;
+worker_scope.fs = require('fs');
+worker_scope.path = require('path');
 
 // Global variables
-global.win = self;
-global.worker_module;
+worker_scope.win = self;
+worker_scope.worker_module = undefined;
 
 /**
  * Handle messages
@@ -21,8 +21,8 @@ global.worker_module;
 self.addEventListener("message", function(e) {
   if(e.data.type == 'configureWorker') {
     var { PRDC_WORKER } = require(e.data.module_path);
-    global.worker_module = new PRDC_WORKER();
-  } else if(global.worker_module && e.data.hasOwnProperty('method')) {
-    global.worker_module[e.data.method](e.data);
+    worker_scope.worker_module = new PRDC_WORKER();
+  } else if(worker_scope.worker_module && e.data.hasOwnProperty('method')) {
+    worker_scope.worker_module[e.data.method](e.data);
   }
 });

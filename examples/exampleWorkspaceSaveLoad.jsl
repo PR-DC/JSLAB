@@ -1,0 +1,91 @@
+/**
+ * @file Example for workspace and object save/load
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+close('all'); clear; clc; tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var class_file = pathJoin(jsl.app_path, 'examples', 'resources', 'workspaceSaveLoadClass.jsl');
+
+if(!checkFile(class_file)) {
+  error('Class definition file not found. Expected: resources/workspaceSaveLoadClass.jsl');
+  endPoint;
+}
+
+var out_dir = pathJoin(jsl.app_path, 'examples', 'out');
+makeDirectory(out_dir);
+
+var workspace_file = pathJoin(out_dir, 'workspace-save-load-example.json');
+var object_file = pathJoin(out_dir, 'workspace-save-load-object.json');
+
+disp('Class file: ' + class_file);
+disp('Workspace file: ' + workspace_file);
+disp('Object file: ' + object_file);
+
+// 1) Load custom class definition script.
+await run(class_file);
+if(typeof WorkspaceSaveLoadPoint !== 'function') {
+  error('WorkspaceSaveLoadPoint class not loaded from: ' + class_file);
+  endPoint;
+}
+var PointClass = WorkspaceSaveLoadPoint;
+
+// 2) Create workspace variables (custom class + built-in matrix + cycle).
+var pA = new PointClass('A', vec.new(1, 2, 3)).addTag('seed');
+var pB = new PointClass('B', vec.new(4, 5, 6)).addTag('peer');
+pA.peer = pB;
+pB.peer = pA;
+var K = mat.new([[10, 2], [3, 8]]);
+var state = {
+  created: new Date().toISOString(),
+  note: 'cycle + custom class + matrix'
+};
+
+// 3) Save selected workspace variables.
+save(workspace_file, 'pA', 'pB', 'K', 'state');
+disp('Workspace saved.');
+
+// 4) Simulate a fresh session by clearing variables and class constructor.
+pA = undefined;
+pB = undefined;
+K = undefined;
+state = undefined;
+try {
+  WorkspaceSaveLoadPoint = undefined;
+} catch {}
+
+// 5) Load workspace back. Custom class should be auto-loaded from saved class path.
+await load(workspace_file);
+
+disp('After workspace load:');
+disp('  pA class: ' + pA.constructor.name);
+disp('  pA.norm(): ' + String(pA.norm()));
+disp('  cycle restored: ' + String(pA.peer.peer === pA));
+disp('  K class: ' + K.constructor.name);
+disp('  K size: [' + String(K.rows) + ' x ' + String(K.cols) + ']');
+
+// 6) Save and restore a single object payload.
+var payload = saveObject(pA, { save_file_path: object_file });
+writeFile(object_file, JSON.stringify(payload, null, 2));
+
+pA = undefined;
+try {
+  WorkspaceSaveLoadPoint = undefined;
+} catch {}
+
+var payload_in = JSON.parse(readFile(object_file, 'utf8'));
+var restored_object = await loadObject(payload_in, { save_file_path: object_file });
+
+disp('After single object load:');
+disp('  restored class: ' + restored_object.constructor.name);
+disp('  restored norm(): ' + String(restored_object.norm()));
+disp('  restored tags:');
+disp(restored_object.tags);
+
+// - Kraj proračuna
+disp(' Program je uspešno izvršen... ');
+disp(' Potrebno vreme: ' + num2str(toc(), 2) + ' sekundi');
+disp(' -------------------- ');

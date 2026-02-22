@@ -34,17 +34,22 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
    * @returns {Promise<void>}
    */
   async createWindow() {
-    var wid = this.jsl.windows.openWindow('cesium.html');
+    var wid = this.jsl.inter.windows.openWindow('cesium.html');
     this.wid = wid;
-    this.win = this.jsl.windows.open_windows[wid];
-    await this.jsl.windows.open_windows[wid].ready;
-    var context = this.jsl.windows.open_windows[wid].context;
+    this.win = this.jsl.inter.windows.open_windows[wid];
+    await this.jsl.inter.windows.open_windows[wid].ready;
+    var context = this.jsl.inter.windows.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
+      if(this.jsl.inter.basic.checkStopLoop()) {
+        return false;
+      }
       if(typeof context.Cesium != 'undefined') {
         context.imports_ready = true;
       }
-      await this.jsl.non_blocking.waitMSeconds(1);
+      if(!context.imports_ready) {
+        await this.jsl.inter.non_blocking.waitMSeconds(1);
+      }
     }
     context.map_3d_cont = context.document.getElementById('map-3d-cont');
     context.map_3d_cont.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
@@ -114,7 +119,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
    * @param {Object} entity - The entity to fly to.
    */
   flyTo(entity) {
-    if(hasKey(entity, 'entity')) {
+    if(this.jsl.inter.format.hasKey(entity, 'entity')) {
       this.viewer.flyTo(entity.entity);
     }
   }

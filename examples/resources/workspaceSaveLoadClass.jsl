@@ -1,0 +1,28 @@
+/**
+ * @file Custom class definition for workspace save/load example
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+
+class WorkspaceSaveLoadPoint {
+  constructor(name, position) {
+    this.name = name;
+    this.position = position;
+    this.tags = [];
+  }
+  
+  addTag(tag) {
+    this.tags.push(tag);
+    return this;
+  }
+  
+  norm() {
+    return this.position.norm();
+  }
+  
+  toString() {
+    return this.name + ' -> ' + this.position.toString();
+  }
+}

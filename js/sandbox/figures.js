@@ -22,9 +22,9 @@ class PRDC_JSLAB_LIB_FIGURES {
     this._fonts = [];
     this._fid = 0;
     this._pid = 0;
-    this._html_figure = this.jsl.env.readFileSync(app_path + '/html/html_figure.html').toString();
-    this._i_html_figure = this.jsl.env.readFileSync(app_path + '/html/i_html_figure.html').toString();
-    this._io_html_figure = this.jsl.env.readFileSync(app_path + '/html/io_html_figure.html').toString();
+    this._html_figure = this.jsl.inter.env.readFileSync(this.jsl.app_path + '/html/html_figure.html').toString();
+    this._i_html_figure = this.jsl.inter.env.readFileSync(this.jsl.app_path + '/html/i_html_figure.html').toString();
+    this._io_html_figure = this.jsl.inter.env.readFileSync(this.jsl.app_path + '/html/io_html_figure.html').toString();
 
     /**
      * Array of open figures.
@@ -295,12 +295,13 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   close(id, type = 'figure') {
     if(id == "all") {
-      this.jsl.env.closeWindow(id);
+      this._fid = 0;
+      this.jsl.inter.env.closeWindow(id);
     } else {
       if(type == 'window') {
-        this.jsl.env.closeWindow(id);
+        this.jsl.inter.env.closeWindow(id);
       } else if(type == 'figure') {
-        this.jsl.env.closeFigure(id);
+        this.jsl.inter.env.closeFigure(id);
       } 
     }
     this.jsl.no_ans = true;
@@ -313,9 +314,9 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   async saveFigureDialog(fid) {
     let options = {
-     title: language.currentString(143),
+     title: this.jsl.inter.lang.currentString(143),
      defaultPath: fid + '.svg',
-     buttonLabel: language.currentString(143),
+     buttonLabel: this.jsl.inter.lang.currentString(143),
      filters :[
       {name: 'svg', extensions: ['svg']},
       {name: 'pdf', extensions: ['pdf']},
@@ -328,7 +329,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       {name: 'interactive offline html', extensions: ['io.html']}
      ]
     };
-    var figure_path = this.jsl.env.showSaveDialogSync(options);
+    var figure_path = this.jsl.inter.env.showSaveDialogSync(options);
     if(figure_path) {
       await this.saveFigure(fid, figure_path);
     }
@@ -354,7 +355,7 @@ class PRDC_JSLAB_LIB_FIGURES {
           var html = this._io_html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
           data = html.replace('%figure_data%', data);
         }
-        this.jsl.env.writeFileSync(figure_path, data);
+        this.jsl.inter.env.writeFileSync(figure_path, data);
         return;
       } else if(ext == 'jpg') {
         ext = 'jpeg';
@@ -385,19 +386,19 @@ class PRDC_JSLAB_LIB_FIGURES {
       if(pdf_flag) {
         var pdf_data = await this._svg2pdf(fid, data, size);
         try {
-          this.jsl.env.writeFileSync(figure_path, pdf_data);
+          this.jsl.inter.env.writeFileSync(figure_path, pdf_data);
         } catch(err) {
-          this.jsl.env.error('@saveFigure: '+err.stack);
+          this.jsl.inter.env.error('@saveFigure: '+err.stack);
         }
       } else {
         try {
-          this.jsl.env.writeFileSync(figure_path, data);
+          this.jsl.inter.env.writeFileSync(figure_path, data);
         } catch(err) {
-          this.jsl.env.error('@saveFigure: '+err.stack);
+          this.jsl.inter.env.error('@saveFigure: '+err.stack);
         }
       }
     } else {
-      this.jsl.env.error('@saveFigure: '+language.string(124));
+      this.jsl.inter.env.error('@saveFigure: '+this.jsl.inter.lang.string(124));
     }
   }
   
@@ -472,7 +473,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-
+  
   /**
    * Sets the ylim of the active figure.
    * @param {String} lim - y limits.
@@ -497,6 +498,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.ignore_output = true;
   }
 
+  
   /**
    * Adjusts the view based on azimuth and elevation angles.
    * @param {number} azimuth - The azimuth angle.
@@ -580,7 +582,7 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   updatePlot(traces, N) {
     if(this.active_figure >= 0 && this.open_figures[this.active_figure].plot) {
-      this.open_figures[this.active_figure].plot.update(data);
+      this.open_figures[this.active_figure].plot.update(traces);
     }
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
@@ -630,22 +632,22 @@ class PRDC_JSLAB_LIB_FIGURES {
   loadJsonFigure(fid, file_path) {
     if(!file_path) {
       var options = {
-        title: language.currentString(247),
-        buttonLabel: language.currentString(231)
+        title: this.jsl.inter.lang.currentString(247),
+        buttonLabel: this.jsl.inter.lang.currentString(231)
       };
-      file_path = this.jsl.env.showOpenDialogSync(options);
+      file_path = this.jsl.inter.env.showOpenDialogSync(options);
       if(file_path === undefined) {
-        this.jsl.env.error('loadJsonFigure: '+language.string(132)+'.');
+        this.jsl.inter.env.error('loadJsonFigure: '+this.jsl.inter.lang.string(132)+'.');
         return false;
       } else {
         file_path = file_path[0];
       }
     }    
-    if(!this.jsl.file_system.existFile(file_path)) {
-      this.jsl.env.error('@loadJsonFigure: '+language.string(248));
+    if(!this.jsl.inter.file_system.existFile(file_path)) {
+      this.jsl.inter.env.error('@loadJsonFigure: '+this.jsl.inter.lang.string(248));
       return false;
     }
-    var data = JSON.parse(this.jsl.env.readFileSync(file_path).toString());
+    var data = JSON.parse(this.jsl.inter.env.readFileSync(file_path).toString());
 
     this._pid += 1;
 
@@ -705,9 +707,9 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   _getFontData(font_path) {
     try {
-      return this.jsl.env.readFileSync(font_path);
+      return this.jsl.inter.env.readFileSync(font_path);
     } catch(err) {
-      this.jsl.env.error('@getFontData: '+err.stack);
+      this.jsl.inter.env.error('@getFontData: '+err.stack);
     }
     return false;
   }
@@ -717,10 +719,10 @@ class PRDC_JSLAB_LIB_FIGURES {
   _registerFonts() {
     if(!this._fonts_registred) {
       this._fonts.push(this._getFontData(
-        app_path+'/font/roboto-v20-latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.ttf'
+        this.jsl.app_path + '/font/roboto-v20-latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.ttf'
       ));
       this._fonts.push(this._getFontData(
-        app_path+'/font/latinmodern-math.otf'
+        this.jsl.app_path + '/font/latinmodern-math.otf'
       ));
       this._fonts_registred = true;
     }
@@ -745,12 +747,12 @@ class PRDC_JSLAB_LIB_FIGURES {
     }
     
     return new Promise(function(resolve) {
-      var doc = new obj.jsl.env.PDFDocument({
+      var doc = new obj.jsl.inter.env.PDFDocument({
         size: [width, height]
       });
       doc.registerFont('Roboto', obj._fonts[0]);
       doc.registerFont('LatinModernMath', obj._fonts[1]);
-      obj.jsl.env.SVGtoPDF(doc, data, 0, 0, {
+      obj.jsl.inter.env.SVGtoPDF(doc, data, 0, 0, {
         width: width,
         height: height,
         assumePt: true
@@ -800,9 +802,9 @@ class PRDC_JSLAB_FIGURE {
       obj._readyResolve = resolve;
     });
     
-    this.wid = this.#jsl.windows.openWindow('figure.html');
-    this.#jsl.windows.open_windows[this.wid].onClosed = function() {
-      obj.#jsl.figures._closedFigure(obj.fid);
+    this.wid = this.#jsl.inter.windows.openWindow('figure.html');
+    this.#jsl.inter.windows.open_windows[this.wid].onClosed = function() {
+      obj.#jsl.inter.figures._closedFigure(obj.fid);
     }
   }
   
@@ -811,7 +813,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async init() {
     if(!this.opened) {
-      await this.#jsl.windows.open_windows[this.wid].ready;
+      await this.#jsl.inter.windows.open_windows[this.wid].ready;
       await this._onReady();
       this.opened = true;
     }
@@ -822,7 +824,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async focus() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].focus();
+    return await this.#jsl.inter.windows.open_windows[this.wid].focus();
   }
 
   /**
@@ -833,7 +835,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async setSize(width, height) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].setSize(width, height);
+    return await this.#jsl.inter.windows.open_windows[this.wid].setSize(width, height);
   }
   
   /**
@@ -844,7 +846,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async setPos(left, top) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].setPos(left, top);
+    return await this.#jsl.inter.windows.open_windows[this.wid].setPos(left, top);
   }
   
   /**
@@ -854,7 +856,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async setTitle(title) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].setTitle(title);
+    return await this.#jsl.inter.windows.open_windows[this.wid].setTitle(title);
   }
   
   /**
@@ -863,7 +865,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async getSize() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].getSize();
+    return await this.#jsl.inter.windows.open_windows[this.wid].getSize();
   }
   
   /**
@@ -872,7 +874,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async getPos() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].getPos();
+    return await this.#jsl.inter.windows.open_windows[this.wid].getPos();
   }
 
   /**
@@ -881,7 +883,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async getMediaSourceId() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].getMediaSourceId();
+    return await this.#jsl.inter.windows.open_windows[this.wid].getMediaSourceId();
   }
 
   /**
@@ -891,7 +893,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async startVideoRecording(opts) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].startVideoRecording(opts);
+    return await this.#jsl.inter.windows.open_windows[this.wid].startVideoRecording(opts);
   }
   
   /**
@@ -900,7 +902,7 @@ class PRDC_JSLAB_FIGURE {
    */
   async close() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.windows.open_windows[this.wid].close();
+    return await this.#jsl.inter.windows.open_windows[this.wid].close();
   }
   
   /**
@@ -962,13 +964,13 @@ class PRDC_JSLAB_FIGURE {
   async _onReady() {
     var obj = this;
     this.fig_ready = true;
-    this.win = this.#jsl.windows.open_windows[this.wid];
+    this.win = this.#jsl.inter.windows.open_windows[this.wid];
     this.context = this.win.context;
     
     this.dom = this.context.document;
     
     this.context.addEventListener("resize", function() {
-      if(obj.#jsl.figures.open_figures.hasOwnProperty(obj.fid)) {
+      if(obj.#jsl.inter.figures.open_figures.hasOwnProperty(obj.fid)) {
         obj._onResize();
       }
     });
@@ -1009,78 +1011,78 @@ class PRDC_JSLAB_FIGURE {
     // Menu buttons
     this.dom.getElementById('save-as-menu')
         .addEventListener('click', function() {
-      obj.#jsl.figures.saveFigureDialog(obj.fid);
+      obj.#jsl.inter.figures.saveFigureDialog(obj.fid);
     });
     this.dom.getElementById('zoom-menu')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="dragmode"][data-val="zoom"]');
+      var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="zoom"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('zoom-in-menu')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="zoom"][data-val="in"]');
+      var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="in"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('zoom-out-menu')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="zoom"][data-val="out"]');
+      var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="out"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('pan-menu')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="dragmode"][data-val="pan"]');
+      var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="pan"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('rotate-menu')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="dragmode"][data-val="orbit"]');
+      var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="orbit"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('fit-menu')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="zoom"][data-val="auto"]');
+      var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="auto"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('reset-menu')
         .addEventListener('click', function() {
-      obj.#jsl.ploter.updatePlotLayout(obj.plot.fid);
+      obj.#jsl.inter.plotter.updatePlotLayout(obj.plot.fid);
     });
     this.dom.getElementById('pan-menu-3d')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="scene.dragmode"][data-val="pan"]');
+      var btn = obj.dom.querySelector('button[data-attr="scene.dragmode"][data-val="pan"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('rotate-menu-3d')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="scene.dragmode"][data-val="orbit"]');
+      var btn = obj.dom.querySelector('button[data-attr="scene.dragmode"][data-val="orbit"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('fit-menu-3d')
         .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('a[data-attr="resetDefault"]');
+      var btn = obj.dom.querySelector('button[data-attr="resetDefault"]');
       if(btn) {
         btn.click();
       }
     });
     this.dom.getElementById('reset-menu-3d')
         .addEventListener('click', function() {
-      obj.#jsl.ploter.updatePlotLayout(obj.plot.fid);
+      obj.#jsl.inter.plotter.updatePlotLayout(obj.plot.fid);
     });
     
     this._readyResolve(true);
@@ -1151,7 +1153,7 @@ class PRDC_JSLAB_PLOT {
   legend(state) {
     this.legend_state_val = state;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1162,7 +1164,7 @@ class PRDC_JSLAB_PLOT {
   xlabel(label) {
     this.xlabel_val = label;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
 
@@ -1173,7 +1175,7 @@ class PRDC_JSLAB_PLOT {
   ylabel(label) {
     this.ylabel_val = label;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
 
@@ -1184,7 +1186,7 @@ class PRDC_JSLAB_PLOT {
   zlabel(label) {
     this.zlabel_val = label;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1195,7 +1197,7 @@ class PRDC_JSLAB_PLOT {
   title(label) {
     this.title_val = label;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1207,7 +1209,7 @@ class PRDC_JSLAB_PLOT {
     this.lim_update = true;
     this.xlim_val = lim;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1219,7 +1221,7 @@ class PRDC_JSLAB_PLOT {
     this.lim_update = true;
     this.ylim_val = lim;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1231,7 +1233,7 @@ class PRDC_JSLAB_PLOT {
     this.lim_update = true;
     this.zlim_val = lim;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1243,7 +1245,7 @@ class PRDC_JSLAB_PLOT {
   view(azimuth, elevation) {
     this.view_val = [azimuth, elevation];
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1254,7 +1256,7 @@ class PRDC_JSLAB_PLOT {
   zoom(factor) {
     this.zoom_val = factor;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1265,7 +1267,7 @@ class PRDC_JSLAB_PLOT {
   axis(style) {
     this.axis_style_val = style;
     if(this.plot_ready) {
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
   
@@ -1276,7 +1278,7 @@ class PRDC_JSLAB_PLOT {
   fromJSON(data) {
     this.json_val = data;
     if(this.plot_ready) {
-      this.#jsl.ploter.fromJSON(data);
+      this.#jsl.inter.plotter.fromJSON(data);
     }
   }
   
@@ -1297,7 +1299,7 @@ class PRDC_JSLAB_PLOT {
         size = options.size;
       }
     }
-    await this.#jsl.figures.saveFigure(this.fid, filename+'.'+type, size);
+    await this.#jsl.inter.figures.saveFigure(this.fid, filename+'.'+type, size);
   }
   
   /**
@@ -1306,7 +1308,7 @@ class PRDC_JSLAB_PLOT {
    * @param {number} N - The data length or index for updating the plot.
    */
   update(traces, N) {
-    this.#jsl.ploter.updateData(this.fid, traces, N);
+    this.#jsl.inter.plotter.updateData(this.fid, traces, N);
   }
 
   /**
@@ -1314,7 +1316,7 @@ class PRDC_JSLAB_PLOT {
    * @param {Object|Object[]} data - Trace update object(s) addressed by `id`.
    */
   updateById(data) {
-    this.#jsl.ploter.updateDataById(this.fid, data);
+    this.#jsl.inter.plotter.updateDataById(this.fid, data);
   }
   
   /**
@@ -1322,7 +1324,7 @@ class PRDC_JSLAB_PLOT {
    */
   remove() {
     if(this.plot_ready) {
-      this.#jsl.ploter.remove(this.fid);
+      this.#jsl.inter.plotter.remove(this.fid);
     }
   }
   
@@ -1331,13 +1333,13 @@ class PRDC_JSLAB_PLOT {
    */
   async _onFigureReady() {
     if(this.json_val) {
-      await this.#jsl.ploter.fromJSON(this.fid, this.json_val);
+      await this.#jsl.inter.plotter.fromJSON(this.fid, this.json_val);
       this.plot_ready = true;
       this._readyResolve(true);
     } else {
-      await this.#jsl.ploter.plot(this.fid);
+      await this.#jsl.inter.plotter.plot(this.fid);
       this.plot_ready = true;
-      this.#jsl.ploter.updatePlotLayout(this.fid);
+      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
       this._readyResolve(true);
     }
   }
@@ -1346,6 +1348,6 @@ class PRDC_JSLAB_PLOT {
    * Handles plot resize events, updating the plot layout to accommodate new dimensions.
    */
   _onResize() {
-    this.#jsl.ploter.onResize(this.fid);
+    this.#jsl.inter.plotter.onResize(this.fid);
   }
 }

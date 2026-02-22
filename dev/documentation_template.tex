@@ -262,6 +262,16 @@
 
 Welcome to the \textbf{JSLAB} Documentation! This guide provides comprehensive information for users and contributors, detailing the features, usage, and contribution guidelines to ensure a consistent and high-quality codebase.
 
+\textbf{Quick links:} 
+\begin{itemize}
+  \item \href{https://pr-dc.com/jslab/}{Website - pr-dc.com/jslab/}
+  \item \href{https://discourse.jsl.pr-dc.com/}{Discourse - discourse.jsl.pr-dc.com/}
+  \item \href{https://pr-dc.com/jslab/doc/}{Documentation - pr-dc.com/jslab/doc/}
+  \item \href{https://github.com/PR-DC/JSLAB/}{Source code - github.com/PR-DC/JSLAB/}
+  \item \href{https://github.com/PR-DC/JSLAB/releases}{Releases - github.com/PR-DC/JSLAB/releases}
+  \item \href{https://github.com/PR-DC/JSLAB/tree/master/examples}{Examples - github.com/PR-DC/JSLAB/tree/master/examples}
+\end{itemize}
+
 \begin{figure}[H]
     \centering
     \centerline{\jslabLogo[0.3]{0.2cm}}
@@ -453,7 +463,7 @@ You can install \textbf{JSLAB} by either downloading the latest stable release f
   
   \item Download the appropriate installer and install program.
 
-  \item Try examples from:
+  \item Try the examples from:
 
   \url{https://github.com/PR-DC/JSLAB/tree/master/examples}
 
@@ -637,6 +647,8 @@ The \textbf{Performance} tab in the developer tools is particularly useful for o
 % --------------------
 \section{Examples}
 
+For latest examples, visit our \textbf{Discourse} at \url{https://discourse.jsl.pr-dc.com}.
+
 % ----------
 \subsection{Animated 2D Plot}
 \label{sec:animated-2d-plot}
@@ -780,7 +792,7 @@ Parallel execution is critical for handling computationally intensive tasks, as 
 // JavaScript Example
 var computeSquare = (i) => i * i;
 
-// Run parallel exectuion 
+// Run parallel execution 
 var results = await parallel.parfor(0, 20, 1, 
   parallel.getProcessorsNum(), {}, undefined, computeSquare);
 disp(results);
@@ -905,7 +917,7 @@ var data = {
   'Coordinates': lines,
   'Diameters': d
 };
-beamsFile = pwd + 'out/beams.json';
+var beamsFile = pwd + 'out/beams.json';
 writeFile(beamsFile, stringify(data));
 
 // Run FreeCADLink 
@@ -1008,7 +1020,7 @@ Your feedback is invaluable in improving the \textbf{JSLAB} application. Whether
 
 \begin{itemize}
     \item \textbf{GitHub Issues:} Report bugs or suggest features by opening an issue in the GitHub repository.
-    
+    \item \textbf{Discourse:} Write a New Topic at \url{https://discourse.jsl.pr-dc.com/}
     \item \textbf{Email}: Contact us directly at \href{mailto:info@pr-dc.com}{info@pr-dc.com} or main author at \href{mailto:mpetrasinovic@pr-dc.com}{mpetrasinovic@pr-dc.com}.
 \end{itemize}
 

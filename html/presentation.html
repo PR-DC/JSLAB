@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Presentation - JSLAB | PR-DC</title>
+  <title str="515">Presentation - JSLAB | PR-DC</title>
   <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
   
 <!-- CSS files begin -->
@@ -17,20 +17,22 @@
 <div id="slides-cont">
 <!-- Slides begin -->
   <slide>
-    Slide <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
+    <str sid="319">Slide</str> <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
   </slide>
   
   <slide>
-    Slide <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
+    <str sid="319">Slide</str> <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
   </slide>
   
   <slide>
-    Slide <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
+    <str sid="319">Slide</str> <span class="slide-number">${presentation.slideNumber()} / ${presentation.slideCount()}</span>
   </slide>
 <!-- Slides end -->
 </div>
   
 <!-- JS files begin -->
+  <script type="text/javascript" src="./res/internal/globals.js"></script>
+
   %presentation_scripts%
   <script type="text/javascript" src="./res/internal/presentation.js"></script>
   <script type="text/javascript" src="./main.js"></script>

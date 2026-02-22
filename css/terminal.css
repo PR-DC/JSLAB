@@ -201,6 +201,142 @@
   filter: none;
 }
 
+#command-window-messages .jslab-inspector {
+  white-space: normal;
+  border: 1px solid #d6dce3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+#command-window-messages .jslab-inspector-header {
+  padding: 8px 10px;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e5ebf0;
+}
+
+#command-window-messages .jslab-inspector-title {
+  color: #243447;
+  font-weight: 500;
+}
+
+#command-window-messages .jslab-inspector-title code {
+  font-family: 'RobotoMono';
+}
+
+#command-window-messages .jslab-inspector-meta {
+  margin-top: 4px;
+  color: #5f6f82;
+  font-size: 12px;
+}
+
+#command-window-messages .jslab-inspector-toolbar {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5ebf0;
+  background: #fbfcfe;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+#command-window-messages .jslab-inspector-toolbar .jslab-inspector-action {
+  border: 1px solid #cfd8e3;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #334458;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 2px 8px;
+  margin-right: 0;
+  cursor: pointer;
+}
+
+#command-window-messages .jslab-inspector-toolbar .jslab-inspector-action:hover {
+  background: #f1f5fa;
+}
+
+#command-window-messages .jslab-inspector-toolbar .jslab-inspector-hint {
+  color: #6f8095;
+  font-size: 12px;
+}
+
+#command-window-messages .jslab-inspector-table-wrap {
+  overflow: auto;
+  max-height: 320px;
+}
+
+#command-window-messages .jslab-inspector-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+#command-window-messages .jslab-inspector-table th,
+#command-window-messages .jslab-inspector-table td {
+  border-right: 1px solid #edf1f5;
+  border-bottom: 1px solid #edf1f5;
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 18px;
+  color: #334458;
+}
+
+#command-window-messages .jslab-inspector-table th:last-child,
+#command-window-messages .jslab-inspector-table td:last-child {
+  border-right: none;
+}
+
+#command-window-messages .jslab-inspector-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f9fbfd;
+  color: #42576f;
+  font-weight: 500;
+}
+
+#command-window-messages .jslab-inspector-table th .jslab-inspector-sort {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-weight: 500;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+#command-window-messages .jslab-inspector-table td.jslab-inspector-cell-editable {
+  cursor: pointer;
+  background: #fafcff;
+}
+
+#command-window-messages .jslab-inspector-table td.jslab-inspector-cell-editable:hover {
+  background: #eef5ff;
+}
+
+#command-window-messages .jslab-inspector-empty,
+#command-window-messages .jslab-inspector-scalar {
+  padding: 10px;
+  color: #334458;
+  font-size: 13px;
+  white-space: normal;
+}
+
+#command-window-messages .jslab-inspector-note {
+  border-top: 1px solid #e5ebf0;
+  padding: 8px 10px;
+  color: #62778f;
+  font-size: 12px;
+}
+
 #command-window-input-submit-cont {
   position: absolute;
   right: 10px;

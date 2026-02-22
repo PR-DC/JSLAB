@@ -12,7 +12,7 @@ var part = 'test'; // naziv modela
 var exe = 'C:/Program Files/FreeCAD 0.21/bin/FreeCAD.exe'; // putanja do programa
 var port = 11077; // port TCP servera
 var host = 'localhost'; // adresa TCP servera
-var model = pwd + '/resources/' + part + '.FCStd';
+var model = jsl.app_path+'/examples/resources/' + part + '.FCStd';
 var timeout = 300000; // [ms] timeout
 var startup_timeout = 120000; // [ms] start up timeout
 
@@ -42,7 +42,7 @@ for(var i = 0; i < 4; i++) {
 var d = createFilledArray(lines.length, 1);
 
 // Generate JSON
-var nodesFile = pwd + 'out/nodes.json';
+var nodesFile = jsl.app_path+'/examples/out/nodes.json';
 var data = {
   'Coordinates': nodes,
   'Diameters': D
@@ -52,7 +52,7 @@ var data = {
   'Coordinates': lines,
   'Diameters': d
 };
-beamsFile = pwd + 'out/beams.json';
+beamsFile = jsl.app_path+'/examples/out/beams.json';
 writeFile(beamsFile, stringify(data));
 
 // Run FreeCADLink 

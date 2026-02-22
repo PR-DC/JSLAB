@@ -39,7 +39,7 @@ class PRDC_JSLAB_LIB_DEVICE {
    * @returns {boolean} True if the driver is found, false otherwise.
    */
   checkDriver(driver_name){
-    var val = this.jsl.env.execSync('driverquery');
+    var val = this.jsl.inter.env.execSync('driverquery');
     if(val.state == 'success') {
       var output = val.data.split(/[\r\n]+/);
       var output_lc = output.map(function(x) { return x.toLowerCase(); });
@@ -58,7 +58,7 @@ class PRDC_JSLAB_LIB_DEVICE {
       }
       if(data_out.every(function(x) { return x.length; })) {
         if(this.jsl.debug) {
-          this.jsl.env.disp('@checkDriver: ' + data_out);
+          this.jsl.inter.env.disp('@checkDriver: ' + data_out);
         }
         return true; 
       } else {
@@ -66,7 +66,7 @@ class PRDC_JSLAB_LIB_DEVICE {
       }
     } else {
       if(this.jsl.debug) {
-        this.jsl.env.error('@checkDriver: ' + val.data);
+        this.jsl.inter.env.error('@checkDriver: ' + val.data);
       }
       return false; 
     }
@@ -102,10 +102,10 @@ class PRDC_JSLAB_LIB_DEVICE {
    */
   checkArduino() {
     try {
-      var output = this.jsl.env.execSync('arduino-cli -h', { stdio: 'pipe' });
+      var output = this.jsl.inter.env.execSync('arduino-cli -h', { stdio: 'pipe' });
       return true;
     } catch(err) {
-      this.jsl.env.error('@checkArduino: '+language.string(224));
+      this.jsl.inter.env.error('@checkArduino: '+this.jsl.inter.lang.string(224));
     }
   }
   
@@ -115,27 +115,27 @@ class PRDC_JSLAB_LIB_DEVICE {
    * @returns {Object|boolean} Compilation result or false on error.
    */
   compileArduino(dir) {
-    var config_file = this.jsl.env.pathJoin(dir, 'config.json');
-    if(!this.jsl.env.checkFile(config_file)) {
-      this.jsl.env.error('@compileArduino: '+language.string(225));
+    var config_file = this.jsl.inter.env.pathJoin(dir, 'config.json');
+    if(!this.jsl.inter.env.checkFile(config_file)) {
+      this.jsl.inter.env.error('@compileArduino: '+this.jsl.inter.lang.string(225));
       return false;
     }
     
     this.checkArduino();
     try {
-      var config = JSON.parse(this.jsl.env.readFileSync(config_file))
+      var arduino_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file))
       var build_property_str = '';
-      if(config.build_property) {
-        build_property_str = `--build-property "${config.build_property}"`;
+      if(arduino_config.build_property) {
+        build_property_str = `--build-property "${arduino_config.build_property}"`;
       }
-      var output = this.jsl.env.spawnSync(`arduino-cli compile --json -b "${config.b}" ${build_property_str} "${dir}"`, {
+      var output = this.jsl.inter.env.spawnSync(`arduino-cli compile --json -b "${arduino_config.b}" ${build_property_str} "${dir}"`, {
         shell: true,
         encoding: 'utf8',
         stdio: 'pipe'
       });
-      return this.parseArduinoOtuput(output);
+      return this.parseArduinoOutput(output);
     } catch(err) {
-      this.jsl.env.error('@compileArduino: Error: '+err.toString());
+      this.jsl.inter.env.error('@compileArduino: ' + this.jsl.inter.lang.string(353) + ' ' + err.toString());
     }
   }
  
@@ -146,33 +146,33 @@ class PRDC_JSLAB_LIB_DEVICE {
    * @returns {Object|boolean} Upload result or false on error.
    */
   uploadArduino(dir, port) {
-    var config_file = this.jsl.env.pathJoin(dir, 'config.json');
-    if(!this.jsl.env.checkFile(config_file)) {
-      this.jsl.env.error('@uploadArduino: '+language.string(225));
+    var config_file = this.jsl.inter.env.pathJoin(dir, 'config.json');
+    if(!this.jsl.inter.env.checkFile(config_file)) {
+      this.jsl.inter.env.error('@uploadArduino: '+this.jsl.inter.lang.string(225));
       return false;
     }
     
     this.checkArduino();
     try {
-      var config = JSON.parse(this.jsl.env.readFileSync(config_file));
+      var arduino_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file));
       var build_property_str = '';
-      if(config.build_property) {
-        build_property_str = `--build-property "${config.build_property}"`;
+      if(arduino_config.build_property) {
+        build_property_str = `--build-property "${arduino_config.build_property}"`;
       }
       var port_str = '';
       if(port) {
         port_str = `-p "${port}"`;
-      } else if(config.port) {
-        port_str = `-p "${config.port}"`;
+      } else if(arduino_config.port) {
+        port_str = `-p "${arduino_config.port}"`;
       }
-      var output = this.jsl.env.spawnSync(`arduino-cli compile --json -u -t -b "${config.b}" ${build_property_str} ${port_str} "${dir}"`, {
+      var output = this.jsl.inter.env.spawnSync(`arduino-cli compile --json -u -t -b "${arduino_config.b}" ${build_property_str} ${port_str} "${dir}"`, {
         shell: true,
         encoding: 'utf8',
         stdio: 'pipe'
       });
-      return this.parseArduinoOtuput(output);
+      return this.parseArduinoOutput(output);
     } catch(err) {
-      this.jsl.env.error('@uploadArduino: Error: '+err.toString());
+      this.jsl.inter.env.error('@uploadArduino: ' + this.jsl.inter.lang.string(354) + ' ' + err.toString());
     }
   }
   
@@ -181,7 +181,7 @@ class PRDC_JSLAB_LIB_DEVICE {
    * @param {object} output
    * @returns {object}
    */
-  parseArduinoOtuput(output) {
+  parseArduinoOutput(output) {
     var data_string;
     if(output.stdout) {
       data_string = output.stdout;
@@ -191,20 +191,20 @@ class PRDC_JSLAB_LIB_DEVICE {
     
     var data = JSON.parse(data_string);
     if(!data.success) {
-      this.jsl.env.warn('@parseArduinoOtuput: Compile failed!');
-      this.jsl.env.disp(`@parseArduinoOtuput: Compiler error:
-${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
+      this.jsl.inter.env.warn('@parseArduinoOutput: ' + this.jsl.inter.lang.string(355));
+      this.jsl.inter.env.disp(`@parseArduinoOutput: Compiler error:
+${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     }
     return data;
   }
-  
+
   /**
    * Retrieves the current state of all connected gamepads.
    * @returns {Object[]} An array of connected gamepad objects.
    */
   getGamepads() {
-    return this.jsl.env.navigator.getGamepads()
-      .filter((g) => !isNull(g))
+    return this.jsl.inter.env.navigator.getGamepads()
+      .filter((g) => !this.jsl.inter.isNull(g))
       .map(g => g.toJSON());
   }
  
@@ -220,9 +220,9 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
       }
       callback(e);
     };
-    this.jsl.env.context.addEventListener("gamepadconnected", listener);
+    this.jsl.inter.env.context.addEventListener("gamepadconnected", listener);
     this.jsl.addForCleanup(this, function() {
-      obj.jsl.env.context.removeEventListener("gamepadconnected", listener);
+      obj.jsl.inter.env.context.removeEventListener("gamepadconnected", listener);
     });
   }
  
@@ -238,9 +238,9 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
       }
       callback(e);
     };
-    this.jsl.env.context.addEventListener("gamepaddisconnected", listener);
+    this.jsl.inter.env.context.addEventListener("gamepaddisconnected", listener);
     this.jsl.addForCleanup(this, function() {
-      obj.jsl.env.context.removeEventListener("gamepaddisconnected", listener);
+      obj.jsl.inter.env.context.removeEventListener("gamepaddisconnected", listener);
     });
   }
  
@@ -259,7 +259,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
    * @returns {Object[]} A promise that resolves to an array of video input devices.
    */
   async getWebcams() {
-    var devices = await this.jsl.env.navigator.mediaDevices.enumerateDevices();
+    var devices = await this.jsl.inter.env.navigator.mediaDevices.enumerateDevices();
     return devices
       .filter(device => device.kind === 'videoinput')
       .map(device => device.toJSON());
@@ -270,7 +270,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
    * @returns {Object[]} A promise that resolves to an array of audio input devices.
    */
   async getMicrophones() {
-    var devices = await this.jsl.env.navigator.mediaDevices.enumerateDevices();
+    var devices = await this.jsl.inter.env.navigator.mediaDevices.enumerateDevices();
     return devices
       .filter(device => device.kind === 'audioinput')
       .map(device => device.toJSON());
@@ -281,7 +281,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
    * @returns {Object[]} A promise that resolves to an array of audio output devices.
    */
   async getAudioOutputs() {
-    var devices = await this.jsl.env.navigator.mediaDevices.enumerateDevices();
+    var devices = await this.jsl.inter.env.navigator.mediaDevices.enumerateDevices();
     return devices
       .filter(device => device.kind === 'audiooutput')
       .map(device => device.toJSON());
@@ -293,8 +293,8 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
    * @returns {Promise<WebcamResult>} An object containing the window instance, video element, and media stream.
    */
   async webcam(device_id) {
-    var win = await openWindowBlank();
-    win.setTitle('Webcam');
+    var win = await this.jsl.inter.windows.openWindowBlank();
+    win.setTitle(this.jsl.inter.lang.currentString(530));
     win.document.body.innerHTML += '<video id="video"></video>';
     var dom = win.document.getElementById('video');
     Object.assign(dom.style, {
@@ -311,10 +311,10 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
         video: { deviceId: { exact: device_id } },
         audio: false
       };
-      var stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+      var stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
     } catch(err) {
       this.jsl._console.log(err, constraints);
-      this.jsl.env.error('@capture: '+language.string(222));
+      this.jsl.inter.env.error('@capture: '+this.jsl.inter.lang.string(222));
     }
     dom.srcObject = stream;
     dom.play();
@@ -342,7 +342,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
    * @returns {DesktopSource[]} An array of desktop sources.
    */
   getDesktopSources() {
-    return this.jsl.env.getDesktopSources();
+    return this.jsl.inter.env.getDesktopSources();
   }
    
   /**
@@ -351,12 +351,12 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
    */
   showDesktopSources() {
     var html = '';
-    var sources = this.jsl.env.getDesktopSources();
-    for(source of sources) {
+    var sources = this.jsl.inter.env.getDesktopSources();
+    for(const source of sources) {
       var { width, height } = source.thumbnail.getSize();
       html += '<div style="padding:10px; margin: 10px; border: #ccc 1px solid; border-radius: 5px;"><div><b>Name:</b> '+source.name+'</div><div><b>Id:</b> '+source.id+'</div><div><b>DisplayId:</b> '+source.display_id+'</div><img style="padding-top: 10px; width:'+width+'px; height:'+height+'px;" src="'+source.thumbnail.toDataURL()+'"></img></div>';
     }
-    this.jsl.env.disp(html);
+    this.jsl.inter.env.disp(html);
   }
   
   /**
@@ -414,16 +414,16 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
     }
 
     // Obtain media stream
-    if(isEmptyString(id)) {
-      this.jsl.env.error('@capture: '+language.string(222));
+    if(this.jsl.inter.isEmptyString(id)) {
+      this.jsl.inter.env.error('@capture: '+this.jsl.inter.lang.string(222));
     }
     
     try {
-      var stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+      var stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
     } catch(err) {
       this.jsl._console.log(err);
       this.jsl._console.log(constraints);
-      this.jsl.env.error('@capture: '+language.string(222));
+      this.jsl.inter.env.error('@capture: '+this.jsl.inter.lang.string(222));
     }
 
     var videoTrack = stream.getVideoTracks()[0];
@@ -433,7 +433,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
     var height = settings.height || 720;
 
     // Initialize OffscreenCanvas with retrieved width and height
-    var offscreenCanvas = new OffscreenCanvas(width, height);
+    var offscreenCanvas = new this.jsl.inter.OffscreenCanvas(width, height);
     var ctx = offscreenCanvas.getContext('2d', {willReadFrequently: true});
 
     /**
@@ -472,7 +472,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
     }
 
     // Initialize MediaStreamTrackProcessor and reader
-    var trackProcessor = new MediaStreamTrackProcessor({ track: videoTrack });
+    var trackProcessor = new this.jsl.inter.MediaStreamTrackProcessor({ track: videoTrack });
     var reader = trackProcessor.readable.getReader();
 
     this.jsl.addForCleanup(this, stop);
@@ -501,7 +501,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
         }
       };
       try {
-        const stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+        const stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
         stream.getTracks().forEach(track => track.stop());
         resolutions.push(resolution);
       } catch(err) {
@@ -520,10 +520,13 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
   async showAudioWaveform(device_id, fftSize =  2048) {
     var obj = this;
 
-    var win = await openCanvas();
-    win.setTitle('Audio Waveform');
+    var win = await this.jsl.inter.windows.openCanvas();
+    if(!win) {
+      return false;
+    }
+    win.setTitle(this.jsl.inter.lang.currentString(531));
     var draw_loop;
-    var audio_ctx = new AudioContext();
+    var audio_ctx = new this.jsl.inter.AudioContext();
     var analyser = audio_ctx.createAnalyser();
     analyser.fftSize = fftSize;
     var buffer_length = analyser.frequencyBinCount;
@@ -548,7 +551,7 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
         deviceId: { exact: device_id }
       }
     };
-    var stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+    var stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
     var source = audio_ctx.createMediaStreamSource(stream);
     source.connect(analyser);
     
@@ -640,11 +643,11 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
         };
       }
       try {
-        stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+        stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
       } catch(err) {
         this.jsl._console.log(err);
         this.jsl._console.log(constraints);
-        this.jsl.env.error('@startVideoRecording: '+language.string(222));
+        this.jsl.inter.env.error('@startVideoRecording: '+this.jsl.inter.lang.string(222));
       }
     }
 
@@ -665,15 +668,15 @@ ${this.jsl.format.replaceEditorLinks(data.compiler_err)}`);
       var buffer = Buffer.from(await blob.arrayBuffer());
 
       var options = {
-       title: language.currentString(236),
-       buttonLabel: language.currentString(236),
+       title: obj.jsl.inter.lang.currentString(236),
+       buttonLabel: obj.jsl.inter.lang.currentString(236),
        filters :[
         {name: ext, extensions: [ext]},
        ]
       };
-      var video_path = obj.jsl.env.showSaveDialogSync(options);
+      var video_path = obj.jsl.inter.env.showSaveDialogSync(options);
       if(video_path) {
-        obj.jsl.env.writeFileSync(video_path, buffer);
+        obj.jsl.inter.env.writeFileSync(video_path, buffer);
       }
     }
     

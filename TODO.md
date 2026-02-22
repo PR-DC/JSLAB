@@ -16,7 +16,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 ## 📝 General TODOs
 
-- Ensure file opening happens in only one instance of the program.
+- ~~Ensure file opening happens in only one instance of the program~~
 
 - Assistant - Create a ChatGPT API-based chatbot to assist with programming by answering questions about which function to use for specific tasks (Custom GPT).
 
@@ -24,15 +24,15 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - Create additional examples, such as graphics, to cover documentation gaps.
 
-- Display vectors horizontally up to a certain length, possibly as an HTML table.
+- ~~Display vectors horizontally up to a certain length, possibly as an HTML table.~~
 
 - Create a 3D graph using Three.js SVG renderer.
 
-- Implement search history in the editor.
+- ~~Implement search history in the editor.~~
 
-- Implement a console buffer similar to chat applications (loads more messages when scrolling up).
+- ~~Implement a console buffer similar to chat applications (loads more messages when scrolling up).~~
 
-- Add symbol input support in the editor (virtual keyboard).
+- ~~Add symbol input support in the editor (virtual keyboard).~~
 
 - Expand values from objects to view further details (possibly retain everything in the main window until the command window is reset).
 
@@ -40,11 +40,11 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - ~~Utilize Arduino CLI.~~
 
-- Enable saving and loading of the workspace; investigate how MATLAB's save/load functions work. For custom classes, save the definition location and load it if possible (try using `flatted`). For built-in classes like matrices, save only the name. Consider a `saveObject` function to store the class type and last known path to load with `loadClass` or inform the user if unknown.
+- ~~Enable saving and loading of the workspace; investigate how MATLAB's save/load functions work. For custom classes, save the definition location and load it if possible (try using `flatted`). For built-in classes like matrices, save only the name. Consider a `saveObject` function to store the class type and last known path to load with `loadClass` or inform the user if unknown.~~
 
-- Display help on hover for recognized functions in the editor.
+- ~~Display help on hover for recognized functions in the editor.~~
 
-- Enable saving and loading of objects using [class-transformer](https://github.com/typestack/class-transformer).
+- ~~Enable saving and loading of objects using [class-transformer](https://github.com/typestack/class-transformer).~~
 
 - ~~Create figures with UI controls.~~
 
@@ -52,9 +52,9 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - Implement SheetJS.
 
-- Add search and replace functionality across all scripts.
+- ~~Add search and replace functionality across all scripts.~~
 
-- Prevent override of additional functions and variables.
+- ~~Prevent override of additional functions and variables.~~
 
 - Write additional unit tests.
 

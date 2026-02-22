@@ -1,0 +1,102 @@
+{
+  "__jslab_format__": "jslab-workspace",
+  "__jslab_version__": 2,
+  "scope": "object",
+  "created_at": "2026-02-22T18:42:19.090Z",
+  "root": {
+    "$ref": 1
+  },
+  "nodes": {
+    "1": {
+      "kind": "ClassInstance",
+      "class_name": "WorkspaceSaveLoadPoint",
+      "class_builtin": false,
+      "class_path": "C:\\github\\JSLAB\\examples\\resources\\workspaceSaveLoadClass.jsl",
+      "class_path_relative": "..\\resources\\workspaceSaveLoadClass.jsl",
+      "properties": {
+        "name": "A",
+        "position": {
+          "$ref": 2
+        },
+        "tags": {
+          "$ref": 4
+        },
+        "peer": {
+          "$ref": 5
+        }
+      }
+    },
+    "2": {
+      "kind": "BuiltinClass",
+      "class_name": "PRDC_JSLAB_VECTOR",
+      "state": {
+        "$ref": 3
+      },
+      "properties": {
+        "x": 1,
+        "y": 2,
+        "z": 3
+      }
+    },
+    "3": {
+      "kind": "Object",
+      "properties": {
+        "x": 1,
+        "y": 2,
+        "z": 3
+      }
+    },
+    "4": {
+      "kind": "Array",
+      "items": [
+        "seed"
+      ]
+    },
+    "5": {
+      "kind": "ClassInstance",
+      "class_name": "WorkspaceSaveLoadPoint",
+      "class_builtin": false,
+      "class_path": "C:\\github\\JSLAB\\examples\\resources\\workspaceSaveLoadClass.jsl",
+      "class_path_relative": "..\\resources\\workspaceSaveLoadClass.jsl",
+      "properties": {
+        "name": "B",
+        "position": {
+          "$ref": 6
+        },
+        "tags": {
+          "$ref": 8
+        },
+        "peer": {
+          "$ref": 1
+        }
+      }
+    },
+    "6": {
+      "kind": "BuiltinClass",
+      "class_name": "PRDC_JSLAB_VECTOR",
+      "state": {
+        "$ref": 7
+      },
+      "properties": {
+        "x": 4,
+        "y": 5,
+        "z": 6
+      }
+    },
+    "7": {
+      "kind": "Object",
+      "properties": {
+        "x": 4,
+        "y": 5,
+        "z": 6
+      }
+    },
+    "8": {
+      "kind": "Array",
+      "items": [
+        "peer"
+      ]
+    }
+  },
+  "warnings": []
+}

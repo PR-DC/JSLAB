@@ -5,27 +5,27 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
-savePath('C:/Electron/JSLAB/examples/tests/folder1');
-savePath('C:/Electron/JSLAB/examples/tests/folder2');
-savePath('C:/Electron/JSLAB/examples/tests/folder3');
+savePath(jsl.app_path + '/examples/resources/folder1');
+savePath(jsl.app_path + '/examples/resources/folder2');
+savePath(jsl.app_path + '/examples/resources/folder3');
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('1');
 sm.disp();
 unrequire('exampleModule.jsl');
 
-removePath('C:/Electron/JSLAB/examples/tests/folder1');
+removePath(jsl.app_path + '/examples/resources/folder1');
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('2');
 sm.disp();
 unrequire('exampleModule.jsl');
 
-removePath('C:/Electron/JSLAB/examples/tests/folder2');
+removePath(jsl.app_path + '/examples/resources/folder2');
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('3');
 sm.disp();
 unrequire('exampleModule.jsl');
 
-removePath('C:/Electron/JSLAB/examples/tests/folder3');
+removePath(jsl.app_path + '/examples/resources/folder3');
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('4');
 sm.disp();

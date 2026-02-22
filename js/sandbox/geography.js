@@ -58,8 +58,8 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     tile_coordinates.forEach(function(coord) {
         var n = Math.pow(2, coord.z);
         var tileBounds = {
-            min_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * coord.y) / n)) - Math.PI / 2) * (180 / Math.PI),
-            max_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * (coord.y + 1)) / n)) - Math.PI / 2) * (180 / Math.PI),
+            min_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * (coord.y + 1)) / n)) - Math.PI / 2) * (180 / Math.PI),
+            max_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * coord.y) / n)) - Math.PI / 2) * (180 / Math.PI),
             min_lng: ((coord.x) / n) * 360 - 180,
             max_lng: ((coord.x + 1) / n) * 360 - 180
         };
@@ -75,6 +75,20 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
 
     return { bounds, center };
   }
+
+  /**
+   * Calculates a new latitude and longitude based on east and north offsets.
+   * @param {number} lat - The latitude of the starting point.
+   * @param {number} lon - The longitude of the starting point.
+   * @param {number} east - The east offset in meters.
+   * @param {number} north - The north offset in meters.
+   * @returns {Array<number>} An array containing the latitude and longitude of the calculated point.
+   */
+  offsetLatLonEastNorth(lat, lon, east, north) {
+    var distance = Math.sqrt(Math.pow(east, 2)+Math.pow(north, 2)); // [m]
+    var bearing = Math.atan2(east, north)*180/Math.PI; // [deg]
+    return this.offsetLatLon(lat, lon, distance, bearing);
+  };
 
   /**
    * Calculates a new latitude and longitude based on a starting point, distance, and bearing using the Haversine formula.
@@ -123,7 +137,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
    * @returns {number} The 3D distance between the two points in meters.
    */
   latLonAltDistance(lat1, lon1, alt1, lat2, lon2, alt2) {
-    var L = latLonDistance(lat1, lon1, lat2, lon2);
+    var L = this.latLonDistance(lat1, lon1, lat2, lon2);
     return Math.sqrt(Math.pow(L, 2)+Math.pow(alt1-alt2, 2));
   }
 
@@ -133,9 +147,9 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
    * @returns {boolean} True if the latitude and/or longitude values have been updated; false otherwise.
    */
   checkNewLatLon(latlon) {
-    if(this.jsl.format.isUndefined(latlon.value)) {
+    if(this.jsl.inter.format.isUndefined(latlon.value)) {
       return false;
-    } else if(this.jsl.format.isUndefined(latlon.last_value)) {
+    } else if(this.jsl.inter.format.isUndefined(latlon.last_value)) {
       return true;
     } else {
       return (latlon.value[0] != latlon.last_value[0]) || (latlon.value[1] != latlon.last_value[1]);
@@ -154,10 +168,141 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
 
     if(isArray) {
       return lat.map((latitude, index) =>
-        this.jsl.env.Cesium.Cartesian3.fromDegrees(lon[index], latitude, alt[index])
+        this.jsl.inter.env.Cesium.Cartesian3.fromDegrees(lon[index], latitude, alt[index])
       );
     } else {
-      return this.jsl.env.Cesium.Cartesian3.fromDegrees(lon, lat, alt);
+      return this.jsl.inter.env.Cesium.Cartesian3.fromDegrees(lon, lat, alt);
+    }
+  }
+
+  /**
+   * Transforms a local offset (dx, dy, dz) relative to a specified latitude, longitude, and altitude to a new latitude, longitude, and altitude.
+   * @param {number} lat - Latitude in degrees.
+   * @param {number} lon - Longitude in degrees.
+   * @param {number} alt - Altitude in meters.
+   * @param {number} dx - Local x offset in meters.
+   * @param {number} dy - Local y offset in meters.
+   * @param {number} dz - Local z offset in meters.
+   * @returns {Object} Object containing the transformed latitude, longitude, and altitude.
+   */
+  latLonAltTransform(lat, lon, alt, dx, dy, dz) {
+    var center = this.jsl.inter.env.Cesium.Cartesian3.fromDegrees(lon, lat, alt);
+    return this.eastNorthUpTransform(center, dx, dy, dz);
+  };
+
+  /**
+   * Transforms a local offset (dx, dy, dz) relative to a specified East, North, Up position to a new latitude, longitude, and altitude.
+   * @param {Cesium.Cartesian3} position - East, North, Up position.
+   * @param {number} dx - Local x offset in meters.
+   * @param {number} dy - Local y offset in meters.
+   * @param {number} dz - Local z offset in meters.
+   * @returns {Object} Object containing the transformed latitude, longitude, and altitude.
+   */
+  eastNorthUpTransform(pos, dx, dy, dz) {
+    var transform = this.jsl.inter.env.Cesium.Transforms.eastNorthUpToFixedFrame(pos);
+    var point = this.jsl.inter.env.Cesium.Matrix4.multiplyByPoint(transform,
+      new this.jsl.inter.env.Cesium.Cartesian3(dx, dy, dz), new this.jsl.inter.env.Cesium.Cartesian3());
+    var carto = this.jsl.inter.env.Cesium.Ellipsoid.WGS84.cartesianToCartographic(point);
+    
+    return {lat: this.jsl.inter.env.Cesium.Math.toDegrees(carto.latitude), lon: this.jsl.inter.env.Cesium.Math.toDegrees(carto.longitude), height: carto.height};
+  };
+
+  /**
+   * Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.
+   * The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
+   * @param {Cesium.Cartesian3} from_cartesian - The Cartesian coordinates of the starting point.
+   * @param {Cesium.Cartesian3} to_cartesian - The Cartesian coordinates of the target point.
+   * @returns {{heading: number, pitch: number}} An object containing the calculated heading (in radians from North, positive East) and pitch (in radians from the local horizontal, positive Up).
+   */
+  computeHeadingPitchFromTo(from_cartesian, to_cartesian) {
+    var enu = this.jsl.inter.env.Cesium.Transforms.eastNorthUpToFixedFrame(from_cartesian);
+    var inv_enu = this.jsl.inter.env.Cesium.Matrix4.inverse(enu, new this.jsl.inter.env.Cesium.Matrix4());
+    
+    var local_target = this.jsl.inter.env.Cesium.Matrix4.multiplyByPoint(
+      inv_enu,
+      to_cartesian,
+      new this.jsl.inter.env.Cesium.Cartesian3()
+    );
+
+    var dir = this.jsl.inter.env.Cesium.Cartesian3.normalize(local_target, new this.jsl.inter.env.Cesium.Cartesian3());
+
+    var east = dir.x;
+    var north = dir.y;
+    var up = dir.z;
+
+    var heading = Math.atan2(east, north);
+    var pitch = Math.asin(up);
+
+    return { heading, pitch };
+  }
+
+  /**
+   * Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.
+   * The conversion can handle single values or arrays of values.
+   * @param {number|number[]} lat_deg - Latitude(s) in degrees.
+   * @param {number|number[]} lon_deg - Longitude(s) in degrees.
+   * @param {number|number[]} h_msl_meters - Altitude(s) in meters above MSL.
+   * @returns {number|number[]} Ellipsoid altitude(s) in meters.
+   */
+  mslToEllipsoidAlt(lat_deg, lon_deg, h_msl_meters) {
+    var isArray = Array.isArray(lat_deg) && Array.isArray(lon_deg) && Array.isArray(h_msl_meters);
+
+    if(isArray) {
+      return lat_deg.map((latitude, index) => {
+        var lon = this.jsl.inter.format.normalizeAngle(lon_deg[index]);
+        if(!Number.isFinite(h_msl_meters[index])) throw new TypeError(this.jsl.inter.lang.currentString(358));
+        return this.jsl.inter.env.egm96.egm96ToEllipsoid(lat_deg[index], lon, h_msl_meters[index]);
+      });
+    } else {
+      var lon = this.jsl.inter.format.normalizeAngle(lon_deg);
+      if(!Number.isFinite(h_msl_meters)) throw new TypeError(this.jsl.inter.lang.currentString(358));
+      return this.jsl.inter.env.egm96.egm96ToEllipsoid(lat_deg, lon, h_msl_meters);
+    }
+  }
+
+  /**
+   * Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.
+   * The conversion can handle single values or arrays of values.
+   * @param {number|number[]} lat_deg - Latitude(s) in degrees.
+   * @param {number|number[]} lon_deg - Longitude(s) in degrees.
+   * @param {number|number[]} h_ellipsoid_meters - Altitude(s) in meters above the Ellipsoid.
+   * @returns {number|number[]} MSL altitude(s) in meters.
+   */
+  ellipsoidToMslAlt(lat_deg, lon_deg, h_ellipsoid_meters) {
+    var isArray = Array.isArray(lat_deg) && Array.isArray(lon_deg) && Array.isArray(h_ellipsoid_meters);
+
+    if(isArray) {
+      return lat_deg.map((latitude, index) => {
+        var lon = this.jsl.inter.format.normalizeAngle(lon_deg[index]);
+        if(!Number.isFinite(h_ellipsoid_meters[index])) throw new TypeError(this.jsl.inter.lang.currentString(358));
+        return this.jsl.inter.env.egm96.ellipsoidToEgm96(lat_deg[index], lon, h_ellipsoid_meters[index]);
+      });
+    } else {
+      var lon = this.jsl.inter.format.normalizeAngle(lon_deg);
+      if(!Number.isFinite(h_ellipsoid_meters)) throw new TypeError(this.jsl.inter.lang.currentString(358));
+      return this.jsl.inter.env.egm96.ellipsoidToEgm96(lat_deg, lon, h_ellipsoid_meters);
+    }
+  }
+
+/**
+   * Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.
+   * The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
+   * @param {number|number[]} lat_deg - Latitude(s) in degrees.
+   * @param {number|number[]} lon_deg - Longitude(s) in degrees.
+   * @param {number|number[]} h_msl_meters - Altitude(s) in meters above MSL.
+   * @returns {Cesium.Cartesian3|Cesium.Cartesian3[]} Cartesian coordinate(s) in the WGS84 system.
+   */
+  positionToEllipsoid(lat_deg, lon_deg, h_msl_meters) {
+    var isArray = Array.isArray(lat_deg) && Array.isArray(lon_deg) && Array.isArray(h_msl_meters);
+
+    if(isArray) {
+      return lat_deg.map((latitude, index) => {
+        var alt = this.mslToEllipsoidAlt(lat_deg[index], lon_deg[index], h_msl_meters[index]);
+        return this.jsl.inter.env.Cesium.Cartesian3.fromDegrees(lon_deg[index], lat_deg[index], alt);
+      });
+    } else {
+      var alt = this.mslToEllipsoidAlt(lat_deg, lon_deg, h_msl_meters);
+      return this.jsl.inter.env.Cesium.Cartesian3.fromDegrees(lon_deg, lat_deg, alt);
     }
   }
 }

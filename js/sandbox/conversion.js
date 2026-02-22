@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     var obj = this;
     this.jsl = jsl;
     
-    this.speech = this.jsl.env.speech;
+    this.speech = this.jsl.inter.env.speech;
     
     /**
      * Serializes BigInt values to JSON by converting them to strings.
@@ -32,7 +32,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @param {string} msg - The text message to be spoken.
    */
   speak(msg) {
-    if(!global.is_worker) {
+    if(!this.jsl.inter.env.is_worker) {
       this.speech.text = msg;
       speechSynthesis.speak(this.speech);
     }
@@ -45,10 +45,10 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The formatted string.
    */
   num2str(num, precision = 2) {
-    if(isNumber(precision)) {
+    if(this.jsl.inter.isNumber(precision)) {
       return num.toFixed(precision);
     } else {
-      return sprintf(precision, num);
+      return this.jsl.inter.sprintf(precision, num);
     }
   }
 
@@ -82,7 +82,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {Array<Array<number>>} The transformation matrix.
    */
   ned2rpy(roll, pitch, yaw, A) {
-    T = [
+    const T = [
       [Math.cos(yaw)*Math.cos(pitch), 
         Math.sin(yaw)*Math.cos(pitch), 
         -Math.sin(pitch)], 
@@ -95,7 +95,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     ];
 
     if(A != undefined) {
-      return this.jsl.env.math.multiply(T, A);
+      return this.jsl.inter.env.math.multiply(T, A);
     } else {
       return T;
     }
@@ -242,8 +242,8 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The time string.
    */
   ms2time(ms){
-    min = Math.floor((ms/1000/60) << 0),
-    sec = Math.floor((ms/1000) % 60);
+    const min = Math.floor((ms/1000/60) << 0);
+    const sec = Math.floor((ms/1000) % 60);
     return ('0' + min).slice(-2) + ':' + ('0' + sec).slice(-2);
   }
   
@@ -253,7 +253,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The binary string.
    */
   dec2bin(x) {
-    return this.jsl.env.math.bin(x);
+    return this.jsl.inter.env.math.bin(x);
   }
   
   /**
@@ -262,7 +262,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The hexadecimal string.
    */
   dec2hex(x) {
-    return this.jsl.env.math.hex(x);
+    return this.jsl.inter.env.math.hex(x);
   }
   
   /**
@@ -271,7 +271,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The octal string.
    */
   dec2oct(x) {
-    return this.jsl.env.math.oct(x);
+    return this.jsl.inter.env.math.oct(x);
   }
   
   /**
@@ -283,7 +283,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    */
   round(number, decimals = 2, string = false) {
     var result;
-    if(typeof value === 'number') {
+    if(typeof number === 'number') {
       result = number.toFixed(decimals);
     } else {
       result = Number(number).toFixed(decimals);
@@ -320,7 +320,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    */
   roundIfPrec(value, p) {
     if(typeof p === 'number') {
-      return round(value, p);
+      return this.round(value, p);
     } else {
       return value;
     }
@@ -429,11 +429,11 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @param {...Object} objects - The objects to merge into the target object.
    * @returns {Object} The extended object.
    */
-  extend() {
-    var target = arguments[0] || {}, o, p;
+  extend(...objects) {
+    var target = objects[0] || {}, o, p;
 
-    for(var i = 1, len = arguments.length; i < len; i++) {
-      o = arguments[i];
+    for(var i = 1, len = objects.length; i < len; i++) {
+      o = objects[i];
 
       if(!this.isObject(o)) continue;
 
@@ -459,6 +459,19 @@ class PRDC_JSLAB_LIB_CONVERSION {
     return (val-Math.sign(val)*deadzone)/(500-deadzone);
   }
 
+  /**
+   * Converts a value to its equivalent RC (Radio Control) signal value, accounting for an optional deadzone.
+   * @param {number} val The input value to convert.
+   * @param {number} [deadzone=0] The deadzone value within which the RC signal should default to 1500.
+   * @returns {number} The converted RC signal value.
+   */
+  toRC(val, deadzone = 0) {
+    if(Math.abs(val) < deadzone) {
+      return 1500;
+    }
+    return Number((1500+val*500).toFixed(0));
+  }
+  
   /**
    * Checks if a value has been updated and updates the last value if it has.
    * @param {Object} data - An object containing the current value and the last value.
@@ -507,11 +520,15 @@ class PRDC_JSLAB_LIB_CONVERSION {
   
   /**
    * Converts file data from a given path to a blob URL.
-   * @param {string} path - Relative path from the application's base path to the file.
+   * @param {string} file_path_in - Relative path from the application's base path to the file.
    * @returns {string} A blob URL representing the file's data.
    */
-  data2blobUrl(path) {
-    return URL.createObjectURL(new Blob([fs.readFileSync(app_path+'\\'+path)]));
+  data2blobUrl(file_path_in) {
+    var file_path = file_path_in;
+    if(!this.jsl.inter.fs.existsSync(file_path_in)) {
+      file_path = this.jsl.app_path + '\\' + file_path_in;
+    }
+    return URL.createObjectURL(new Blob([this.jsl.inter.fs.readFileSync(file_path)]));
   }
   
   /**
@@ -530,14 +547,14 @@ class PRDC_JSLAB_LIB_CONVERSION {
     var x = 0;
     var y = 0;
 
-    if(!isUndefined(left)) {
+    if(!this.jsl.inter.isUndefined(left)) {
       x = left;
-    } else if(!isUndefined(right)) {
+    } else if(!this.jsl.inter.isUndefined(right)) {
       x = cont_width - width - right;
     }
-    if(!isUndefined(top)) {
+    if(!this.jsl.inter.isUndefined(top)) {
       y = top;
-    } else if(!isUndefined(bottom)) {
+    } else if(!this.jsl.inter.isUndefined(bottom)) {
       y = cont_height - height - bottom;
     }
     return [x, y];
@@ -570,14 +587,190 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The formatted CSV string.
    */
   simpleArray2Csv(data, delimiter = ',') {
+    if(!Array.isArray(data)) {
+      return '';
+    }
     let csv_content = '';
-    const maxEntries = Math.max(...data.map(function(e) {return e.length;} ));
-    for(let i = 0; i < maxEntries; i++) {
-      let row = data.map(function(e) { return (i < e.length) ? e[i] : ''; }).join(delimiter);
-      csv_content += row + '\n';
+    data.forEach(function(row_in) {
+      var row = Array.isArray(row_in) ? row_in : [row_in];
+      csv_content += row.join(delimiter) + '\n';
+    });
+    return csv_content;
+  }
+  
+  /**
+   * Converts a subset of LaTeX/TeX math syntax into HTML/Unicode.
+   * @param {string} latex - LaTeX/TeX input string.
+   * @returns {string} HTML/Unicode string.
+   */
+  latexToHtml(latex) {
+    if(latex == null) return "";
+    const latexToHtml = (input) => this.latexToHtml(input);
+    let s = String(latex);
+
+    // Escape HTML from user input (we will add our own <sub>/<sup>/<br> tags later)
+    s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // Strip math delimiters
+    s = s.replace(/^\s*\$\$?/, "").replace(/\$\$?\s*$/, "");
+    s = s.replace(/\$/g, ""); // in case there are multiple $...$ parts
+
+    // Normalize
+    s = s.replace(/\\left/g, "").replace(/\\right/g, "");
+    s = s.replace(/\\\\/g, "<br>");
+    s = s.replace(/\\[,\s!;:]/g, " "); // \, \; \: \! etc -> space
+    s = s.replace(/\s+/g, " ").trim();
+
+    // Helper: replace \cmd{...} with balanced braces
+    function replaceOneArgCommand(str, cmd, wrapFn) {
+      let out = "";
+      for(let i = 0; i < str.length; i++) {
+        if(str.startsWith("\\" + cmd + "{", i)) {
+          const start = i + cmd.length + 2; // after "\cmd{"
+          let j = start, depth = 1;
+          while(j < str.length && depth > 0) {
+            if(str[j] === "{") depth++;
+            else if(str[j] === "}") depth--;
+            j++;
+          }
+          if(depth === 0) {
+            const inner = str.slice(start, j - 1);
+            out += wrapFn(inner);
+            i = j - 1;
+            continue;
+          }
+        }
+        out += str[i];
+      }
+      return out;
     }
 
-    return csv_content;
+    // Helper: replace \frac{a}{b} (two args)
+    function replaceFrac(str, wrapFn) {
+      let out = "";
+      for(let i = 0; i < str.length; i++) {
+        if(str.startsWith("\\frac{", i)) {
+          const aStart = i + 6;
+          let j = aStart, depth = 1;
+          while(j < str.length && depth > 0) {
+            if(str[j] === "{") depth++;
+            else if(str[j] === "}") depth--;
+            j++;
+          }
+          if(depth !== 0 || str[j] !== "{") { out += str[i]; continue; }
+          const a = str.slice(aStart, j - 1);
+
+          const bStart = j + 1;
+          let k = bStart; depth = 1;
+          while(k < str.length && depth > 0) {
+            if(str[k] === "{") depth++;
+            else if(str[k] === "}") depth--;
+            k++;
+          }
+          if(depth === 0) {
+            const b = str.slice(bStart, k - 1);
+            out += wrapFn(a, b);
+            i = k - 1;
+            continue;
+          }
+        }
+        out += str[i];
+      }
+      return out;
+    }
+
+    // Apply formatting/text commands (repeat a few times for nesting)
+    for(let pass = 0; pass < 4; pass++) {
+      s = replaceOneArgCommand(s, "mathrm", x => latexToHtml(x));
+      s = replaceOneArgCommand(s, "text",   x => latexToHtml(x));
+      s = replaceOneArgCommand(s, "operatorname", x => latexToHtml(x));
+      s = replaceOneArgCommand(s, "mathbf", x => `<b>${latexToHtml(x)}</b>`);
+      s = replaceOneArgCommand(s, "mathit", x => `<i>${latexToHtml(x)}</i>`);
+      s = replaceOneArgCommand(s, "sqrt",   x => `√(${latexToHtml(x)})`);
+      s = replaceFrac(s, (a, b) => `(${latexToHtml(a)})/(${latexToHtml(b)})`);
+    }
+
+    // Symbol mapping (\alpha -> α, \leq -> ≤, etc.)
+    const map = {
+      // Greek
+      "\\alpha":"α","\\beta":"β","\\gamma":"γ","\\delta":"δ","\\epsilon":"ε","\\varepsilon":"ε",
+      "\\zeta":"ζ","\\eta":"η","\\theta":"θ","\\vartheta":"ϑ","\\iota":"ι","\\kappa":"κ",
+      "\\lambda":"λ","\\mu":"µ","\\nu":"ν","\\xi":"ξ","\\pi":"π","\\varpi":"ϖ","\\rho":"ρ",
+      "\\varrho":"ϱ","\\sigma":"σ","\\varsigma":"ς","\\tau":"τ","\\upsilon":"υ","\\phi":"φ",
+      "\\varphi":"ϕ","\\chi":"χ","\\psi":"ψ","\\omega":"ω",
+      "\\Gamma":"Γ","\\Delta":"Δ","\\Theta":"Θ","\\Lambda":"Λ","\\Xi":"Ξ","\\Pi":"Π",
+      "\\Sigma":"Σ","\\Upsilon":"Υ","\\Phi":"Φ","\\Psi":"Ψ","\\Omega":"Ω",
+
+      // Relations / operators
+      "\\leq":"≤","\\geq":"≥","\\neq":"≠","\\ne":"≠","\\approx":"≈","\\sim":"∼",
+      "\\equiv":"≡","\\propto":"∝","\\infty":"∞","\\pm":"±","\\mp":"∓",
+      "\\times":"×","\\div":"÷","\\cdot":"·","\\circ":"∘","\\bullet":"•",
+      "\\sum":"∑","\\prod":"∏","\\int":"∫","\\partial":"∂","\\nabla":"∇",
+
+      // Sets / logic
+      "\\in":"∈","\\notin":"∉","\\subset":"⊂","\\subseteq":"⊆","\\supset":"⊃","\\supseteq":"⊇",
+      "\\cup":"∪","\\cap":"∩","\\emptyset":"∅","\\varnothing":"∅",
+      "\\forall":"∀","\\exists":"∃","\\neg":"¬","\\wedge":"∧","\\vee":"∨",
+
+      // Arrows
+      "\\to":"→","\\rightarrow":"→","\\leftarrow":"←","\\leftrightarrow":"↔",
+      "\\Rightarrow":"⇒","\\Leftarrow":"⇐","\\Leftrightarrow":"⇔","\\mapsto":"↦",
+
+      // Misc
+      "\\degree":"°","\\circC":"°C","\\circF":"°F",
+      "\\%":"%","\\_":"_","\\#":"#","\\$":"$","\\{":"{","\\}":"}",
+      "\\,":" ","\\;":" ","\\:":" ","\\!":""
+    };
+
+    // Replace longest keys first (so \Rightarrow doesn't get hit by \to, etc.)
+    const keys = Object.keys(map).sort((a,b)=>b.length-a.length);
+    for(const k of keys) s = s.split(k).join(map[k]);
+
+    // Sup/sub parsing with balanced braces
+    function applySubSup(str) {
+      let out = "";
+      for(let i = 0; i < str.length; i++) {
+        const ch = str[i];
+        if((ch === "^" || ch === "_") && i + 1 < str.length) {
+          const tag = ch === "^" ? "sup" : "sub";
+          let j = i + 1;
+
+          // group: ^{...} or _{...}
+          if(str[j] === "{") {
+            j++;
+            let start = j, depth = 1;
+            while(j < str.length && depth > 0) {
+              if(str[j] === "{") depth++;
+              else if(str[j] === "}") depth--;
+              j++;
+            }
+            if(depth === 0) {
+              const inner = str.slice(start, j - 1);
+              out += `<${tag}>${latexToHtml(inner)}</${tag}>`;
+              i = j - 1;
+              continue;
+            }
+          }
+
+          // single token: ^2 or _n
+          const token = str[j];
+          out += `<${tag}>${latexToHtml(token)}</${tag}>`;
+          i = j;
+          continue;
+        }
+        out += ch;
+      }
+      return out;
+    }
+    for(let pass = 0; pass < 3; pass++) s = applySubSup(s);
+
+    // Remove leftover braces used only for grouping
+    s = s.replace(/[{}]/g, "");
+
+    // Any remaining \command -> drop the backslash (best-effort)
+    s = s.replace(/\\([A-Za-z]+)/g, "$1");
+
+    return s;
   }
 }
 

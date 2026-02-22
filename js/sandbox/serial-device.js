@@ -25,7 +25,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    * @returns {Promise<Array>} Resolves with an array of serial port info.
    */
   async listSerialPorts() {
-    return await this.jsl.env.SerialPort.list();
+    return await this.jsl.inter.env.SerialPort.list();
   }
   
   /**
@@ -38,7 +38,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     var devices = await this.listSerialPorts();
     if(Array.isArray(devices)) {
       if(this.jsl.debug) {
-        this.jsl.env.disp('@checkDeviceUSB: ' + JSON.stringify(devices));
+        this.jsl.inter.env.disp('@checkDeviceUSB: ' + JSON.stringify(devices));
       }
       return devices.some(device => device.vendorId === VID && device.productId === PID);
     }
@@ -77,7 +77,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
       flowControl: false,
       ...opts_in
     }
-    var port = new this.jsl.env.SerialPort({
+    var port = new this.jsl.inter.env.SerialPort({
       path: port_path,
       baudRate: baudrate,
       ...opts
@@ -105,8 +105,8 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    * @returns {Promise<string|false>}
    */
   async chooseSerialPort() {
-    var context = await this.jsl.windows.openWindowBlank();
-    context.setTitle('Choose serial port');
+    var context = await this.jsl.inter.windows.openWindowBlank();
+    context.setTitle(this.jsl.inter.lang.currentString(361));
     var ports = await this.listSerialPorts();
     var ports_list = '';
     if(ports.length > 0) {
@@ -117,11 +117,11 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
       ports_list += '<li class="ui"><str sid="230"></str></li>'
     }
     context.document.body.innerHTML = `<ul class="ui">${ports_list}</ul>`;
-    var win = this.jsl.windows.open_windows[context.wid];
+    var win = this.jsl.inter.windows.open_windows[context.wid];
     win._updateLanguage();
     win.addUI();
     context.setSize(300, 100);
-    await this.jsl.non_blocking.waitMSeconds(30);
+    await this.jsl.inter.non_blocking.waitMSeconds(30);
     var win_height = context.document.body.offsetHeight;
     context.setSize(300, (win_height > 500 ? 500 : win_height));
     
@@ -157,8 +157,8 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    * @returns {Promise<string|false>}
    */
   async chooseSerialOptions() {
-    var context = await this.jsl.windows.openWindowBlank();
-    context.setTitle('Choose serial options');
+    var context = await this.jsl.inter.windows.openWindowBlank();
+    context.setTitle(this.jsl.inter.lang.currentString(362));
     var ports = await this.listSerialPorts();
     var ports_list = '';
     if(ports.length > 0) {
@@ -174,16 +174,16 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     <label class="ui"><str sid="233"></str>:</label>
     <input  class="ui"type="text" id="baudrate" str="233"></input>
     <button class="ui blue" id="choose"><str sid="231"></str></button>`;
-    var win = this.jsl.windows.open_windows[context.wid];
+    var win = this.jsl.inter.windows.open_windows[context.wid];
     win._updateLanguage();
     win.addUI();
     context.setSize(400, 100);
-    await this.jsl.non_blocking.waitMSeconds(30);
+    await this.jsl.inter.non_blocking.waitMSeconds(30);
     var win_height = context.document.body.offsetHeight;
     context.setSize(400, (win_height > 500 ? 500 : win_height));
     
     if(ports.length == 0) {
-      warn('@chooseSerialOptions: '+language.currentString(230));
+      this.jsl.inter.warn('@chooseSerialOptions: '+this.jsl.inter.lang.currentString(230));
       context.close();
       return [false, false];
     } else {
@@ -227,13 +227,15 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     this.baudrate = baudrate;
     this.opts = opts;
     
-    var wid = this.jsl.windows.openWindow('serial_terminal.html');
-    var win = this.jsl.windows.open_windows[wid];
+    var wid = this.jsl.inter.windows.openWindow('serial_terminal.html');
+    var win = this.jsl.inter.windows.open_windows[wid];
     await win.ready;
     win.addUI();
+    win.addScript("../js/shared/terminal-buffer.js");
     win.addScript("../js/windows/terminal.js");
     var context = win.context;
-    context.setTitle(port_path + ' (' + baudrate + ') | Serial Terminal');
+    var serial_terminal_label = this.jsl.inter.lang.currentString(520);
+    context.setTitle(port_path + ' (' + baudrate + ') | ' + serial_terminal_label);
     context.setSize(500, 500);
     context.document.getElementById('terminal-title').innerText = 
       port_path + ' (' + baudrate + ')';
@@ -241,7 +243,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     
     // Wait for terminal
     while(!context.terminal) {
-      await waitMSeconds(1);
+      await this.jsl.inter.waitMSeconds(1);
     }
     
     context.terminal.setOptions(opts);
@@ -312,18 +314,18 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     
     function saveLog() {
       let options = {
-       title: language.currentString(58),
-       defaultPath: 'terminal_'+ obj.jsl.time.getDateTimeStr() + '.log',
-       buttonLabel: language.currentString(58),
+       title: obj.jsl.inter.lang.currentString(58),
+       defaultPath: 'terminal_'+ obj.jsl.inter.time.getDateTimeStr() + '.log',
+       buttonLabel: obj.jsl.inter.lang.currentString(58),
        filters :[
         {name: 'Log', extensions: ['log', 'txt']},
-        {name: 'All Files', extensions: ['*']}
+        {name: obj.jsl.inter.lang.currentString(345), extensions: ['*']}
        ]
       };
-      var log_path = obj.jsl.env.showSaveDialogSync(options);
+      var log_path = obj.jsl.inter.env.showSaveDialogSync(options);
       if(log_path) {
         var data = context.terminal.getLog();
-        obj.jsl.env.writeFileSync(log_path, data);
+        obj.jsl.inter.env.writeFileSync(log_path, data);
       }
     }
     context.document.getElementById('save-log').addEventListener('click', () => {

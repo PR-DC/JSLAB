@@ -17,6 +17,12 @@ class PRDC_JSLAB_LIB_SYSTEM {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
+    
+    /**
+     * Array of open terminals.
+     * @type {Array}
+     */
+    this.open_terminals = {};
   }
 
   /**
@@ -26,9 +32,9 @@ class PRDC_JSLAB_LIB_SYSTEM {
    */
   system(...args) {
     try {
-      return this.jsl.env.execSync(...args).toString();
+      return this.jsl.inter.env.execSync(...args).toString();
     } catch(err) {
-      this.jsl.env.error('@system: '+err);
+      this.jsl.inter.env.error('@system: '+err);
       return false;
     }
   }
@@ -39,9 +45,9 @@ class PRDC_JSLAB_LIB_SYSTEM {
    */
   exec(...args) {
     try {
-      return this.jsl.env.exec(...args);
+      return this.jsl.inter.env.exec(...args);
     } catch(err) {
-      this.jsl.env.error('@exec: '+err);
+      this.jsl.inter.env.error('@exec: '+err);
       return false;
     }
   }
@@ -52,11 +58,25 @@ class PRDC_JSLAB_LIB_SYSTEM {
    */
   spawn(...args) {
     try {
-      return this.jsl.env.spawn(...args);
+      return this.jsl.inter.env.spawn(...args);
     } catch(err) {
-      this.jsl.env.error('@spawn: '+err);
+      this.jsl.inter.env.error('@spawn: '+err);
       return false;
     }
+  }
+
+  /**
+   * Spawns a new PTY-backed terminal session and registers it locally.
+   * @param {Array} args - Arguments forwarded to PTY spawn (e.g. [file, argv, options]).
+   * @param {Function} onData - Callback invoked on terminal output (string).
+   * @param {Function} onExit - Callback invoked when the terminal exits.
+   * @returns {PRDC_JSLAB_SYSTEM_TERMINAL} Terminal wrapper instance.
+   */
+  spawnTerminal(args, onData, onExit) {
+    var id = this.jsl.inter.env.sendPty('create', args);
+    var terminal = new PRDC_JSLAB_SYSTEM_TERMINAL(this.jsl, id, onData, onExit);
+    this.open_terminals[id] = terminal;
+    return terminal; 
   }
   
   /**
@@ -65,9 +85,9 @@ class PRDC_JSLAB_LIB_SYSTEM {
    */
   getTaskList() {
     try {
-      return this.jsl.env.execSync('tasklist').toString();
+      return this.jsl.inter.env.execSync('tasklist').toString();
     } catch(err) {
-      this.jsl.env.error('@getTaskList: '+err);
+      this.jsl.inter.env.error('@getTaskList: '+err);
       return false;
     }
   }
@@ -81,7 +101,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
   isProgramRunning(program_name) {
     try {
       // Execute the tasklist command and get the output
-      const output = this.jsl.env.execSync('tasklist').toString();
+      const output = this.jsl.inter.env.execSync('tasklist').toString();
       
       // Convert the output to lowercase for case-insensitive comparison
       const output_lower = output.toLowerCase();
@@ -105,7 +125,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
       const is_running = pids.length > 0;
       return [is_running, pids];
     } catch(err) {
-      this.jsl.env.error('@isProgramRunning: '+err);
+      this.jsl.inter.env.error('@isProgramRunning: '+err);
       return [false, []];
     }
   }
@@ -118,12 +138,93 @@ class PRDC_JSLAB_LIB_SYSTEM {
   killProcess(pid) {
     try {
       // Execute the tasklist command and get the output
-      return this.jsl.env.execSync('taskkill /pid '+pid+' /T /F').toString();
+      return this.jsl.inter.env.execSync('taskkill /pid '+pid+' /T /F').toString();
     } catch(err) {
-      this.jsl.env.error('@killProcess: '+err);
+      this.jsl.inter.env.error('@killProcess: '+err);
       return false;
     }
+  }
+  
+  /**
+   * Callback called on new pty data
+   * @param {Object} data - Data from pty.
+   */
+  _onPtyData(data) {
+    if(data.type == 'exit') {
+      this.open_terminals[data.id].onExit();
+      delete this.open_terminals[data.id];
+    } else if(data.type == 'data') {
+      this.open_terminals[data.id].onData(data.buffer);
+    }
+  }
+  
+  /**
+   * Closes all terminals
+   */
+  _clear() {
+    this.open_terminals = {};
+    this.jsl.inter.env.sendPty('killAll');
   }
 }
 
 exports.PRDC_JSLAB_LIB_SYSTEM = PRDC_JSLAB_LIB_SYSTEM;
+
+/**
+ * Class for JSLAB system terminal.
+ */
+class PRDC_JSLAB_SYSTEM_TERMINAL {
+  
+  /**
+   * Creates a terminal wrapper instance.
+   * @param {Object} jsl Reference to the main JSLAB object.
+   * @param {string} id - PTY session id.
+   * @param {Function} onData - Callback invoked on terminal output (string).
+   * @param {Function} onExit - Callback invoked when the terminal exits.
+   */
+  constructor(jsl, id, onData, onExit) {
+    this.jsl = jsl;
+    this.id = id;
+    this._onData = onData;
+    this._onExit = onExit;
+  }
+  
+  /**
+   * Writes text to the terminal (encoded as base64 for transport).
+   * @param {string} str - Text to write to the PTY stdin.
+   * @returns {*} Synchronous IPC result from the main process.
+   */
+  write(str) {
+    var buf = Buffer.from(str, "utf8").toString("base64");
+    return this.jsl.inter.env.sendPty('write', {id: this.id, buffer: buf});
+  }
+  
+  /**
+   * Handles a PTY output chunk received from the main process.
+   * @param {string} buffer - Base64-encoded output data.
+   * @returns {void}
+   */
+  onData(buffer) {
+    if(this.jsl.inter.format.isFunction(this._onData)) {
+      var str = Buffer.from(buffer, "base64").toString("utf8");
+      this._onData(str);
+    }
+  }
+  
+  /**
+   * Handles PTY exit notification received from the main process.
+   * @returns {void}
+   */
+  onExit() {
+    if(this.jsl.inter.format.isFunction(this._onExit)) {
+      this._onExit();
+    }
+  }
+
+  /**
+   * Terminates the terminal session.
+   * @returns {*} Synchronous IPC result from the main process.
+   */
+  kill() {
+    return this.jsl.inter.env.sendPty('kill', {id: this.id});
+  }
+}

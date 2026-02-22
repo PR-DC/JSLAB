@@ -5,7 +5,7 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
-var { EXAMPLE_MODULE_REQUIRE } = require('exampleModuleRequire.jsl');
+var { EXAMPLE_MODULE_REQUIRE } = require('../resources/exampleModuleRequire.jsl');
 var m = new EXAMPLE_MODULE_REQUIRE('1');
 
 m.disp(2);

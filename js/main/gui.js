@@ -6,6 +6,23 @@
  */
 
 /**
+ * Resolves ipcRenderer from runtime globals or Electron module.
+ * @returns {Object|null}
+ */
+function getIpcRenderer() {
+  if(typeof globalThis !== 'undefined' && globalThis.ipcRenderer) {
+    return globalThis.ipcRenderer;
+  }
+  try {
+    var electron = require('electron');
+    if(electron && electron.ipcRenderer) {
+      return electron.ipcRenderer;
+    }
+  } catch(err) {}
+  return null;
+}
+
+/**
  * Class for JSLAB GUI.
  */
 class PRDC_JSLAB_GUI {
@@ -35,12 +52,18 @@ class PRDC_JSLAB_GUI {
         
     // On devtools-menu click
     $('#devtools-menu').click(function() {
-      ipcRenderer.send('MainProcess', 'show-dev-tools');
+      var ipc = getIpcRenderer();
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('MainProcess', 'show-dev-tools');
+      }
     });
 
     // On editor-menu click
     $('#editor-menu').click(function() {
-      ipcRenderer.send('MainProcess', 'show-editor');
+      var ipc = getIpcRenderer();
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('MainProcess', 'show-editor');
+      }
     });
             
     $("#script-path-dialog-change-dir").click(function() { obj.win.eval.scriptDirDialogButton(2); });
@@ -50,7 +73,10 @@ class PRDC_JSLAB_GUI {
     // Window controls    
     window.addEventListener('resize', function() {
       // Detect change of maximize
-      obj.maximized = ipcRenderer.sendSync('sync-message', 'is-maximized-win');
+      var ipc = getIpcRenderer();
+      if(ipc && typeof ipc.sendSync === 'function') {
+        obj.maximized = ipc.sendSync('sync-message', 'is-maximized-win');
+      }
       if(obj.maximized) {
        $("#win-restore img").attr('src', '../img/win-restore.svg');
       } else {
@@ -65,16 +91,24 @@ class PRDC_JSLAB_GUI {
     $("#win-restore").click(function() {
       obj.toggleFullscreen(false);
       obj.maximized = !obj.maximized;
+      var ipc = getIpcRenderer();
       if(obj.maximized) {
-       ipcRenderer.send('MainProcess', 'maximize-win');
+        if(ipc && typeof ipc.send === 'function') {
+          ipc.send('MainProcess', 'maximize-win');
+        }
       } else {
-       ipcRenderer.send('MainProcess', 'restore-win');
+        if(ipc && typeof ipc.send === 'function') {
+          ipc.send('MainProcess', 'restore-win');
+        }
       }
     });
     
     $("#win-minimize").click(function() {
       obj.toggleFullscreen(false);
-      ipcRenderer.send('MainProcess', 'minimize-win');
+      var ipc = getIpcRenderer();
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('MainProcess', 'minimize-win');
+      }
     });
     window.dispatchEvent(new Event('resize'));
   }
@@ -84,7 +118,10 @@ class PRDC_JSLAB_GUI {
    */
   onReady() {
     // Fade in window
-    ipcRenderer.send('MainProcess', 'fade-in-win');
+    var ipc = getIpcRenderer();
+    if(ipc && typeof ipc.send === 'function') {
+      ipc.send('MainProcess', 'fade-in-win');
+    }
   }
 
   /**
@@ -95,10 +132,15 @@ class PRDC_JSLAB_GUI {
     if(fullscreen == null) {
       fullscreen = !this.fullscreen;
     }
+    var ipc = getIpcRenderer();
     if(fullscreen) {
-      ipcRenderer.send('MainProcess', 'set-fullscreen', true);
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('MainProcess', 'set-fullscreen', true);
+      }
     } else {
-      ipcRenderer.send('MainProcess', 'set-fullscreen', false);
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('MainProcess', 'set-fullscreen', false);
+      }
     }
     this.fullscreen = fullscreen;
   }
@@ -250,8 +292,11 @@ class PRDC_JSLAB_GUI {
    */
   changeLangauge(id) {
     language.set(id);
-    ipcRenderer.send('EditorWindow', 'set-language', id);
-    ipcRenderer.send('SandboxWindow', 'set-language', id);
+    var ipc = getIpcRenderer();
+    if(ipc && typeof ipc.send === 'function') {
+      ipc.send('EditorWindow', 'set-language', id);
+      ipc.send('SandboxWindow', 'set-language', id);
+    }
   }
 }
 

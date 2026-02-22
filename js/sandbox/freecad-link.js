@@ -51,19 +51,19 @@ class PRDC_JSLAB_FREECAD_LINK {
       this.startup_timeout = options.startup_timeout;
     }
     
-    var [flag, pids] = this.jsl.system.isProgramRunning('FreeCAD.exe');
+    var [flag, pids] = this.jsl.inter.system.isProgramRunning('FreeCAD.exe');
     if(flag) {
       this.loaded = true;
-      this.jsl.env.disp('@FreeCADLink: '+language.string(179));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(179));
       await this.findServer();
     } else {
-      this.jsl.system.exec('"' + this.exe + '" --single-instance');
-      var [flag, pids] = this.jsl.system.isProgramRunning('FreeCAD.exe');
+      this.jsl.inter.system.exec('"' + this.exe + '" --single-instance');
+      var [flag, pids] = this.jsl.inter.system.isProgramRunning('FreeCAD.exe');
       if(flag) {
         this.loaded = true;
         await this.findServer();
       } else {
-        this.jsl.env.disp('@FreeCADLink: '+language.string(180));
+        this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(180));
       }
     }
   }
@@ -73,16 +73,16 @@ class PRDC_JSLAB_FREECAD_LINK {
    * Checks if the TCP server is reachable by sending a 'PING' command.
    */
   async findServer() {
-    var t = tic;
+    var t = this.jsl.inter.tic();
     while(true) {
       if(await this.send('PING|', 1000)) {
         break;
-      } else if(toc(t) > this.startup_timeout/1000) {
+      } else if(this.jsl.inter.toc(t) > this.startup_timeout/1000) {
         this.loaded = false;
-        this.jsl.env.disp('@FreeCADLink: '+language.string(181));
+        this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(181));
         break;
       }
-      await waitSeconds(0.5);
+      await this.jsl.inter.waitSeconds(0.5);
     }
   }
   
@@ -99,13 +99,13 @@ class PRDC_JSLAB_FREECAD_LINK {
     var N_in;
     var got_header = false;
 
-    if(this.jsl.format.isUndefined(timeout)) {
+    if(this.jsl.inter.format.isUndefined(timeout)) {
       timeout = this.timeout;
     } 
     if(this.loaded) {
-      var t = tic;
+      var t = this.jsl.inter.tic();
 
-      this.tcp_com = this.jsl.networking.tcp(host, port, function() {
+      this.tcp_com = this.jsl.inter.networking.tcp(this.host, this.port, function() {
         var length = message.length;
         var buf_out = Buffer.alloc(2 + length);
         buf_out.writeUInt16BE(length, 0);
@@ -113,8 +113,8 @@ class PRDC_JSLAB_FREECAD_LINK {
         obj.tcp_com.write(buf_out);
       });
       while(true) {
-        await waitMSeconds(1);
-        if(toc(t) < timeout/1000) {
+        await this.jsl.inter.waitMSeconds(1);
+        if(this.jsl.inter.toc(t) < timeout/1000) {
           if(!got_header && this.tcp_com.availableBytes() > 2) {
             got_header = true;
             var data = this.tcp_com.read();
@@ -153,14 +153,14 @@ class PRDC_JSLAB_FREECAD_LINK {
    * @param {string} message - The message received from FreeCAD.
    * @returns {Array} - An array of parsed message components.
    */
-  inputPraser(message) {
+  inputParser(message) {
     var params = [];
     var str = message.toString();
     
     if(str.length) {
       params = str.split('|');
       if(params.length && params[0] == 'ERR') {
-        disp('@FreeCADLink: Error = ' + params[1]);
+        this.jsl.inter.disp('@FreeCADLink: ' + this.jsl.inter.lang.string(356) + ' ' + params[1]);
       }
     }
     return params;
@@ -172,9 +172,9 @@ class PRDC_JSLAB_FREECAD_LINK {
    * @param {string} message - The message received from FreeCAD.
    */
   showMessage(message) {
-    var params = this.inputPraser(message);
+    var params = this.inputParser(message);
     if(params.length && params[0] == 'MSG') {
-      this.jsl.env.disp('@FreeCADLink: Message = ' + params[1]);
+      this.jsl.inter.env.disp('@FreeCADLink: ' + this.jsl.inter.lang.string(357) + ' ' + params[1]);
     }
   }
   
@@ -185,9 +185,9 @@ class PRDC_JSLAB_FREECAD_LINK {
   async quit() {
     if(this.loaded) {
       var response = await this.send('CMD|QUIT', 1000);
-      return this.inputPraser(response);
+      return this.inputParser(response);
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -200,14 +200,14 @@ class PRDC_JSLAB_FREECAD_LINK {
    */
   async open(filePath, timeout) {
     if(this.loaded) {
-      if(exist(filePath)) {
+      if(this.jsl.inter.exist(filePath)) {
         var response = await this.send('CMD|OPEN|' + filePath, timeout);
-        return this.inputPraser(response);
+        return this.inputParser(response);
       } else {
-        this.jsl.env.disp('@FreeCADLink: '+language.string(183));
+        this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(183));
       }
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -220,14 +220,14 @@ class PRDC_JSLAB_FREECAD_LINK {
    */
   async importFile(filePath, timeout) {
     if(this.loaded) {
-      if(exist(filePath)) {
+      if(this.jsl.inter.exist(filePath)) {
         var response = await this.send('CMD|IMPORT|' + filePath, timeout);
-        return this.inputPraser(response);
+        return this.inputParser(response);
       } else {
-        this.jsl.env.disp('@FreeCADLink: '+language.string(183));
+        this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(183));
       }
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -241,18 +241,18 @@ class PRDC_JSLAB_FREECAD_LINK {
   async newDocument(filename, timeout) {
     if(this.loaded) {
       var cmd = 'CMD|NEW';
-      if(!this.jsl.format.isUndefined(filename)) {
+      if(!this.jsl.inter.format.isUndefined(filename)) {
         cmd = cmd+"|"+filename;
       }
       var response = await this.send(cmd, timeout);
-      var params = this.inputPraser(response);
+      var params = this.inputParser(response);
       var name = "";
       if(params.length && params[0] == 'DAT') {
         name = params[1];
       }
       return name;
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -265,9 +265,9 @@ class PRDC_JSLAB_FREECAD_LINK {
   async save(timeout) {
     if(this.loaded) {
       var response = await this.send('CMD|SAVE', timeout);
-      return this.inputPraser(response);
+      return this.inputParser(response);
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -281,9 +281,9 @@ class PRDC_JSLAB_FREECAD_LINK {
   async saveAs(filePath, timeout) {
     if(this.loaded) {
       var response = await this.send('CMD|SAVEAS|' + filePath, timeout);
-      return this.inputPraser(response);
+      return this.inputParser(response);
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -296,9 +296,9 @@ class PRDC_JSLAB_FREECAD_LINK {
   async close(timeout) {
     if(this.loaded) {
       var response = await this.send('CMD|CLOSE', timeout);
-      return this.inputPraser(response);
+      return this.inputParser(response);
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -312,9 +312,9 @@ class PRDC_JSLAB_FREECAD_LINK {
   async evaluate(command, timeout) {
     if(this.loaded) {
       var response = await this.send('EVAL|' + command, timeout);
-      return this.inputPraser(response);
+      return this.inputParser(response);
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -328,18 +328,18 @@ class PRDC_JSLAB_FREECAD_LINK {
    */
   async callScript(script, param, timeout) {
     if(this.loaded) {
-      if(this.jsl.format.isUndefined(timeout)) {
+      if(this.jsl.inter.format.isUndefined(timeout)) {
         timeout = this.script_timeout;
       }
-      if(this.jsl.format.isUndefined(param)){
+      if(this.jsl.inter.format.isUndefined(param)){
         param = '';
-      } else if(isArray(param)){
+      } else if(this.jsl.inter.isArray(param)){
         param = param.join('|');
       }
       var response = await this.send('SCRIPT|' + script + '|' + param, timeout);
-      return this.inputPraser(response);
+      return this.inputParser(response);
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -352,14 +352,14 @@ class PRDC_JSLAB_FREECAD_LINK {
   async getArea(timeout) {
     if(this.loaded) {
       var response = await this.send('MSR|A', timeout);
-      var params = this.inputPraser(response);
+      var params = this.inputParser(response);
       var area = "";
       if(params.length && params[0] == 'DAT') {
         area = params[1];
       }
       return area;
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }
@@ -372,14 +372,14 @@ class PRDC_JSLAB_FREECAD_LINK {
   async getVolume(timeout) {    
     if(this.loaded) {
       var response = await this.send('MSR|V', timeout);
-      var params = this.inputPraser(response);
+      var params = this.inputParser(response);
       var vol = "";
       if(params.length && params[0] == 'DAT') {
         vol = params[1];
       }
       return vol;
     } else {
-      this.jsl.env.disp('@FreeCADLink: '+language.string(182));
+      this.jsl.inter.env.disp('@FreeCADLink: '+this.jsl.inter.lang.string(182));
     }
     return false;
   }

@@ -9,7 +9,14 @@
 /**
  * Class for N-dimensional Space Search.
  */
-class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
+class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
+  /**
+   * Creates a new space search helper.
+   * @param {Object} jsl - Reference to main JSLAB object.
+   */
+  constructor(jsl) {
+    this.jsl = jsl;
+  }
   
   /**
    * Displays the size of elements based on bounds and subdivisions.
@@ -32,8 +39,8 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
     }
 
     // Display the results for initial and minimal element dimensions
-    disp(` Dimenzije inicijalnih elemenata: ${dq.map(val => val.toFixed(2)).join('x')}`);
-    disp(` Dimenzije najmanjih elemenata: ${dqmin.map(val => val.toFixed(2)).join('x')}`);
+    this.jsl.inter.disp(` Dimenzije inicijalnih elemenata: ${dq.map(val => val.toFixed(2)).join('x')}`);
+    this.jsl.inter.disp(` Dimenzije najmanjih elemenata: ${dqmin.map(val => val.toFixed(2)).join('x')}`);
   }
   
   /**
@@ -66,7 +73,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
    * @returns {Promise<Array.<Array.<number>>>} A promise that resolves to arrays of input and output results from the parallel execution.
    */
   async runParallel(x_lim, k, context, setup, fun) {
-    var N_proc = parallel.getProcessorsNum();
+    var N_proc = this.jsl.inter.parallel.getProcessorsNum();
     
     var funStr = fun.toString();
     var funBody = funStr.slice(funStr.indexOf("{") + 1, funStr.lastIndexOf("}"));
@@ -74,11 +81,12 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
     
     var [x_lim_parallel, k_parallel] = this.splitSearchSpace(x_lim, k, N_proc);
     
-    var res = await parallel.parfor(0, N_proc-1, 1, N_proc, 
+    var res = await this.jsl.inter.parallel.parfor(0, N_proc-1, 1, N_proc, 
         Object.assign(context, {x_lim_parallel, k_parallel, 
         funArgs, funBody}), setup, function(i) {
       var new_fun = new Function(funArgs, funBody);
-      return crawler.run(x_lim_parallel[i], k_parallel, new_fun);
+      return this.jsl.context.crawler.run(
+        x_lim_parallel[i], k_parallel, new_fun);
     });
     var Nin = res.map(pair => pair[0]).flat();
     var Nout = res.map(pair => pair[1]).flat();
@@ -174,22 +182,22 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
 
     // Initialize N-dimensional grid
     var gridShape = coordsArray.map(A => A.length);
-    var N = createFilledArray(...gridShape, null);
+    var N = this.jsl.inter.array.createFilledArray(...gridShape, null);
       
     // Mark whether a node needs to be calculated
-    var nf = createFilledArray(...gridShape, 1);
+    var nf = this.jsl.inter.array.createFilledArray(...gridShape, 1);
       
     // Set nf to 0 for corner points (boundary points)
     var cornerIndices = this.getCornerIndices(gridShape);
     cornerIndices.forEach(indices => {
-      setValueAt(nf, indices, 0);
+      this.jsl.inter.array.setValueAt(nf, indices, 0);
     });
 
     // Set the values at the corner points and add them to Nin or Nout
     cornerIndices.forEach((indices, idx) => {
       var coords = indices.map((index, dim) => coordsArray[dim][index]);
       var value = boundaryValues[idx];
-      setValueAt(N, indices, [...coords, value]);
+      this.jsl.inter.array.setValueAt(N, indices, [...coords, value]);
 
       // On first level, add corner points to Nin or Nout
       if(currentDepth == 0) {
@@ -206,7 +214,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
     for(var indices of indicesList) {
       var coords = indices.map((index, dim) => coordsArray[dim][index]);
       var e = conditionFunction(coords) ? 1 : 0;
-      setValueAt(N, indices, [...coords, e]);
+      this.jsl.inter.array.setValueAt(N, indices, [...coords, e]);
 
       if(e) {
         Nin.push(coords);
@@ -282,7 +290,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
 
     var generateIndices = (indices, dim) => {
       if(dim === gridShape.length) {
-        if(getValueAt(nf, indices) === 1) {
+        if(this.jsl.inter.array.getValueAt(nf, indices) === 1) {
           indicesList.push([...indices]);
         }
         return;
@@ -333,10 +341,10 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SERACH {
     var cornerShifts = this.generateCornerShifts(numDimensions);
     var cubeCorners = cornerShifts.map(shift => {
       var cornerIndices = indices.map((idx, dim) => idx + shift[dim]);
-      return getValueAt(N, cornerIndices);
+      return this.jsl.inter.array.getValueAt(N, cornerIndices);
     });
     return cubeCorners;
   }
 }
 
-exports.PRDC_JSLAB_GEOMETRY_SPACE_SERACH = PRDC_JSLAB_GEOMETRY_SPACE_SERACH;
+exports.PRDC_JSLAB_GEOMETRY_SPACE_SEARCH = PRDC_JSLAB_GEOMETRY_SPACE_SEARCH;

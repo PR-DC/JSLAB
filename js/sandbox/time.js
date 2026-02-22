@@ -55,7 +55,7 @@ class PRDC_JSLAB_LIB_TIME {
    */
   toc(tic) {
     var dt = performance.now()/1000;
-    if(arguments.length < 1) {
+    if(typeof tic === 'undefined') {
       return dt-this.jsl.context.last_tic;
     } else {
       return dt-tic;
@@ -68,8 +68,8 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {number} The elapsed time in milliseconds.
    */
   tocms(tic) {
-    if(!tic) {
-      tic = global.last_tic;
+    if(typeof tic === 'undefined') {
+      tic = this.jsl.context.last_tic;
     }
     return (performance.now()-tic*1000);
   }
@@ -79,7 +79,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {number} The current Unix timestamp as an integer.
    */
   getTimestamp() {
-    return luxon.DateTime.now().setZone(this.timezone).toMillis();
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toMillis();
   }
 
   /**
@@ -87,7 +87,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {string} The current time in 'HH:mm:ss' format.
    */
   getTime() {
-    return luxon.DateTime.now().setZone(this.timezone).toFormat('HH:mm:ss');
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('HH:mm:ss');
   }
 
   /**
@@ -95,7 +95,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {string} The current time in 'HH:mm:ss.SSS' format.
    */
   getFullTime() {
-    return luxon.DateTime.now().setZone(this.timezone).toFormat('HH:mm:ss.SSS');
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('HH:mm:ss.SSS');
   }
 
   /**
@@ -103,7 +103,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {string} The current date in 'dd.MM.yyyy.' format.
    */
   getDate() {
-    return luxon.DateTime.now().setZone(this.timezone).toFormat('dd.MM.yyyy.');
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('dd.MM.yyyy.');
   }
 
   /**
@@ -111,7 +111,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {string} The current date and time in 'dd.MM.yyyy. HH:mm:ss' format.
    */
   getDateTime() {
-    return luxon.DateTime.now().setZone(this.timezone).toFormat('dd.MM.yyyy. HH:mm:ss');
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('dd.MM.yyyy. HH:mm:ss');
   }
 
   /**
@@ -119,7 +119,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {string} The current date and time in 'dd.MM.yyyy. HH:mm:ss.SSS' format.
    */
   getDateTimeFull() {
-    return luxon.DateTime.now().setZone(this.timezone).toFormat('dd.MM.yyyy. HH:mm:ss.SSS');
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('dd.MM.yyyy. HH:mm:ss.SSS');
   }
 
   /**
@@ -127,7 +127,7 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {string} The current date and time in 'ddMMyyyy_HHmmss' format for use in filenames.
    */
   getDateTimeStr() {
-    return luxon.DateTime.now().setZone(this.timezone).toFormat('ddMMyyyy_HHmmss');
+    return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('ddMMyyyy_HHmmss');
   }
   
   /**

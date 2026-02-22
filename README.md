@@ -1,13 +1,15 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
+**Quick links:** [Website](https://pr-dc.com/jslab/) · [Discourse](https://discourse.jsl.pr-dc.com/) · [Documentation](https://pr-dc.com/jslab/doc/) · [Releases](https://github.com/PR-DC/JSLAB/releases) · [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB.svg?v1" width="150">
+  <img src="https://pr-dc.com/img/github/JSLAB.svg?v1" width="150">
 </p>
 
 The **JavaScript Laboratory (JSLAB)** is an open-source environment designed for scientific computing, data visualization, and various other computer operations. Inspired by *GNU Octave* and *Matlab*, `JSLAB` leverages the advantages of JavaScript, including its blazing speed, extensive examples, backing by some of the largest software companies globally, and the vast community of active programmers and software engineers.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_gui.png?v1" width="800">
+  <img src="https://pr-dc.com/img/github/JSLAB_gui.png?v1" width="800">
 </p>
 
 The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.
@@ -44,7 +46,7 @@ You can install `JSLAB` by either downloading the latest stable release from Git
 ### Download the Latest Stable Release
 - Visit the `JSLAB` Releases Page on GitHub Repository: [https://github.com/PR-DC/JSLAB/releases](https://github.com/PR-DC/JSLAB/releases)
 - Download the appropriate installer and install the program.
-- Try examples from: [https://github.com/PR-DC/JSLAB/tree/master/examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+- Try the examples from: [https://github.com/PR-DC/JSLAB/tree/master/examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
 ## 🛑 Getting Started
 
@@ -59,7 +61,7 @@ You can install `JSLAB` by either downloading the latest stable release from Git
 The image below shows the main window of the `JSLAB` program.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_main_window.svg?v1" alt="Main window of the JSLAB program" width="800">
+  <img src="https://pr-dc.com/img/github/JSLAB_main_window.svg?v1" alt="Main window of the JSLAB program" width="800">
 </p>
 
 Within the main window, there are various shortcuts defined in the help window—for example, the `[CTRL] + [H]` shortcut opens the help window.
@@ -99,7 +101,7 @@ In the image above, the following elements of the main window are numbered:
 For `JSLAB` scripts, the `.jsl` extension is used to distinguish them from the standard `.js` extension for JavaScript. Scripts are executed by providing the script path as the sole argument to the `run` function. For writing or editing code in a script, it is best to use the built-in code editor (which can be opened with the `editor` command or the `edit()` function). The code editor window is shown in the image below.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_editor_window.svg?v1" alt="Code editor window of the JSLAB program" width="800">
+  <img src="https://pr-dc.com/img/github/JSLAB_editor_window.svg?v1" alt="Code editor window of the JSLAB program" width="800">
 </p>
 
 In the image above, the following elements of the code editor window are numbered:
@@ -162,6 +164,8 @@ The **Performance** tab in the developer tools is particularly useful for optimi
 
 ## Examples
 
+For latest examples, visit our **Discourse** at [https://discourse.jsl.pr-dc.com/](https://discourse.jsl.pr-dc.com/)
+
 <details open>
 
 <summary>Animated 2D plot</summary>
@@ -169,7 +173,7 @@ The **Performance** tab in the developer tools is particularly useful for optimi
 A 2D plot animation like this is essential for visualizing real-time data changes, enabling dynamic tracking of evolving values and providing immediate insight into trends or fluctuations as they happen.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_2D_plot_animated.gif?v1" width="800">
+  <img src="https://pr-dc.com/img/github/JSLAB_2D_plot_animated.gif?v1" width="800">
 </p>
 
 ```javascript
@@ -203,7 +207,7 @@ setInterval(function() {
 3D plots are essential for illustrating spatial relationships and complex vector interactions, allowing for a deeper understanding of data across three dimensions.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_3D_plot.png?v1" width="600">
+  <img src="https://pr-dc.com/img/github/JSLAB_3D_plot.png?v1" width="600">
 </p>
 
 ```javascript
@@ -240,7 +244,7 @@ zlim([-1, 3]);
 3D graphics are vital for creating immersive visualizations that bring complex structures and spatial relationships to life, enabling a more intuitive understanding and interaction with digital models in fields like simulation, design, and data analysis.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_3D_graphics.png?v1" width="600">
+  <img src="https://pr-dc.com/img/github/JSLAB_3D_graphics.png?v1" width="600">
 </p>
 
 ```javascript
@@ -294,7 +298,7 @@ Parallel execution is critical for handling computationally intensive tasks, as 
 ```javascript
 var computeSquare = (i) => i * i;
 
-// Run parallel exectuion 
+// Run parallel execution 
 var results = await parallel.parfor(0, 20, 1, 
   parallel.getProcessorsNum(), {}, undefined, computeSquare);
 disp(results);
@@ -333,7 +337,7 @@ disp(x);
 Symbolic math computations are essential for achieving high precision in mathematical modeling, automating algebraic simplifications, and enabling dynamic formula manipulation, which enhances the accuracy and functionality of tools in scientific, engineering, and educational software.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_symbolic.png?v1" width="800">
+  <img src="https://pr-dc.com/img/github/JSLAB_symbolic.png?v1" width="800">
 </p>
 
 ```javascript
@@ -374,7 +378,7 @@ sym.showLatex(k_int);
 Integration with FreeCAD is essential for enabling automated, precise 3D modeling workflows within applications, allowing complex geometries, structures, and engineering designs to be generated, modified, and visualized programmatically, which significantly enhances productivity in design and simulation processes.
 
 <p align="center">
-  <img src="https://pr-dc.com/web/img/github/JSLAB_FreeCADLink.png?v1" width="800">
+  <img src="https://pr-dc.com/img/github/JSLAB_FreeCADLink.png?v1" width="800">
 </p>
 
 ```javascript
@@ -413,7 +417,7 @@ var data = {
   'Coordinates': lines,
   'Diameters': d
 };
-beamsFile = pwd + 'out/beams.json';
+var beamsFile = pwd + 'out/beams.json';
 writeFile(beamsFile, stringify(data));
 
 // Run FreeCADLink 
@@ -422,14 +426,14 @@ await freecad_link.start(exe, {
   host: host,
   timeout: timeout,
   startup_timeout: startup_timeout
-}); // Start FreeCAD programa
+}); // Start FreeCAD program
 
 await freecad_link.newDocument(part);
 await freecad_link.callScript('MakeNodes', nodesFile, timeout);
 await freecad_link.callScript('MakeBeams', beamsFile, timeout);
 await freecad_link.callScript('MakeFusion', [], timeout);
 await freecad_link.saveAs(model, timeout);
-//await freecad_link.quit(); // Close programa
+//await freecad_link.quit(); // Close program
 
 deleteFile(nodesFile);
 deleteFile(beamsFile);
@@ -443,7 +447,7 @@ deleteFile(beamsFile);
 Integration with OpenModelica is crucial for enabling advanced simulation and analysis of complex dynamic systems directly within applications, allowing engineers to model, test, and optimize system behavior seamlessly, which enhances efficiency in design and validation processes.
 
 ```javascript
-await om_link.start(exe); // Start OpenModelica programa
+await om_link.start(exe); // Start OpenModelica program
 disp(await om_link.sendExpression('getVersion()'));
 
 disp(await om_link.sendExpression("model a end a;"));
@@ -539,6 +543,7 @@ All PRs are subject to review by the maintainers. Be prepared to make revisions 
 Your feedback is invaluable in improving the `JSLAB` application. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:
 
 - **GitHub Issues:** Report bugs or suggest features by opening an issue in the GitHub repository.
+- **Discourse:** Write a New Topic at [https://discourse.jsl.pr-dc.com/](https://discourse.jsl.pr-dc.com/)
 - **Email:** Contact us directly at [info@pr-dc.com](mailto:info@pr-dc.com) or main author at [mpetrasinovic@pr-dc.com](mailto:mpetrasinovic@pr-dc.com).
 
 We encourage active participation and appreciate all forms of feedback that help us enhance the functionality and usability of `JSLAB`.
@@ -546,7 +551,7 @@ We encourage active participation and appreciate all forms of feedback that help
 ## License
 
 ```
-Copyright (C) 2025 PR-DC <info@pr-dc.com>
+Copyright (C) 2026 PR-DC <info@pr-dc.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as

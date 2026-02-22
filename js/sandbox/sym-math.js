@@ -32,8 +32,8 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   async load() {
     if(!this.loaded) {
-      this.pyodide = await loadPyodide({ 
-        indexURL: app_path+'/lib/sympy-0.26.2/'
+      this.pyodide = await this.jsl.inter.loadPyodide({
+        indexURL: this.jsl.app_path + '/lib/sympy-0.26.2/'
       });
       await this.pyodide.loadPackage(['sympy', 'numpy'], { messageCallback: () => {}});
       this.loaded = true;
@@ -64,7 +64,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     if(typeof name == 'undefined') {
       name = this._nextVar();
     }
-    var symbol = new PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL(name, value);
+    var symbol = new PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL(this.jsl, name, value);
     this._symbols.push(symbol);
     return symbol;
   }
@@ -88,7 +88,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   checkLoaded() {
     if(!this.loaded) {
-      this.jsl.env.error('@sym: '+language.string(175));
+      this.jsl.inter.env.error('@sym: ' + this.jsl.inter.lang.string(175));
     }
   }
   
@@ -100,13 +100,13 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   eval(code) {
     this.checkLoaded();
-    if(config.DEBUG_SYM_PYTHON_EVAL_CODE) {
+    if(this.jsl.inter.config.DEBUG_SYM_PYTHON_EVAL_CODE) {
       this.jsl._console.log('@sym: eval: ' + code);
     }
     try {
       return this.pyodide.runPython(code);
     } catch(err) {
-      this.jsl.env.error('@sym: ' + err);
+      this.jsl.inter.env.error('@sym: ' + err);
     }
     return false;
   }
@@ -393,7 +393,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
       `));
     } else {
       val = this.getSymbolName(val);
-      if(isNumber(val)) {
+      if(this.jsl.inter.isNumber(val)) {
         symbol.setValue(this.eval(`
           ${symbol.name} = ${expr}.subs(${x}, ${val}).evalf()
           ${symbol.name}
@@ -432,7 +432,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   showLatex(expr) {
     expr = this.getSymbolName(expr);
-    this.jsl.env.dispLatex(this.eval(`latex(${expr})`));
+    this.jsl.inter.env.dispLatex(this.eval(`latex(${expr})`));
   }
   
   /**
@@ -441,7 +441,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   dispLatex(expr) {
     expr = this.getSymbolName(expr);
-    this.jsl.env.disp(this.eval(`latex(${expr})`));
+    this.jsl.inter.env.disp(this.eval(`latex(${expr})`));
   }
   
   /**
@@ -466,14 +466,17 @@ exports.PRDC_JSLAB_SYMBOLIC_MATH = PRDC_JSLAB_SYMBOLIC_MATH;
  * Class for JSLAB symbolic math symbol.
  */
 class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
+  #jsl;
   
   /**
    * Constructs a symbolic math symbol with a name and initial value.
    * @constructor
+   * @param {Object} jsl - Reference to the main JSLAB object.
    * @param {string} name - The name of the symbolic variable.
    * @param {*} value - The initial value of the symbolic variable.
    */
-  constructor(name, value) {
+  constructor(jsl, name, value) {
+    this.#jsl = jsl;
     this.name = name;
     this.value = value;
   }
@@ -492,7 +495,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
    * @returns {string} The string representation in the format 'Vector(x:, y:, z:)'.
    */
   toString() {
-    return 'Symbolic(' + JSON.stringify(this.toJSON(), null, 2) + ')';
+    return 'Symbolic(' + this.#jsl.inter.format.safeStringify(this.toJSON(), 3) + ')';
   }
 
   /**
@@ -508,7 +511,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
    * @returns {string} The JSON string representation of the symbolic value.
    */
   toJSON() {
-    if(typeof this.parsed_value == undefined) {
+    if(typeof this.parsed_value === 'undefined') {
       return this.name;
     }
     return this.parsed_value;

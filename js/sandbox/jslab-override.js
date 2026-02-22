@@ -17,6 +17,7 @@ class PRDC_JSLAB_OVERRIDE {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
+    const cfg = this.jsl.inter.config;
     
     this.jsl.builtin_workspace = Object.getOwnPropertyNames(this.jsl.context);
     this._Module = require('module');
@@ -25,24 +26,25 @@ class PRDC_JSLAB_OVERRIDE {
     this.jsl._console = this.jsl.context.console;
     this.jsl._eval = this.jsl.context.eval;
     this.jsl._require = this._Module.prototype.require;
-    this.jsl._requestAnimationFrame = this.jsl.context.requestAnimationFrame.bind(this.context);
-    this.jsl._cancelAnimationFrame = this.jsl.context.cancelAnimationFrame.bind(this.context);
+    this.jsl._requestAnimationFrame = this.jsl.context.requestAnimationFrame.bind(this.jsl.context);
+    this.jsl._cancelAnimationFrame = this.jsl.context.cancelAnimationFrame.bind(this.jsl.context);
     this.jsl._setInterval = setInterval.bind(this.jsl.context);
     this.jsl._clearInterval = clearInterval.bind(this.jsl.context);
     this.jsl._setTimeout = setTimeout.bind(this.jsl.context);
     this.jsl._clearTimeout = clearTimeout.bind(this.jsl.context);
-    this.jsl._setImmediate = this.jsl.env.setImmediate;
-    this.jsl._clearImmediate = this.jsl.env.clearImmediate;
+    this.jsl._setImmediate = this.jsl.inter.env.setImmediate;
+    this.jsl._clearImmediate = this.jsl.inter.env.clearImmediate;
     this.jsl._Promise = this.jsl.context.Promise;
-    if(!global.is_worker) {
-      this.jsl._requestIdleCallback = this.jsl.context.requestIdleCallback.bind(this.context);
-      this.jsl._cancelIdleCallback = this.jsl.context.cancelIdleCallback.bind(this.context);
+    if(!this.jsl.inter.env.is_worker) {
+      this.jsl._requestIdleCallback = this.jsl.context.requestIdleCallback.bind(this.jsl.context);
+      this.jsl._cancelIdleCallback = this.jsl.context.cancelIdleCallback.bind(this.jsl.context);
     }
     this.jsl._isNaN = this.jsl.context.isNaN;
     
     // Add toJSON methods to some classes
-    if(typeof Gamepad != 'undefined' && !Gamepad.prototype.toJSON) {
-      Gamepad.prototype.toJSON = function() {
+    const GamepadCtor = this.jsl.context.Gamepad;
+    if(typeof GamepadCtor != 'undefined' && GamepadCtor && !GamepadCtor.prototype.toJSON) {
+      GamepadCtor.prototype.toJSON = function() {
         return {
           id: this.id,
           index: this.index,
@@ -57,8 +59,9 @@ class PRDC_JSLAB_OVERRIDE {
         };
       };
     }
-    if(typeof MediaDeviceInfo != 'undefined' && !MediaDeviceInfo.prototype.toJSON) {
-      MediaDeviceInfo.prototype.toJSON = function() {
+    const MediaDeviceInfoCtor = this.jsl.context.MediaDeviceInfo;
+    if(typeof MediaDeviceInfoCtor != 'undefined' && MediaDeviceInfoCtor && !MediaDeviceInfoCtor.prototype.toJSON) {
+      MediaDeviceInfoCtor.prototype.toJSON = function() {
         return {
           deviceId: this.deviceId,
           kind: this.kind,
@@ -69,40 +72,40 @@ class PRDC_JSLAB_OVERRIDE {
     }
 
     // Assign environment properties to context
-    this.jsl.env.exports.forEach(function(prop) {
-      if(config.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
+    this.jsl.inter.env.exports.forEach(function(prop) {
+      if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
         obj.jsl._console.log('Shadowing function/property: ' + prop + ' with env');
-      } else if(config.DEBUG_NEW_FUN) {
+      } else if(cfg.DEBUG_NEW_FUN) {
         obj.jsl._console.log('Adding function/property to context: ' + prop + ' from env');
       }
-      obj.jsl.context[prop] = obj.jsl.env.prop;
+      obj.jsl.context[prop] = obj.jsl.inter.env[prop];
     });
 
     // Assign libraries properties and methods to context
-    if(this.jsl.env.math) {
-      Object.getOwnPropertyNames(this.jsl.env.math).forEach(function(prop) {
-        if(config.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
+    if(this.jsl.inter.env.math) {
+      Object.getOwnPropertyNames(this.jsl.inter.env.math).forEach(function(prop) {
+        if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
           obj.jsl._console.log('Shadowing function/property: ' + prop + ' with math lib');
-        } else if(config.DEBUG_NEW_FUN) {
+        } else if(cfg.DEBUG_NEW_FUN) {
           obj.jsl._console.log('Adding function/property to context: ' + prop + ' from math lib');
         }
         
         var prop_out = prop;
-        if(config.MATHJS_PREVENT_OVERRIDE.includes(prop)) {
+        if(cfg.MATHJS_PREVENT_OVERRIDE.includes(prop)) {
           prop_out = 'mathjs_'+prop;
         }
-        obj.jsl.context[prop_out] = obj.jsl.env.math[prop];
+        obj.jsl.context[prop_out] = obj.jsl.inter.env.math[prop];
       });
     }
     
     // Construct objects of submodules
     var submodules = {};
-    config.SUBMODULES['builtin'].forEach(function(module) {  
+    cfg.SUBMODULES['builtin'].forEach(function(module) {  
       var exp = require('./'+module.file);
       submodules[module.name] = new exp[module.class_name](obj.jsl);
     });
 
-    config.SUBMODULES['lib'].forEach(function(lib) {  
+    cfg.SUBMODULES['lib'].forEach(function(lib) {  
       var exp = require('./'+lib.file);
       obj.jsl.context[lib.name] = new exp[lib.class_name](obj.jsl);
       obj.jsl[lib.name] = obj.jsl.context[lib.name];
@@ -113,9 +116,9 @@ class PRDC_JSLAB_OVERRIDE {
       obj.jsl[submodule] = submodules[submodule]; // Assign submodules
       Object.getOwnPropertyNames(submodules[submodule]).forEach(function(prop) {
         if(!['jsl'].includes(prop) || !prop.startsWith('_')) {
-          if(config.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
+          if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
             obj.jsl._console.log('Shadowing property: ' + prop + ' with submodule ' + submodule);
-          } else if(config.DEBUG_NEW_FUN) {
+          } else if(cfg.DEBUG_NEW_FUN) {
             obj.jsl._console.log('Adding property to context: ' + prop + ' from submodule ' + submodule);
           } 
           obj.jsl.context[prop] = submodules[submodule][prop];
@@ -124,9 +127,9 @@ class PRDC_JSLAB_OVERRIDE {
       
       Object.getOwnPropertyNames(Object.getPrototypeOf(submodules[submodule])).forEach(function(prop) {
         if(!['constructor'].includes(prop)) {
-          if(config.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
+          if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
             obj.jsl._console.log('Shadowing function: ' + prop + ' with submodule ' + submodule);
-          } else if(config.DEBUG_NEW_FUN) {
+          } else if(cfg.DEBUG_NEW_FUN) {
             obj.jsl._console.log('Adding function to context: ' + prop + ' from submodule ' + submodule);
           } 
           obj.jsl.context[prop] = submodules[submodule][prop].bind(submodules[submodule]);
@@ -140,9 +143,9 @@ class PRDC_JSLAB_OVERRIDE {
     this.execute();
     Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(function(prop) {
       if(!['constructor', 'execute'].includes(prop)) {
-        if(config.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
+        if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
           obj.jsl._console.log('Shadowing function: ' + prop + ' with submodule override');
-        } else if(config.DEBUG_NEW_FUN) {
+        } else if(cfg.DEBUG_NEW_FUN) {
           obj.jsl._console.log('Adding function to context: ' + prop + ' from submodule override');
         } 
         obj.jsl.context[prop] = obj[prop].bind(obj);
@@ -163,13 +166,13 @@ class PRDC_JSLAB_OVERRIDE {
     
     this.deleted = {};
     this.delete_globals = [
-      'eval', 'name', 'closed', 'length', 'frameElement', 'navigator', 'styleMedia', 'onsearch', 'isSeureContext', 'trustedTypes', 'onappinstalled', 'onbeforeinstallprompt', 'customElements', 'history', 'navigation', 'locationbar', 'menubar', 'personalbar', 'onunload', 'scheduler', 'chrome',  'scrollbars', 'clientInformation', 'onstorage', 'launchQueue', 'originAgentCluster', 'isSecureContext', 'statusbar', 'toolbar', 'status', 'origin', 'credentialless', 'external', 'screen', 'innerWidth', 'innerHeight', 'scrollX', 'pageXOffset', 'scrollY', 'pageYOffset', 'visualViewport', 'screenX', 'screenY', 'outerWidth', 'outerHeight', 'screenLeft', 'screenTop', 'onbeforexrselect', 'onabort', 'onbeforeinput', 'onblur', 'oncancel', 'oncanplay', 'oncanplaythrough', 'onchange', 'onclick', 'onclose', 'oncontextlost', 'oncontextmenu', 'oncontextrestored', 'oncuechange', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'ondurationchange', 'onemptied', 'onended', 'onfocus', 'onformdata', 'oninput', 'oninvalid', 'onload', 'onloadeddata', 'onloadedmetadata', 'onloadstart', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onpause', 'onplay', 'onplaying', 'onprogress', 'onratechange', 'onreset', 'onresize', 'onscroll', 'onsecuritypolicyviolation', 'onseeked', 'onseeking', 'onselect', 'onslotchange', 'onstalled', 'onsubmit', 'onsuspend', 'ontimeupdate', 'ontoggle', 'onvolumechange', 'onwaiting', 'onwebkitanimationend', 'onwebkitanimationiteration', 'onwebkitanimationstart', 'onwebkittransitionend', 'onwheel', 'onauxclick', 'ongotpointercapture', 'onlostpointercapture', 'onpointerdown', 'onpointermove', 'onpointerrawupdate', 'onpointerup', 'onpointercancel', 'onpointerover', 'onpointerout', 'onpointerenter', 'onpointerleave', 'onselectstart', 'onselectionchange', 'onanimationend', 'onanimationiteration', 'onanimationstart', 'ontransitionrun', 'ontransitionstart', 'ontransitionend', 'ontransitioncancel', 'onafterprint', 'onbeforeprint', 'onbeforeunload', 'onhashchange', 'onlanguagechange', 'onmessage', 'onmessageerror', 'onoffline', 'ononline', 'onpagehide', 'onpageshow', 'onpopstate', 'ondevicemotion', 'ondeviceorientation', 'ondeviceorientationabsolute', 'onbeforematch', 'onbeforetoggle', 'onscrollend', 'oncontentvisibilityautostatechange', 'cookieStore', 'caches'
+      'eval', 'name', 'closed', 'length', 'frameElement', 'navigator', 'styleMedia', 'onsearch', 'isSecureContext', 'trustedTypes', 'onappinstalled', 'onbeforeinstallprompt', 'customElements', 'history', 'navigation', 'locationbar', 'menubar', 'personalbar', 'onunload', 'scheduler', 'chrome',  'scrollbars', 'clientInformation', 'onstorage', 'launchQueue', 'originAgentCluster', 'isSecureContext', 'statusbar', 'toolbar', 'status', 'origin', 'credentialless', 'external', 'screen', 'innerWidth', 'innerHeight', 'scrollX', 'pageXOffset', 'scrollY', 'pageYOffset', 'visualViewport', 'screenX', 'screenY', 'outerWidth', 'outerHeight', 'screenLeft', 'screenTop', 'onbeforexrselect', 'onabort', 'onbeforeinput', 'onblur', 'oncancel', 'oncanplay', 'oncanplaythrough', 'onchange', 'onclick', 'onclose', 'oncontextlost', 'oncontextmenu', 'oncontextrestored', 'oncuechange', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'ondurationchange', 'onemptied', 'onended', 'onfocus', 'onformdata', 'oninput', 'oninvalid', 'onload', 'onloadeddata', 'onloadedmetadata', 'onloadstart', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onpause', 'onplay', 'onplaying', 'onprogress', 'onratechange', 'onreset', 'onresize', 'onscroll', 'onsecuritypolicyviolation', 'onseeked', 'onseeking', 'onselect', 'onslotchange', 'onstalled', 'onsubmit', 'onsuspend', 'ontimeupdate', 'ontoggle', 'onvolumechange', 'onwaiting', 'onwebkitanimationend', 'onwebkitanimationiteration', 'onwebkitanimationstart', 'onwebkittransitionend', 'onwheel', 'onauxclick', 'ongotpointercapture', 'onlostpointercapture', 'onpointerdown', 'onpointermove', 'onpointerrawupdate', 'onpointerup', 'onpointercancel', 'onpointerover', 'onpointerout', 'onpointerenter', 'onpointerleave', 'onselectstart', 'onselectionchange', 'onanimationend', 'onanimationiteration', 'onanimationstart', 'ontransitionrun', 'ontransitionstart', 'ontransitionend', 'ontransitioncancel', 'onafterprint', 'onbeforeprint', 'onbeforeunload', 'onhashchange', 'onlanguagechange', 'onmessage', 'onmessageerror', 'onoffline', 'ononline', 'onpagehide', 'onpageshow', 'onpopstate', 'ondevicemotion', 'ondeviceorientation', 'ondeviceorientationabsolute', 'onbeforematch', 'onbeforetoggle', 'onscrollend', 'oncontentvisibilityautostatechange', 'cookieStore', 'caches'
     ];
     
     // Delete globals
     this.delete_globals.forEach(function(prop) {
-      obj.deleted[prop] = obj.jsl.env.context[prop];
-      delete obj.jsl.env.context[prop];
+      obj.deleted[prop] = obj.jsl.inter.env.context[prop];
+      delete obj.jsl.inter.env.context[prop];
     });
     
     /**
@@ -177,22 +180,22 @@ class PRDC_JSLAB_OVERRIDE {
      */
     this.console = {
       log: function(...arg) {
-        obj.jsl.env.disp(...arg);
+        obj.jsl.inter.env.disp(...arg);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
       warn: function(...arg) {
-        obj.jsl.env.warn(...arg);
+        obj.jsl.inter.env.warn(...arg);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
       info: function(...arg) {
-        obj.jsl.env.disp(...arg);
+        obj.jsl.inter.env.disp(...arg);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
       error: function(...arg) {
-        obj.jsl.env.error(...arg);
+        obj.jsl.inter.env.error(...arg);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
@@ -201,7 +204,7 @@ class PRDC_JSLAB_OVERRIDE {
       },
       assert: function(expression, msg) {
         if(!expression) {
-          obj.jsl.env.error(msg);
+          obj.jsl.inter.env.error(msg);
           obj.jsl.no_ans = true;
           obj.jsl.ignore_output = true;
         }
@@ -210,7 +213,7 @@ class PRDC_JSLAB_OVERRIDE {
         obj.jsl.notImplemented();
       },
       clear: function() {
-        obj.jsl.basic._clear();
+        obj.jsl.inter.basic._clear();
       },
       debug: function() {
         obj.jsl.notImplemented();
@@ -236,7 +239,7 @@ class PRDC_JSLAB_OVERRIDE {
       count: function() {
         obj.jsl.notImplemented();
       },
-      countreset: function() {
+      countReset: function() {
         obj.jsl.notImplemented();
       },
       group: function() {
@@ -261,29 +264,22 @@ class PRDC_JSLAB_OVERRIDE {
      */
     this.Promise = class extends this.jsl._Promise {
       constructor(executor) {
-        if(obj.jsl.basic.checkStopLoop() || !obj.jsl.basic.checkStopLoop()) {
-          obj.jsl.promises_number += 1;
-          obj.jsl.last_promise_id += 1;
-          let promises_id = obj.jsl.last_promise_id;
-          obj.jsl.onStatsChange();
-          let data = super(function(_resolve, _reject) {
-             return executor(function(...args) {
-               obj.jsl.clearPromise(promises_id);
-               _resolve(...args);
-             }, function(...args) {
-               obj.jsl.clearPromise(promises_id);
-               _reject(...args);
-             });
-          });
-          data.loop_stoped = false;
-          obj.jsl.started_promises[promises_id] = data;
-          return data;
-        } else {
-          let data = super(function(resolve, reject) {
-            reject();
-          });
-          return data;
-        }
+        obj.jsl.inter.basic.checkStopLoop();
+        obj.jsl.promises_number += 1;
+        obj.jsl.last_promise_id += 1;
+        let promises_id = obj.jsl.last_promise_id;
+        obj.jsl.onStatsChange();
+        super(function(_resolve, _reject) {
+           return executor(function(...args) {
+             obj.jsl.clearPromise(promises_id);
+             _resolve(...args);
+           }, function(...args) {
+             obj.jsl.clearPromise(promises_id);
+             _reject(...args);
+           });
+        });
+        this.loop_stoped = false;
+        obj.jsl.started_promises[promises_id] = this;
       }
 
       // Override the `then` method
@@ -336,7 +332,7 @@ class PRDC_JSLAB_OVERRIDE {
     var obj = this;
     var request_id = this.jsl._requestAnimationFrame(function() {
       fun();
-      obj.jsl.array.removeElementByValue(obj.jsl.started_animation_frames, request_id);
+      obj.jsl.inter.array.removeElementByValue(obj.jsl.started_animation_frames, request_id);
       obj.jsl.onStatsChange();
     });
     this.jsl.started_animation_frames.push(request_id);
@@ -350,7 +346,7 @@ class PRDC_JSLAB_OVERRIDE {
    */
   cancelAnimationFrame(request_id) {
     this.jsl._cancelAnimationFrame(request_id);
-    this.jsl.array.removeElementByValue(this.jsl.started_animation_frames, request_id);
+    this.jsl.inter.array.removeElementByValue(this.jsl.started_animation_frames, request_id);
     this.jsl.onStatsChange();
   }
   
@@ -364,7 +360,7 @@ class PRDC_JSLAB_OVERRIDE {
     var obj = this;
     var request_id = this.jsl.requestIdleCallback(function() {
       fun(options);
-      obj.jsl.array.removeElementByValue(obj.jsl.started_idle_callbacks, request_id);
+      obj.jsl.inter.array.removeElementByValue(obj.jsl.started_idle_callbacks, request_id);
       obj.jsl.onStatsChange();
     });
     this.jsl.started_idle_callbacks.push(request_id);
@@ -378,7 +374,7 @@ class PRDC_JSLAB_OVERRIDE {
    */
   cancelIdleCallback(request_id) {
     this.jsl._cancelIdleCallback(request_id);
-    this.jsl.array.removeElementByValue(this.jsl.started_idle_callbacks, request_id);
+    this.jsl.inter.array.removeElementByValue(this.jsl.started_idle_callbacks, request_id);
     this.jsl.onStatsChange();
   }
   
@@ -401,7 +397,7 @@ class PRDC_JSLAB_OVERRIDE {
    */
   clearInterval(request_id) {
     this.jsl._clearInterval(request_id);
-    this.jsl.array.removeElementByValue(this.jsl.started_intervals, request_id);
+    this.jsl.inter.array.removeElementByValue(this.jsl.started_intervals, request_id);
     this.jsl.onStatsChange();
   }
   
@@ -415,7 +411,7 @@ class PRDC_JSLAB_OVERRIDE {
     var obj = this;
     var request_id = this.jsl._setTimeout(function() {
       fun(...arg);
-      obj.jsl.array.removeElementByValue(obj.jsl.started_timeouts, request_id); 
+      obj.jsl.inter.array.removeElementByValue(obj.jsl.started_timeouts, request_id); 
       obj.jsl.onStatsChange();      
     }, delay);
     this.jsl.started_timeouts.push(request_id);
@@ -429,7 +425,7 @@ class PRDC_JSLAB_OVERRIDE {
    */
   clearTimeout(request_id) {
     this.jsl._clearTimeout(request_id);
-    this.jsl.array.removeElementByValue(this.jsl.started_timeouts, request_id);
+    this.jsl.inter.array.removeElementByValue(this.jsl.started_timeouts, request_id);
     this.jsl.onStatsChange();
   }
   
@@ -442,7 +438,7 @@ class PRDC_JSLAB_OVERRIDE {
     var obj = this;
     var request_id = this.jsl._setImmediate(function() {
       fun();
-      obj.jsl.array.removeElementByValue(obj.jsl.started_immediates, request_id);
+      obj.jsl.inter.array.removeElementByValue(obj.jsl.started_immediates, request_id);
       obj.jsl.onStatsChange();
     });
     this.jsl.started_immediates.push(request_id);
@@ -456,7 +452,7 @@ class PRDC_JSLAB_OVERRIDE {
    */
   clearImmediate(request_id) {
     this.jsl._clearImmediate(request_id);
-    this.jsl.array.removeElementByValue(this.jsl.started_immediates, request_id);
+    this.jsl.inter.array.removeElementByValue(this.jsl.started_immediates, request_id);
     this.jsl.onStatsChange();
   }
 }

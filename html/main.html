@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>JSLAB | PR-DC</title>
+    <title str="519">JSLAB | PR-DC</title>
     <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
     <link rel="stylesheet" type="text/css" href="../css/highlight-notepadpp-theme.css">
@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-main-custom.css">
 		<link type="text/css" rel="stylesheet" href="../css/main.css" />
+    <link type="text/css" rel="stylesheet" href="../css/context-menu.css" />
     <link type="text/css" rel="stylesheet" href="../css/terminal.css" />
     <link type="text/css" rel="stylesheet" href="../font/roboto.css" />
     <link type="text/css" rel="stylesheet" href="../font/RobotoMono.css" />
@@ -34,7 +35,7 @@
           <li id="win-restore"><img src="../img/win-restore.svg"></li>
           <li id="win-close"><img src="../img/win-close.svg"></li>
         </ul>
-        <div id="app-title">JSLAB / MAIN</div>
+        <div id="app-title"><str sid="506"></str></div>
         <div class="clear"></div>
       </div>
     </div>
@@ -93,6 +94,7 @@
               
               <div id="workspace-options" class="options">
                 <div class="options-right">
+                  <input id="workspace-search" class="workspace-search" type="text" str="168" title-str="168">
                   <i class="clear" title-str="38"></i>
                 </div>
               </div>
@@ -164,7 +166,7 @@
                 <img class="options-close" src="../img/close.svg" title-str="46">
                </div>
                <div class="float-input" title-str="17">
-                <input autocomplete="off" type="text" name="N-messages-max" class="N-messages-max" placeholder="Infinity" value="">
+                <input autocomplete="off" type="text" name="N-messages-max" class="N-messages-max" str="510" value="">
                 <label class="float-label" for="N-messages-max"><str sid="17"></str></label>
                </div>
                <button class="change-settings"><str sid="57"></str></button>
@@ -193,6 +195,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div id="workspace-context-menu" class="app-context-menu">
+      <button id="workspace-context-inspect" type="button"><str sid="386"></str></button>
     </div>
 
     <div id="script-path-container" class="main-dialog" tabindex="0">
@@ -313,9 +319,9 @@
         </div>
         <div class="page-panel panel">
           <img class="app-logo" src="../img/JSLAB.svg">
-          <div class='app-name'>JavaScript LABoratory</div>
+          <div class='app-name'><str sid="508"></str></div>
           <div class='app-version'></div>
-          <div class='app-company'>by PR-DC company</div>
+          <div class='app-company'><str sid="509"></str></div>
           <img class="company-logo" src="../img/PR-DC_icon.svg">
 
           <p><str sid="86"></str></p>
@@ -342,6 +348,29 @@
       </div>
     </div>
 
+    <div id="inspector-input-container" class="main-dialog" tabindex="0">
+      <div class="page-cont options-cont panel">
+        <div class="page-header">
+          <span id="inspector-input-title"><str sid="388"></str></span>
+          <img id="inspector-input-close" class="page-close" src="../img/close.svg" title-str="52">
+        </div>
+        <div class="page-panel panel">
+          <div id="inspector-input-message"></div>
+          <label id="inspector-input-label-1" for="inspector-input-field-1"></label>
+          <input id="inspector-input-field-1" type="text" autocomplete="off" spellcheck="false">
+          <div id="inspector-input-row-2">
+            <label id="inspector-input-label-2" for="inspector-input-field-2"></label>
+            <input id="inspector-input-field-2" type="text" autocomplete="off" spellcheck="false">
+          </div>
+          <div id="inspector-input-buttons">
+            <button id="inspector-input-submit"><str sid="391"></str></button>
+            <button id="inspector-input-cancel"><str sid="52"></str></button>
+          </div>
+          <br class="clear">
+        </div>
+      </div>
+    </div>
+
     <div id="settings-container" class="main-dialog" tabindex="0">
       <div class="page-cont options-cont panel">
         <div class="page-header">
@@ -350,15 +379,15 @@
         </div>
         <div class="page-panel panel">
           <div class="float-select" title-str="25">
-            <select name="set-langauge" class="set-langauge">
+            <select name="set-language" class="set-language">
               <option value="en">English</option>
               <option value="rs">Srpski</option>
               <option value="rsc">Српски</option>
             </select>
-            <label class="float-label" for="set-langauge"><str sid="16"></str></label>
+            <label class="float-label" for="set-language"><str sid="16"></str></label>
           </div>
           <div class="float-input" title-str="223">
-            <input autocomplete="off" type="text" name="N-history-max" class="N-history-max" placeholder="20" value="20">
+            <input autocomplete="off" type="text" name="N-history-max" class="N-history-max" str="536" value="20">
             <label class="float-label" for="N-history-max"><str sid="223"></str></label>
           </div>
           <button class="change-settings"><str sid="57"></str></button>
@@ -370,34 +399,34 @@
       <div id="sandbox-stats-header">
         <str sid="91"></str>
       </div>
-      <div class="sandbox-stats-cont">
-        Required modules
-        <div class="sandbox-stats-val" id="sandbox-required-modules-num">0</div>
-      </div>
-      <div class="sandbox-stats-cont">
-        Promises
-        <div class="sandbox-stats-val" id="sandbox-promises-num">0</div>
-      </div>
-      <div class="sandbox-stats-cont">
-        Timeouts
-        <div class="sandbox-stats-val" id="sandbox-timeouts-num">0</div>
-      </div>
-      <div class="sandbox-stats-cont">
-        Immediates
-        <div class="sandbox-stats-val" id="sandbox-immediates-num">0</div>
-      </div>
-      <div class="sandbox-stats-cont">
-        Intervals
-        <div class="sandbox-stats-val" id="sandbox-intervals-num">0</div>
-      </div>
-      <div class="sandbox-stats-cont">
-        Animation frames
-        <div class="sandbox-stats-val" id="sandbox-animation-frames-num">0</div>
-      </div>
-      <div class="sandbox-stats-cont">
-        Idle callbacks
-        <div class="sandbox-stats-val" id="sandbox-idle-callbacks-num">0</div>
-      </div>
+        <div class="sandbox-stats-cont">
+          <str sid="308"></str>
+          <div class="sandbox-stats-val" id="sandbox-required-modules-num">0</div>
+        </div>
+        <div class="sandbox-stats-cont">
+          <str sid="309"></str>
+          <div class="sandbox-stats-val" id="sandbox-promises-num">0</div>
+        </div>
+        <div class="sandbox-stats-cont">
+          <str sid="310"></str>
+          <div class="sandbox-stats-val" id="sandbox-timeouts-num">0</div>
+        </div>
+        <div class="sandbox-stats-cont">
+          <str sid="311"></str>
+          <div class="sandbox-stats-val" id="sandbox-immediates-num">0</div>
+        </div>
+        <div class="sandbox-stats-cont">
+          <str sid="312"></str>
+          <div class="sandbox-stats-val" id="sandbox-intervals-num">0</div>
+        </div>
+        <div class="sandbox-stats-cont">
+          <str sid="313"></str>
+          <div class="sandbox-stats-val" id="sandbox-animation-frames-num">0</div>
+        </div>
+        <div class="sandbox-stats-cont">
+          <str sid="314"></str>
+          <div class="sandbox-stats-val" id="sandbox-idle-callbacks-num">0</div>
+        </div>
       <div class="popup-triangle"></div>
     </div>
     
@@ -416,8 +445,9 @@
     <script type="text/javascript" src="../lib/jquery-3.7.0/jquery-3.7.0.min.js"></script>
     <script type="text/javascript" src="../lib/jshint-2.13.0/jshint-2.13.0.js"></script>
     <script type="text/javascript" src="../lib/highlight-11.0.1/highlight-11.0.1.min.js"></script>
-    <script type="text/javascript" src="../lib/tex-mml-chtml-3.2.0/tex-mml-chtml-3.2.0.js"></script>
-    
+    <script type="text/javascript" src="../js/windows/mathjax-config.js"></script>
+    <script type="text/javascript" src="../lib/MathJax-3.2.0/tex-mml-chtml.js"></script>
+
     <script type="text/javascript" src="../lib/codemirror-5.49.2/lib/codemirror.js"></script>
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/edit/matchbrackets.js"></script>
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/lint/lint.js"></script>

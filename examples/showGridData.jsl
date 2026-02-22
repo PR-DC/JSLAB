@@ -8,7 +8,7 @@
 close('all'); clear; clc; tic;
 disp(' --- ' + jsl_file_name + ' ---');
 
-var data = JSON.parse(readFile(pwd + 'resources/plotdata.json'));
+var data = JSON.parse(readFile(jsl.app_path+'/examples/resources/plotdata.json'));
 
 var method = ['linear', 'nearest'][0];
 var Ng = 151;
@@ -24,7 +24,7 @@ plot([{
   x: xi, y: yi, z: zi, type: "heatmap", 
   colorscale: 'Jet', 
   lighting: { ambient: 1 }, 
-  colorbar: { title: 'z' }
+  colorbar: { title: { text: 'z' }}
 }], {'showLegend': false, 'font': {'family': 'LatinModern', 'size': 14}});
 xlabel('x');
 ylabel('y');

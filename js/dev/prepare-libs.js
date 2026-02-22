@@ -8,12 +8,11 @@
  
 // Import modules
 const fs = require('fs');
-const rimraf = require('rimraf');
 const path = require('path');
 const { extractFull } = require('node-7z');
 const bin_path = require('7zip-bin').path7za;
 
-require('../init-config.js');
+require('../shared/init-config.js');
 
 console.log('[prepare-libs.js] Started');
 var t = performance.now();
@@ -56,13 +55,11 @@ async function extractWithProgress(lib, archive, dest) {
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
       console.log(`Extraction of ${lib} complete.`);
-      fs.unlinkSync(archive);
       resolve();
     });
 
     extractor.on('error', (err) => {
       console.error(`Extraction error for ${lib}:`, err);
-      fs.unlinkSync(archive);
       reject(err);
     });
   });

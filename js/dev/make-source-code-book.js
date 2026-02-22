@@ -11,7 +11,7 @@ const path = require('path');
 const cp = require("child_process");
 const rimraf = require('rimraf');
 
-require('../init-config.js');
+require('../shared/init-config.js');
 
 console.log('[make-source-code-book.js] Started');
 var t = performance.now();
@@ -200,5 +200,5 @@ ${obj[key]}
   }
   rimraf.sync(dir);
 
-  console.log('[make-source-code-book.js.js] ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
+  console.log('[make-source-code-book.js] ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
 })();

@@ -15,28 +15,7 @@ class PRDC_JSLAB_LIB_GUI {
    * @param {Object} jsl Reference to the main JSLAB object.
    */
   constructor(jsl) {
-    var obj = this;
     this.jsl = jsl;
-    
-    this.escape_html_map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-      '/': '&#x2F;',
-      '`': '&#x60;',
-      '=': '&#x3D;'
-    };
-  }
-  
-  /**
-   * Escapes reserved HTML characters in a string to prevent injection or XSS.
-   * @param {string} string The raw text whose special characters should be converted to HTML entities.
-   * @returns {string} The sanitized string safe for insertion into the DOM.
-   */
-  escapeHTML(string) {
-    return String(string).replace(/[&<>"'`=\/]/g, s => this.escape_html_map[s]);
   }
   
   /**
@@ -54,7 +33,11 @@ class PRDC_JSLAB_LIB_GUI {
    * @returns {string} The escaped string value, or an empty string if the element is not found.
    */
   getElVal(el_or_sel) {
-    return this.escapeHTML(this._readVal(this._resolveEl(el_or_sel)));
+    var el = this._resolveEl(el_or_sel);
+    if(!el) {
+      return '';
+    }
+    return this.jsl.inter.format.escapeHTML(this._readVal(el));
   }
   
   /**
@@ -63,7 +46,11 @@ class PRDC_JSLAB_LIB_GUI {
    * @returns {number} The numeric value or `NaN` if conversion fails.
    */
   getElValNum(el_or_sel) {
-    return Number(this._readVal(this._resolveEl(el_or_sel)));
+    var el = this._resolveEl(el_or_sel);
+    if(!el) {
+      return NaN;
+    }
+    return Number(this._readVal(el));
   }
 
   /**
@@ -115,10 +102,10 @@ class PRDC_JSLAB_LIB_GUI {
    */
   onInputChange(el, fun, validator) {
     var initLastVal = n =>
-      n.setAttribute('last-val', this.escapeHTML(this._readVal(n)));
+      n.setAttribute('last-val', this.jsl.inter.format.escapeHTML(this._readVal(n)));
 
     var hasChanged = n =>
-      this.escapeHTML(this._readVal(n)) !== n.getAttribute('last-val');
+      this.jsl.inter.format.escapeHTML(this._readVal(n)) !== n.getAttribute('last-val');
 
     var maybeFire = (n, e) => {
       if(!hasChanged(n)) return;
@@ -159,7 +146,9 @@ class PRDC_JSLAB_LIB_GUI {
    */
   onActiveInputChange(el, fun, validator) {
     var initLastVal = n =>
-      n.setAttribute('last-val', this.escapeHTML(this._readVal(n)));
+      n.setAttribute('last-val', this.jsl.inter.format.escapeHTML(this._readVal(n)));
+    var hasChanged = n =>
+      this.jsl.inter.format.escapeHTML(this._readVal(n)) !== n.getAttribute('last-val');
 
     var maybeFire = (n, e) => {
       if(!hasChanged(n)) return;
@@ -290,7 +279,7 @@ class PRDC_JSLAB_LIB_GUI {
   onResize(el_or_sel, cb) {
     var el = this._resolveEl(el_or_sel);
     if(!el) return;
-    var ro = new ResizeObserver(ent => cb(ent[0].contentRect));
+    var ro = new this.jsl.inter.ResizeObserver(ent => cb(ent[0].contentRect));
     ro.observe(el);
     return ro;
   }
@@ -329,7 +318,13 @@ class PRDC_JSLAB_LIB_GUI {
    * @returns {string} The raw string content of the element.
    */
   _readVal(el) {
-    return el.matches('[contenteditable]') ? el.textContent : el.value;
+    if(!el) {
+      return '';
+    }
+    if(typeof el.matches === 'function' && el.matches('[contenteditable]')) {
+      return el.textContent;
+    }
+    return el.value;
   }
   
   /**

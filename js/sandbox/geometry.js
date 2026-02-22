@@ -5,8 +5,11 @@
  * info@pr-dc.com
  */
  
-var { PRDC_JSLAB_GEOMETRY_SPACE_SERACH } = require('./geometry-spacesearch');
  
+var { PRDC_JSLAB_GEOMETRY_SPACE_SEARCH } = require('./geometry-spacesearch');
+var { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D } = require('./geometry-boundaryfollow2d');
+var { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D } = require('./geometry-boundaryfollow3d');
+
 /**
  * Class for JSLAB geometry submodule.
  */
@@ -22,12 +25,26 @@ class PRDC_JSLAB_LIB_GEOMETRY {
   }
   
   /**
-   * Creates an instance of PRDC_JSLAB_LIB_OPTIM_SPACE_SERACH.
+   * Creates an instance of PRDC_JSLAB_GEOMETRY_SPACE_SEARCH.
    */
   spaceSearch(...args) {
-    return new PRDC_JSLAB_GEOMETRY_SPACE_SERACH(...args);
+    return new PRDC_JSLAB_GEOMETRY_SPACE_SEARCH(this.jsl, ...args);
   }
-    
+  
+  /**
+   * Creates an instance of PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D.
+   */
+  boundaryFollow2D(...args) {
+    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(this.jsl, ...args);
+  }
+  
+  /**
+   * Creates an instance of PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D.
+   */
+  boundaryFollow3D(...args) {
+    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(this.jsl, ...args);
+  }
+  
   /**
    * Finds the nearest points in points2 for each point in points1.
    * @param {Array[]} points1 - Array of points.
@@ -36,7 +53,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    */
   findNearestPoints(points1, points2) {
     var L;
-    var id = this.jsl.array.createFilledArray(points1.length, -1);
+    var id = this.jsl.inter.array.createFilledArray(points1.length, -1);
     for(var i = 0; i < points1.length; i++) {
       var L_min;
       for(var j = 0; j < points2.length; j++) {
@@ -69,15 +86,39 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    */
   pointLineDistance(P, A, i) {
     // P1 = A + dot(P - A, i) * i
-    const PA = minus(P, A);
-    const distAlongI = dot(PA, i);
-    const P1 = plus(A, scale(i, distAlongI));
+    const PA = this.jsl.inter.minus(P, A);
+    const distAlongI = this.jsl.inter.dot(PA, i);
+    const P1 = this.jsl.inter.plus(A, this.jsl.inter.scale(i, distAlongI));
 
     // Distance = || P - P1 ||
-    const d = norm(minus(P, P1));
+    const d = this.jsl.inter.norm(this.jsl.inter.minus(P, P1));
 
     return { d, P1 };
   }
+  
+  /**
+   * Computes the shortest distance from a point to a line segment in 2D.
+   *
+   * The point and segment endpoints are expected as objects with numeric
+   * properties {x, y}. The result is the Euclidean distance to the closest
+   * point on the segment.
+   *
+   * @param {{x:number, y:number}} p - Query point.
+   * @param {{x:number, y:number}} a - Segment start point.
+   * @param {{x:number, y:number}} b - Segment end point.
+   * @returns {number} The minimal distance from p to the segment a-b.
+   */
+  pointSegmentDistance(p, a, b) {
+    const abx = b.x - a.x, aby = b.y - a.y;
+    const apx = p.x - a.x, apy = p.y - a.y;
+    const den = abx * abx + aby * aby;
+    if(den <= 0) return Math.hypot(apx, apy);
+    let t = (apx * abx + apy * aby) / den;
+    t = this.jsl.inter.math.clamp(t, 0, 1);
+    const cx = a.x + t * abx, cy = a.y + t * aby;
+    return Math.hypot(p.x - cx, p.y - cy);
+  }
+  
   /**
    * Returns the intersection points of a circle (center O, radius r) 
    * in a plane with a line passing through point P with direction i.
@@ -101,10 +142,10 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(d < r) {
       // Two intersection points
       const h = Math.sqrt(r * r - d * d); // half of the chord length
-      P1 = plus(A, scale(i, h));
-      P2 = plus(A, scale(i, -h));
+      P1 = this.jsl.inter.plus(A, this.jsl.inter.scale(i, h));
+      P2 = this.jsl.inter.plus(A, this.jsl.inter.scale(i, -h));
       flag = 0; // intersection
-    } else if(Math.abs(d - r) <= EPS) {
+    } else if(Math.abs(d - r) <= this.jsl.inter.EPS) {
       // Tangent
       P1 = A;
       flag = 1;
@@ -133,12 +174,12 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     let i = null;
     let flag = 0;
 
-    const V = cross3D(n1, n2, 1);
+    const V = this.jsl.inter.cross3D(n1, n2, 1);
 
-    const V_norm = norm(V);
-    if(V_norm > EPS) {
+    const V_norm = this.jsl.inter.norm(V);
+    if(V_norm > this.jsl.inter.EPS) {
       // planes intersect
-      i = scale(V, 1.0 / V_norm); // unit direction
+      i = this.jsl.inter.scale(V, 1.0 / V_norm); // unit direction
 
       // Solve for a point on the intersection line:
       // We want to solve the system:
@@ -150,7 +191,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
         [n1[0], n1[1], n1[2]],
         [n2[0], n2[1], n2[2]],
       ];
-      const B = [dot(n1, P1), dot(n2, P2)];
+      const B = [this.jsl.inter.dot(n1, P1), this.jsl.inter.dot(n2, P2)];
 
       // We try ignoring one coordinate at a time (k=1 to 3):
       let solved = false;
@@ -165,7 +206,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
         ];
         const detSubA = subA[0][0] * subA[1][1] - subA[0][1] * subA[1][0];
 
-        if(Math.abs(detSubA) > EPS) {
+        if(Math.abs(detSubA) > this.jsl.inter.EPS) {
           // We can solve
           // subA * C = B
           // C is 2x1 => we solve by 2x2 inverse
@@ -189,8 +230,8 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     } else {
       // Check if they are the same plane
       // We test if P2 satisfies plane 1 => dot(n1, P1-P2)=0 (within EPS).
-      const diff = minus(P1, P2);
-      if(Math.abs(dot(n1, diff)) <= EPS) {
+      const diff = this.jsl.inter.minus(P1, P2);
+      if(Math.abs(this.jsl.inter.dot(n1, diff)) <= this.jsl.inter.EPS) {
         // same plane
         flag = 1;
       } else {
@@ -212,12 +253,12 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    */
   isPointOnLine(P, A, B) {
     // i = (B - A) / ||B - A||
-    const AB = minus(B, A);
-    const i = scale(AB, 1.0 / norm(AB));
+    const AB = this.jsl.inter.minus(B, A);
+    const i = this.jsl.inter.scale(AB, 1.0 / this.jsl.inter.norm(AB));
 
     // dot(A - P, i) and dot(B - P, i)
-    const d1 = dot(minus(A, P), i);
-    const d2 = dot(minus(B, P), i);
+    const d1 = this.jsl.inter.dot(this.jsl.inter.minus(A, P), i);
+    const d2 = this.jsl.inter.dot(this.jsl.inter.minus(B, P), i);
 
     // If both dot products have the same sign, P is outside the segment
     if((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0)) {
@@ -243,22 +284,22 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     let flag = 0;
 
     // i = (P2 - P1) / ||P2 - P1||
-    const v = minus(P2, P1);
-    const len = norm(v);
-    const i = scale(v, 1.0 / len);
+    const v = this.jsl.inter.minus(P2, P1);
+    const len = this.jsl.inter.norm(v);
+    const i = this.jsl.inter.scale(v, 1.0 / len);
 
     const P = [P1, P2, P3, P4];
 
     const tArr = [];
     tArr.push([0, 1, 1]);
-    tArr.push([dot(minus(P2, P1), i), 2, 1]);
-    tArr.push([dot(minus(P3, P1), i), 3, 2]);
-    tArr.push([dot(minus(P4, P1), i), 4, 2]);
+    tArr.push([this.jsl.inter.dot(this.jsl.inter.minus(P2, P1), i), 2, 1]);
+    tArr.push([this.jsl.inter.dot(this.jsl.inter.minus(P3, P1), i), 3, 2]);
+    tArr.push([this.jsl.inter.dot(this.jsl.inter.minus(P4, P1), i), 4, 2]);
 
     // Sort rows by the first column
     tArr.sort((a, b) => a[0] - b[0]);
 
-    if(Math.abs(tArr[0][2] - tArr[1][2]) <= EPS) {
+    if(Math.abs(tArr[0][2] - tArr[1][2]) <= this.jsl.inter.EPS) {
       // no overlap
       flag = 1;
     } else {
@@ -298,7 +339,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
 
         const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
-        if (dist < L) {
+        if(dist < L) {
           L = dist;
           I = i;
           J = j;
@@ -384,22 +425,22 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    */
   getRotationMatrix(a, b) {
     // a and b are unit vectors
-    var v = this.jsl.array.cross3D(a, b, 1);
-    var s = this.jsl.env.math.norm(v);
-    var c = this.jsl.array.dotVector(a, b);
+    var v = this.jsl.inter.array.cross3D(a, b, 1);
+    var s = this.jsl.inter.env.math.norm(v);
+    var c = this.jsl.inter.array.dotVector(a, b);
 
     if(c == -1) { // Vectors are opposite
       // Find a vector orthogonal to 'a'
       var orthogonal = [0, 0, 0];
-      if(this.jsl.env.math.abs(a[0]) < this.jsl.env.math.abs(a[1]) && 
-          this.jsl.env.math.abs(a[0]) < this.jsl.env.math.abs(a[2])) {
+      if(this.jsl.inter.env.math.abs(a[0]) < this.jsl.inter.env.math.abs(a[1]) && 
+          this.jsl.inter.env.math.abs(a[0]) < this.jsl.inter.env.math.abs(a[2])) {
         orthogonal = [0, -a[2], a[1]];
-      } else if(this.jsl.env.math.abs(a[1]) < this.jsl.env.math.abs(a[2])) {
+      } else if(this.jsl.inter.env.math.abs(a[1]) < this.jsl.inter.env.math.abs(a[2])) {
         orthogonal = [-a[2], 0, a[0]];
       } else {
         orthogonal = [-a[1], a[0], 0];
       }
-      orthogonal = this.jsl.array.normalizeVector(orthogonal);
+      orthogonal = this.jsl.inter.array.normalizeVector(orthogonal);
 
       // Compute rotation matrix using Householder reflection
       var o = orthogonal;
@@ -413,16 +454,16 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       return [1, 0, 0, 0, 1, 0, 0, 0, 1];
     } else {
       // Compute skew-symmetric cross-product matrix of v
-      var vx = this.jsl.array.skewVector(v);
+      var vx = this.jsl.inter.array.skewVector(v);
 
       // Compute R = I + vx + vx * vx * ((1 - c) / (s * s))
       var I = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
-      var vx2 = this.jsl.array.multiply(vx, vx, 3, 3, 3);
+      var vx2 = this.jsl.inter.array.multiply(vx, vx, 3, 3, 3);
 
       var factor = (1 - c) / (s * s);
 
-      var R = this.jsl.array.plus(this.jsl.array.plus(I, vx), this.jsl.array.scale(vx2, factor));
+      var R = this.jsl.inter.array.plus(this.jsl.inter.array.plus(I, vx), this.jsl.inter.array.scale(vx2, factor));
 
       return R;
     }
@@ -439,7 +480,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
   transform(coordinates, scale_factor, rotation_matrix, translation) {
     var obj = this;
     return coordinates.map(function(coordinate) {
-      var transformed = obj.jsl.array.plus(translation, obj.jsl.array.multiply(rotation_matrix, obj.jsl.array.scale(coordinate, scale_factor), 3, 3, 1));
+      var transformed = obj.jsl.inter.array.plus(translation, obj.jsl.inter.array.multiply(rotation_matrix, obj.jsl.inter.array.scale(coordinate, scale_factor), 3, 3, 1));
       return transformed;
     });
   }
@@ -467,7 +508,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     
     // Define the unit arrow once
     var arrowhead_length = scale * 1;
-    var arrowhead_width = arrowhead_length * this.jsl.env.math.tan(angle_factor);
+    var arrowhead_width = arrowhead_length * this.jsl.inter.env.math.tan(angle_factor);
 
     // Shaft points (unit arrow along x-axis)
     var shaft_start = [0, 0, 0];
@@ -523,11 +564,11 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       var vector = [u, v, w];
       
       // Calculate the length of the vector
-      var length = this.jsl.env.math.norm(vector);
+      var length = this.jsl.inter.env.math.norm(vector);
       if(length === 0) continue; // Skip zero-length vectors
 
       // Normalize the direction vector
-      var dir = this.jsl.array.normalizeVector(vector);
+      var dir = this.jsl.inter.array.normalizeVector(vector);
 
       // Compute rotation matrix to rotate from x-axis to dir
       var R = this.getRotationMatrix(x_axis, dir);
@@ -655,7 +696,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       if(radius === 0) continue; // Skip zero-radius disks
 
       // Normalize the normal vector to ensure it's a unit vector
-      var dir = this.jsl.array.normalizeVector(normal);
+      var dir = this.jsl.inter.array.normalizeVector(normal);
 
       // Compute rotation matrix to rotate from x-axis to the normal vector
       var R = this.getRotationMatrix(z_axis, dir);
@@ -784,7 +825,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       const normal = [ui[i], vi[i], wi[i]];
       
       // Normalize the plane normal
-      const dir = this.jsl.array.normalizeVector(normal);
+      const dir = this.jsl.inter.array.normalizeVector(normal);
 
       // Compute rotation matrix to rotate a plane (lying in XY-plane) so its normal aligns with 'dir'
       const R = this.getRotationMatrix(z_axis, dir);
@@ -940,9 +981,9 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     
     for(var i = 0; i < xi.length; i++) {
-      texts.x.push(plus(xi[i], dxi[i]));
-      texts.y.push(plus(yi[i], dyi[i]));
-      texts.z.push(plus(zi[i], dzi[i]));
+      texts.x.push(this.jsl.inter.plus(xi[i], dxi[i]));
+      texts.y.push(this.jsl.inter.plus(yi[i], dyi[i]));
+      texts.z.push(this.jsl.inter.plus(zi[i], dzi[i]));
       texts.text.push(texti[i]);
     }
     return texts;
@@ -1005,7 +1046,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Array} - An array containing boundary facets and the volume.
    */
   boundary3D(points, shrink = 0.5) {
-    var shp = new this.jsl.env.AlphaShape3D(); 
+    var shp = new this.jsl.inter.env.AlphaShape3D(); 
     shp.newShape(points);
     
     var Acrit = shp.getCriticalAlpha('one-region');
@@ -1031,7 +1072,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @param {number[][]} faces - Array of face indices.
    */
   writeOff(filename, vertices, faces) {
-    var shp = new this.jsl.env.AlphaShape3D(); 
+    var shp = new this.jsl.inter.env.AlphaShape3D(); 
     shp.writeOff(filename, vertices, faces);
     shp = null;
   }
@@ -1043,14 +1084,14 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @throws Will throw an error if the file cannot be read or is not a valid OFF file.
    */
   readOff(filename) {
-    var data = this.jsl.env.readFileSync(filename, 'utf8');
+    var data = this.jsl.inter.env.readFileSync(filename, 'utf8');
     var tokens = data.split(/\s+/).filter(token => token.length > 0);
     if(tokens[0] !== 'OFF') {
-      this.jsl.env.error('@readOff: '+language.string(193));
+      this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(193));
     }
     tokens.shift();
     if(tokens.length < 3) {
-      this.jsl.env.error('@readOff: '+language.string(194));
+      this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(194));
     }
     
     var j = 0;
@@ -1063,22 +1104,22 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     
     // Read vertex coordinates
-    var vertices = createArray(nvert);
+    var vertices = this.jsl.inter.createArray(nvert);
     var k = 0;
     for(var i = 0; i < nvert; i++) {
       if(j + 2 >= tokens.length) {
-        this.jsl.env.error('@readOff: '+language.string(195));
+        this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(195));
         break;
       }
       vertices[k++] = [tokens[j++], tokens[j++], tokens[j++]];
     }
     
     // Read face data
-    var faces = createArray(nface);
+    var faces = this.jsl.inter.createArray(nface);
     var k = 0;
     for(let i = 0; i < nface; i++) {
       if(j >= tokens.length) {
-        this.jsl.env.error('@readOff: '+language.string(196));
+        this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(196));
         break;
       }
       var vertices_per_face = tokens[j++];

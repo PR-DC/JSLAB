@@ -54,7 +54,7 @@ class PRDC_JSLAB_LIB_OPTIM {
     
     while(!convergence && iteration < maxIterations) {
       iteration++;
-      const indices = shuffleIndices(x);
+      const indices = this.jsl.inter.array.shuffleIndices(x);
       convergence = true; // Assume convergence until a significant update is found
 
       // Iterate over each variable in shuffled order
@@ -89,7 +89,7 @@ class PRDC_JSLAB_LIB_OPTIM {
 
       // Optional: Log progress every 100 iterations
       if(options.disp && iteration % 100 === 0) {
-        this.jsl.env.disp(`Iteration ${iteration}: f(x) = ${fx}`);
+        this.jsl.inter.env.disp(`Iteration ${iteration}: f(x) = ${fx}`);
       }
     }
 
@@ -117,7 +117,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    *   - `x`: The parameters corresponding to the minimum function value.
    */
   optimNelderMead(...args) {
-    return this.jsl.env.fmin.nelderMead(...args);
+    return this.jsl.inter.env.fmin.nelderMead(...args);
   }
   
   /**
@@ -134,7 +134,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    *   - `fxprime`: The gradient of the function at the minimum.
    */
   optimConjugateGradient(...args) {
-    return this.jsl.env.fmin.conjugateGradient(...args);
+    return this.jsl.inter.env.fmin.conjugateGradient(...args);
   }
   
   /**
@@ -152,7 +152,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    *   - `fxprime`: The gradient of the function at the minimum.
    */
   optimGradientDescent(...args) {
-    return this.jsl.env.fmin.gradientDescent(...args);
+    return this.jsl.inter.env.fmin.gradientDescent(...args);
   }
   
   /**
@@ -171,7 +171,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    *   - `fxprime`: The gradient of the function at the minimum.
    */
   optimGradientDescentLineSearch(...args) {
-    return this.jsl.env.fmin.gradientDescentLineSearch(...args);
+    return this.jsl.inter.env.fmin.gradientDescentLineSearch(...args);
   }
     
   /**
@@ -185,7 +185,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @returns {number} The root found within the interval [a, b].
    */
   optimBisect(...args) {
-    return this.jsl.env.fmin.bisect(...args);
+    return this.jsl.inter.env.fmin.bisect(...args);
   }
   
   /**
@@ -209,7 +209,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    *   - `x`: The parameters corresponding to the minimum function value.
    */
   fminsearch(...args) {
-    return this.jsl.env.fmin.nelderMead(...args);
+    return this.jsl.inter.env.fmin.nelderMead(...args);
   }
   
   /**
@@ -306,7 +306,7 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {Object} opts - Configuration options for the algorithm.
    */
   rcmiga(...args) {
-    return new PRDC_JSLAB_OPTIM_RCMIGA(...args);
+    return new PRDC_JSLAB_OPTIM_RCMIGA(this.jsl, ...args);
   }
 
 }

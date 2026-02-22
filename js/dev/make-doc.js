@@ -11,7 +11,7 @@ const fs = require('fs');
 const cp = require("child_process");
 const rimraf = require('rimraf');
 
-require('../init-config.js');
+require('../shared/init-config.js');
 
 console.log('[make-doc.js] Started');
 var t = performance.now();

@@ -27,13 +27,16 @@ class PRDC_JSLAB_LIB_MECHANICS {
    * @returns {Promise<{extrems: String[], context: Object}>}
    */
   async plotBeamDiagrams(data, opts_in = {}) {
-    var context = await this.jsl.windows.openPlotlyjs();
-    context.setTitle('Beam Diagrams');
+    var context = await this.jsl.inter.windows.openPlotlyjs();
+    if(!context) {
+      return false;
+    }
+    context.setTitle(this.jsl.inter.lang.currentString(532));
     var plot_config = {
       responsive: true,
       scrollZoom: true,
       modeBarButtonsToAdd: [{
-        name: 'Download plot as a svg',
+        name: this.jsl.inter.lang.currentString(359),
         icon: context.Plotly.Icons.camera,
         click: function(gd) {
           context.Plotly.downloadImage(gd, {format: 'svg'});
@@ -55,7 +58,7 @@ class PRDC_JSLAB_LIB_MECHANICS {
     var n = data.length;
     var traces = [];
     for(var i = 0; i < n; i++) {
-      var [y_max, I_max] = maxi(data[i].y);
+      var [y_max, I_max] = this.jsl.inter.array.maxi(data[i].y);
       extrems.push(`${data[i].title}: ${data[i].ylabel[0]}_max = ${y_max.toFixed(opts.digits)} ${data[i].ylabel[1]}, ${data[i].xlabel[0]} = ${data[i].x[I_max].toFixed(opts.digits)} ${data[i].xlabel[1]}`);
       
       var trace = {
@@ -73,8 +76,8 @@ class PRDC_JSLAB_LIB_MECHANICS {
       };
       traces.push(trace);
 
-      var xq = this.jsl.array.linspace(data[i].x[0], end(data[i].x), opts.n);
-      var yq = this.jsl.math.interp(data[i].x, data[i].y, xq);
+      var xq = this.jsl.inter.array.linspace(data[i].x[0], this.jsl.inter.array.end(data[i].x), opts.n);
+      var yq = this.jsl.inter.math.interp(data[i].x, data[i].y, xq);
       var stem_trace = {
         x: xq.flatMap(x => [x, x, null]),
         y: yq.flatMap(y => [0, y, null]),

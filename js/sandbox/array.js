@@ -101,7 +101,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     if(!Array.isArray(cols)) {
       cols = [cols];
     }
-    var A = zeros(rows.length * cols.length);
+    var A = this.zeros(rows.length * cols.length);
     
     var k = 0;
     for(var j = 0; j < cols.length; j++) {
@@ -158,7 +158,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     for(var i = index, j = 0;
       j < search_elements.length && i < A.length; i++, j++) {
       if(A[i] !== search_elements[j]) {
-        return indexOfMulti(A, search_elements, index + 1);
+        return this.indexOfMulti(A, search_elements, index + 1);
       }
     }
 
@@ -188,7 +188,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   setSub(A, indices, B) {
     var j = 0;
     if(!Array.isArray(B)) {
-      B = createFilledArray(indices.length, B);
+      B = this.createFilledArray(indices.length, B);
     }
     for(var i = 0; i < indices.length; i++) {
       A[indices[i]] = B[j++];
@@ -202,7 +202,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @param {Array} B - The array of values to set at the indices determined by `b`.
    */
   setSubB(A, b, B) {
-    this.setSub(A, b2i(b), B);
+    this.setSub(A, this.b2i(b), B);
   }
   
   /**
@@ -212,7 +212,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} An array containing the retrieved elements.
    */
   getSub(A, indices) {
-    var B = zeros(indices.length);
+    var B = this.zeros(indices.length);
     var j = 0;
     for(var i = 0; i < indices.length; i++) {
       B[j++] = A[indices[i]];
@@ -227,7 +227,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} An array containing the retrieved elements.
    */
   getSubB(A, b) {
-    return this.getSub(A, b2i(b));
+    return this.getSub(A, this.b2i(b));
   }
   
   /**
@@ -367,7 +367,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} Common elements.
    */
   arrayIntersect(A, B) {
-    if (A.length > B.length) [A, B] = [B, A];
+    if(A.length > B.length) [A, B] = [B, A];
     const set_B = new Set(B);
     return [...A.filter(item => set_B.has(item))];
   }
@@ -387,13 +387,12 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @param {...number} [dimensions] - Sizes of subsequent dimensions.
    * @returns {Array} The newly created n-dimensional array.
    */
-  createArray(length) {
+  createArray(length, ...dimensions) {
     var A = new Array(length || 0);
-    var i = length;
-
-    if(arguments.length > 1) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      while(i--) A[(length-1)-i] = createArray.apply(this, args);
+    if(dimensions.length > 0) {
+      for(var i = 0; i < length; i++) {
+        A[i] = this.createArray(...dimensions);
+      }
     }
 
     return A;
@@ -406,17 +405,15 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @param {...number} [dimensions] - Sizes of subsequent dimensions.
    * @returns {Array} The filled n-dimensional array.
    */
-  createFilledArray(length, val) {
+  createFilledArray(length, ...rest) {
     var A = new Array(length || 0);
-    var i = length;
-
-    if(arguments.length > 2) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      while(i--) A[(length-1)-i] = this.createFilledArray.apply(this, args);
-    } else {
-      A.fill(val);
+    if(rest.length > 1) {
+      for(var i = 0; i < length; i++) {
+        A[i] = this.createFilledArray(...rest);
+      }
+    } else if(rest.length === 1) {
+      A.fill(rest[0]);
     }
-
     return A;
   }
   
@@ -507,7 +504,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array<number>} An array containing numbers within the specified range.
    */
   range(...args) {
-    return [...this.jsl.env.math.range(...args, true).toArray()];
+    return [...this.jsl.inter.env.math.range(...args, true).toArray()];
   }
   
   /**
@@ -519,7 +516,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   colon(x1, x2, dx) {
     if(dx === 0) {
-      this.jsl.env.error('@colon: '+language.string(189));
+      this.jsl.inter.env.error('@colon: '+this.jsl.inter.lang.string(189));
     }
     const x = [];
     const tolerance = 1e-14; // Tolerance for floating-point comparisons
@@ -571,7 +568,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array|Matrix} The result of applying the function to A.
    */
   arrayfun(A, dim, fun) {
-    return this.jsl.env.math.apply(A, dim, fun);
+    return this.jsl.inter.env.math.apply(A, dim, fun);
   }
 
   /**
@@ -581,7 +578,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array|Matrix} The result of the element-wise division.
    */
   divideEl(x, y) {
-    return this.jsl.env.math.dotDivide(x, y);
+    return this.jsl.inter.env.math.dotDivide(x, y);
   }
 
   /**
@@ -591,7 +588,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array|Matrix} The result of the element-wise multiplication.
    */
   multiplyEl(x, y) {
-    return this.jsl.env.math.dotMultiply(x, y);
+    return this.jsl.inter.env.math.dotMultiply(x, y);
   }
   
   /**
@@ -601,7 +598,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array|Matrix} The result of the element-wise exponentiation.
    */
   powEl(x, y) {
-    return this.jsl.env.math.dotPow(x, y);
+    return this.jsl.inter.env.math.dotPow(x, y);
   }
 
   /**
@@ -614,11 +611,11 @@ class PRDC_JSLAB_LIB_ARRAY {
   dot(x, y, cols) {
     if(cols) {
       var rows = x.length/cols;
-      var x_in = reshape(transpose(x, cols, rows), cols, rows); 
-      var y_in = reshape(transpose(y, cols, rows), cols, rows); 
-      return this.elementWise((a, b) => this.jsl.env.math.dot(a, b), x_in, y_in);
+      var x_in = this.reshape(this.transpose(x, cols, rows), cols, rows);
+      var y_in = this.reshape(this.transpose(y, cols, rows), cols, rows);
+      return this.elementWise((a, b) => this.jsl.inter.env.math.dot(a, b), x_in, y_in);
     } else {
-      return this.jsl.env.math.dot(x, y);
+      return this.jsl.inter.env.math.dot(x, y);
     }
   }
   
@@ -834,25 +831,53 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   plus(...args) {
     if(args.length === 0) {
-      this.jsl.env.error('@plus: No arguments provided');
+          this.jsl.inter.env.error('@plus: ' + this.jsl.inter.lang.string(350));
     }
+
+    const isComplex = (x) =>
+      x !== null &&
+      typeof x === 'object' &&
+      !Array.isArray(x) &&
+      typeof x.re === 'number' &&
+      typeof x.im === 'number';
 
     // Helper function to add two operands
     const addTwo = (a, b) => {
+      // Array + Array
       if(Array.isArray(a) && Array.isArray(b)) {
         if(a.length !== b.length) {
-          this.jsl.env.error('@plus: ' + language.string(176)); // Arrays have different lengths
+          this.jsl.inter.env.error('@plus: ' + this.jsl.inter.lang.string(176)); // Arrays have different lengths
         }
-        return a.map((val, idx) => this.plus(val, b[idx]));
-      } else if(Array.isArray(a) && typeof b === 'number') {
-        return a.map(val => this.plus(val, b));
-      } else if(typeof a === 'number' && Array.isArray(b)) {
-        return b.map(val => this.plus(a, val));
-      } else if(typeof a === 'number' && typeof b === 'number') {
-        return a + b;
-      } else {
-        this.jsl.env.error('@plus: ' + language.string(177)); // Invalid type
+        return a.map((val, idx) => addTwo(val, b[idx]));
       }
+
+      // Array + Scalar/Complex
+      if(Array.isArray(a)) {
+        return a.map((val) => addTwo(val, b));
+      }
+      if(Array.isArray(b)) {
+        return b.map((val) => addTwo(a, val));
+      }
+
+      // Complex + Complex
+      if(isComplex(a) && isComplex(b)) {
+        return { re: a.re + b.re, im: a.im + b.im };
+      }
+
+      // Complex + Number
+      if(isComplex(a) && typeof b === 'number') {
+        return { re: a.re + b, im: a.im };
+      }
+      if(typeof a === 'number' && isComplex(b)) {
+        return { re: a + b.re, im: b.im };
+      }
+
+      // Number + Number
+      if(typeof a === 'number' && typeof b === 'number') {
+        return a + b;
+      }
+
+      this.jsl.inter.env.error('@plus: ' + this.jsl.inter.lang.string(177)); // Invalid type
       return false;
     };
 
@@ -880,40 +905,67 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   minus(...args) {
     if(args.length === 0) {
-      this.jsl.env.error('@minus: No arguments provided');
+      this.jsl.inter.env.error('@minus: ' + this.jsl.inter.lang.string(351));
     }
 
-    // Helper function to subtract two operands
+    const isComplex = (x) =>
+      x !== null &&
+      typeof x === 'object' &&
+      !Array.isArray(x) &&
+      typeof x.re === 'number' &&
+      typeof x.im === 'number';
+
     const subtractTwo = (a, b) => {
+      // Array - Array
       if(Array.isArray(a) && Array.isArray(b)) {
         if(a.length !== b.length) {
-          this.jsl.env.error('@minus: ' + language.string(176)); // Arrays have different lengths
+          this.jsl.inter.env.error('@minus: ' + this.jsl.inter.lang.string(176)); // Arrays have different lengths
         }
-        return a.map((val, idx) => this.minus(val, b[idx]));
-      } else if(Array.isArray(a) && typeof b === 'number') {
-        return a.map(val => this.minus(val, b));
-      } else if(typeof a === 'number' && Array.isArray(b)) {
-        // Subtracting an array from a scalar: scalar - array
-        return b.map(val => this.minus(a, val));
-      } else if(typeof a === 'number' && typeof b === 'number') {
-        return a - b;
-      } else {
-        this.jsl.env.error('@minus: ' + language.string(177)); // Invalid type
+        return a.map((val, idx) => subtractTwo(val, b[idx]));
       }
+
+      // Array - Scalar/Complex
+      if(Array.isArray(a)) {
+        return a.map((val) => subtractTwo(val, b));
+      }
+
+      // Scalar/Complex - Array  (broadcast scalar/complex over array)
+      if(Array.isArray(b)) {
+        return b.map((val) => subtractTwo(a, val));
+      }
+
+      // Complex - Complex
+      if(isComplex(a) && isComplex(b)) {
+        return { re: a.re - b.re, im: a.im - b.im };
+      }
+
+      // Complex - Number
+      if(isComplex(a) && typeof b === 'number') {
+        return { re: a.re - b, im: a.im };
+      }
+
+      // Number - Complex
+      if(typeof a === 'number' && isComplex(b)) {
+        return { re: a - b.re, im: -b.im };
+      }
+
+      // Number - Number
+      if(typeof a === 'number' && typeof b === 'number') {
+        return a - b;
+      }
+
+      this.jsl.inter.env.error('@minus: ' + this.jsl.inter.lang.string(177)); // Invalid type
       return false;
     };
 
-    // The first argument is the initial value
+    // Start from the first arg and subtract the rest
     let result = args[0];
-
-    // Iterate through the rest of the arguments and subtract each from the result
     for(let i = 1; i < args.length; i++) {
       result = subtractTwo(result, args[i]);
     }
-
     return result;
   }
-  
+
   /**
    * Subtracts multiple operands from the first one, which can be either scalars or arrays.
    * If multiple operands are arrays, they must be of the same length.
@@ -949,9 +1001,9 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {number[]|false} The inverted matrix as a flat array, or `false` if the matrix is non-invertible.
    */
   inv(A, size) {
-    var A_mat = reshape(A, size, size);    
+    var A_mat = this.reshape(A, size, size);
     try {
-      return reshape(this.jsl.env.math.inv(A_mat), size*size, 1);
+      return this.reshape(this.jsl.inter.env.math.inv(A_mat), size*size, 1);
     } catch {
       return false;
     }
@@ -1122,6 +1174,23 @@ class PRDC_JSLAB_LIB_ARRAY {
   }
   
   /**
+   * Transposes a 2D matrix.
+   * @param {Array[]} A - Input matrix.
+   * @returns {Array[]} Transposed matrix.
+   */
+  transpose2D(A) {
+    var n = A.length;
+    var m = A[0].length;
+    var T = Array.from({ length: m }, () => Array(n));
+    for(var i = 0; i < n; i++) {
+      for(var j = 0; j < m; j++) {
+        T[j][i] = A[i][j];
+      }
+    }
+    return T;
+  }
+  
+  /**
    * Multiplies two matrices.
    * @param {Array<number>} A - The first matrix array.
    * @param {Array<number>} B - The second matrix array.
@@ -1182,7 +1251,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array<number>} The solution vector.
    */
   linsolve(A, B, N) {
-    return this.reshape(this.jsl.env.math.lusolve(this.reshape(A, N, N), B), 1, N);
+    return this.reshape(this.jsl.inter.env.math.lusolve(this.reshape(A, N, N), B), 1, N);
   }
   
   /**
@@ -1208,10 +1277,10 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @throws {Error} If the total number of elements does not match.
    */
   reshape(A, rows, cols) {
-    if(rows == _) {
+    if(rows == this.jsl.context._) {
       rows = A.length / cols;
     }
-    if(cols == _) {
+    if(cols == this.jsl.context._) {
       cols = A.length / rows;
     }
     let flat_arr = [];
@@ -1230,7 +1299,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
 
     if(flat_arr.length !== rows * cols) {
-      this.jsl.env.error('@reshape: '+language.string(178));
+      this.jsl.inter.env.error('@reshape: '+this.jsl.inter.lang.string(178));
     }
 
     var reshaped = Array.from({ length: rows }, () => Array(cols));
@@ -1257,12 +1326,12 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   maxi(A) {
     if(!Array.isArray(A)) {
-      this.jsl.env.error('@maxi: '+language.string(190));
+      this.jsl.inter.env.error('@maxi: '+this.jsl.inter.lang.string(190));
     }
 
     const filtered_A = A.filter(num => !isNaN(num));
     if(filtered_A.length === 0) {
-      this.jsl.env.error('@maxi: '+language.string(191));
+      return [NaN, -1];
     }
 
     let max = filtered_A[0];
@@ -1288,12 +1357,12 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   mini(A) {
     if(!Array.isArray(A)) {
-      this.jsl.env.error('@mini: '+language.string(190));
+      this.jsl.inter.env.error('@mini: '+this.jsl.inter.lang.string(190));
     }
 
     const filtered_A = A.filter(num => !isNaN(num));
     if(filtered_A.length === 0) {
-      this.jsl.env.error('@mini: '+language.string(191));
+      return [NaN, -1]; 
     }
 
     let min = filtered_A[0];
@@ -1318,7 +1387,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   sorti(A) {
     if(!Array.isArray(A)) {
-      this.jsl.env.error('@sorti: '+language.string(190));
+      this.jsl.inter.env.error('@sorti: '+this.jsl.inter.lang.string(190));
     }
 
     // Create an array of indices and sort based on values in A,
@@ -1369,10 +1438,10 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array<number>} An array filled with random numbers within the specified range.
    */
   arrayRand(l, u, rows, cols, randFun) {
-    if(!this.jsl.format.isFunction(randFun)) {
+    if(!this.jsl.inter.format.isFunction(randFun)) {
       randFun = Math.random;
     }
-    return this.plus(this.repCol(l, cols), this.multiplyEl(repCol(minus(u, l), cols), Array.from({ length: rows * cols }, () => randFun())));
+    return this.plus(this.repCol(l, cols), this.multiplyEl(this.repCol(this.minus(u, l), cols), Array.from({ length: rows * cols }, () => randFun())));
   }
   
   /**
@@ -1384,7 +1453,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array<number>} An array filled with random integers within the specified range.
    */
   arrayRandi(lu, rows, cols, randFun) {
-    if(!this.jsl.format.isFunction(randFun)) {
+    if(!this.jsl.inter.format.isFunction(randFun)) {
       randFun = Math.random;
     }
     return Array.from({ length: rows * cols }, () => Math.floor(randFun() * (lu[1] - lu[0] + 1) + lu[0]));
@@ -1396,7 +1465,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {number[]} The normalized vector.
    */
   normalizeVector(v) {
-    var len = this.jsl.env.math.norm(v);
+    var len = this.jsl.inter.env.math.norm(v);
     if(len === 0) return [0, 0, 0];
     return [v[0]/len, v[1]/len, v[2]/len];
   }
@@ -1418,7 +1487,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {number} The angle in radians between vectors a and b.
    */
   angleVectors(a, b) {
-    return acos(dotVector(a, b)/(norm(a)*norm(b))); 
+    return this.jsl.inter.acos(this.dotVector(a, b)/(this.norm(a)*this.norm(b)));
   }
   
   /**
@@ -1495,12 +1564,12 @@ class PRDC_JSLAB_LIB_ARRAY {
     for(var i = 0; i < rows; i++) {
       str += '  ';
       for(var j = 0; j < cols; j++) {
-        str += num2str(A[j * rows + i], 8) + ' ';
+        str += this.jsl.inter.num2str(A[j * rows + i], 8) + ' ';
       }
       str += '\n';
     }
     str += ' ]';
-    this.jsl.env.disp(str);
+    this.jsl.inter.env.disp(str);
     return str+"\n";
   }
 
@@ -1514,10 +1583,10 @@ class PRDC_JSLAB_LIB_ARRAY {
   dispRowVector(varname, A, length) {
     var str = ' ' + varname + ' = [ ';
     for(var i = 0; i < length; i++) {
-      str += num2str(A[i], 8) + ' ';
+      str += this.jsl.inter.num2str(A[i], 8) + ' ';
     }
     str += ']';
-    this.jsl.env.disp(str);
+    this.jsl.inter.env.disp(str);
     return str+"\n";
   }
 
@@ -1531,10 +1600,10 @@ class PRDC_JSLAB_LIB_ARRAY {
   dispColumnVector(varname, A, length) {
     var str = ' ' + varname + ' = [\n';
     for(var j = 0; j < length; j++) {
-      str += '  ' + num2str(A[j], 8) + '\n';
+      str += '  ' + this.jsl.inter.num2str(A[j], 8) + '\n';
     }
     str += ' ]';
-    this.jsl.env.disp(str);
+    this.jsl.inter.env.disp(str);
     return str+"\n";
   }
 }

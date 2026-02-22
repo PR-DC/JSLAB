@@ -30,10 +30,10 @@ class PRDC_JSLAB_SETTINGS {
       }
     });
     
-    $('#settings-container .set-langauge').on('change', function() {
+    $('#settings-container .set-language').on('change', function() {
       obj.win.gui.changeLangauge($(this).val());
     });
-    $("#settings-container .set-langauge").val(language.lang);
+    $("#settings-container .set-language").val(language.lang);
     
     $('#settings-container .change-settings').on('click', function() {
       obj.win.command_history.setMaxSize($('#settings-container .N-history-max').val());

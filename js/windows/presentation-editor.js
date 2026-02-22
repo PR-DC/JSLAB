@@ -10,7 +10,9 @@ const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { ESLint } = require("eslint");
-require("../js/init-config.js");
+require("../js/shared/init-config.js");
+var language = window.opener.jsl.inter.lang;
+const { PRDC_JSLAB_EDITOR_SEARCH_ALL } = require('../js/editor/search-all');
 
 const { PRDC_POPUP } = require('../lib/PRDC_POPUP/PRDC_POPUP');
 const { PRDC_PANEL } = require('../lib/PRDC_PANEL/PRDC_PANEL');
@@ -221,7 +223,15 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.webview_wrap = document.getElementById('webview-wrap');
     this.left = document.getElementById('left-panel-cont');
     
-    this.eslint = new ESLint(config.LINT_OPTIONS);
+    // Use a plain object copy so ESLint does not probe optional keys on the config proxy.
+    var lint_options = {
+      overrideConfigFile: config.LINT_OPTIONS.overrideConfigFile,
+      overrideConfig: {
+        languageOptions: config.LINT_OPTIONS.overrideConfig.languageOptions,
+        rules: config.LINT_OPTIONS.overrideConfig.rules,
+      },
+    };
+    this.eslint = new ESLint(lint_options);
     this.editor_more_popup = new PRDC_POPUP(document.getElementById('editor-more-icon'),
       document.getElementById('editor-more-popup'));
     this.current_slide = 0;
@@ -244,6 +254,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     // On tab change
     this.tabs_cont.addEventListener("activeTabChange", function({ detail }) {
       obj.active_tab = detail.tabEl;
+      if(obj.script_manager) {
+        obj.script_manager.active_tab = detail.tabEl;
+      }
       if(obj.active_tab.hasOwnProperty('tab_obj')) {
         obj.active_tab.tab_obj.show();
       }
@@ -254,10 +267,31 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.css_editor = new PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB(this, 'css');
     
     this.html_editor.show();
+    this.script_manager = this.createSearchAllScriptManager();
+    this.editor_search_all = new PRDC_JSLAB_EDITOR_SEARCH_ALL(this);
+    if(this.editor_search_all) {
+      this.editor_search_all.layout_offset = 100;
+      this.editor_search_all.setPanelHeight(
+        this.editor_search_all.percentToPanelHeight(this.editor_search_all.panel_height_percent),
+        false
+      );
+    }
 
     document.addEventListener("keydown", function(e) {
       if(e.ctrlKey && e.key.toLowerCase() === "s" && !e.shiftKey) {
         obj.saveCode();
+      } else if(e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "f") {
+        var selected_text = '';
+        if(obj.active_tab &&
+            obj.active_tab.tab_obj &&
+            obj.active_tab.tab_obj.code_editor) {
+          selected_text = obj.active_tab.tab_obj.code_editor.getSelection();
+        }
+        if(obj.editor_search_all) {
+          obj.editor_search_all.open(selected_text);
+        }
+        e.stopPropagation();
+        e.preventDefault();
       }
     });
 
@@ -274,6 +308,18 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     $("#tab-save").click(function() { obj.saveCode(); });
     $("#search-dialog-menu").click(function() { 
       obj.active_tab.tab_obj.openSearchDialog();
+      obj.editor_more_popup.close();
+    });
+    $("#search-all-menu").click(function() {
+      var selected_text = '';
+      if(obj.active_tab &&
+          obj.active_tab.tab_obj &&
+          obj.active_tab.tab_obj.code_editor) {
+        selected_text = obj.active_tab.tab_obj.code_editor.getSelection();
+      }
+      if(obj.editor_search_all) {
+        obj.editor_search_all.open(selected_text);
+      }
       obj.editor_more_popup.close();
     });
     $("#fold-slides").click(function() { 
@@ -331,14 +377,13 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.html_editor.setPath(path.join(file_path, 'index.html'));
     this.js_editor.setPath(path.join(file_path, 'main.js'));
     this.css_editor.setPath(path.join(file_path, 'main.css'));
+    this.updateSearchAllScriptPaths();
     
     document.getElementById('presentation-title').innerText = name;
     this.webview.src = url+'?lazy';
     this.presentation_config = JSON.parse(fs.readFileSync(path.join(file_path, 'res/internal/config.json')).toString());
     
     // Slide scale
-    this.webview.style.width = this.presentation_config.slide_width + 'px';
-    this.webview.style.height = this.presentation_config.slide_height + 'px';
     this.scaleSlide();
   }
   
@@ -357,8 +402,76 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    */
   scaleSlide() {
     const scale = Math.min((this.left.clientWidth - 20) / this.presentation_config.slide_width, (this.left.clientHeight- 20) / this.presentation_config.slide_height);
-    this.webview.style.transform = `scale(${scale})`;
     this.webview_wrap.style.height  = `${this.presentation_config.slide_height * scale}px`;
+  }
+
+  /**
+   * Creates adapter expected by editor search-all module.
+   * @returns {object}
+   */
+  createSearchAllScriptManager() {
+    var obj = this;
+    var manager = {
+      scripts: [],
+      active_tab: this.active_tab,
+      getScriptByTab: function(tab) {
+        var i = this.scripts.findIndex(function(script) {
+          return script.tab == tab;
+        });
+        if(i > -1) {
+          return [this.scripts[i], i];
+        }
+        return [undefined, -1];
+      },
+      getScriptByPath: function(script_path) {
+        var i = this.scripts.findIndex(function(script) {
+          return script.path == script_path;
+        });
+        if(i > -1) {
+          return [this.scripts[i], i];
+        }
+        return [undefined, -1];
+      }
+    };
+
+    function makeScript(tab_obj, name) {
+      return {
+        tab: tab_obj.tab,
+        path: '',
+        name: name,
+        code_editor: tab_obj.code_editor,
+        activate: function() {
+          tab_obj.show();
+        }
+      };
+    }
+
+    manager.scripts = [
+      makeScript(this.html_editor, 'index.html'),
+      makeScript(this.js_editor, 'main.js'),
+      makeScript(this.css_editor, 'main.css')
+    ];
+
+    manager.active_tab = obj.active_tab;
+    return manager;
+  }
+
+  /**
+   * Updates search-all script paths after files are opened.
+   */
+  updateSearchAllScriptPaths() {
+    if(!this.script_manager || !this.script_manager.scripts) {
+      return;
+    }
+    if(this.script_manager.scripts[0]) {
+      this.script_manager.scripts[0].path = this.html_editor.file_path || '';
+    }
+    if(this.script_manager.scripts[1]) {
+      this.script_manager.scripts[1].path = this.js_editor.file_path || '';
+    }
+    if(this.script_manager.scripts[2]) {
+      this.script_manager.scripts[2].path = this.css_editor.file_path || '';
+    }
   }
 }
 

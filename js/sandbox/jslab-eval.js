@@ -26,11 +26,11 @@ class PRDC_JSLAB_EVAL {
           if(e.reason.hasOwnProperty('stack')) {
             obj.rewriteError('@jslab: '+e.reason.stack.toString());
           } else if(e.reason.message) {
-            obj.jsl.env.error('@jslab: '+e.reason.message, false);
+            obj.jsl.inter.env.error('@jslab: '+e.reason.message, false);
           }
         } else {
           console.log(e);
-          obj.jsl.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
+          obj.jsl.inter.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
         }
         e.preventDefault();
       }
@@ -41,14 +41,148 @@ class PRDC_JSLAB_EVAL {
         if(e && e.error && 'stack' in e.error) {
           obj.rewriteError('@jslab: '+e.error.stack.toString());
         } else if(e && e.error && e.error.message) {
-          obj.jsl.env.error('@jslab: '+e.error.message, false);
+          obj.jsl.inter.env.error('@jslab: '+e.error.message, false);
         }
       } else {
         console.log(e);
-        obj.jsl.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
+        obj.jsl.inter.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
       }
       e.preventDefault();
     });
+  }
+
+  /**
+   * Handles code-evaluation errors and keeps UI state consistent.
+   * @param {*} err Error object.
+   */
+  onEvalError(err) {
+    this.jsl.onEvaluated();
+    if(err && err.name == 'JslabError') {
+      this.jsl.inter.env.error(err.message, false);
+    } else if(err && err.stack) {
+      this.rewriteError(err.stack.toString());
+    } else {
+      this.jsl.inter.env.error('@jslab: ' + String(err), false);
+    }
+  }
+
+  /**
+   * Validates destructuring/assignment patterns against forbidden names.
+   * @param {Object} pattern AST pattern node.
+   * @param {Set<string>} forbidden_names Forbidden identifier names.
+   * @param {Object} lang Language helper.
+   */
+  checkForbiddenPattern(pattern, forbidden_names, lang) {
+    if(!pattern) {
+      return;
+    }
+    if(pattern.type === 'Identifier') {
+      if(forbidden_names.has(pattern.name)) {
+        throw {
+          name: 'JslabError',
+          message: `${lang.string(185)}: '${pattern.name}' ${lang.string(184)}`,
+        };
+      }
+      return;
+    }
+    if(pattern.type === 'ObjectPattern') {
+      pattern.properties.forEach((prop) => {
+        if(prop.type === 'RestElement') {
+          this.checkForbiddenPattern(prop.argument, forbidden_names, lang);
+        } else {
+          this.checkForbiddenPattern(prop.value, forbidden_names, lang);
+        }
+      });
+      return;
+    }
+    if(pattern.type === 'ArrayPattern') {
+      pattern.elements.forEach((element) => {
+        if(element) {
+          this.checkForbiddenPattern(element, forbidden_names, lang);
+        }
+      });
+      return;
+    }
+    if(pattern.type === 'RestElement') {
+      this.checkForbiddenPattern(pattern.argument, forbidden_names, lang);
+      return;
+    }
+    if(pattern.type === 'AssignmentPattern') {
+      this.checkForbiddenPattern(pattern.left, forbidden_names, lang);
+    }
+  }
+
+  /**
+   * Builds runtime JSL identifier AST node.
+   * @param {Object} b Recast builders.
+   * @param {string} runtime_jsl_identifier Runtime identifier name.
+   * @returns {Object}
+   */
+  makeRuntimeJslIdentifier(b, runtime_jsl_identifier) {
+    return b.identifier(runtime_jsl_identifier);
+  }
+
+  /**
+   * Builds runtime `jsl.context.<name>` member expression.
+   * @param {Object} b Recast builders.
+   * @param {string} runtime_jsl_identifier Runtime identifier name.
+   * @param {string} name Member name.
+   * @returns {Object}
+   */
+  makeRuntimeContextMember(b, runtime_jsl_identifier, name) {
+    return b.memberExpression(
+      b.memberExpression(this.makeRuntimeJslIdentifier(b, runtime_jsl_identifier), b.identifier('context')),
+      b.identifier(name),
+      false
+    );
+  }
+
+  /**
+   * Builds runtime `jsl.<name>` member expression.
+   * @param {Object} b Recast builders.
+   * @param {string} runtime_jsl_identifier Runtime identifier name.
+   * @param {string} name Member name.
+   * @returns {Object}
+   */
+  makeRuntimeJslMember(b, runtime_jsl_identifier, name) {
+    return b.memberExpression(
+      this.makeRuntimeJslIdentifier(b, runtime_jsl_identifier),
+      b.identifier(name),
+      false
+    );
+  }
+
+  /**
+   * Rewrites declaration pattern to assign into runtime context.
+   * @param {Object} pattern AST pattern node.
+   * @param {Object} b Recast builders.
+   * @param {string} runtime_jsl_identifier Runtime identifier name.
+   * @returns {Object}
+   */
+  transformPatternToContext(pattern, b, runtime_jsl_identifier) {
+    if(pattern.type === 'Identifier') {
+      return this.makeRuntimeContextMember(b, runtime_jsl_identifier, pattern.name);
+    }
+    // Destructuring patterns cannot be safely rewritten by replacing inner
+    // identifiers with MemberExpression nodes because ast-types expects Pattern
+    // nodes in those positions. Keep the original pattern and rewrite only
+    // direct identifier assignment targets.
+    return pattern;
+  }
+
+  /**
+   * Rewrites the root object of a member expression through provided transform function.
+   * @param {Object} member_expression AST member expression.
+   * @param {Function} transform_pattern_to_context Pattern transformer.
+   */
+  rewriteMemberExpressionRoot(member_expression, transform_pattern_to_context) {
+    let root = member_expression;
+    while(root && root.object && root.object.type === 'MemberExpression') {
+      root = root.object;
+    }
+    if(root && root.object && root.object.type === 'Identifier') {
+      root.object = transform_pattern_to_context(root.object);
+    }
   }
   
   /**
@@ -67,32 +201,25 @@ class PRDC_JSLAB_EVAL {
     this.source_codes = [];
     this.transformed_codes = [];
     this.source_maps = [];
+    this.source_map_scripts = [];
     this.current_source_code;
-    this.current_source_map;    
+    this.current_source_map;
+    this.current_source_script;    
     
     this.jsl.savePreviousWorkspace();
     this.jsl.loadPreviousWorkspace();
 
-    function onError(err) {
-      obj.jsl.onEvaluated();
-      if(err.name == 'JslabError') {
-        obj.jsl.env.error(err.message, false);
-      } else {
-        obj.rewriteError(err.stack.toString());
-      }
-    }
-    
     try {
       var data = await this.evalString(code);
       if(obj.jsl.no_ans == false) {
         obj.jsl.context.ans = data;
       }
       if(show_output && obj.jsl.ignore_output == false) {
-        obj.jsl.env.showAns(prettyPrint(data));
+        obj.jsl.inter.env.showAns(this.jsl.inter.prettyPrint(data));
       }
       obj.jsl.onEvaluated();
     } catch(err) {
-      onError(err);
+      this.onEvalError(err);
     }
   }
   
@@ -107,16 +234,20 @@ class PRDC_JSLAB_EVAL {
       this.source_maps.push(rewrite_result.map);
       this.transformed_codes.push(rewrite_result.code);
       this.source_codes.push(code);
+      this.source_map_scripts.push(this.jsl.current_script);
       
       var current_source_code = this.current_source_code;
       var current_source_map = this.current_source_map;
+      var current_source_script = this.current_source_script;
       this.current_source_code = code;
       this.current_source_map = rewrite_result.map;
+      this.current_source_script = this.jsl.current_script;
 
       var result = await this.jsl._eval(rewrite_result.code);
       
       this.current_source_code = current_source_code;
       this.current_source_map = current_source_map;
+      this.current_source_script = current_source_script;
       return result;
     }
     return false;
@@ -131,31 +262,51 @@ class PRDC_JSLAB_EVAL {
   async runScript(script_path, lines, silent = false) {
     script_path = this.jsl.pathResolve(script_path);
     if(script_path) {
+      var prev_script = this.jsl.current_script;
+      var prev_file_name = this.jsl.jsl_file_name;
       this.jsl.current_script = script_path;
-      this.jsl.jsl_file_name = this.jsl.env.pathBaseName(script_path);
+      this.jsl.jsl_file_name = this.jsl.inter.env.pathBaseName(script_path);
       
-      var script_code = this.jsl.env.readFileSync(script_path);
-      if(script_code === false) {
-        this.jsl.env.error('@runScript: '+language.string(103)+': '+ script_path, false);
-      } else {
-        script_code = script_code.toString();
-        if(lines !== undefined) {
-          var code_lines = script_code.split('\n');
-          if(typeof lines == 'number') {
-            if(code_lines.length >= lines) {
-              code_lines[lines-1];
+      try {
+        var script_code = this.jsl.inter.env.readFileSync(script_path);
+        if(script_code === false) {
+          this.jsl.inter.env.error('@runScript: '+this.jsl.inter.lang.string(103)+': '+ script_path, false);
+        } else {
+          script_code = script_code.toString();
+          if(lines !== undefined) {
+            var code_lines = script_code.split('\n');
+            if(typeof lines === 'number' && isFinite(lines)) {
+              var line_number = Math.floor(lines);
+              if(line_number >= 1 && code_lines.length >= line_number) {
+                script_code = code_lines[line_number - 1];
+              } else {
+                this.jsl.inter.env.error('@runScript: '+this.jsl.inter.lang.string(104)+'!\n '+this.jsl.inter.lang.string(105)+': '+ script_path, false);
+                return false;
+              }
+            } else if(Array.isArray(lines) && lines.length >= 2) {
+              var start_line = Math.floor(Number(lines[0]));
+              var end_line = Math.floor(Number(lines[1]));
+              if(Number.isFinite(start_line) &&
+                Number.isFinite(end_line) &&
+                start_line >= 1 &&
+                end_line >= start_line &&
+                code_lines.length >= end_line) {
+                script_code = code_lines.slice(start_line - 1, end_line).join('\n');
+              } else {
+                this.jsl.inter.env.error('@runScript: '+this.jsl.inter.lang.string(104)+'!\n '+this.jsl.inter.lang.string(105)+': '+ script_path);
+                return false;
+              }
             } else {
-              this.jsl.env.error('@runScript: '+language.string(104)+'!\n '+language.string(105)+': '+ script_path, false);
-            }
-          } else {
-            if(code_lines.length >= lines[0] && code_lines.length >= lines[1]) {
-              code_lines = code_lines.slice(lines[0]-1, lines[1]-1);
-            } else {
-              this.jsl.env.error('@runScript: '+language.string(104)+'!\n '+language.string(105)+': '+ script_path);
+              var invalid_lines_msg = this.jsl.inter.lang.string(502);
+              this.jsl.inter.env.error('@runScript: ' + invalid_lines_msg, false);
+              return false;
             }
           }
+          return await this.evalString(script_code, !silent);
         }
-        return await this.evalString(script_code, !silent);
+      } finally {
+        this.jsl.current_script = prev_script;
+        this.jsl.jsl_file_name = prev_file_name;
       }
     }
     return false;
@@ -167,7 +318,7 @@ class PRDC_JSLAB_EVAL {
   async runLast() {
     var cmd;
     if(this.jsl.last_script_lines !== undefined) {
-      cmd = 'run(' + JSON.stringify(this.jsl.last_script_path) + ', ' + this.jsl.last_script_lines.toString() + '", undefined, true)';
+      cmd = 'run(' + JSON.stringify(this.jsl.last_script_path) + ', ' + JSON.stringify(this.jsl.last_script_lines) + ', undefined, true)';
     } else {
       cmd = 'run(' + JSON.stringify(this.jsl.last_script_path) + ', undefined, false, true)';
     }
@@ -194,8 +345,8 @@ class PRDC_JSLAB_EVAL {
         let line = parseInt(matchs[1]);
         let column = parseInt(matchs[2]);
         
-        msg += "\n  "+language.string(114)+" ";
-        msg += "(" + this.jsl.current_script + ") "+language.string(112)+": " + line + ", "+language.string(113)+": " +  column;
+        msg += "\n  "+this.jsl.inter.lang.string(114)+" ";
+        msg += "(" + this.jsl.current_script + ") "+this.jsl.inter.lang.string(112)+": " + line + ", "+this.jsl.inter.lang.string(113)+": " +  column;
       }
       throw {
         name: 'JslabError',
@@ -204,27 +355,35 @@ class PRDC_JSLAB_EVAL {
     } else {
       for(let i = 1; i < lines.length; i++) {
         if(lines[i].includes("eval at evalString (")) {
-          msg += "\n  "+language.string(114)+" ";
+          msg += "\n  "+this.jsl.inter.lang.string(114)+" ";
           let matchs = lines[i].match(regex_eval);
           let line = parseInt(matchs[1]);
           let column = parseInt(matchs[2]);
-          var result = await this.getOriginalPosition(end(this.source_maps), line, column);
+          let map = this.current_source_map;
+          if(!map && this.source_maps && this.source_maps.length) {
+            map = this.source_maps[this.source_maps.length - 1];
+          }
+          let result = map ? await this.getOriginalPosition(map, line, column) : { line: line, column: column };
+          if(!result || result.line == null || result.column == null) {
+            result = { line: line, column: column };
+          }
           
-          msg += "(" + this.jsl.current_script + ") "+language.string(112)+": " + result.line + ", "+language.string(113)+": " +  result.column;
+          var script_name = this.current_source_script || this.jsl.current_script;
+          msg += "(" + script_name + ") "+this.jsl.inter.lang.string(112)+": " + result.line + ", "+this.jsl.inter.lang.string(113)+": " +  result.column;
           break;
         } else {
           let matchs = lines[i].match(regex_normal);
           if(matchs) {
-            msg += "\n  "+language.string(114)+" ";
+            msg += "\n  "+this.jsl.inter.lang.string(114)+" ";
             let expression = matchs[1];
             let path = matchs[2];
             let line = parseInt(matchs[3]);
             let column = parseInt(matchs[4]);            
-            msg += expression + " (" + path + ") "+language.string(112)+": " + line + ", "+language.string(113)+": " +  column;
+            msg += expression + " (" + path + ") "+this.jsl.inter.lang.string(112)+": " + line + ", "+this.jsl.inter.lang.string(113)+": " +  column;
           }
         }
       }
-      this.jsl.env.error(msg, false);
+      this.jsl.inter.env.error(msg, false);
     }
   }
   
@@ -240,6 +399,7 @@ class PRDC_JSLAB_EVAL {
     const regex_eval = /eval at evalString\s*\(.*:(\d+):(\d+)\)$/;
     var lines = stack.split('\n');
     var line;
+    var column;
     var script;
     
     for(let i = 2; i < lines.length; i++) {
@@ -247,7 +407,7 @@ class PRDC_JSLAB_EVAL {
         let matchs = lines[i].match(regex_eval);
         line = parseInt(matchs[1]);
         column = parseInt(matchs[2]);
-        script = this.jsl.current_script;
+        script = this.current_source_script || this.jsl.current_script;
         break;
       } else {
         let matchs = lines[i].match(regex_normal);
@@ -260,7 +420,14 @@ class PRDC_JSLAB_EVAL {
       }
     }
     
-    var result = await this.getOriginalPosition(end(this.source_maps), line, column);
+    let map = this.current_source_map;
+    if(!map && this.source_maps && this.source_maps.length) {
+      map = this.source_maps[this.source_maps.length - 1];
+    }
+    let result = map ? await this.getOriginalPosition(map, line, column) : { line: line, column: column };
+    if(!result || result.line == null || result.column == null) {
+      result = { line: line, column: column };
+    }
     return [result.line, result.column, script];
   }
   
@@ -272,9 +439,9 @@ class PRDC_JSLAB_EVAL {
    * @returns {Promise<Object>} An object containing the original source position, including source file, line, and column.
    */
   async getOriginalPosition(map, line, column) {
-    this.jsl.override.withoutCheckStop = true;
-    var smc = await new this.jsl.env.SourceMapConsumer(map);
-    this.jsl.override.withoutCheckStop = false;
+    this.jsl.inter.override.withoutCheckStop = true;
+    var smc = await new this.jsl.inter.env.SourceMapConsumer(map);
+    this.jsl.inter.override.withoutCheckStop = false;
     var result = smc.originalPositionFor({ line: line, column: column });
     smc.destroy();
     return result;
@@ -303,23 +470,27 @@ class PRDC_JSLAB_EVAL {
    */
   rewriteCode(code) {
     const obj = this;
+    const cfg = this.jsl.inter.config;
+    const lang = this.jsl.inter.lang;
+    const runtimeJslIdentifier = this.jsl.internal_jsl_identifier || 'jsl';
+    const forbiddenNames = new Set([runtimeJslIdentifier]);
 
     // Trick from devtools: Wrap code in parentheses if it's an object literal
     if(/^\s*\{/.test(code) && /\}\s*$/.test(code)) {
       code = '(' + code + ')';
     }
 
-    if(config.DEBUG_PRE_TRANSFORMED_CODE) {
+    if(cfg.DEBUG_PRE_TRANSFORMED_CODE) {
       obj.jsl._console.log(code);
     }
 
     // Parse the code into an AST using Recast with Babel parser
     let ast;
     try {
-      ast = this.jsl.env.recast.parse(code, {
+      ast = this.jsl.inter.env.recast.parse(code, {
         parser: {
           parse(source) {
-            return obj.jsl.env.babel_parser.parse(source, {
+            return obj.jsl.inter.env.babel_parser.parse(source, {
               sourceType: 'module',
               plugins: [
                 'jsx',
@@ -341,66 +512,42 @@ class PRDC_JSLAB_EVAL {
       return false;
     }
 
-    // Function to check for forbidden names in patterns
-    function checkPattern(pattern) {
-      if(pattern.type === 'Identifier') {
-        if(config.FORBIDDEN_NAMES.includes(pattern.name)) {
-          throw {
-            name: 'JslabError',
-            message: `${language.string(185)}: '${pattern.name}' ${language.string(184)}`,
-          };
-        }
-      } else if(pattern.type === 'ObjectPattern') {
-        pattern.properties.forEach((prop) => {
-          if(prop.type === 'RestElement') {
-            checkPattern(prop.argument);
-          } else {
-            checkPattern(prop.value);
-          }
-        });
-      } else if(pattern.type === 'ArrayPattern') {
-        pattern.elements.forEach((element) => {
-          if(element) checkPattern(element);
-        });
-      } else if(pattern.type === 'RestElement') {
-        checkPattern(pattern.argument);
-      } else if(pattern.type === 'AssignmentPattern') {
-        checkPattern(pattern.left);
-      }
-    }
+    const checkPattern = (pattern) => {
+      obj.checkForbiddenPattern(pattern, forbiddenNames, lang);
+    };
 
     // Traverse the AST to check for forbidden names
-    this.jsl.env.recast.types.visit(ast, {
+    this.jsl.inter.env.recast.types.visit(ast, {
       visitVariableDeclarator(path) {
         checkPattern(path.node.id);
         this.traverse(path);
       },
       visitFunctionDeclaration(path) {
         const node = path.node;
-        if(node.id && config.FORBIDDEN_NAMES.includes(node.id.name)) {
+        if(node.id && forbiddenNames.has(node.id.name)) {
           throw {
             name: 'JslabError',
-            message: `${language.string(186)}: '${node.id.name}' ${language.string(184)}`,
+            message: `${lang.string(186)}: '${node.id.name}' ${lang.string(184)}`,
           };
         }
         this.traverse(path);
       },
       visitClassDeclaration(path) {
         const node = path.node;
-        if(node.id && config.FORBIDDEN_NAMES.includes(node.id.name)) {
+        if(node.id && forbiddenNames.has(node.id.name)) {
           throw {
             name: 'JslabError',
-            message: `${language.string(187)}: '${node.id.name}' ${language.string(184)}`,
+            message: `${lang.string(187)}: '${node.id.name}' ${lang.string(184)}`,
           };
         }
         this.traverse(path);
       },
       visitImportDeclaration(path) {
         path.node.specifiers.forEach((specifier) => {
-          if(config.FORBIDDEN_NAMES.includes(specifier.local.name)) {
+          if(forbiddenNames.has(specifier.local.name)) {
             throw {
               name: 'JslabError',
-              message: `${language.string(188)}: '${specifier.local.name}' ${language.string(184)}`,
+              message: `${lang.string(188)}: '${specifier.local.name}' ${lang.string(184)}`,
             };
           }
         });
@@ -412,50 +559,13 @@ class PRDC_JSLAB_EVAL {
       },
     });
 
-    const b = this.jsl.env.recast.types.builders;
-
-    // Helper function to transform patterns to assign to jsl.context
-    function transformPatternToContext(pattern) {
-      if(pattern.type === 'Identifier') {
-        // Replace identifier with jsl.context.identifier
-        return b.memberExpression(
-          b.memberExpression(b.identifier('jsl'), b.identifier('context')),
-          b.identifier(pattern.name),
-          false
-        );
-      } else if(pattern.type === 'ObjectPattern') {
-        return b.objectPattern(
-          pattern.properties.map((prop) => {
-            if(prop.type === 'RestElement') {
-              return b.restElement(transformPatternToContext(prop.argument));
-            }
-            return b.objectProperty(
-              prop.key,
-              transformPatternToContext(prop.value),
-              prop.computed,
-              false
-            );
-          })
-        );
-      } else if(pattern.type === 'ArrayPattern') {
-        return b.arrayPattern(
-          pattern.elements.map((element) => {
-            if(element) {
-              return transformPatternToContext(element);
-            }
-            return null;
-          })
-        );
-      } else if(pattern.type === 'RestElement') {
-        return b.restElement(transformPatternToContext(pattern.argument));
-      } else if(pattern.type === 'AssignmentPattern') {
-        return b.assignmentPattern(
-          transformPatternToContext(pattern.left),
-          pattern.right
-        );
-      }
-      return pattern;
-    }
+    const b = this.jsl.inter.env.recast.types.builders;
+    const makeRuntimeContextMember = (name) =>
+      obj.makeRuntimeContextMember(b, runtimeJslIdentifier, name);
+    const makeRuntimeJslMember = (name) =>
+      obj.makeRuntimeJslMember(b, runtimeJslIdentifier, name);
+    const transformPatternToContext = (pattern) =>
+      obj.transformPatternToContext(pattern, b, runtimeJslIdentifier);
 
     let tempVarCounter = 0;
     let functionDepth = 0;
@@ -467,6 +577,9 @@ class PRDC_JSLAB_EVAL {
     function leaveFunctionScope() {
       functionDepth--;
     }
+
+    const rewriteMemberExpressionRoot = (memberExpression) =>
+      obj.rewriteMemberExpressionRoot(memberExpression, transformPatternToContext);
 
     const visitObj = {
       // If top-level, after the function declaration, assign it to jsl.context
@@ -482,10 +595,7 @@ class PRDC_JSLAB_EVAL {
           const assignment = b.expressionStatement(
             b.assignmentExpression(
               '=',
-              b.memberExpression(
-                b.memberExpression(b.identifier('jsl'), b.identifier('context')),
-                b.identifier(funcName)
-              ),
+              makeRuntimeContextMember(funcName),
               b.identifier(funcName)
             )
           );
@@ -544,13 +654,17 @@ class PRDC_JSLAB_EVAL {
           const assignment = b.expressionStatement(
             b.assignmentExpression(
               '=',
-              b.memberExpression(
-                b.memberExpression(b.identifier('jsl'), b.identifier('context')),
-                b.identifier(className)
-              ),
+              makeRuntimeContextMember(className),
               b.identifier(className)
             )
           );
+          const registerClass = b.expressionStatement(
+            b.callExpression(
+              makeRuntimeJslMember('registerClassDefinition'),
+              [b.stringLiteral(className), b.identifier(className)]
+            )
+          );
+          path.insertAfter(registerClass);
           path.insertAfter(assignment);
 
           return false;
@@ -575,7 +689,7 @@ class PRDC_JSLAB_EVAL {
           parent.left === node
         ) {
           if(node.declarations.length !== 1) {
-            throw new Error("Unexpected multiple declarations in for loop");
+            throw new Error(lang.string(295));
           }
           // Replace the parent's left with the transformed identifier, without the var keyword.
           parent.left = transformPatternToContext(node.declarations[0].id);
@@ -607,11 +721,7 @@ class PRDC_JSLAB_EVAL {
             // For each element in the ArrayPattern, assign to jsl.context
             decl.id.elements.forEach((element, index) => {
               if(element && element.type === 'Identifier') {
-                const transformedLeft = b.memberExpression(
-                  b.memberExpression(b.identifier('jsl'), b.identifier('context')),
-                  b.identifier(element.name),
-                  false
-                );
+                const transformedLeft = makeRuntimeContextMember(element.name);
                 const rightAccess = b.memberExpression(
                   b.identifier(tempVarName),
                   b.numericLiteral(index),
@@ -648,6 +758,23 @@ class PRDC_JSLAB_EVAL {
               b.assignmentExpression('=', transformedId, decl.init || b.identifier('undefined'))
             );
             newAssignments.push(assignment);
+            
+            // Preserve class definition source when class expression is assigned at top level.
+            if(
+              isTopLevel &&
+              decl.id.type === 'Identifier' &&
+              decl.init &&
+              decl.init.type === 'ClassExpression'
+            ) {
+              newAssignments.push(
+                b.expressionStatement(
+                  b.callExpression(
+                    makeRuntimeJslMember('registerClassDefinition'),
+                    [b.stringLiteral(decl.id.name), transformedId]
+                  )
+                )
+              );
+            }
           }
         });
 
@@ -681,6 +808,37 @@ class PRDC_JSLAB_EVAL {
         }
       },
 
+      visitAssignmentExpression(path) {
+        const node = path.node;
+        const isTopLevel = (functionDepth === 0);
+
+        if(
+          isTopLevel &&
+          ['Identifier', 'ObjectPattern', 'ArrayPattern', 'RestElement', 'AssignmentPattern'].includes(node.left.type)
+        ) {
+          node.left = transformPatternToContext(node.left);
+        } else if(isTopLevel && node.left.type === 'MemberExpression') {
+          rewriteMemberExpressionRoot(node.left);
+        }
+
+        this.traverse(path);
+        return false;
+      },
+
+      visitUpdateExpression(path) {
+        const node = path.node;
+        const isTopLevel = (functionDepth === 0);
+
+        if(isTopLevel && node.argument.type === 'Identifier') {
+          node.argument = transformPatternToContext(node.argument);
+        } else if(isTopLevel && node.argument.type === 'MemberExpression') {
+          rewriteMemberExpressionRoot(node.argument);
+        }
+
+        this.traverse(path);
+        return false;
+      },
+
       visitImportDeclaration(path) {
         const node = path.node;
         const newStatements = [];
@@ -699,11 +857,7 @@ class PRDC_JSLAB_EVAL {
             requireCall = b.callExpression(b.identifier('require'), [node.source]);
           }
 
-          const left = b.memberExpression(
-            b.memberExpression(b.identifier('jsl'), b.identifier('context')),
-            b.identifier(specifier.local.name),
-            false
-          );
+          const left = makeRuntimeContextMember(specifier.local.name);
 
           const right =
             specifier.type === 'ImportDefaultSpecifier' ? requireCall
@@ -721,7 +875,7 @@ class PRDC_JSLAB_EVAL {
       }
     };
 
-    this.jsl.env.recast.types.visit(ast, visitObj);
+    this.jsl.inter.env.recast.types.visit(ast, visitObj);
 
     // Ensure the value of the last expression is returned
     const finalBody = ast.program.body;
@@ -747,14 +901,14 @@ class PRDC_JSLAB_EVAL {
     const transformedAST = b.program(finalBody);
 
     // Generate code from the transformed AST with Recast
-    const result = this.jsl.env.recast.print(transformedAST, {
+    const result = this.jsl.inter.env.recast.print(transformedAST, {
       sourceMapName: 'transformed.js.map',
     });
 
     // Wrap the code in an async IIFE to allow top-level await
     const transformedCode = `(async () => { ${result.code} })();`;
 
-    if(config.DEBUG_TRANSFORMED_CODE) {
+    if(cfg.DEBUG_TRANSFORMED_CODE) {
       obj.jsl._console.log(transformedCode);
       obj.jsl._console.log(result.map);
     }

@@ -35,7 +35,14 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     this.close_window = false;
     this.tabs = new PRDC_TABS();
     
-    this.eslint = new ESLint(config.LINT_OPTIONS);
+    var LINT_OPTIONS = {
+      overrideConfigFile: config.LINT_OPTIONS.overrideConfigFile,
+      overrideConfig: {
+        languageOptions: config.LINT_OPTIONS.overrideConfig.languageOptions,
+        rules: config.LINT_OPTIONS.overrideConfig.rules,
+      }
+    };
+    this.eslint = new ESLint(LINT_OPTIONS);
     
     // Tabs
     this.tabs_cont = document.querySelector(".tabs");
@@ -175,7 +182,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       title: language.currentString(146),
       buttonLabel: language.currentString(147),
       filters: [
-        { name: "All Files", extensions: ["*"] },
+        { name: language.currentString(345), extensions: ["*"] },
       ],
     };
 
@@ -219,7 +226,30 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    * Executes the currently active script.
    */
   runScript() {
-    this.getScriptByTab(this.active_tab)[0].run();
+    var [script] = this.getScriptByTab(this.active_tab);
+    if(script !== undefined) {
+      script.run();
+    }
+  }
+
+  /**
+   * Executes only the current section in the active script.
+   */
+  runCurrentSection() {
+    var [script] = this.getScriptByTab(this.active_tab);
+    if(script !== undefined) {
+      script.runCurrentSection();
+    }
+  }
+
+  /**
+   * Executes only the current line in the active script.
+   */
+  runCurrentLine() {
+    var [script] = this.getScriptByTab(this.active_tab);
+    if(script !== undefined) {
+      script.runCurrentLine();
+    }
   }
 
   /**
@@ -241,6 +271,17 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    */
   toggleComment() {
     this.getScriptByTab(this.active_tab)[0].toggleComment();
+  }
+  
+  /**
+   * Inserts text in the currently active script editor.
+   * @param {string} text Text to insert.
+   */
+  insertTextInActiveScript(text) {
+    var [script] = this.getScriptByTab(this.active_tab);
+    if(script !== undefined) {
+      script.insertText(text);
+    }
   }
   
   /**

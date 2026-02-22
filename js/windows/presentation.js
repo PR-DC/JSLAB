@@ -41,7 +41,6 @@ class PRDC_JSLAB_PRESENTATION {
     this.current_slide = -1;
     this.total_slides = this.slides.length;
     this._interpolated = new WeakSet();
-    this._standalone = window.location.protocol == 'file:'
     this._animating = false;
 
     const style = document.createElement('style');
@@ -180,7 +179,7 @@ class PRDC_JSLAB_PRESENTATION {
     });
     scaleSlides();
     
-    if(!this._standalone) {
+    if(!window._standalone) {
       const ping = () => fetch('/keepalive', 
         { method: 'HEAD', cache: 'no-store', mode: "no-cors" })
       .then((data) => {}).catch((err) => {
@@ -192,8 +191,8 @@ class PRDC_JSLAB_PRESENTATION {
     }
     
     this._attachGestureControl();
-    if(!is_lazy && window.MathJax && typeof MathJax.typesetPromise === 'function') {
-      MathJax.typesetPromise();
+    if(!is_lazy && window.MathJax && MathJax.Hub && typeof MathJax.Hub.Queue === "function") {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
     }
   }
 
@@ -210,6 +209,7 @@ class PRDC_JSLAB_PRESENTATION {
       if(i === index) {
         slide.style.display = 'block';
       } else {
+        this._pauseVideos(slide);
         slide.style.display = 'none';
       }
     });
@@ -246,7 +246,9 @@ class PRDC_JSLAB_PRESENTATION {
 
     var outgoing = this.slides[this.current_slide];
     var incoming = this.slides[index];
-
+    
+    this._pauseVideos(outgoing);
+    
     var slideOverride = incoming.getAttribute('transition');
     var base = slideOverride || this.transition;
 
@@ -383,12 +385,12 @@ class PRDC_JSLAB_PRESENTATION {
    */
   _buildSlideNav() {
     var html = `
-      <div id="first-slide" class="button" title="First slide">⏮</div>
-      <div id="prev-slide" class="button" title="Previous">⏴</div>
+      <div id="first-slide" class="button" title="${language.currentString(315)}">|⏴</div>
+      <div id="prev-slide" class="button" title="${language.currentString(316)}">⏴</div>
       <input id="set-slide" type="number" min="1" step="1">
       <span id="total-slides">/ 0</span>
-      <div id="next-slide" class="button" title="Next">⏵</div>
-      <div id="last-slide" class="button" title="Last slide">⏭</div>`;
+      <div id="next-slide" class="button" title="${language.currentString(317)}">⏵</div>
+      <div id="last-slide" class="button" title="${language.currentString(318)}">⏵|</div>`;
     
     this.slide_nav = document.createElement('div');
     this.slide_nav.id = 'slide-controls';
@@ -456,11 +458,24 @@ class PRDC_JSLAB_PRESENTATION {
       }
     });
 
-    if(window.MathJax && typeof MathJax.typesetPromise === 'function') {
-      MathJax.typesetPromise([slide]).catch(err => console.error(err));
+    if(!is_lazy && window.MathJax && typeof MathJax.typesetPromise === 'function') {
+      MathJax.typesetPromise();
     }
   }
-
+  
+  /**
+   * Pauses every <video> element inside the given slide.
+   * @param {HTMLElement} slide
+   */
+  _pauseVideos(slide) {
+    if (!slide) return;
+    slide.querySelectorAll('video').forEach(v => {
+      try {
+        v.pause();
+      } catch (_) {}
+    });
+  }
+  
   /**
    * Replaces every ${expr} text placeholder inside *root*
    * with the evaluated value of *expr* in the window scope.
@@ -671,7 +686,7 @@ class ImagePDF extends HTMLElement {
     let loadingTask;
     try {
       if(this.src != src_attr) {
-        if(presentation._standalone){
+        if(window._standalone){
           var buf = await loadFileBuf(src_attr);
           loadingTask = pdfjsLib.getDocument({ data: buf });
         } else {
@@ -747,7 +762,7 @@ class PlotJSON extends HTMLElement {
     
     try {
       if(this.src != src_attr) {
-        if(presentation._standalone){
+        if(window._standalone){
           const buf = await loadFileBuf(src_attr);
           this.data = JSON.parse(buf);
         } else {
@@ -815,7 +830,7 @@ class Scene3dJSON extends HTMLElement {
 
     try {
       if(this.src !== src_attr) {
-        if(presentation._standalone) {
+        if(window._standalone) {
           var buf  = await loadFileBuf(src_attr);
           this.data  = JSON.parse(buf);
         } else {
@@ -828,30 +843,47 @@ class Scene3dJSON extends HTMLElement {
       var w = presentation.toPixels(this.getAttribute('width') , 'width')  || 640;
       var h = presentation.toPixels(this.getAttribute('height'), 'height') || 480;
       
-      await presentation.waitForGlobal('THREE');
+      if(!window._standalone){
+        await presentation.waitForGlobal('THREE');
 
-      var loader = new window.THREE.ObjectLoader();
-      this.scene = loader.parse(this.data);
-      this.camera = new window.THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
-      this.renderer = new window.THREE.WebGLRenderer({ canvas: this._canvas, alpha: true, antialias: true });
-      this.renderer.setSize(w, h);
-      this.renderer.setAnimationLoop(() => { 
-        this.renderer.render(this.scene, this.camera) 
-      });
+        var loader = new window.THREE.ObjectLoader();
+        this.scene = loader.parse(this.data);
+        this.camera = new window.THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+        this.renderer = new window.THREE.WebGLRenderer({ canvas: this._canvas, alpha: true, antialias: true });
+        this.renderer.setSize(w, h);
+        this.renderer.setAnimationLoop(() => { 
+          this.renderer.render(this.scene, this.camera) 
+        });
 
-      var script = this.querySelector('script[type="x-scene-setup"]');
-      if(script) {
-        var AsyncFunction = Object.getPrototypeOf(
-          async function () {}).constructor;
-        var fn = new AsyncFunction(
-          'presentation',
-          script.textContent
-        ).bind(this);
-        await fn(presentation);
-      }
+        var script = this.querySelector('script[type="x-scene-setup"]');
+        if(script) {
+          var AsyncFunction = Object.getPrototypeOf(
+            async function () {}).constructor;
+          var fn = new AsyncFunction(
+            'presentation',
+            script.textContent
+          ).bind(this);
+          await fn(presentation);
+        }
 
-      this.renderer.render(this.scene, this.camera);
-      this._finished_loading = true;
+        this.renderer.render(this.scene, this.camera);
+        this._finished_loading = true;
+      } else {
+        var ph = document.createElement('div');
+        ph.className = 'error-element scene-3d-error';
+        this.appendChild(ph);
+        this._canvas.width = 0;
+        this._canvas.height = 0;
+        Object.assign(ph.style, {
+          width:  w + 'px',
+          height: h + 'px'
+        });
+        var txt_ph = document.createElement('div');
+          txt_ph.innerHTML = language.currentString(363);
+          ph.appendChild(txt_ph);
+          this._finished_loading = true;
+          console.error('scene-3d-json:', language.currentString(363));
+        }
     } catch(err) {
       console.error('scene-3d-json:', err);
     }

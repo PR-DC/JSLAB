@@ -38,12 +38,12 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {number} The identifier (wid) of the newly opened window.
    */
   openWindow(file) {
-    if(!this.jsl.env.pathIsAbsolute(file)) {
-      file = app_path + '/html/' + file;
+    if(!this.jsl.inter.env.pathIsAbsolute(file)) {
+      file = this.jsl.app_path + '/html/' + file;
     }
     
-    if(!this.jsl.env.checkFile(file)) {
-      this.jsl.env.error('@openWindow: '+language.string(199));
+    if(!this.jsl.inter.env.checkFile(file)) {
+      this.jsl.inter.env.error('@openWindow: '+this.jsl.inter.lang.string(199));
     }
     
     this._wid += 1;
@@ -101,7 +101,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @param {number} wid - Identifier for the window to close.
    */
   closeWindows(wid) {
-    this.jsl.env.closeWindow(wid);
+    this.jsl.inter.env.closeWindow(wid);
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
@@ -280,7 +280,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setMovable() method.
    */
   setWindowMovable(wid, state) {
-    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+    if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
       return this.open_windows[wid].setMovable(state);
     } else {
       return false;
@@ -294,7 +294,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setAspectRatio() method.
    */
   setWindowAspectRatio(wid, aspect_ratio) {
-    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+    if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
       return this.open_windows[wid].setAspectRatio(aspect_ratio);
     } else {
       return false;
@@ -308,7 +308,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setOpacity() method.
    */
   setWindowOpacity(wid, opacity) {
-    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+    if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
       return this.open_windows[wid].setOpacity(opacity);
     } else {
       return false;
@@ -322,7 +322,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {boolean|undefined} - Returns false if the window ID is invalid, otherwise the result of the setFullscreen() method.
    */
   setWindowFullscreen(wid, state) {
-    if(this.jsl.windows.open_windows.hasOwnProperty(wid)) {
+    if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
       return this.open_windows[wid].setFullscreen(state);
     } else {
       return false;
@@ -395,7 +395,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       win.context.location.href = '../docs/documentation.html#'+encodeURI(query);
       win.context.location.reload(true);
     }
-    win.setTitle('JSLAB / DOCUMENTATION');
+    win.setTitle(this.jsl.inter.lang.currentString(534));
   }
   
   /**
@@ -403,6 +403,26 @@ class PRDC_JSLAB_LIB_WINDOWS {
    */
   async openDoc(query) {
     await this.openDocumentation(query);
+  }
+
+  /**
+   * Opens window with discourse
+   */
+  async openDiscourse() {
+    var context = await this.openWebpage('https://discourse.jsl.pr-dc.com/');
+    var win = this.open_windows[context.wid];
+    win.setTitle(this.jsl.inter.lang.currentString(535));
+  }
+
+  /**
+   * Opens window with webpage
+   * @param {String} [url] - URL of webpage.
+   * @returns {Promise<Object>} A promise that resolves to the window context.
+   */
+  async openWebpage(url) {
+    var context = await this.jsl.inter.windows.openWindowBlank();
+    context.location.href = url;
+    return context;
   }
   
   /**
@@ -428,7 +448,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
 
       if(imported === '*') {
         if(!as) {
-          this.jsl.env.error('@openWindow3D: '+language.string(200)+from+'.');
+          this.jsl.inter.env.error('@openWindow3D: '+this.jsl.inter.lang.string(200)+from+'.');
         }
         // Namespace import
         import_statements.push(`import * as ${as} from '${from}';`);
@@ -452,45 +472,48 @@ class PRDC_JSLAB_LIB_WINDOWS {
     context.imports_ready = false;
     context.document.body.appendChild(script);
     while(!context.imports_ready) {
-      await this.jsl.non_blocking.waitMSeconds(1);
+      if(this.jsl.inter.basic.checkStopLoop()) {
+        return false;
+      }
+      await this.jsl.inter.non_blocking.waitMSeconds(1);
     }
     context.sceneToJSON = function(file_path, scene = context.scene) {
       if(!scene) return;
       if(!file_path) {
         let options = {
-         title: language.currentString(144),
+         title: obj.jsl.inter.lang.currentString(144),
          defaultPath: 'window-3d.json',
-         buttonLabel: language.currentString(144),
+         buttonLabel: obj.jsl.inter.lang.currentString(144),
          filters :[
           {name: 'json', extensions: ['json']},
          ]
         };
-        file_path = obj.jsl.env.showSaveDialogSync(options);
+        file_path = obj.jsl.inter.env.showSaveDialogSync(options);
         if(!file_path) return;
       }
       var scene_json = scene.toJSON();
-      obj.jsl.env.writeFileSync(file_path, JSON.stringify(scene_json));
+      obj.jsl.inter.env.writeFileSync(file_path, JSON.stringify(scene_json));
     }
     
     context.sceneFromJSON = function(file_path) {
       if(!file_path) {
         var options = {
-          title: language.currentString(247),
-          buttonLabel: language.currentString(231)
+          title: obj.jsl.inter.lang.currentString(247),
+          buttonLabel: obj.jsl.inter.lang.currentString(231)
         };
-        file_path = obj.jsl.env.showOpenDialogSync(options);
+        file_path = obj.jsl.inter.env.showOpenDialogSync(options);
         if(file_path === undefined) {
-          obj.jsl.env.error('@openWindow3D.fromJSON: '+language.string(132)+'.');
+          obj.jsl.inter.env.error('@openWindow3D.fromJSON: '+obj.jsl.inter.lang.string(132)+'.');
           return false;
         } else {
           file_path = file_path[0];
         }
       }    
-      if(!obj.jsl.file_system.existFile(pwd + file_path)) {
-        obj.jsl.env.error('@openWindow3D.fromJSON: '+language.string(248));
+      if(!obj.jsl.inter.file_system.existFile(obj.jsl.current_path + file_path)) {
+        obj.jsl.inter.env.error('@openWindow3D.fromJSON: '+obj.jsl.inter.lang.string(248));
         return false;
       }
-      var data = JSON.parse(obj.jsl.env.readFileSync(pwd + file_path).toString());
+      var data = JSON.parse(obj.jsl.inter.env.readFileSync(obj.jsl.current_path + file_path).toString());
 
       const loader = new context.THREE.ObjectLoader();
       return loader.parse(data)
@@ -508,10 +531,15 @@ class PRDC_JSLAB_LIB_WINDOWS {
     var context = this.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
+      if(this.jsl.inter.basic.checkStopLoop()) {
+        return false;
+      }
       if(typeof context.Plotly != 'undefined') {
         context.imports_ready = true;
       }
-      await this.jsl.non_blocking.waitMSeconds(1);
+      if(!context.imports_ready) {
+        await this.jsl.inter.non_blocking.waitMSeconds(1);
+      }
     }
     context.plot_cont = context.document.getElementById('plot-cont');
     context.plot_cont.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
@@ -528,10 +556,15 @@ class PRDC_JSLAB_LIB_WINDOWS {
     var context = this.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
+      if(this.jsl.inter.basic.checkStopLoop()) {
+        return false;
+      }
       if(typeof context.d3 != 'undefined') {
         context.imports_ready = true;
       }
-      await this.jsl.non_blocking.waitMSeconds(1);
+      if(!context.imports_ready) {
+        await this.jsl.inter.non_blocking.waitMSeconds(1);
+      }
     }
     context.svg = context.document.getElementById('d3-svg');
     context.canvas = context.document.getElementById('d3-canvas');
@@ -558,13 +591,14 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {Promise<Object>} A promise that resolves to the window context once the graph is rendered.
    */
   async showMermaidGraph(graph_definition) {
+    var obj = this;
     var wid = this.openWindow('mermaid_graph.html');
     await this.open_windows[wid].ready;
     var context = this.open_windows[wid].context;
     context.document.custom_style = context.document.getElementById('custom-style');
     var graph = context.document.getElementById('graph');
     while(!graph.svg_viewer) {
-      await this.jsl.non_blocking.waitMSeconds(1);
+      await this.jsl.inter.non_blocking.waitMSeconds(1);
     }
     context.showGraph = async function(graph_definition) {
       try {
@@ -576,7 +610,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
           graph.style.display = 'block';
         }
       } catch(err) {
-        error('@showGraph: '+err);
+        obj.jsl.inter.error('@showGraph: '+err);
       }
     }
     await context.showGraph(graph_definition);
@@ -669,7 +703,7 @@ class PRDC_JSLAB_WINDOW {
     if(!this.opened) {
       var obj = this;
       this.opened = true;
-      var [context, ready] = this.#jsl.env.openWindow(this.wid, file);
+      var [context, ready] = this.#jsl.inter.env.openWindow(this.wid, file);
       this.context = context;
       this.context.getWindow = function() {
         return obj;
@@ -686,7 +720,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async show() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.showWindow(this.wid);
+    return this.#jsl.inter.env.showWindow(this.wid);
   }
 
   /**
@@ -695,7 +729,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async hide() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.hideWindow(this.wid);
+    return this.#jsl.inter.env.hideWindow(this.wid);
   }
   
   /**
@@ -704,7 +738,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async focus() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.focusWindow(this.wid);
+    return this.#jsl.inter.env.focusWindow(this.wid);
   }
 
   /**
@@ -713,7 +747,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async minimize() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.minimizeWindow(this.wid);
+    return this.#jsl.inter.env.minimizeWindow(this.wid);
   }
 
 /**
@@ -722,7 +756,7 @@ class PRDC_JSLAB_WINDOW {
  */
   async center() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.centerWindow(this.wid);
+    return this.#jsl.inter.env.centerWindow(this.wid);
   }
 
   /**
@@ -731,7 +765,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async moveTop() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.moveTopWindow(this.wid);
+    return this.#jsl.inter.env.moveTopWindow(this.wid);
   }
   
   /**
@@ -742,7 +776,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setSize(width, height) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowSize(this.wid, width, height);
+    return this.#jsl.inter.env.setWindowSize(this.wid, width, height);
   }
   
   /**
@@ -753,7 +787,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setPos(left, top) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowPos(this.wid, left, top);
+    return this.#jsl.inter.env.setWindowPos(this.wid, left, top);
   }
 
   /**
@@ -763,7 +797,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setResizable(state) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowResizable(this.wid, state);
+    return this.#jsl.inter.env.setWindowResizable(this.wid, state);
   }
 
   /**
@@ -773,7 +807,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setMovable(state) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowMovable(this.wid, state);
+    return this.#jsl.inter.env.setWindowMovable(this.wid, state);
   }
 
   /**
@@ -783,7 +817,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setAspectRatio(aspect_ratio) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowAspectRatio(this.wid, aspect_ratio);
+    return this.#jsl.inter.env.setWindowAspectRatio(this.wid, aspect_ratio);
   }
 
   /**
@@ -793,7 +827,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setOpacity(opacity) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowOpacity(this.wid, opacity);
+    return this.#jsl.inter.env.setWindowOpacity(this.wid, opacity);
   }
 
   /**
@@ -803,7 +837,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setFullscreen(state) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowFullscreen(this.wid, state);
+    return this.#jsl.inter.env.setWindowFullscreen(this.wid, state);
   }
   
   /**
@@ -813,7 +847,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async setTitle(title) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.setWindowTitle(this.wid, title);
+    return this.#jsl.inter.env.setWindowTitle(this.wid, title);
   }
 
   /**
@@ -823,7 +857,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async printToPdf(options) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.printWindowToPdf(this.wid, options);
+    return this.#jsl.inter.env.printWindowToPdf(this.wid, options);
   }
   
   /**
@@ -832,7 +866,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async getSize() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.getWindowSize(this.wid);
+    return this.#jsl.inter.env.getWindowSize(this.wid);
   }
   
   /**
@@ -841,7 +875,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async getPos() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.getWindowPos(this.wid);
+    return this.#jsl.inter.env.getWindowPos(this.wid);
   }
   
   /**
@@ -850,7 +884,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async close() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.closeWindows(this.wid);
+    return this.#jsl.inter.env.closeWindows(this.wid);
   }
   
   /**
@@ -859,7 +893,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async openDevTools() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.openWindowDevTools(this.wid);
+    return this.#jsl.inter.env.openWindowDevTools(this.wid);
   }
 
   /**
@@ -868,7 +902,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async getMediaSourceId() {
     await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.env.getWindowMediaSourceId(this.wid);
+    return this.#jsl.inter.env.getWindowMediaSourceId(this.wid);
   }
 
   /**
@@ -878,7 +912,7 @@ class PRDC_JSLAB_WINDOW {
    */
   async startVideoRecording(opts) {
     await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.device.startVideoRecording(this.#jsl.env.getWindowMediaSourceId(this.wid), opts);
+    return await this.#jsl.inter.device.startVideoRecording(this.#jsl.inter.env.getWindowMediaSourceId(this.wid), opts);
   }
   
   /**
@@ -924,48 +958,57 @@ class PRDC_JSLAB_WINDOW {
   }
   
   /**
-   * Updates the language of the text elements within the DOM.
-   * @param {boolean} [flag=true] - Whether to update the language.
+   * Updates localized text elements within the DOM.
+   * @param {boolean} [flag=true] - Whether to update text content.
    * @returns {void}
    */
   _updateLanguage(flag = true) {
+    var lang = this.#jsl.inter.lang;
+
     if(flag) {
       this.dom.querySelectorAll('str').forEach(function(el) {
         var id = el.getAttribute('sid');
-        el.innerHTML = language.string(id);
+        el.innerHTML = lang.string(id);
       });
     }
 
     if(this.lang_styles.cssRules.length > 1) {
       this.lang_styles.deleteRule(1);
     }
-    this.lang_styles.insertRule("lang."+language.lang+" { display: initial }", 1);
+    this.lang_styles.insertRule("lang."+lang.lang+" { display: initial }", 1);
       
     this.dom.querySelectorAll('[title-str]').forEach(function(el) {
       var id = el.getAttribute('title-str');
-      if(id in language.s) {
-        el.setAttribute('title', language.s[id][language.lang]);
+      if(id in lang.s) {
+        el.setAttribute('title', lang.s[id][lang.lang]);
       }
     });
     
     this.dom.querySelectorAll('textarea[str]').forEach(function(el) {
       var id = el.getAttribute('str');
-      if(id in language.s) {
-        el.setAttribute('placeholder', language.s[id][language.lang]);
+      if(id in lang.s) {
+        el.setAttribute('placeholder', lang.s[id][lang.lang]);
       }
     });
     
     this.dom.querySelectorAll('input[str]').forEach(function(el) {
       var id = el.getAttribute('str');
-      if(id in language.s) {
-        el.setAttribute('placeholder', language.s[id][language.lang]);
+      if(id in lang.s) {
+        el.setAttribute('placeholder', lang.s[id][lang.lang]);
       }
     });
 
     this.dom.querySelectorAll('option[str]').forEach(function(el) {
       var id = el.getAttribute('str');
-      if(id in language.s) {
-        el.textContent = language.s[id][language.lang];
+      if(id in lang.s) {
+        el.textContent = lang.s[id][lang.lang];
+      }
+    });
+
+    this.dom.querySelectorAll('title[str]').forEach(function(el) {
+      var id = el.getAttribute('str');
+      if(id in lang.s) {
+        el.textContent = lang.s[id][lang.lang];
       }
     });
   }

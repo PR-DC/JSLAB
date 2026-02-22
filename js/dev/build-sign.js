@@ -6,19 +6,23 @@
  * @version 0.0.1
  */
  
-require('../init-config.js');
+require('../shared/init-config.js');
 
 console.log('[build-sign.js] Started');
 var t = performance.now();
 
-if(!process.env.COMPANY_NAME) {
-  console.error('Environment variable COMPANY_NAME must be defined!');
-}
-if(!process.env.TIMESTAMP_SERVER) {
-  console.error('Environment variable TIMESTAMP_SERVER must be defined!');
-}
-if(!process.env.SIGN_TOOL_PATH) {
-  console.error('Environment variable SIGN_TOOL_PATH must be defined!');
+const required_sign_env = [
+  {name: 'COMPANY_NAME', value: config.COMPANY_NAME},
+  {name: 'TIMESTAMP_SERVER', value: config.TIMESTAMP_SERVER},
+  {name: 'SIGN_TOOL_PATH', value: config.SIGN_TOOL_PATH}
+];
+
+function getMissingSignEnv() {
+  return required_sign_env.filter(function(e) {
+    return !e.value || !String(e.value).trim();
+  }).map(function(e) {
+    return e.name;
+  });
 }
 
 const { execSync } = require('child_process');
@@ -34,6 +38,13 @@ const { execSync } = require('child_process');
  * @param {string} data.hash - The hash algorithm to use for signing (e.g., 'sha256').
  */
 exports.default = function(data) {
+  var missing_sign_env = getMissingSignEnv();
+  if(missing_sign_env.length) {
+    console.warn('[build-sign.js] Missing environment variables: '+
+      missing_sign_env.join(', ')+'. Skipping signing for '+data.path);
+    return;
+  }
+  
   console.info('Signing '+data.path+' with '+data.hash+' to '+config.COMPANY_NAME);
   
   const sha256 = data.hash === 'sha256';

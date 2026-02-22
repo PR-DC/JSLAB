@@ -52,7 +52,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
       'Wikimedia Transport Map': 'https://maps.wikimedia.org/osm-intl-transport/{z}/{x}/{y}.png',
     };
     
-    if(hasKey(this.tilesets, this.tileset)) {
+    if(this.jsl.inter.format.hasKey(this.tilesets, this.tileset)) {
       this.tileset_url = this.tilesets[this.tileset];
     } else {
       this.tileset_url = this.tileset;
@@ -67,17 +67,22 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
    * @returns {Promise<void>}
    */
   async createWindow() {
-    var wid = this.jsl.windows.openWindow('leaflet.html');
+    var wid = this.jsl.inter.windows.openWindow('leaflet.html');
     this.wid = wid;
-    this.win = this.jsl.windows.open_windows[wid];
-    await this.jsl.windows.open_windows[wid].ready;
-    var context = this.jsl.windows.open_windows[wid].context;
+    this.win = this.jsl.inter.windows.open_windows[wid];
+    await this.jsl.inter.windows.open_windows[wid].ready;
+    var context = this.jsl.inter.windows.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
+      if(this.jsl.inter.basic.checkStopLoop()) {
+        return false;
+      }
       if(typeof context.L != 'undefined') {
         context.imports_ready = true;
       }
-      await this.jsl.non_blocking.waitMSeconds(1);
+      if(!context.imports_ready) {
+        await this.jsl.inter.non_blocking.waitMSeconds(1);
+      }
     }
     this.context = context;
     context.map_cont = context.document.getElementById('map-cont');

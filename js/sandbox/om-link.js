@@ -86,16 +86,16 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
 
     this.portfile = portfile;
     
-    var [flag1, pids1] = isProgramRunning('omc.exe');
+    var [flag1, pids1] = this.jsl.inter.isProgramRunning('omc.exe');
     var omc_process = exec(cmd);
-    await waitMSeconds(200);
-    var [flag2, pids2] = isProgramRunning('omc.exe');
+    await this.jsl.inter.waitMSeconds(200);
+    var [flag2, pids2] = this.jsl.inter.isProgramRunning('omc.exe');
     this.pid = pids2.filter(function(e) {
       return !pids1.includes(e)
     });
     
     while(true) {
-      await waitMSeconds(10);
+      await this.jsl.inter.waitMSeconds(10);
       if(fs.existsSync(this.portfile)) {
         const filedata = fs.readFileSync(this.portfile, 'utf-8');
         this.requester = new zmq.Request();
@@ -119,7 +119,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
       const [result] = await this.requester.receive();
       return this.parseExpression(result.toString());
     } else {
-      this.jsl.env.error("@sendExpression: "+language.string(201));
+      this.jsl.inter.env.error("@sendExpression: "+this.jsl.inter.lang.string(201));
       return false;
     }
   }
@@ -134,14 +134,14 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
    */
   async ModelicaSystem(filename, modelname, libraries = [], command_line_options = '') {
     if(!filename || !modelname) {
-      this.jsl.env.error('@ModelicaSystem: '+language.string(203));
+      this.jsl.inter.env.error('@ModelicaSystem: '+this.jsl.inter.lang.string(203));
       return false;
     }
 
     if(command_line_options) {
       const cmd_exp = await this.sendExpression(`setcommand_line_options("${command_line_options}")`);
       if(cmd_exp === 'false') {
-        this.jsl.env.error('@ModelicaSystem: '+ await this.sendExpression("getErrorString()"));
+        this.jsl.inter.env.error('@ModelicaSystem: '+ (await this.sendExpression("getErrorString()")));
         return false;
       }
     }
@@ -149,7 +149,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
     const filepath = path.normalize(filename).replace(/\\/g, '/');
     const load_file_msg = await this.sendExpression(`loadFile("${filepath}")`);
     if(load_file_msg === 'false') {
-      this.jsl.env.error('@ModelicaSystem: '+ await this.sendExpression("getErrorString()"));
+      this.jsl.inter.env.error('@ModelicaSystem: '+ (await this.sendExpression("getErrorString()")));
       return false;
     }
 
@@ -161,7 +161,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         libmsg = await this.sendExpression(`loadModel(${lib})`);
       }
       if(libmsg === 'false') {
-        this.jsl.env.error('@ModelicaSystem: '+ await this.sendExpression("getErrorString()"));
+        this.jsl.inter.env.error('@ModelicaSystem: '+ (await this.sendExpression("getErrorString()")));
         return false;
       }
     }
@@ -180,7 +180,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
   async BuildModelicaModel() {
     const build_model_result = await this.sendExpression(`buildModel(${this.modelname})`);
     if(!build_model_result) {
-      this.jsl.env.error('@BuildModelicaModel: '+ await this.sendExpression("getErrorString()"));
+      this.jsl.inter.env.error('@BuildModelicaModel: '+ (await this.sendExpression("getErrorString()")));
       return false;
     }
 
@@ -233,7 +233,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         this.processVariable(scalar);
       }
     } else {
-      this.jsl.env.error('@xmlparse: '+language.string(204));
+      this.jsl.inter.env.error('@xmlparse: '+this.jsl.inter.lang.string(204));
       return false;
     }
     return true;
@@ -459,7 +459,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
           this.parameter_list[key] = value;
           this.override_variables[key] = value;
         } else {
-          this.jsl.env.error('@setParameters: ' + key + language.string(209));
+          this.jsl.inter.env.error('@setParameters: ' + key + this.jsl.inter.lang.string(209));
         }
       });
     }
@@ -481,7 +481,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
           this.simulation_options[key] = value;
           this.sim_opt_override[key] = value;
         } else {
-          this.jsl.env.error('@setSimulationOptions: ' + key + language.string(210));
+          this.jsl.inter.env.error('@setSimulationOptions: ' + key + this.jsl.inter.lang.string(210));
         }
       });
     }
@@ -502,7 +502,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         if(key in this.linear_options) {
           this.linear_options[key] = value;
         } else {
-          this.jsl.env.error('@setLinearizationOptions: ' + key + language.string(211));
+          this.jsl.inter.env.error('@setLinearizationOptions: ' + key + this.jsl.inter.lang.string(211));
         }
       });
     }
@@ -524,7 +524,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
           this.input_list[key] = value;
           this.input_flag = true;
         } else {
-          this.jsl.env.error('@setInputs: ' + key + language.string(212));
+          this.jsl.inter.env.error('@setInputs: ' + key + this.jsl.inter.lang.string(212));
         }
       });
     }
@@ -629,10 +629,10 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         const final_simulation_exe = `"${getexefile}"${overridevar}${csvinput}${r}${sim_flags}`;
         execSync(final_simulation_exe, { cwd: this.mat_temp_dir });
       } else {
-        this.jsl.env.error('@simulate: '+language.string(205));
+        this.jsl.inter.env.error('@simulate: '+this.jsl.inter.lang.string(205));
       }
     } else {
-      this.jsl.env.error('@simulate: '+language.string(206));
+      this.jsl.inter.env.error('@simulate: '+this.jsl.inter.lang.string(206));
     }
   }
   
@@ -643,7 +643,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
   async linearize() {
     const linres = await this.sendExpression("setcommand_line_options(\"+generateSymbolicLinearization\")");
     if(linres && linres[0] === "false") {
-      this.jsl.env.error('@simulate: '+language.string(207)+ await this.sendExpression("getErrorString()"));
+      this.jsl.inter.env.error('@simulate: '+this.jsl.inter.lang.string(207)+ (await this.sendExpression("getErrorString()")));
       return false;
     }
 
@@ -669,7 +669,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
     if(fs.existsSync(this.linearfile)) {
       const loadmsg = await this.sendExpression(`loadFile("${this.linearfile}")`);
       if(loadmsg && loadmsg[0] === "false") {
-        this.jsl.env.error('@linearize: '+ await this.sendExpression("getErrorString()"));
+        this.jsl.inter.env.error('@linearize: '+ (await this.sendExpression("getErrorString()")));
         return false;
       }
 
@@ -683,7 +683,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         await this.xmlparse();
         return this.getLinearMatrix();
       } else {
-        this.jsl.env.error('@linearize: '+ await this.sendExpression("getErrorString()"));
+        this.jsl.inter.env.error('@linearize: '+ (await this.sendExpression("getErrorString()")));
         return false;
       }
     }
@@ -754,7 +754,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
     if(this.linear_flag) {
       return this.linear_inputs;
     } else {
-      this.jsl.env.error("@getlinear_inputs: "+language.string(202));
+      this.jsl.inter.env.error("@getlinear_inputs: "+this.jsl.inter.lang.string(202));
       return false;
     }
   }
@@ -767,7 +767,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
     if(this.linear_flag) {
       return this.linear_outputs;
     } else {
-      this.jsl.env.error("@getlinear_outputs: "+language.string(202));
+      this.jsl.inter.env.error("@getlinear_outputs: "+this.jsl.inter.lang.string(202));
       return false;
     }
   }
@@ -780,7 +780,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
     if(this.linear_flag) {
       return this.linear_states;
     } else {
-      this.jsl.env.error("@getlinear_states: "+language.string(202));
+      this.jsl.inter.env.error("@getlinear_states: "+this.jsl.inter.lang.string(202));
       return false;
     }
   }
@@ -805,7 +805,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
         return variables;
       }
     } else {
-      this.jsl.env.error('@getSolutions: ' + language.string(208) + resultfile);
+      this.jsl.inter.env.error('@getSolutions: ' + this.jsl.inter.lang.string(208) + resultfile);
       return false;
     }
   }
@@ -911,7 +911,7 @@ class PRDC_JSLAB_OPENMODELICA_LINK {
       this.active = false;
     }
     
-    killProcess(this.pid);
+    this.jsl.inter.killProcess(this.pid);
   }
 }
 

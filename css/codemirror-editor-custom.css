@@ -66,6 +66,16 @@
   text-shadow: none;
 }
 
+.CodeMirror .jslab-section-marker-bg {
+  border-top: 1px solid #d7e2ef;
+  background: #f8fbff;
+}
+
+.CodeMirror .jslab-section-marker-line {
+  font-weight: 700;
+  color: #2c4a68;
+}
+
 .CodeMirror-lint-tooltip {
   background-color: #fff;
   border: 1px solid #f7df1e;

@@ -50,7 +50,7 @@ class PRDC_JSLAB_VIDEOCALL {
    */
   _connectClient() {
     var obj = this;
-    this.tcp_client = this.jsl.networking.tcp(this.host, this.port, function() {
+    this.tcp_client = this.jsl.inter.networking.tcp(this.host, this.port, function() {
       obj._setupClientHandlers();
     });
   }
@@ -61,7 +61,7 @@ class PRDC_JSLAB_VIDEOCALL {
   _startConnectionTimeout() {
     var obj = this;
 
-    clearTimeoutIf(this.connection_timeout);
+    this.jsl.inter.clearTimeoutIf(this.connection_timeout);
     this.connection_timeout = setTimeout(function() {
       obj._reconnectClient();
     }, this.timeout);
@@ -85,8 +85,8 @@ class PRDC_JSLAB_VIDEOCALL {
   async _init() {
     var obj = this;
     
-    this.win = await openWindowBlank();
-    this.win.setTitle('Video call');
+    this.win = await this.jsl.inter.windows.openWindowBlank();
+    this.win.setTitle(this.jsl.inter.lang.currentString(533));
     this.win.document.body.innerHTML += '<video id="video"></video>';
     this.dom = this.win.document.getElementById('video');
     Object.assign(this.dom.style, {
@@ -103,7 +103,7 @@ class PRDC_JSLAB_VIDEOCALL {
     this._createPeerConnection();
     
     if(this.is_initiator) {
-      this.tcp_server = this.jsl.networking.tcpServer(this.host, this.port, function(socket) {
+      this.tcp_server = this.jsl.inter.networking.tcpServer(this.host, this.port, function(socket) {
         obj._setupServerSocketHandlers(socket);
       });
     } else {
@@ -178,7 +178,7 @@ class PRDC_JSLAB_VIDEOCALL {
    */
   _createPeerConnection() {
     var obj = this;
-    this.peer_connection = new RTCPeerConnection({});
+    this.peer_connection = new this.jsl.inter.RTCPeerConnection({});
 
     if(this.local_stream) {
       this.local_stream.getTracks().forEach(function(track) {
@@ -235,12 +235,12 @@ class PRDC_JSLAB_VIDEOCALL {
     
     try {
       if(constraints.audio || constraints.video) {
-        this.local_stream = await this.jsl.env.navigator.mediaDevices.getUserMedia(constraints);
+        this.local_stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
       } else {
-        this.local_stream = new MediaStream();
+        this.local_stream = new this.jsl.inter.MediaStream();
       }
     } catch {
-      this.jsl.env.error('@videocall: '+language.string(222));
+      this.jsl.inter.env.error('@videocall: '+this.jsl.inter.lang.string(222));
     }
   }
 
@@ -269,7 +269,7 @@ class PRDC_JSLAB_VIDEOCALL {
    */
   async _handleSignalingMessage(message) {
     if(!this.is_initiator) {
-      this.connection_timeout = clearTimeoutIf(this.connection_timeout);
+      this.connection_timeout = this.jsl.inter.clearTimeoutIf(this.connection_timeout);
     }
     
     switch(message.type) {
@@ -296,7 +296,7 @@ class PRDC_JSLAB_VIDEOCALL {
         if(typeof this._onMessage == 'function') {
           this._onMessage(message.data);
         } else {
-          disp(message.data);
+          this.jsl.inter.disp(message.data);
         }
         break;
     }
@@ -345,7 +345,7 @@ class PRDC_JSLAB_VIDEOCALL {
    */
   endCall() {
     if(!this.is_initiator) {
-      this.connection_timeout = clearTimeoutIf(this.connection_timeout);
+      this.connection_timeout = this.jsl.inter.clearTimeoutIf(this.connection_timeout);
     }
     
     if(this.peer_connection) {

@@ -321,7 +321,15 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
    * Handles UI and state updates when a script directory is unknown, prompting the user for action.
    */
   unknownScriptDir() {
+    if(!this.win || !this.win.eval ||
+        typeof this.win.eval.last_script_path != 'string' ||
+        !this.win.eval.last_script_path.length) {
+      return false;
+    }
     var script_dir = this.addPathSep(path.dirname(this.win.eval.last_script_path));
+    if(typeof script_dir != 'string' || !script_dir.length) {
+      return false;
+    }
     $('#script-path').text(script_dir);
     this.win.gui.openDialog($('#script-path-container'));
     return true;

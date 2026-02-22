@@ -23,7 +23,9 @@ class PRDC_JSLAB_COMMAND_HISTORY {
     this.win = win;
     this.history_cont = document.getElementById('command-history');
     this.full_history = store.get('full_history') || [];
-    this.history = [];
+    this.history = this.full_history.filter(function(cmd) {
+      return !cmd.startsWith('//');
+    }).slice().reverse();
     
     this.N_history_max = Number(store.get('N_history_max'));
     if(!isFinite(this.N_history_max)) {
@@ -134,6 +136,7 @@ class PRDC_JSLAB_COMMAND_HISTORY {
    */
   clearHistory() {
     this.full_history = [];
+    this.history = [];
     this.history_cont.innerHTML = '';
     this.saveHistory();
   }
@@ -155,12 +158,15 @@ class PRDC_JSLAB_COMMAND_HISTORY {
     }
     this.N_history_max = N;
     $('#settings-container .N-history-max').val(N);
-    while(this.full_history.length >= this.N_history_max) {
+    while(this.full_history.length > this.N_history_max) {
       this.full_history.shift();
       if(this.history_cont.firstChild) {
         this.history_cont.removeChild(this.history_cont.firstChild);
       }
     }
+    this.history = this.full_history.filter(function(cmd) {
+      return !cmd.startsWith('//');
+    }).slice().reverse();
     store.set('N_history_max', this.N_history_max);
     this.saveHistory();
   }

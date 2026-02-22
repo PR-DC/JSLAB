@@ -17,8 +17,8 @@
 \usepackage[most]{tcolorbox}
 
 % Define variables
-\newcommand{\yearvar}{2025}
-\newcommand{\appversion}{v1.0.3}
+\newcommand{\yearvar}{2026}
+\newcommand{\appversion}{v1.0.4}
 
 % Colors
 \definecolor{jsl-blue}{cmyk}{1,1,0,0}
@@ -262,6 +262,16 @@
 
 Welcome to the \textbf{JSLAB} Documentation! This guide provides comprehensive information for users and contributors, detailing the features, usage, and contribution guidelines to ensure a consistent and high-quality codebase.
 
+\textbf{Quick links:} 
+\begin{itemize}
+  \item \href{https://pr-dc.com/jslab/}{Website - pr-dc.com/jslab/}
+  \item \href{https://discourse.jsl.pr-dc.com/}{Discourse - discourse.jsl.pr-dc.com/}
+  \item \href{https://pr-dc.com/jslab/doc/}{Documentation - pr-dc.com/jslab/doc/}
+  \item \href{https://github.com/PR-DC/JSLAB/}{Source code - github.com/PR-DC/JSLAB/}
+  \item \href{https://github.com/PR-DC/JSLAB/releases}{Releases - github.com/PR-DC/JSLAB/releases}
+  \item \href{https://github.com/PR-DC/JSLAB/tree/master/examples}{Examples - github.com/PR-DC/JSLAB/tree/master/examples}
+\end{itemize}
+
 \begin{figure}[H]
     \centering
     \centerline{\jslabLogo[0.3]{0.2cm}}
@@ -453,7 +463,7 @@ You can install \textbf{JSLAB} by either downloading the latest stable release f
   
   \item Download the appropriate installer and install program.
 
-  \item Try examples from:
+  \item Try the examples from:
 
   \url{https://github.com/PR-DC/JSLAB/tree/master/examples}
 
@@ -637,6 +647,8 @@ The \textbf{Performance} tab in the developer tools is particularly useful for o
 % --------------------
 \section{Examples}
 
+For latest examples, visit our \textbf{Discourse} at \url{https://discourse.jsl.pr-dc.com}.
+
 % ----------
 \subsection{Animated 2D Plot}
 \label{sec:animated-2d-plot}
@@ -780,7 +792,7 @@ Parallel execution is critical for handling computationally intensive tasks, as 
 // JavaScript Example
 var computeSquare = (i) => i * i;
 
-// Run parallel exectuion 
+// Run parallel execution 
 var results = await parallel.parfor(0, 20, 1, 
   parallel.getProcessorsNum(), {}, undefined, computeSquare);
 disp(results);
@@ -905,7 +917,7 @@ var data = {
   'Coordinates': lines,
   'Diameters': d
 };
-beamsFile = pwd + 'out/beams.json';
+var beamsFile = pwd + 'out/beams.json';
 writeFile(beamsFile, stringify(data));
 
 // Run FreeCADLink 
@@ -1008,7 +1020,7 @@ Your feedback is invaluable in improving the \textbf{JSLAB} application. Whether
 
 \begin{itemize}
     \item \textbf{GitHub Issues:} Report bugs or suggest features by opening an issue in the GitHub repository.
-    
+    \item \textbf{Discourse:} Write a New Topic at \url{https://discourse.jsl.pr-dc.com/}
     \item \textbf{Email}: Contact us directly at \href{mailto:info@pr-dc.com}{info@pr-dc.com} or main author at \href{mailto:mpetrasinovic@pr-dc.com}{mpetrasinovic@pr-dc.com}.
 \end{itemize}
 
@@ -1623,6 +1635,21 @@ If an error occurs during file reading or parsing, it logs an error message.
 \noindent Compiles a N-API module located at the specified path.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{compileWasm(path, [show\_output])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path} \texttt{<string>}: Path to a source file or directory containing sources.
+  \item \texttt{show\_output} \texttt{<boolean>}: Whether to display the compiler output.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array>}: Tuple \textasciigrave{}[success, wasm\_path|undefined]\textasciigrave{}.
+
+\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
+The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{installModule(path, [show\_output])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -1751,6 +1778,75 @@ If an error occurs during file reading or parsing, it logs an error message.
 \noindent \textbf{Returns:} \texttt{<Array.<Array>>}: Interpolated grid [xq, yq, zq].
 
 \noindent Interpolates grid data using the specified method.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{buildGridFromFlat(xFlat, yFlat, zFlat, [tolIn], [tolIn.tolX], [tolIn.tolY])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{xFlat} \texttt{<Array>}: Flattened x coordinates (length N).
+  \item \texttt{yFlat} \texttt{<Array>}: Flattened y coordinates (length N).
+  \item \texttt{zFlat} \texttt{<Array>}: Flattened z values (length N).
+  \item \texttt{tolIn} \texttt{<Object>}: Optional tolerance settings.
+  \item \texttt{tolIn.tolX} \texttt{<number>}: Quantization tolerance for x axis detection.
+  \item \texttt{tolIn.tolY} \texttt{<number>}: Quantization tolerance for y axis detection.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Grid object: \{ xAxis, yAxis, Z, m, n, filled \}.
+
+\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.
+Ordering can be arbitrary. Values that are NaN/Inf are ignored.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{gridSolveYforXZ(x, y, z, x0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{x} \texttt{<Array>}: X axis (grid) OR flattened x coordinates.
+  \item \texttt{y} \texttt{<Array>}: Y axis (grid) OR flattened y coordinates.
+  \item \texttt{z} \texttt{<Array>}: Z grid (2D) OR flattened z values.
+  \item \texttt{x0} \texttt{<number>}: Known x.
+  \item \texttt{z0} \texttt{<number>}: Known z.
+  \item \texttt{opts} \texttt{<Object>}: Optional settings.
+  \item \texttt{opts.extrap} \texttt{<boolean>}: Allow x0 outside x-range by clamping to edge.
+  \item \texttt{opts.eps} \texttt{<number>}: Tolerance for root detection.
+  \item \texttt{opts.tolIn} \texttt{<Object>}: Optional tolerances for grid rebuild (passed to buildGridFromFlat).
+  \item \texttt{opts.minFill} \texttt{<number>}: Minimum filled ratio to accept as grid.
+  \item \texttt{opts.allowMissing} \texttt{<boolean>}: If true, allow lower fill ratio.
+  \item \texttt{opts.minFillIfMissing} \texttt{<number>}: Minimum filled ratio when allowMissing is true.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array>}: Array of y solutions.
+
+\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{gridSolveXforYZ(x, y, z, y0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{x} \texttt{<Array>}: X axis (grid) OR flattened x coordinates.
+  \item \texttt{y} \texttt{<Array>}: Y axis (grid) OR flattened y coordinates.
+  \item \texttt{z} \texttt{<Array>}: Z grid (2D) OR flattened z values.
+  \item \texttt{y0} \texttt{<number>}: Known Y.
+  \item \texttt{z0} \texttt{<number>}: Known z.
+  \item \texttt{opts} \texttt{<Object>}: Optional settings.
+  \item \texttt{opts.extrap} \texttt{<boolean>}: Allow y0 outside y-range by clamping to edge.
+  \item \texttt{opts.eps} \texttt{<number>}: Tolerance for root detection.
+  \item \texttt{opts.tolIn} \texttt{<Object>}: Optional tolerances for grid rebuild (passed to buildGridFromFlat).
+  \item \texttt{opts.minFill} \texttt{<number>}: Minimum filled ratio to accept as grid.
+  \item \texttt{opts.allowMissing} \texttt{<boolean>}: If true, allow lower fill ratio.
+  \item \texttt{opts.minFillIfMissing} \texttt{<number>}: Minimum filled ratio when allowMissing is true.
+\end{itemize}
+
+\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bilinearFunction(x, midPoint, midValue)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2146,6 +2242,22 @@ The comparison follows Octave's rules:
 3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{clamp(v, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{v} \texttt{<number>}: The value to clamp.
+  \item \texttt{a} \texttt{<number>}: The lower bound.
+  \item \texttt{b} \texttt{<number>}: The upper bound.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: The clamped value.
+
+\noindent Clamps a value to the inclusive range [a, b].
+Assumes a <= b.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{real(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -2325,6 +2437,21 @@ Handles mixed inputs containing both real numbers and complex numbers.
 \noindent \textbf{Returns:} \texttt{<boolean>}: Always returns false.
 
 \noindent Clears the specified timeout if it exists.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{resetTimeout(id, fun, dt)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{id} \texttt{<number>}: timeout id.
+  \item \texttt{fun} \texttt{<number>}: timeout function.
+  \item \texttt{dt} \texttt{<number>}: timeout dt.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: timeout id.
+
+\noindent Reset timeout
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{initWorker(path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2895,6 +3022,25 @@ Handles mixed inputs containing both real numbers and complex numbers.
 
 
 \noindent Opens window with documentation
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{openDiscourse()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Opens window with discourse
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{openWebpage([url])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{url} \texttt{<String>}: URL of webpage.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<Object>>}: A promise that resolves to the window context.
+
+\noindent Opens window with webpage
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openWindow3D([imports])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -4598,6 +4744,19 @@ If multiple operands are arrays, they must be of the same length.
 \noindent Transposes a matrix.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{transpose2D(A)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{A} \texttt{<Array.<Array>>}: Input matrix.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array>>}: Transposed matrix.
+
+\noindent Transposes a 2D matrix.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{multiply(A, B, rows\_A, cols\_A, cols\_B)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -5456,6 +5615,20 @@ If multiple operands are arrays, they must be of the same length.
 \noindent Normalizes the value of a radio control (RC) input.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{toRC(val, [deadzone])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{val} \texttt{<number>}: The input value to convert.
+  \item \texttt{deadzone} \texttt{<number>}: The deadzone value within which the RC signal should default to 1500.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: The converted RC signal value.
+
+\noindent Converts a value to its equivalent RC (Radio Control) signal value, accounting for an optional deadzone.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{checkValueUpdate(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -5498,12 +5671,12 @@ If multiple operands are arrays, they must be of the same length.
 \noindent Converts an ADC count to force in Newtons.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{data2blobUrl(path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{data2blobUrl(file\_path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{path} \texttt{<string>}: Relative path from the application's base path to the file.
+  \item \texttt{file\_path\_in} \texttt{<string>}: Relative path from the application's base path to the file.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<string>}: A blob URL representing the file's data.
@@ -5558,6 +5731,19 @@ Each key in the object represents a column in the CSV. This function handles une
 \noindent \textbf{Returns:} \texttt{<string>}: The formatted CSV string.
 
 \noindent Converts a 2D array into a CSV string format.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{latexToHtml(latex)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{latex} \texttt{<string>}: LaTeX/TeX input string.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: HTML/Unicode string.
+
+\noindent Converts a subset of LaTeX/TeX math syntax into HTML/Unicode.
 
 
 \subsection{device}
@@ -6312,6 +6498,14 @@ This method delegates the directory creation task to the environment's makeDirec
 
 \subsection{system}
 \vspace{5mm}
+\noindent \code{\texttt{open\_terminals}}{\color{jsl-gray}\vspace{2mm}\hrule}\vspace{4mm}
+
+
+\noindent \textbf{Type:} \texttt{<Unknown>}
+
+\noindent Array of open terminals.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{system(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -6345,6 +6539,21 @@ This method delegates the directory creation task to the environment's makeDirec
 \end{itemize}
 
 \noindent Executes a system command.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{spawnTerminal(args, onData, onExit)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<Array>}: Arguments forwarded to PTY spawn (e.g. [file, argv, options]).
+  \item \texttt{onData} \texttt{<function>}: Callback invoked on terminal output (string).
+  \item \texttt{onExit} \texttt{<function>}: Callback invoked when the terminal exits.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_SYSTEM\_TERMINAL>}: Terminal wrapper instance.
+
+\noindent Spawns a new PTY-backed terminal session and registers it locally.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getTaskList()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6423,6 +6632,22 @@ This method delegates the directory creation task to the environment's makeDirec
 \noindent Calculates the bounding box and center from an array of tile coordinates.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{offsetLatLonEastNorth(lat, lon, east, north)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{lat} \texttt{<number>}: The latitude of the starting point.
+  \item \texttt{lon} \texttt{<number>}: The longitude of the starting point.
+  \item \texttt{east} \texttt{<number>}: The east offset in meters.
+  \item \texttt{north} \texttt{<number>}: The north offset in meters.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<number>>}: An array containing the latitude and longitude of the calculated point.
+
+\noindent Calculates a new latitude and longitude based on east and north offsets.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{offsetLatLon(lat, lon, distance, bearing)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -6499,6 +6724,99 @@ This method delegates the directory creation task to the environment's makeDirec
 \noindent \textbf{Returns:} \texttt{<Cesium.Cartesian3>}: Cartesian coordinate(s).
 
 \noindent Converts latitude, longitude, and altitude to Cartesian coordinates.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{latLonAltTransform(lat, lon, alt, dx, dy, dz)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{lat} \texttt{<number>}: Latitude in degrees.
+  \item \texttt{lon} \texttt{<number>}: Longitude in degrees.
+  \item \texttt{alt} \texttt{<number>}: Altitude in meters.
+  \item \texttt{dx} \texttt{<number>}: Local x offset in meters.
+  \item \texttt{dy} \texttt{<number>}: Local y offset in meters.
+  \item \texttt{dz} \texttt{<number>}: Local z offset in meters.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Object containing the transformed latitude, longitude, and altitude.
+
+\noindent Transforms a local offset (dx, dy, dz) relative to a specified latitude, longitude, and altitude to a new latitude, longitude, and altitude.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{eastNorthUpTransform(position, dx, dy, dz)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{position} \texttt{<Cesium.Cartesian3>}: East, North, Up position.
+  \item \texttt{dx} \texttt{<number>}: Local x offset in meters.
+  \item \texttt{dy} \texttt{<number>}: Local y offset in meters.
+  \item \texttt{dz} \texttt{<number>}: Local z offset in meters.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Object containing the transformed latitude, longitude, and altitude.
+
+\noindent Transforms a local offset (dx, dy, dz) relative to a specified East, North, Up position to a new latitude, longitude, and altitude.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{computeHeadingPitchFromTo(from\_cartesian, to\_cartesian)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{from\_cartesian} \texttt{<Cesium.Cartesian3>}: The Cartesian coordinates of the starting point.
+  \item \texttt{to\_cartesian} \texttt{<Cesium.Cartesian3>}: The Cartesian coordinates of the target point.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing the calculated heading (in radians from North, positive East) and pitch (in radians from the local horizontal, positive Up).
+
+\noindent Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{mslToEllipsoidAlt(lat\_deg, lon\_deg, h\_msl\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{lat\_deg} \texttt{<number>}: Latitude(s) in degrees.
+  \item \texttt{lon\_deg} \texttt{<number>}: Longitude(s) in degrees.
+  \item \texttt{h\_msl\_meters} \texttt{<number>}: Altitude(s) in meters above MSL.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: Ellipsoid altitude(s) in meters.
+
+\noindent Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{ellipsoidToMslAlt(lat\_deg, lon\_deg, h\_ellipsoid\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{lat\_deg} \texttt{<number>}: Latitude(s) in degrees.
+  \item \texttt{lon\_deg} \texttt{<number>}: Longitude(s) in degrees.
+  \item \texttt{h\_ellipsoid\_meters} \texttt{<number>}: Altitude(s) in meters above the Ellipsoid.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: MSL altitude(s) in meters.
+
+\noindent Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{positionToEllipsoid(lat\_deg, lon\_deg, h\_msl\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{lat\_deg} \texttt{<number>}: Latitude(s) in degrees.
+  \item \texttt{lon\_deg} \texttt{<number>}: Longitude(s) in degrees.
+  \item \texttt{h\_msl\_meters} \texttt{<number>}: Altitude(s) in meters above MSL.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Cesium.Cartesian3>}: Cartesian coordinate(s) in the WGS84 system.
+
+\noindent Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
 
 
 \subsection{networking}
@@ -6759,12 +7077,13 @@ This method delegates the directory creation task to the environment's makeDirec
 \noindent \textbf{Parameters:}
 \begin{itemize}
   \item \texttt{number} \texttt{<number>}: The number to format.
-  \item \texttt{digits} \texttt{<number>}: The number of significant digits.
+  \item \texttt{digits} \texttt{<number>}: The number of significant digits to produce.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<string>}: The formatted number as a string.
+\noindent \textbf{Returns:} \texttt{<string>}: A string containing the formatted number.
 
-\noindent Formats a floating-point number to have a fixed number of significant digits.
+\noindent Formats a floating-point number to a fixed number of significant digits,
+automatically adjusting decimal places depending on the integer part length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clip(number, control\_number, clip\_value, [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6927,6 +7246,19 @@ This method delegates the directory creation task to the environment's makeDirec
 \noindent \textbf{Returns:} \texttt{<boolean>}: - True if the string is empty or contains only whitespace, otherwise false.
 
 \noindent Checks if a string is empty or contains only whitespace.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isEmptyObject(obj)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{obj} \texttt{<string>}: The object to check.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: - True if the object is empty, otherwise false.
+
+\noindent Checks if a object is empty.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isFunction(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7186,13 +7518,14 @@ It also escapes strings to prevent HTML injection.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{object} \texttt{<string>}: Object to add unique key.
-  \item \texttt{key} \texttt{<string>}: The original object key.
+  \item \texttt{object} \texttt{<Object>}: The object to test for key collisions.
+  \item \texttt{key} \texttt{<string>}: The proposed key name.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<string>}: A unique object key.
+\noindent \textbf{Returns:} \texttt{<string>}: A unique key string not present in the object.
 
-\noindent Generates a unique object key by appending a number to the original key if it already exists.
+\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,
+numerical suffixes are appended until uniqueness is achieved.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{randomString(num)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7262,6 +7595,103 @@ It also escapes strings to prevent HTML injection.
 \noindent Checks that an input contains a finite number
 and—if supplied—is within the inclusive range [min, max].
 
+\vspace{5mm}
+\noindent \codeBlock{\texttt{bold(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{s} \texttt{<string>}: The string to wrap.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The bold-formatted HTML string.
+
+\noindent Wraps a string with an HTML <b> tag for bold formatting.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{italic(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{s} \texttt{<string>}: The string to wrap.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The italic-formatted HTML string.
+
+\noindent Wraps a string with an HTML <i> tag for italic formatting.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{underline(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{s} \texttt{<string>}: The string to wrap.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The underline-formatted HTML string.
+
+\noindent Wraps a string with an HTML <u> tag for underline formatting.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{strike(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{s} \texttt{<string>}: The string to wrap.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The strikethrough HTML string.
+
+\noindent Wraps a string with an HTML <s> tag for strikethrough formatting.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{sub(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{s} \texttt{<string>}: The string to wrap.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The subscript HTML string.
+
+\noindent Wraps a string in an HTML <sub> element (subscript).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{sup(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{s} \texttt{<string>}: The string to wrap.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The superscript HTML string.
+
+\noindent Wraps a string in an HTML <sup> element (superscript).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{tableprint(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<Array>}: Table columns followed by options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Result object with \textasciigrave{}plain\textasciigrave{} and \textasciigrave{}tex\textasciigrave{} strings.
+
+\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.
+
+Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
+pairs or as a final options object.
+
+Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
+align, float, caption, label, escapeTeX.
+
 
 \subsection{render}
 \vspace{5mm}
@@ -7312,7 +7742,19 @@ and—if supplied—is within the inclusive range [min, max].
 \noindent \codeBlock{\texttt{spaceSearch()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Creates an instance of PRDC\_JSLAB\_LIB\_OPTIM\_SPACE\_SERACH.
+\noindent Creates an instance of PRDC\_JSLAB\_GEOMETRY\_SPACE\_SEARCH.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{boundaryFollow2D()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Creates an instance of PRDC\_JSLAB\_GEOMETRY\_BOUNDARY\_FOLLOW\_2D.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{boundaryFollow3D()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Creates an instance of PRDC\_JSLAB\_GEOMETRY\_BOUNDARY\_FOLLOW\_3D.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{findNearestPoints(points1, points2)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7344,6 +7786,25 @@ and—if supplied—is within the inclusive range [min, max].
 
 \noindent Returns the shortest distance from point P to the line defined by (A, i)
 and the closest point (P1) on that line.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{pointSegmentDistance(p, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{p} \texttt{<Object>}: Query point.
+  \item \texttt{a} \texttt{<Object>}: Segment start point.
+  \item \texttt{b} \texttt{<Object>}: Segment end point.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: The minimal distance from p to the segment a-b.
+
+\noindent Computes the shortest distance from a point to a line segment in 2D.
+
+The point and segment endpoints are expected as objects with numeric
+properties \{x, y\}. The result is the Euclidean distance to the closest
+point on the segment.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{lineCircleIntersection(P, i, O, r)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9674,7 +10135,7 @@ Checks if the TCP server is reachable by sending a 'PING' command.
 Manages the TCP communication by ensuring message integrity and handling timeouts.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{inputPraser(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{inputParser(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
@@ -14774,149 +15235,73 @@ Terminates any active processes and removes temporary port files.
 
 
 \subsection{space\_search}
+
+\subsection{boundary\_follow\_2d}
 \vspace{5mm}
-\noindent \codeBlock{\texttt{dispElementSize(bounds, subdivisionPerDepth)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{resetLogs([keepCache])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{bounds} \texttt{<Array>}: Array of [min, max] for each dimension.
-  \item \texttt{subdivisionPerDepth} \texttt{<Array>}: Subdivision factors per depth and dimension.
+  \item \texttt{keepCache} \texttt{<boolean>}: 
 \end{itemize}
 
-\noindent Displays the size of elements based on bounds and subdivisions.
+\noindent Resets logging and optionally clears the feasibility cache.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{splitSearchSpace(x\_lim, k, N\_proc)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{trace(dx, dy, [ambiguous])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{x\_lim} \texttt{<Array.<Array.<number>>>}: The limits of the search space, where each sub-array represents [start, end] for a dimension.
-  \item \texttt{k} \texttt{<Array.<Array.<number>>>}: The parameters to optimize.
-  \item \texttt{N\_proc} \texttt{<number>}: The number of processors to divide the work among.
+  \item \texttt{dx} \texttt{<number>}: 
+  \item \texttt{dy} \texttt{<number>}: 
+  \item \texttt{ambiguous} \texttt{<string>}: 
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: An array containing the split search spaces and the adjusted parameters.
+\noindent \textbf{Returns:} \texttt{<Object>}: - Result object (diagnostics + closed flag).
 
-\noindent Splits the search space into smaller intervals for parallel processing.
+\noindent Main entry (2D).
 
+
+\subsection{boundary\_follow\_3d}
 \vspace{5mm}
-\noindent \codeBlock{\texttt{runParallel(x\_lim, k, context, setup, fun)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{resetLogs([keepCache])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{x\_lim} \texttt{<Array.<Array.<number>>>}: The limits of the search space, where each sub-array represents [start, end] for a dimension.
-  \item \texttt{k} \texttt{<Array.<Array.<number>>>}: The parameters to optimize.
-  \item \texttt{context} \texttt{<Object>}: The execution context containing necessary configurations and states.
-  \item \texttt{setup} \texttt{<function>}: The setup function to initialize the parallel environment.
-  \item \texttt{fun} \texttt{<function>}: The function to execute in parallel on each split of the search space.
+  \item \texttt{keepCache} \texttt{<boolean>}: If true, keeps the feasibility cache; otherwise cache is cleared.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Promise.<Array.<Array.<number>>>>}: A promise that resolves to arrays of input and output results from the parallel execution.
+\noindent \textbf{Returns:} \texttt{<void>}: No return value.
 
-\noindent Executes a provided function in parallel across the split search spaces.
+\noindent Resets logging and optionally clears the feasibility cache.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{run(bounds, subdivisionPerDepth, conditionFunction)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{trace(dx, dy, dz)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{bounds} \texttt{<Array.<Array.<number>>>}: Array of [min, max] for each dimension.
-  \item \texttt{subdivisionPerDepth} \texttt{<Array.<Array.<number>>>}: Subdivision factors for each depth and dimension.
-  \item \texttt{conditionFunction} \texttt{<function>}: Function that determines if a point satisfies the condition.
+  \item \texttt{dx} \texttt{<number>}: Fine grid spacing in X (must be >0).
+  \item \texttt{dy} \texttt{<number>}: Fine grid spacing in Y (must be >0).
+  \item \texttt{dz} \texttt{<number>}: Fine grid spacing in Z (must be >0).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: - Arrays of points inside and outside the condition.
+\noindent \textbf{Returns:} \texttt{<Object>}: Result object:
+  - dim: 3
+  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
+  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
+  - surfaceCells: number of mixed voxels visited (surface voxel count)
+  - evalCount: total feasibility evaluations performed
+  - N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]
+  - grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics
+  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
+  - fineBracket: refined fine flip bracket used to start flood-fill
+  - startVoxel: voxel indices used as flood-fill start
 
-\noindent Executes the space search algorithm.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{makeNodesND(startCoordinates, boundaryValues, currentDepth, stepSizesPerDepth, subdivisionPerDepth, conditionFunction)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{startCoordinates} \texttt{<Array.<number>>}: Starting coordinates for the current grid.
-  \item \texttt{boundaryValues} \texttt{<Array.<number>>}: Values at the boundary points of the current hypercube.
-  \item \texttt{currentDepth} \texttt{<number>}: Current depth of the recursion.
-  \item \texttt{stepSizesPerDepth} \texttt{<Array.<Array.<number>>>}: Step sizes for each depth.
-  \item \texttt{subdivisionPerDepth} \texttt{<Array.<Array.<number>>>}: Subdivision factors for each depth.
-  \item \texttt{conditionFunction} \texttt{<function>}: User-defined condition function.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: - Arrays of points inside and outside the condition.
-
-\noindent Recursively creates nodes in N dimensions based on subdivisions.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{generateCornerShifts(numDimensions)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{numDimensions} \texttt{<number>}: Number of dimensions.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: - Array of shifts for each corner.
-
-\noindent Generates all corner shifts for a hypercube in N dimensions.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{getCornerIndices(gridShape)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{gridShape} \texttt{<Array.<number>>}: Shape of the grid.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: - List of corner indices.
-
-\noindent Retrieves the indices of corner points in the grid.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{generateIndicesList(gridShape, nf)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{gridShape} \texttt{<Array.<number>>}: Shape of the grid.
-  \item \texttt{nf} \texttt{<Array>}: N-dimensional array indicating nodes to compute.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: - List of node indices where nf is 1.
-
-\noindent Generates a list of indices for nodes that need to be calculated.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{generateInnerCubeIndicesList(gridShape)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{gridShape} \texttt{<Array.<number>>}: Shape of the grid.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: - List of inner cube starting indices.
-
-\noindent Generates a list of starting indices for inner hypercubes.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{getCubeCorners(N, indices)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{N} \texttt{<Array>}: N-dimensional grid.
-  \item \texttt{indices} \texttt{<Array.<number>>}: Starting indices of the hypercube.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array>}: - Array of corner coordinates and values.
-
-\noindent Retrieves the corner coordinates and values of a hypercube.
+\noindent Main entry (3D).
 
 
 \subsection{map}

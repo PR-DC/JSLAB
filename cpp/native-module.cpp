@@ -1,4 +1,4 @@
-// JSLAB - native-module.cpp
+﻿// JSLAB - native-module.cpp
 // Author: Milos Petrasinovic <mpetrasinovic@prdc.rs>
 // PR-DC, Republic of Serbia
 // info@prdc.rs
@@ -20,7 +20,7 @@ long toc(const time_point<steady_clock>& startTime) {
 }
 #endif
 
-// Function to get currebt time
+// Function to get current time
 std::string getCurrentTime() {
   // get current time
   auto now = system_clock::now();
@@ -388,3 +388,4 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
 NODE_API_MODULE(NODE_GYP_MODULE_NAME, InitAll)
 
 }  // namespace native_module_ns
+

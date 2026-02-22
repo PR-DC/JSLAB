@@ -27,7 +27,7 @@ class PRDC_JSLAB_PARALLEL {
    * @returns {number} Number of processors.
    */
   getProcessorsNum() {
-    return this.jsl.env.processors_number || 4;
+    return this.jsl.inter.env.processors_number || 4;
   }
   
   /**
@@ -53,7 +53,7 @@ class PRDC_JSLAB_PARALLEL {
             // Send back the result
             self.postMessage({ type: 'result', result });
           } catch(err) {
-            self.postMessage({ type: 'error', error: err });
+            self.postMessage({ type: 'error', error: err.stack});
           }
         }
       });
@@ -64,7 +64,7 @@ class PRDC_JSLAB_PARALLEL {
       // Reconstruct and execute the setup function if provided
       (async () => {
         const __setup = ${setup_function_str || 'null'};
-        if (typeof __setup === 'function') {
+        if(typeof __setup === 'function') {
           await __setup.call(self);
         }
         self.postMessage({ type: 'ready' });
@@ -90,7 +90,7 @@ class PRDC_JSLAB_PARALLEL {
       ${this.workerFunction(context, setup_function_str)}
     `;
     
-    if(config.DEBUG_PARALLEL_WORKER_SETUP_FUN) {
+    if(this.jsl.inter.config.DEBUG_PARALLEL_WORKER_SETUP_FUN) {
       this.jsl._console.log(worker_script);
     }
     
@@ -116,7 +116,7 @@ class PRDC_JSLAB_PARALLEL {
         const task = this.task_queue.shift();
         worker.busy = true;
         
-        if(config.DEBUG_PARALLEL_WORKER_WORK_FUN) {
+        if(this.jsl.inter.config.DEBUG_PARALLEL_WORKER_WORK_FUN) {
           this.jsl._console.log(task);
         }
     
@@ -166,7 +166,7 @@ class PRDC_JSLAB_PARALLEL {
   run(context = {}, setup_function = null, args = [], work_function, reset_workers = false) {
     var setup_function_str = setup_function;
     if(typeof setup_function_str !== 'string') {
-      setup_function_str = this.jsl.eval.rewriteCode(this.jsl.eval.getFunctionBody(setup_function)).code;
+      setup_function_str = this.jsl.inter.eval.rewriteCode(this.jsl.inter.eval.getFunctionBody(setup_function)).code;
     }
     var work_function_str = work_function;
     if(typeof work_function_str !== 'string') {
@@ -205,7 +205,7 @@ class PRDC_JSLAB_PARALLEL {
    */
   async parfor(start, end, step = 1, num_workers, context, 
       setup_function, work_function, reset_workers = false) {
-    var setup_function_str = this.jsl.eval.rewriteCode(this.jsl.eval.getFunctionBody(setup_function)).code;
+    var setup_function_str = this.jsl.inter.eval.rewriteCode(this.jsl.inter.eval.getFunctionBody(setup_function)).code;
     if(reset_workers) {
       this.terminate();
     }
@@ -214,13 +214,13 @@ class PRDC_JSLAB_PARALLEL {
     }
 
     if(step === 0) {
-      this.jsl.env.error('@parfor: '+language.string(197));
+      this.jsl.inter.env.error('@parfor: '+this.jsl.inter.lang.string(197));
     }
 
     const isAscending = (end - start) * step > 0;
 
     if(!isAscending) {
-      this.jsl.env.error('@parfor: '+language.string(198));
+      this.jsl.inter.env.error('@parfor: '+this.jsl.inter.lang.string(198));
     }
     
     const total_items = Math.ceil(Math.abs((end - start) / step)) + 1;

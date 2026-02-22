@@ -31,7 +31,7 @@ class PRDC_JSLAB_TCP_CLIENT {
     
     this._data_callback = false;
     
-    this.com = this.jsl.env.net.createConnection(port, host);
+    this.com = this.jsl.inter.env.net.createConnection(port, host);
     this.com.setTimeout(0);
     this.com.on('connect', function() {
       obj._onConnect();
@@ -61,7 +61,7 @@ class PRDC_JSLAB_TCP_CLIENT {
    */
   _onConnect() {
     this.active = true;
-    if(this.jsl.format.isFunction(this.onConnectCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onConnectCallback)) {
       this.onConnectCallback();
     }
   }
@@ -72,7 +72,7 @@ class PRDC_JSLAB_TCP_CLIENT {
    */
   _onError(err) {
     this.active = false;
-    if(this.jsl.format.isFunction(this.onErrorCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onErrorCallback)) {
       this.onErrorCallback(err);
     }
   }
@@ -94,7 +94,7 @@ class PRDC_JSLAB_TCP_CLIENT {
    * @param {Function} callback - The function to be called when data is received.
    */
   setOnData(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.buffer = [];
       this.onDataCallback = callback;
       this._data_callback = true;
@@ -106,7 +106,7 @@ class PRDC_JSLAB_TCP_CLIENT {
    * @param {Function} callback - The function to be called when an error occurs.
    */
   setOnError(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onErrorCallback = callback;
     }
   }
@@ -208,7 +208,7 @@ class PRDC_JSLAB_TCP_SERVER {
     
     this._data_callback = false;
     
-    this.server = this.jsl.env.net.createServer(function(socket) {
+    this.server = this.jsl.inter.env.net.createServer(function(socket) {
       obj._onConnect(socket);
       
       socket.on('data', function(data) {
@@ -242,7 +242,7 @@ class PRDC_JSLAB_TCP_SERVER {
     this.sockets[this.sid] = socket;
     socket.sid = this.sid;
 
-    if(this.jsl.format.isFunction(this.onConnectCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onConnectCallback)) {
       this.onConnectCallback(socket);
     }
   }
@@ -253,7 +253,7 @@ class PRDC_JSLAB_TCP_SERVER {
    * @param {Error} err - The error object.
    */
   _onError(socket, err) {
-    if(this.jsl.format.isFunction(this.onErrorCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onErrorCallback)) {
       this.onErrorCallback(socket, err);
     }
   }
@@ -264,7 +264,7 @@ class PRDC_JSLAB_TCP_SERVER {
    * @param {Buffer|string} data - The received data.
    */
   _onData(socket, data) {
-    if(this.jsl.format.isFunction(this.onDataCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onDataCallback)) {
       this.onDataCallback(socket, data);
     }
   }
@@ -274,7 +274,7 @@ class PRDC_JSLAB_TCP_SERVER {
    * @param {Object} socket - The socket that disconnected.
    */
   _onDisconnect(socket) {
-    if(this.jsl.format.isFunction(this.onDisconnectCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onDisconnectCallback)) {
       this.onDisconnectCallback(socket);
     }
   }
@@ -284,7 +284,7 @@ class PRDC_JSLAB_TCP_SERVER {
    * @param {Function} callback - Function called when data is received.
    */
   setOnData(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onDataCallback = callback;
     }
   }
@@ -294,7 +294,7 @@ class PRDC_JSLAB_TCP_SERVER {
    * @param {Function} callback - Function called when an error occurs.
    */
   setOnError(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onErrorCallback = callback;
     }
   }
@@ -304,7 +304,7 @@ class PRDC_JSLAB_TCP_SERVER {
    * @param {Function} callback - Function called when a socket disconnects.
    */
   setOnDisconnect(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onDisconnectCallback = callback;
     }
   }

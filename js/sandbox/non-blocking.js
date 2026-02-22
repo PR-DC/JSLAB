@@ -26,15 +26,15 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
   nbwhile(fn) {
     var obj = this;
     function fnw() {
-      if(!obj.jsl.basic.checkStopLoop()) {
+      if(!obj.jsl.inter.basic.checkStopLoop()) {
         if(!fn()) {
-          obj.jsl.env.setImmediate(fnw);
+          obj.jsl.inter.env.setImmediate(fnw);
         }
       } else {
-        obj.jsl.env.error('@nbwhile: '+language.string(125));
+        obj.jsl.inter.env.error('@nbwhile: '+obj.jsl.inter.lang.string(125));
       }
     }
-    this.jsl.env.setImmediate(fnw);
+    this.jsl.inter.env.setImmediate(fnw);
   }
 
   /**
@@ -42,10 +42,10 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    * @param {Function} fn The function to be executed.
    */
   nbrun(fn) {
-    if(!this.jsl.basic.checkStopLoop()) {
-      this.jsl.env.setImmediate(fn);
+    if(!this.jsl.inter.basic.checkStopLoop()) {
+      this.jsl.inter.env.setImmediate(fn);
     } else {
-      this.jsl.env.error('@nbrun: '+language.string(125));
+      this.jsl.inter.env.error('@nbrun: '+this.jsl.inter.lang.string(125));
     }
   }
 
@@ -56,13 +56,13 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
   nbnext(fn) {
     var obj = this;
     function fnw() {
-      if(!obj.jsl.basic.checkStopLoop()) {
+      if(!obj.jsl.inter.basic.checkStopLoop()) {
         fn();
       } else {
-        obj.jsl.env.error('@nbnext: '+language.string(125));
+        obj.jsl.inter.env.error('@nbnext: '+obj.jsl.inter.lang.string(125));
       }
     }
-    this.jsl.env.setImmediate(fnw);
+    this.jsl.inter.env.setImmediate(fnw);
   }
 
   /**
@@ -71,10 +71,10 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    * @returns {Promise<void>} A promise that resolves after the specified time has elapsed.
    */
   waitMSeconds(ms) {
-    if(!this.jsl.basic.checkStopLoop()) {
+    if(!this.jsl.inter.basic.checkStopLoop()) {
       return new Promise(function(resolve, reject) { setTimeout(resolve, ms) });
     } else {
-      this.jsl.env.error('@waitMSeconds: '+language.string(125), true);
+      this.jsl.inter.env.error('@waitMSeconds: '+this.jsl.inter.lang.string(125), true);
     }
     return false;
   }
@@ -85,10 +85,10 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    * @returns {Promise<void>} A promise that resolves after the specified time has elapsed.
    */
   waitSeconds(s) {
-    if(!this.jsl.basic.checkStopLoop()) {
-      return waitMSeconds(s*1000); 
+    if(!this.jsl.inter.basic.checkStopLoop()) {
+      return this.jsl.inter.waitMSeconds(s*1000);
     } else {
-      this.jsl.env.error('@waitSeconds: '+language.string(125), true);
+      this.jsl.inter.env.error('@waitSeconds: '+this.jsl.inter.lang.string(125), true);
     }
     return false;
   }
@@ -99,10 +99,10 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    * @returns {Promise<void>} A promise that resolves after the specified time has elapsed.
    */
   waitMinutes(min) {
-    if(!this.jsl.basic.checkStopLoop()) {
-      return waitMSeconds(min*60*1000);
+    if(!this.jsl.inter.basic.checkStopLoop()) {
+      return this.jsl.inter.waitMSeconds(min*60*1000);
     } else {
-      this.jsl.env.error('@waitMinutes: '+language.string(125), true);
+      this.jsl.inter.env.error('@waitMinutes: '+this.jsl.inter.lang.string(125), true);
     }
     return false;
   }
@@ -114,7 +114,7 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    */
   clearIntervalIf(timeout) {
     if(timeout) {
-      clearInterval(timeout);
+      this.jsl.inter.clearInterval(timeout);
     }
     return false;
   }
@@ -126,9 +126,22 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    */
   clearTimeoutIf(timeout) {
     if(timeout) {
-      clearTimeout(timeout);
+      this.jsl.inter.clearTimeout(timeout);
     }
     return false;
+  }
+  
+  /**
+   * Reset timeout
+   * @param {number} id - timeout id.
+   * @param {number} fun - timeout function.
+   * @param {number} dt - timeout dt.
+   * @return {number} timeout id.
+   */
+  resetTimeout(id, fun, dt) {
+    if(id) this.jsl.inter.clearTimeout(id);
+    id = this.jsl.inter.setTimeout(fun, dt);
+    return id;
   }
   
   /**
@@ -137,7 +150,7 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
    * @returns {Worker} The initialized Worker instance.
    */
   initWorker(path) {
-    var worker = new Worker(app_path + "/js/sandbox/init-worker.js");
+    var worker = new Worker(this.jsl.app_path + "/js/sandbox/init-worker.js");
     worker.postMessage({
       type: 'configureWorker', 
       module_path: path

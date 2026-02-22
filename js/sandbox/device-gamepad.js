@@ -56,7 +56,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    * @returns {Gamepad|boolean} The gamepad object if found, otherwise false.
    */
   _getGamepad() {
-    var gamepads = this.jsl.env.navigator.getGamepads();
+    var gamepads = this.jsl.inter.env.navigator.getGamepads();
     for(let i = 0; i < gamepads.length; i++) {
       var gamepad = gamepads[i];
       if(gamepad != null) {
@@ -75,9 +75,9 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
     var obj = this;
     
     // Read loop
-    this.detect_gamepad_loop = clearIntervalIf(this.detect_gamepad_loop);
+    this.detect_gamepad_loop = this.jsl.inter.clearIntervalIf(this.detect_gamepad_loop);
     this.active = true;
-    clearIntervalIf(this.read_gamepad_loop);
+    this.jsl.inter.clearIntervalIf(this.read_gamepad_loop);
     this.read_gamepad_loop = setInterval(function() {
       var gamepad = obj._getGamepad();
       if(gamepad) {
@@ -91,7 +91,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
       }
     }, this.read_gamepad_dt);
     
-    if(this.jsl.format.isFunction(this.onConnectCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onConnectCallback)) {
       this.onConnectCallback();
     }
   }
@@ -100,10 +100,10 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    * Handles gamepad disconnection events.
    */
   _onDisconnect() {
-    this.read_gamepad_loop = clearIntervalIf(this.read_gamepad_loop);
+    this.read_gamepad_loop = this.jsl.inter.clearIntervalIf(this.read_gamepad_loop);
     this.active = false;
     this._checkGamepad();
-    if(this.jsl.format.isFunction(this.onDisconnectCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onDisconnectCallback)) {
       this.onDisconnectCallback();
     }
   }
@@ -114,7 +114,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    */
   _onData(gamepad) {
     this.data = gamepad;
-    if(this.jsl.format.isFunction(this.onDataCallback)) {
+    if(this.jsl.inter.format.isFunction(this.onDataCallback)) {
       this.onDataCallback(gamepad);
     }
   }
@@ -124,7 +124,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    * @param {Function} callback - Function to execute when data is received.
    */
   setOnData(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onDataCallback = callback;
     }
   }
@@ -134,7 +134,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    * @param {Function} callback - Function to execute on connection.
    */
   setOnConnect(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onConnectCallback = callback;
       if(this.active) {
         this.onConnectCallback();
@@ -147,7 +147,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    * @param {Function} callback - Function to execute on disconnection.
    */
   setOnDisconnect(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.onDisconnectCallback = callback;
     }
   }
@@ -157,7 +157,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
    */
   close() {
     this.active = false;
-    this.read_gamepad_loop = clearIntervalIf(this.read_gamepad_loop);
+    this.read_gamepad_loop = this.jsl.inter.clearIntervalIf(this.read_gamepad_loop);
     this.jsl.context.removeEventListener("gamepadconnected", this._checkGamepadFun);
   }
 }

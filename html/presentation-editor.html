@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Presentation editor - JSLAB | PR-DC</title>
+    <title str="516">Presentation editor - JSLAB | PR-DC</title>
     <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/tabs.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
@@ -28,12 +28,12 @@
               <webview id="preview" useragent="presentation-editor-preview" nodeintegration webpreferences="backgroundThrottling=no, contextIsolation=no"></webview>
             </div>
             <div id="slide-controls">
-              <div id="first-slide" class="button" title="First slide">⏮</div>
-              <div id="prev-slide" class="button" title="Previous">⏴</div>
+              <div id="first-slide" class="button" title-str="315">|⏴</div>
+              <div id="prev-slide" class="button" title-str="316">⏴</div>
               <input id="set-slide" type="number" min="1" step="1">
               <span id="total-slides">/ 0</span>
-              <div id="next-slide" class="button" title="Next">⏵</div>
-              <div id="last-slide" class="button" title="Last slide">⏭</div>
+              <div id="next-slide" class="button" title-str="317">⏵</div>
+              <div id="last-slide" class="button" title-str="318">⏵|</div>
             </div>
           </div>
         </div>
@@ -53,10 +53,32 @@
               <div class="tabs-bottom-bar"></div>
             </div>
             <div id="code"></div>
+
+            <div id="editor-search-all-resizer"></div>
+            <div id="editor-search-all-panel" style="display: none;">
+              <div class="editor-search-all-header">
+                <input id="editor-search-all-input" type="text" str="374" title-str="373" autocomplete="off" spellcheck="false">
+                <button id="editor-search-all-case-btn" class="editor-search-all-icon-btn editor-search-all-case-btn" title-str="341" type="button"></button>
+                <button id="editor-search-all-regex-btn" class="editor-search-all-icon-btn editor-search-all-regex-btn" title-str="342" type="button"></button>
+                <button id="editor-search-all-run" class="editor-search-all-icon-btn editor-search-all-run-btn" title-str="336" type="button"></button>
+                <button id="editor-search-all-close" class="editor-search-all-icon-btn editor-search-all-close-btn" title-str="376" type="button"></button>
+              </div>
+              <div class="editor-search-all-replace-row">
+                <input id="editor-search-all-replace-input" type="text" str="339" title-str="339" autocomplete="off" spellcheck="false">
+                <button id="editor-search-all-replace-btn" class="editor-search-all-icon-btn editor-search-all-replace-btn" title-str="339" type="button"></button>
+                <button id="editor-search-all-replace-all-btn" class="editor-search-all-icon-btn editor-search-all-replace-all-btn" title-str="340" type="button"></button>
+              </div>
+              <div class="editor-search-all-results-header">
+                <span><str sid="375"></str></span>
+                <span id="editor-search-all-summary"></span>
+              </div>
+              <div id="editor-search-all-results"></div>
+            </div>
             
             <div id="editor-more-popup" style="display: none;">
               <ul>
                 <li id="search-dialog-menu" title-str="169"><img src="../img/search-dialog.svg"/><str sid="168"></str></li>
+                <li id="search-all-menu" title-str="373"><img src="../img/search-all-dialog.svg"/><str sid="373"></str></li>
                 <li id="fold-slides"><img src="../img/fold-code.svg"/><str sid="245"></str></li>
                 <li id="unfold-slides"><img src="../img/unfold-code.svg"/><str sid="246"></str></li>
               </ul>

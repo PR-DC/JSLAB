@@ -24,7 +24,7 @@ class PRDC_JSLAB_UDP {
     
     this.active = false;
     
-    this.com = this.jsl.env.udp.createSocket('udp4');
+    this.com = this.jsl.inter.env.udp.createSocket('udp4');
     this.com.connect(port, host, function(err) {
       if(err) {
         obj._onError(err);
@@ -45,7 +45,7 @@ class PRDC_JSLAB_UDP {
    * Handles errors by setting the client's active status to false and possibly logging the error.
    * @param {Error} err - The error object that was thrown.
    */
-  _onError() {
+  _onError(err) {
     this.active = false;
   }
   
@@ -92,7 +92,7 @@ class PRDC_JSLAB_UDP_SERVER {
     
     this._data_callback = false;
     
-    this.com = this.jsl.env.udp.createSocket('udp4');
+    this.com = this.jsl.inter.env.udp.createSocket('udp4');
     
     this.com.on('message', function(msg) {
       obj._onData(msg);
@@ -122,7 +122,7 @@ class PRDC_JSLAB_UDP_SERVER {
    * @param {Function} callback - The function to be called when data is received.
    */
   setOnData(callback) {
-    if(this.jsl.format.isFunction(callback)) {
+    if(this.jsl.inter.format.isFunction(callback)) {
       this.buffer = [];
       this.onDataCallback = callback;
       this._data_callback = true;

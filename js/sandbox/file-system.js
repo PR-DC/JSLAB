@@ -25,7 +25,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {(Buffer|string|false)} The content of the file or false in case of an error.
    */
   readFile(...args) {
-    return this.jsl.env.readFileSync(...args);
+    return this.jsl.inter.env.readFileSync(...args);
   }
 
   /**
@@ -47,7 +47,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {boolean} Returns true if the file was written successfully, false if an error occurred.
    */
   writeFile(...args) {
-    return this.jsl.env.writeFileSync(...args);
+    return this.jsl.inter.env.writeFileSync(...args);
   }
   
   /**
@@ -56,7 +56,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {boolean} Returns true if the file was deleted successfully, false if an error occurred.
    */
   deleteFile(file_path) {
-    return this.jsl.env.rmSync(file_path);
+    return this.jsl.inter.env.rmSync(file_path);
   }
   
   /**
@@ -65,7 +65,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string[]|false} An array of filenames or false in case of an error.
    */
 	readDir(...args) {
-    return this.jsl.env.readDir(...args);
+    return this.jsl.inter.env.readDir(...args);
   }
   
   /**
@@ -74,7 +74,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {boolean} Returns true if the file was deleted successfully, false if an error occurred.
    */
   deleteDir(file_path) {
-    return this.jsl.env.rmSync(file_path);
+    return this.jsl.inter.env.rmSync(file_path);
   }
 
   /**
@@ -83,12 +83,12 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} destination - The path to the destination file.
    */
   moveFile(source, destination) {
-    if(comparePaths(source, destination)) {
+    if(this.jsl.inter.path.comparePaths(source, destination)) {
       return true;
     }
     try {
-      this.jsl.env.copyFileSync(source, destination);
-      this.jsl.env.rmSync(source);
+      this.jsl.inter.env.copyFileSync(source, destination);
+      this.jsl.inter.env.rmSync(source);
       return true;
     } catch(err) {
       this.jsl.error('@moveFile: ' + err);
@@ -101,11 +101,11 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} destination - The path to the destination file.
    */
   copyFile(source, destination) {
-    if(comparePaths(source, destination)) {
+    if(this.jsl.inter.path.comparePaths(source, destination)) {
       return true;
     }
     try {
-      this.jsl.env.copyFileSync(source, destination);
+      this.jsl.inter.env.copyFileSync(source, destination);
       return true;
     } catch(err) {
       this.jsl.error('@copyFile: ' + err);
@@ -120,16 +120,16 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   filesInFolder(folder, ext) {
     var obj = this;
-    var files = this.jsl.env.readDir(folder);
+    var files = this.jsl.inter.env.readDir(folder);
     if(Array.isArray(files)) {
       return files
         .filter(function(file) { 
           if(!ext) return file.includes('.');
           return file.endsWith('.' + ext);
         })
-        .map(function(file) { return obj.jsl.env.pathJoin(folder, file); });
+        .map(function(file) { return obj.jsl.inter.env.pathJoin(folder, file); });
     } else {
-      this.jsl.env.error('@filesInFolder: '+language.string(128)+': ' + folder);
+      this.jsl.inter.env.error('@filesInFolder: '+this.jsl.inter.lang.string(128)+': ' + folder);
     }
     return false;
   }
@@ -140,9 +140,9 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string[]|void} Array of file names.
    */
   allFilesInFolder(folder) {
-    return this.jsl.env.readDir(folder).reduce((acc, file) => {
-        const file_path = this.jsl.env.pathJoin(folder, file);
-        return this.jsl.env.checkDirectory(file_path)
+    return this.jsl.inter.env.readDir(folder).reduce((acc, file) => {
+        const file_path = this.jsl.inter.env.pathJoin(folder, file);
+        return this.jsl.inter.env.checkDirectory(file_path)
           ? acc.concat(this.allFilesInFolder(file_path))
           : acc.concat(file);
       }, []);
@@ -154,9 +154,9 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string|string[]} The selected file path(s) or an empty array if canceled.
    */
   chooseFile(options) {
-    var file_path = this.jsl.env.showOpenDialogSync(options);
+    var file_path = this.jsl.inter.env.showOpenDialogSync(options);
     if(file_path === undefined) {
-      this.jsl.env.error('@chooseFile: '+language.string(126));
+      this.jsl.inter.env.error('@chooseFile: '+this.jsl.inter.lang.string(126));
       return [];
     }
     return file_path;
@@ -172,9 +172,9 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
       properties: ['openDirectory'],
       ...options_in
     };
-    var file_path = this.jsl.env.showOpenDialogSync(options);
+    var file_path = this.jsl.inter.env.showOpenDialogSync(options);
     if(file_path === undefined) {
-      this.jsl.env.error('@chooseFolder: '+language.string(126));
+      this.jsl.inter.env.error('@chooseFolder: '+this.jsl.inter.lang.string(126));
       return [];
     }
     return file_path;
@@ -186,7 +186,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string} The default path for the specified type.
    */
   getDefaultPath(type) {
-    return this.jsl.env.getDefaultPath(type);
+    return this.jsl.inter.env.getDefaultPath(type);
   }
 
   /**
@@ -194,7 +194,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} filepath Path to the folder.
    */
   openFolder(filepath) {
-    this.jsl.env.openFolder(filepath);
+    this.jsl.inter.env.openFolder(filepath);
   }
 
   /**
@@ -204,7 +204,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {boolean} True if the directory was successfully created or already exists, false if an error occurred.
    */
   makeDirectory(directory) {
-    return this.jsl.env.makeDirectory(directory);
+    return this.jsl.inter.env.makeDirectory(directory);
   }
   
   /**
@@ -214,7 +214,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {boolean} True if the directory was successfully created or already exists, false if an error occurred.
    */
   mkdir(directory) {
-    return this.jsl.env.makeDirectory(directory);
+    return this.jsl.inter.env.makeDirectory(directory);
   }
   
   /**
@@ -222,7 +222,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} filepath Path to the directory.
    */
   openDir(filepath) {
-    this.jsl.env.openDir(filepath);
+    this.jsl.inter.env.openDir(filepath);
   }
 
   /**
@@ -230,7 +230,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} filepath Path to the folder.
    */
   showFolder(filepath) {
-    this.jsl.env.openFolder(filepath);
+    this.jsl.inter.env.openFolder(filepath);
   }
 
   /**
@@ -238,14 +238,14 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} filepath Path to the directory.
    */
   showDir(filepath) {
-    this.jsl.env.openDir(filepath);
+    this.jsl.inter.env.openDir(filepath);
   }
 
   /**
    * Opens the program's root folder in the system's file manager.
    */
   openProgramFolder() {
-    this.jsl.env.openFolder(this.jsl.env.getDefaultPath('root'));
+    this.jsl.inter.env.openFolder(this.jsl.inter.env.getDefaultPath('root'));
   }
  
   /**
@@ -253,7 +253,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} filepath Path to the file.
    */
   showFileInFolder(filepath) {
-    this.jsl.env.showFileInFolder(filepath);
+    this.jsl.inter.env.showFileInFolder(filepath);
   }
 
   /**
@@ -261,7 +261,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} filepath Path to the file.
    */
   showFileInDir(filepath) {
-    this.jsl.env.showFileInDir(filepath);
+    this.jsl.inter.env.showFileInDir(filepath);
   }
   
   /**
@@ -271,7 +271,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {Array<Object>} - Parsed CSV data as an array of objects.
    */
   readcsv(filePath, delimiter = ',', hasHeader = false) {
-    var data = this.jsl.env.readFileSync(filePath, 'utf-8');
+    var data = this.jsl.inter.env.readFileSync(filePath, 'utf-8');
     var lines = data.split('\n').filter(function(line) { return line.trim() !== ''; });
     var headers = lines[0].split(delimiter).map(function(header) { return header.trim(); });
     var result = [];
@@ -303,7 +303,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} file - The path to the file to check.
    */
   checkFile(file) {
-    return this.jsl.env.checkFile(file);
+    return this.jsl.inter.env.checkFile(file);
   }
   
   /**
@@ -319,7 +319,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} directory - The path to the directory to check.
    */
   checkDirectory(directory) {
-    return this.jsl.env.checkDirectory(directory);
+    return this.jsl.inter.env.checkDirectory(directory);
   }
   
   /**
@@ -337,27 +337,27 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   copyDir(src, dest) {
     // Check if the source directory exists
-    if(!this.jsl.env.checkDirectory(src)) {
-      this.jsl.env.error('@copyDir: '+language.string(173));
+    if(!this.jsl.inter.env.checkDirectory(src)) {
+      this.jsl.inter.env.error('@copyDir: '+this.jsl.inter.lang.string(173));
     }
 
     // Create the destination directory if it doesn't exist
-    this.jsl.env.makeDirectory(dest);
+    this.jsl.inter.env.makeDirectory(dest);
 
     // Read all the files and directories in the source directory
-    const entries = this.jsl.env.readDir(src, { withFileTypes: true });
+    const entries = this.jsl.inter.env.readDir(src, { withFileTypes: true });
 
     // Iterate through each entry (file or directory)
     for(const entry of entries) {
-      const src_path = this.jsl.env.pathJoin(src, entry.name);
-      const dest_path = this.jsl.env.pathJoin(dest, entry.name);
+      const src_path = this.jsl.inter.env.pathJoin(src, entry.name);
+      const dest_path = this.jsl.inter.env.pathJoin(dest, entry.name);
 
       if(entry.isDirectory()) {
         // Recursively copy directories
         this.copyDir(src_path, dest_path);
       } else {
         // Copy files
-        this.jsl.env.copyFileSync(src_path, dest_path);
+        this.jsl.inter.env.copyFileSync(src_path, dest_path);
       }
     }
   }
@@ -386,13 +386,13 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @param {string} dest - The destination directory path.
    */
   copyDir7z(src, dest) {
-    var name = this.jsl.path.pathFileName(src);
-    var ext = this.jsl.path.pathExtName(src);
-    var filePath = this.jsl.env.pathJoin(dest, name + ext);
+    var name = this.jsl.inter.path.pathFileName(src);
+    var ext = this.jsl.inter.path.pathExtName(src);
+    var filePath = this.jsl.inter.env.pathJoin(dest, name + ext);
     
-    this.jsl.env.copyFileSync(src, filePath);
-    this.jsl.env.execSync(`"${this.jsl.env.bin7zip}" x "${filePath}" -o"${dest}" -y`);
-    this.jsl.env.rmSync(filePath);
+    this.jsl.inter.env.copyFileSync(src, filePath);
+    this.jsl.inter.env.execSync(`"${this.jsl.inter.env.bin7zip}" x "${filePath}" -o"${dest}" -y`);
+    this.jsl.inter.env.rmSync(filePath);
   }
 }
 

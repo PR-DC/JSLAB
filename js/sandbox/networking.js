@@ -67,7 +67,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    * @returns {boolean} `true` if online, otherwise `false`.
    */
   isOnline() {
-    return this.jsl.env.online;
+    return this.jsl.inter.env.online;
   }
   
   /**
@@ -88,7 +88,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    * @returns {string} The IP address if found, otherwise an empty string.
    */
   getIP() {
-    return Object.values(this.jsl.env.os.networkInterfaces())
+    return Object.values(this.jsl.inter.env.os.networkInterfaces())
       .reduce(function(r, list) { return r.concat(
       list.reduce(function(rr, i) { return rr.concat(
       i.family === 'IPv4' && !i.internal && i.address || []); }, []));}, [])[0];    
@@ -104,7 +104,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
   async pingAddressTCP(host, port, timeout = 1000) {
     var obj = this;
     return new Promise(function(resolve) {
-      const socket = obj.jsl.env.net.createConnection(port, host);
+      const socket = obj.jsl.inter.env.net.createConnection(port, host);
       socket.setTimeout(timeout);
       socket.on('connect', function() {
          socket.end();
@@ -128,7 +128,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    */
   async pingAddress(host, timeout) {
     return new Promise((resolve) => {
-      exec('ping -n 1 -w '+timeout+' '+host, function(error, stdout, stderr) {
+      this.jsl.inter.exec('ping -n 1 -w '+timeout+' '+host, function(error, stdout, stderr) {
         if(error || stderr) {
           resolve(false);
         } else {
@@ -145,7 +145,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    */
   pingAddressSync(host, timeout) {
     try {
-      var stdout = execSync('ping -n 1 -w '+timeout+' '+host);
+      var stdout = this.jsl.inter.execSync('ping -n 1 -w '+timeout+' '+host);
       return stdout.includes('Reply from');
     } catch {
       return false;
@@ -162,7 +162,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
     let currentPort = port;
 
     while(true) {
-      const inUse = await this.jsl.env.tcpPortUsed.check(port);
+      const inUse = await this.jsl.inter.env.tcpPortUsed.check(port);
       if(!inUse) {
         return currentPort;
       }

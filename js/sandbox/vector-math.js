@@ -92,7 +92,7 @@ class PRDC_JSLAB_VECTOR {
       z = x[2];
       y = x[1];
       x = x[0];
-    } else if(isObject(x)) {
+    } else if(this.#jsl.inter.isObject(x)) {
       z = x.z;
       y = x.y;
       x = x.x;
@@ -125,7 +125,7 @@ class PRDC_JSLAB_VECTOR {
    * @returns {PRDC_JSLAB_VECTOR} The resulting vector after addition.
    */
   add(v) {
-    return this.#jsl.vec.new(this.x + v.x, this.y + v.y, this.z + v.z);
+    return this.#jsl.inter.vec.new(this.x + v.x, this.y + v.y, this.z + v.z);
   }
 
   /**
@@ -143,7 +143,7 @@ class PRDC_JSLAB_VECTOR {
    * @returns {PRDC_JSLAB_VECTOR} The resulting vector after subtraction.
    */
   subtract(v) {
-    return this.#jsl.vec.new(this.x - v.x, this.y - v.y, this.z - v.z);
+    return this.#jsl.inter.vec.new(this.x - v.x, this.y - v.y, this.z - v.z);
   }
 
   /**
@@ -163,15 +163,16 @@ class PRDC_JSLAB_VECTOR {
    * @returns {PRDC_JSLAB_VECTOR} The scaled vector.
    */
   scale(scale_x, scale_y, scale_z) {
-    if(isObject(scale_x)) {
-      scale_x = scale_x.x;
-      scale_y = scale_x.y;
-      scale_z = scale_x.z;
-    } else if(!isNumber(scale_y)) {
+    if(this.#jsl.inter.isObject(scale_x)) {
+      const scale = scale_x;
+      scale_x = scale.x;
+      scale_y = scale.y;
+      scale_z = scale.z;
+    } else if(!this.#jsl.inter.isNumber(scale_y)) {
       scale_y = scale_x;
       scale_z = scale_x;
     }
-    return this.#jsl.vec.new(this.x * scale_x, this.y * scale_y, this.z * scale_z);
+    return this.#jsl.inter.vec.new(this.x * scale_x, this.y * scale_y, this.z * scale_z);
   }
   
   /**
@@ -262,7 +263,7 @@ class PRDC_JSLAB_VECTOR {
     var cross_x = this.y * v.z - this.z * v.y;
     var cross_y = this.z * v.x - this.x * v.z;
     var cross_z = this.x * v.y - this.y * v.x;
-    return this.#jsl.vec.new(cross_x, cross_y, cross_z);
+    return this.#jsl.inter.vec.new(cross_x, cross_y, cross_z);
   }
   
   /**
@@ -275,7 +276,7 @@ class PRDC_JSLAB_VECTOR {
     var dx = v.x - this.x;
     var dy = v.y - this.y;
     var dz = v.y - this.y;
-    return this.#jsl.vec.new(this.x + dx * f, this.y + dy * f, this.z + dz * f);
+    return this.#jsl.inter.vec.new(this.x + dx * f, this.y + dy * f, this.z + dz * f);
   }
   
   /**
@@ -286,17 +287,18 @@ class PRDC_JSLAB_VECTOR {
    * @returns {PRDC_JSLAB_VECTOR} The updated vector instance.
    */
   offset(x, y, z) {
-    if(isObject(x)) {
-      x = x.x;
-      z = x.z;
-      y = x.y;
+    if(this.#jsl.inter.isObject(x)) {
+      const offset = x;
+      x = offset.x;
+      y = offset.y;
+      z = offset.z;
     }
     
     x = this.x + x || 0;
     y = this.y + y || 0;
     z = this.z + z || 0;
     
-    return this.#jsl.vec.new(x, y, z);
+    return this.#jsl.inter.vec.new(x, y, z);
   }
   
   /**
@@ -310,7 +312,7 @@ class PRDC_JSLAB_VECTOR {
       var x = this.x / length;
       var y = this.y / length;
       var z = this.z / length;
-      return this.#jsl.vec.new(x, y, z);
+      return this.#jsl.inter.vec.new(x, y, z);
     }
     return this.clone();
   }
@@ -324,7 +326,7 @@ class PRDC_JSLAB_VECTOR {
     var y = this.y * -1;
     var z = this.z * -1;
     
-    return this.#jsl.vec.new(x, y, z);
+    return this.#jsl.inter.vec.new(x, y, z);
   }
   
   /**
@@ -332,7 +334,7 @@ class PRDC_JSLAB_VECTOR {
    * @returns {PRDC_JSLAB_VECTOR} A new vector instance with the same components.
    */
   clone() {
-    return this.#jsl.vec.new(this.x, this.y, this.z);
+    return this.#jsl.inter.vec.new(this.x, this.y, this.z);
   }
   
   /**
@@ -348,7 +350,7 @@ class PRDC_JSLAB_VECTOR {
    * @returns {Object} A matrix representation of the vector.
    */
   toMatrix() {
-    return this.#jsl.mat.new([this.x, this.y, this.z], 3, 1);
+    return this.#jsl.inter.mat.new([this.x, this.y, this.z], 3, 1);
   }
 
   /**
@@ -356,7 +358,7 @@ class PRDC_JSLAB_VECTOR {
    * @returns {Object} A column matrix representation of the vector.
    */
   toColMatrix() {
-    return this.#jsl.mat.new([this.x, this.y, this.z], 1, 3);
+    return this.#jsl.inter.mat.new([this.x, this.y, this.z], 1, 3);
   }
 
   /**

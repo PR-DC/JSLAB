@@ -25,7 +25,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {String} The directory from the given path.
    */
   getDir(path) {
-    return this.jsl.env.pathDirName(path);
+    return this.jsl.inter.env.pathDirName(path);
   }
   
   /**
@@ -42,7 +42,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {String} The path separator character used by the system.
    */
   pathSep() {
-    return this.jsl.env.pathSep();
+    return this.jsl.inter.env.pathSep();
   }
   
   /**
@@ -50,7 +50,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {boolean} True if the current path is absolute, false otherwise.
    */
   isAbsolutePath() {
-    return this.jsl.env.pathIsAbsolute();
+    return this.jsl.inter.env.pathIsAbsolute();
   }
   
   /**
@@ -59,7 +59,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} The combined path.
    */
   pathJoin(...args) {
-    return this.jsl.env.pathJoin(...args);
+    return this.jsl.inter.env.pathJoin(...args);
   }
   
   /**
@@ -68,7 +68,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} The file name extracted from the path.
    */
   pathFileName(path) {
-    return this.jsl.env.pathFileName(path);
+    return this.jsl.inter.env.pathFileName(path);
   }
 
   /**
@@ -77,7 +77,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} The last segment of the path.
    */
   pathBaseName(path) {
-    return this.jsl.env.pathBaseName(path);
+    return this.jsl.inter.env.pathBaseName(path);
   }
   
   /**
@@ -86,7 +86,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} The file extension extracted from the path.
    */
   pathFileExt(path) {
-    return this.jsl.env.pathExtName(path);
+    return this.jsl.inter.env.pathExtName(path);
   }
   
   /**
@@ -95,7 +95,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} The file extension extracted from the path.
    */
   pathExtName(path) {
-    return this.jsl.env.pathExtName(path);
+    return this.jsl.inter.env.pathExtName(path);
   }
   
   /**
@@ -104,7 +104,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} - The resolved absolute path.
    */
   pathResolve(path) {
-    return this.jsl.env.pathResolve(path);
+    return this.jsl.inter.env.pathResolve(path);
   }
   
   /**
@@ -114,7 +114,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} - The relative path from the `from` path to the `to` path.
    */
   pathRelative(from, to) {
-    return this.jsl.env.pathRelative(from, to);
+    return this.jsl.inter.env.pathRelative(from, to);
   }
   
   /**
@@ -123,7 +123,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} - The normalized path.
    */
   pathNormalize(path) {
-    return this.jsl.env.pathNormalize(path);
+    return this.jsl.inter.env.pathNormalize(path);
   }
   
   /**
@@ -133,7 +133,7 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {boolean} Returns true if both paths resolve to the same absolute path, otherwise false.
    */
   comparePaths(path1, path2) {
-    return this.jsl.env.pathResolve(path1) === this.jsl.env.pathResolve(path2);
+    return this.jsl.inter.env.pathResolve(path1) === this.jsl.inter.env.pathResolve(path2);
   }
   
   /**
@@ -142,9 +142,15 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {String} A unique filesystem path based on the input path.
    */
   getUniquePath(path) {
+    var exists_sync;
+    if(this.jsl.inter.fs && typeof this.jsl.inter.fs.existsSync === 'function') {
+      exists_sync = this.jsl.inter.fs.existsSync.bind(this.jsl.inter.fs);
+    } else {
+      exists_sync = (p) => this.jsl.inter.env.checkFile(p) || this.jsl.inter.env.checkDirectory(p);
+    }
     var i = 0;
     var unique_path = path;
-    while(fs.existsSync(unique_path)) {
+    while(exists_sync(unique_path)) {
       i = i+1;
       unique_path = path+i;
     }
@@ -158,9 +164,15 @@ class PRDC_JSLAB_LIB_PATH {
    * @returns {string} A unique folder path.
    */
   getUniqueFilename(filename, ext) {
+    var exists_sync;
+    if(this.jsl.inter.fs && typeof this.jsl.inter.fs.existsSync === 'function') {
+      exists_sync = this.jsl.inter.fs.existsSync.bind(this.jsl.inter.fs);
+    } else {
+      exists_sync = (p) => this.jsl.inter.env.checkFile(p) || this.jsl.inter.env.checkDirectory(p);
+    }
     var i = 0;
     var unique_filename = filename+'.'+ext;
-    while(fs.existsSync(unique_filename)) {
+    while(exists_sync(unique_filename)) {
       i = i+1;
       unique_filename = filename+i+'.'+ext;
     }

@@ -104,7 +104,7 @@ class PRDC_JSLAB_LIB_FORMAT {
       '.lua': 'application/x-lua',
     };
 
-    const ext = String(this.jsl.env.pathExtName(file_path)).toLowerCase();
+    const ext = String(this.jsl.inter.env.pathExtName(file_path)).toLowerCase();
     return mime_types[ext] || 'application/octet-stream';
   }
   
@@ -172,17 +172,19 @@ class PRDC_JSLAB_LIB_FORMAT {
   }
 
   /**
-   * Formats a floating-point number to have a fixed number of significant digits.
+   * Formats a floating-point number to a fixed number of significant digits,
+   * automatically adjusting decimal places depending on the integer part length.
+   *
    * @param {number} number - The number to format.
-   * @param {number} [digits=1] - The number of significant digits.
-   * @returns {string} The formatted number as a string.
+   * @param {number} [digits=1] - The number of significant digits to produce.
+   * @returns {string} A string containing the formatted number.
    */
   formatFloatDigits(number, digits = 1) {
     var precision = digits-(number.toString().split(".")[0]).length;
     if(precision < 0) {
       precision = 0;
     }
-    return round(number, precision, true);
+    return this.jsl.inter.round(number, precision, true);
   }
 
   /**
@@ -291,8 +293,8 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {boolean} True if the value is NaN, false otherwise.
    */
   isNaN(value) {
-    if(isArray(value)) {
-      return mathjs_isNaN(value);
+    if(this.jsl.inter.isArray(value)) {
+      return this.jsl.inter.mathjs_isNaN(value);
     } else {
       return this.jsl._isNaN(value);
     }
@@ -309,6 +311,401 @@ class PRDC_JSLAB_LIB_FORMAT {
       return false;
     }
     return typeof value === 'object' && value !== null;
+  }
+
+  /**
+   * Determines if the provided value is a plain object.
+   * @param {*} value - The value to check.
+   * @returns {boolean} True if the value is a plain object, false otherwise.
+   */
+  isPlainObject(value) {
+    if(value === null || typeof value !== 'object') {
+      return false;
+    }
+    var proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  }
+
+  /**
+   * Determines if the provided value is a typed array.
+   * @param {*} value - The value to check.
+   * @returns {boolean} True if the value is a typed array, false otherwise.
+   */
+  isTypedArray(value) {
+    return ArrayBuffer.isView(value) && !(value instanceof DataView);
+  }
+
+  /**
+   * Determines if the provided value is array-like for column-style input.
+   * @param {*} value - The value to check.
+   * @returns {boolean} True if the value is an array or typed array.
+   */
+  isColumnLike(value) {
+    return Array.isArray(value) || this.isTypedArray(value);
+  }
+
+  /**
+   * Ensures that name list contains unique values.
+   * Throws when a duplicate name is found.
+   * @param {Array<string>} names - Name list.
+   * @param {Function} [error_factory] - Optional function that returns an Error for a duplicate name.
+   * @returns {boolean} True when all names are unique.
+   */
+  ensureUniqueNames(names, error_factory) {
+    var seen = new Set();
+    names.forEach(function(name) {
+      if(seen.has(name)) {
+        if(typeof error_factory === 'function') {
+          throw error_factory(name);
+        }
+        throw new Error('Duplicate name: ' + String(name));
+      }
+      seen.add(name);
+    });
+    return true;
+  }
+
+  /**
+   * Compares mixed values for stable sorting.
+   * @param {*} a - First value.
+   * @param {*} b - Second value.
+   * @returns {number} Comparison result.
+   */
+  compareMixedValues(a, b) {
+    if(a === b) {
+      return 0;
+    }
+
+    if(a === null || typeof a === 'undefined') {
+      return -1;
+    }
+    if(b === null || typeof b === 'undefined') {
+      return 1;
+    }
+
+    if(a instanceof Date) {
+      a = a.getTime();
+    }
+    if(b instanceof Date) {
+      b = b.getTime();
+    }
+
+    if(typeof a === 'number' && typeof b === 'number') {
+      if(Number.isNaN(a) && Number.isNaN(b)) {
+        return 0;
+      }
+      if(Number.isNaN(a)) {
+        return 1;
+      }
+      if(Number.isNaN(b)) {
+        return -1;
+      }
+      return a - b;
+    }
+
+    if(typeof a === 'boolean' && typeof b === 'boolean') {
+      return Number(a) - Number(b);
+    }
+
+    var a_str = String(a).toLowerCase();
+    var b_str = String(b).toLowerCase();
+    if(a_str < b_str) {
+      return -1;
+    }
+    if(a_str > b_str) {
+      return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Builds stable sorted index order.
+   * @param {number} length - Number of rows/items.
+   * @param {Function} getter - Getter by index.
+   * @param {string} [direction='asc'] - Sort direction.
+   * @returns {Array<number>} Sorted indices.
+   */
+  buildSortedIndices(length, getter, direction = 'asc') {
+    var factor = direction === 'desc' ? -1 : 1;
+    var indices = Array.from({ length: length }, function(_, i) {
+      return i;
+    });
+
+    indices.sort((i, j) => {
+      var cmp = this.compareMixedValues(getter(i), getter(j));
+      if(cmp === 0) {
+        cmp = i - j;
+      }
+      return cmp * factor;
+    });
+    return indices;
+  }
+
+  /**
+   * Creates [0, ..., n - 1].
+   * @param {number} n - Length.
+   * @returns {Array<number>} Range indices.
+   */
+  rangeIndices(n) {
+    return Array.from({ length: n }, function(_, i) {
+      return i;
+    });
+  }
+
+  /**
+   * Checks if value should be treated as missing.
+   * @param {*} value - Candidate value.
+   * @returns {boolean} True when value is missing.
+   */
+  isMissingValue(value) {
+    return value === null ||
+      typeof value === 'undefined' ||
+      (typeof value === 'number' && Number.isNaN(value)) ||
+      value === '';
+  }
+
+  /**
+   * Resolves type label for table-like display.
+   * @param {*} value - Candidate value.
+   * @returns {string} Type label.
+   */
+  valueTypeLabel(value) {
+    if(value === null) return 'null';
+    if(typeof value === 'undefined') return 'undefined';
+    if(value instanceof Date) return 'datetime';
+    if(Array.isArray(value)) return 'array';
+    if(this.isTypedArray(value)) return value.constructor ? value.constructor.name : 'typedarray';
+    return typeof value;
+  }
+
+  /**
+   * Escapes CSV cell text.
+   * @param {*} value - Cell value.
+   * @param {string} [delimiter=','] - Delimiter.
+   * @returns {string} Escaped CSV token.
+   */
+  csvEscapeCell(value, delimiter = ',') {
+    var text = '';
+    if(value !== null && typeof value !== 'undefined') {
+      if(value instanceof Date) {
+        text = value.toISOString();
+      } else {
+        text = String(value);
+      }
+    }
+    var must_quote = text.includes('"') || text.includes('\n') ||
+      text.includes('\r') || text.includes(delimiter);
+    if(text.includes('"')) {
+      text = text.replace(/"/g, '""');
+    }
+    return must_quote ? '"' + text + '"' : text;
+  }
+
+  /**
+   * Parses a CSV line with quoted fields support.
+   * @param {string} line - Input line.
+   * @param {string} [delimiter=','] - Delimiter.
+   * @returns {Array<string>} Parsed fields.
+   */
+  parseCsvLine(line, delimiter = ',') {
+    var out = [];
+    var current = '';
+    var in_quotes = false;
+
+    for(var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if(ch === '"') {
+        if(in_quotes && line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+        } else {
+          in_quotes = !in_quotes;
+        }
+      } else if(ch === delimiter && !in_quotes) {
+        out.push(current);
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    out.push(current);
+    return out;
+  }
+
+  /**
+   * Parses CSV-like text into rows.
+   * @param {string} text - CSV text.
+   * @param {string} [delimiter=','] - Delimiter.
+   * @returns {Array<Array<string>>} Parsed rows.
+   */
+  parseCsvText(text, delimiter = ',') {
+    var rows = [];
+    var buffer = '';
+    var in_quotes = false;
+
+    for(var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      var next = text[i + 1];
+      buffer += ch;
+
+      if(ch === '"') {
+        if(in_quotes && next === '"') {
+          buffer += next;
+          i += 1;
+        } else {
+          in_quotes = !in_quotes;
+        }
+      }
+
+      if(!in_quotes && (ch === '\n' || ch === '\r')) {
+        if(ch === '\r' && next === '\n') {
+          i += 1;
+        }
+        var line = buffer.trimEnd();
+        if(line.length) {
+          if(line.endsWith('\n') || line.endsWith('\r')) {
+            line = line.slice(0, -1);
+          }
+          rows.push(this.parseCsvLine(line, delimiter));
+        }
+        buffer = '';
+      }
+    }
+
+    if(buffer.trim().length) {
+      rows.push(this.parseCsvLine(buffer.trimEnd(), delimiter));
+    }
+    return rows;
+  }
+
+  /**
+   * Detects CSV delimiter from the first non-empty line.
+   * @param {string} text - Input text.
+   * @param {string} [fallback=','] - Fallback delimiter.
+   * @returns {string} Detected delimiter.
+   */
+  detectDelimiter(text, fallback = ',') {
+    var line = String(text || '')
+      .split(/\r?\n/)
+      .find(function(item) {
+        return item.trim().length > 0;
+      });
+    if(!line) {
+      return fallback;
+    }
+
+    var candidates = [',', ';', '\t', '|'];
+    var best = fallback;
+    var best_count = -1;
+    candidates.forEach((candidate) => {
+      var count = this.parseCsvLine(line, candidate).length;
+      if(count > best_count) {
+        best_count = count;
+        best = candidate;
+      }
+    });
+    return best;
+  }
+
+  /**
+   * Converts textual CSV token into a typed scalar.
+   * @param {string} text - Raw text.
+   * @param {Object} [options={}] - Parse options.
+   * @returns {*} Parsed scalar value.
+   */
+  parseCsvScalar(text, options = {}) {
+    var raw = String(text);
+    var trimmed = raw.trim();
+
+    var missing_tokens = Array.isArray(options.missing_tokens) ?
+      options.missing_tokens : ['', 'NA', 'N/A', 'null', 'NaN'];
+    if(missing_tokens.includes(trimmed)) {
+      return null;
+    }
+
+    if(options.convert === false) {
+      return raw;
+    }
+
+    if(trimmed === 'true') {
+      return true;
+    }
+    if(trimmed === 'false') {
+      return false;
+    }
+
+    if(/^[-+]?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(trimmed)) {
+      var num = Number(trimmed);
+      if(!Number.isNaN(num)) {
+        return num;
+      }
+    }
+
+    if(options.parse_dates !== false) {
+      var date = new Date(trimmed);
+      if(!Number.isNaN(date.getTime()) &&
+        /[-T:/]/.test(trimmed)) {
+        return date;
+      }
+    }
+
+    return raw;
+  }
+
+  /**
+   * Aggregates values using the selected method.
+   * @param {Array} values - Input values.
+   * @param {string} method - Aggregation method.
+   * @returns {*} Aggregated result.
+   */
+  aggregateValues(values, method) {
+    var valid = values.filter((value) => {
+      return !this.isMissingValue(value);
+    });
+    var m = String(method || '').toLowerCase();
+    if(m === 'count') {
+      return valid.length;
+    }
+    if(!valid.length) {
+      return null;
+    }
+    if(m === 'first') {
+      return valid[0];
+    }
+    if(m === 'last') {
+      return valid[valid.length - 1];
+    }
+
+    var numeric = valid.filter(function(value) {
+      return typeof value === 'number' && !Number.isNaN(value);
+    });
+    if(['sum', 'mean', 'min', 'max'].includes(m)) {
+      if(!numeric.length) {
+        return null;
+      }
+      if(m === 'sum') {
+        return numeric.reduce(function(acc, value) {
+          return acc + value;
+        }, 0);
+      }
+      if(m === 'mean') {
+        return numeric.reduce(function(acc, value) {
+          return acc + value;
+        }, 0) / numeric.length;
+      }
+      if(m === 'min') {
+        return numeric.reduce(function(acc, value) {
+          return Math.min(acc, value);
+        }, numeric[0]);
+      }
+      if(m === 'max') {
+        return numeric.reduce(function(acc, value) {
+          return Math.max(acc, value);
+        }, numeric[0]);
+      }
+    }
+
+    return valid[0];
   }
   
   /**
@@ -337,6 +734,15 @@ class PRDC_JSLAB_LIB_FORMAT {
   isEmptyString(str) {
     return typeof str === 'string' && str.trim().length === 0;
   }
+  
+  /**
+   * Checks if a object is empty.
+   * @param {string} obj - The object to check.
+   * @returns {boolean} - True if the object is empty, otherwise false.
+   */
+  isEmptyObject(obj) {
+    return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+  } 
 
   /**
    * Determines if the provided value is a function.
@@ -450,7 +856,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {number} The normalized latitude.
    */
   normalizeLat(latitude, precision) {
-    return round(Math.max(-90, Math.min(90, latitude)), precision);
+    return this.jsl.inter.round(Math.max(-90, Math.min(90, latitude)), precision);
   }
 
   /**
@@ -460,7 +866,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {number} The normalized longitude.
    */
   normalizeLon(longitude, precision) {
-    return round(normalizeAngle(longitude), precision);
+    return this.jsl.inter.round(this.normalizeAngle(longitude), precision);
   }
 
   /**
@@ -623,6 +1029,15 @@ class PRDC_JSLAB_LIB_FORMAT {
   }
 
   /**
+   * Escapes text for use in HTML attributes.
+   * @param {*} value - The value to escape.
+   * @returns {string} Escaped attribute-safe text.
+   */
+  escapeHTMLAttr(value) {
+    return this.escapeHTML(value).replace(/\r/g, '&#13;').replace(/\n/g, '&#10;');
+  }
+
+  /**
    * Escapes special LaTeX characters in a string to prevent LaTeX injection.
    * @param {string} string - The string to escape.
    * @returns {string} - The escaped string with LaTeX characters replaced.
@@ -646,15 +1061,17 @@ class PRDC_JSLAB_LIB_FORMAT {
   }
   
   /**
-   * Generates a unique object key by appending a number to the original key if it already exists.
-   * @param {string} object - Object to add unique key.
-   * @param {string} key - The original object key.
-   * @returns {string} A unique object key.
+   * Produces a unique key name inside an object. If `key` already exists,
+   * numerical suffixes are appended until uniqueness is achieved.
+   *
+   * @param {Object} object - The object to test for key collisions.
+   * @param {string} key - The proposed key name.
+   * @returns {string} A unique key string not present in the object.
    */
   getUniqueKey(object, key) {
     var i = 0;
     var unique_key = key;
-    while(hasKey(object, unique_key)) {
+    while(this.hasKey(object, unique_key)) {
       i = i+1;
       unique_key = key+i;
     }
@@ -718,6 +1135,343 @@ class PRDC_JSLAB_LIB_FORMAT {
     if(min !== undefined && num < min) return false;
     if(max !== undefined && num > max) return false;
     return true;
+  }
+
+  /**
+   * Wraps a string with an HTML <b> tag for bold formatting.
+   * @param {string} s - The string to wrap.
+   * @returns {string} The bold-formatted HTML string.
+   */
+  bold(s) {
+    return `<b>${s}</b>`;
+  }
+
+  /**
+   * Wraps a string with an HTML <i> tag for italic formatting.
+   * @param {string} s - The string to wrap.
+   * @returns {string} The italic-formatted HTML string.
+   */
+  italic(s) {
+    return `<i>${s}</i>`;
+  }
+
+  /**
+   * Wraps a string with an HTML <u> tag for underline formatting.
+   * @param {string} s - The string to wrap.
+   * @returns {string} The underline-formatted HTML string.
+   */
+  underline(s) {
+    return `<u>${s}</u>`;
+  }
+
+  /**
+   * Wraps a string with an HTML <s> tag for strikethrough formatting.
+   * @param {string} s - The string to wrap.
+   * @returns {string} The strikethrough HTML string.
+   */
+  strike(s) {
+    return `<s>${s}</s>`;
+  }
+
+  /**
+   * Wraps a string in an HTML <sub> element (subscript).
+   * @param {string} s - The string to wrap.
+   * @returns {string} The subscript HTML string.
+   */
+  sub(s) {
+    return `<sub>${s}</sub>`;
+  }
+
+  /**
+   * Wraps a string in an HTML <sup> element (superscript).
+   * @param {string} s - The string to wrap.
+   * @returns {string} The superscript HTML string.
+   */
+  sup(s) {
+    return `<sup>${s}</sup>`;
+  }
+
+  /**
+   * Prints a formatted plain-text table and optionally exports a LaTeX table.
+   *
+   * Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
+   * pairs or as a final options object.
+   *
+   * Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
+   * align, float, caption, label, escapeTeX.
+   *
+   * @param {...(Array|TypedArray|Object|string)} args Table columns followed by options.
+   * @returns {Object} Result object with `plain` and `tex` strings.
+   */
+  tableprint(...args) {
+    const allowedKeys = new Set([
+      "VariableNames", "RowNames", "Format", "Save", "File",
+      "BrakeLine", "rlines", "clines", "align", "float", "caption", "label",
+      "escapeTeX",
+    ]);
+
+    const toArray = (x) => (ArrayBuffer.isView(x) ? Array.from(x) : x);
+
+    const padLeft = (s, w) => (s.length >= w ? s : " ".repeat(w - s.length) + s);
+    const padRight = (s, w) => (s.length >= w ? s : s + " ".repeat(w - s.length));
+    const centerPad = (s, w) => {
+      if(s.length >= w) return s;
+      const left = Math.floor((w - s.length) / 2);
+      const right = w - s.length - left;
+      return " ".repeat(left) + s + " ".repeat(right);
+    };
+
+    function normalizeAlign(align, nCol) {
+      if(Array.isArray(align)) {
+        if(align.length !== nCol) throw new Error(this.jsl.inter.lang.string(285));
+        return align.map(String);
+      }
+      if(typeof align === "string") {
+        // if "lcr" and matches nCol, split; else repeat first char
+        if(align.length === nCol) return align.split("");
+        return Array.from({ length: nCol }, () => align[0] || "c");
+      }
+      return Array.from({ length: nCol }, () => "c");
+    }
+
+    let optPos = args.length; // index where options start
+    for(let i = 0; i < args.length; i++) {
+      if(typeof args[i] === "string" && allowedKeys.has(args[i])) {
+        optPos = i;
+        break;
+      }
+    }
+
+    let cols = [];
+    let opts = {};
+
+    if(optPos < args.length) {
+      // parameter/value pairs
+      cols = args.slice(0, optPos);
+      const rest = args.slice(optPos);
+      if(rest.length % 2 !== 0) throw new Error(this.jsl.inter.lang.string(286));
+      for(let i = 0; i < rest.length; i += 2) {
+        const k = rest[i];
+        const v = rest[i + 1];
+        if(!allowedKeys.has(k)) throw new Error(this.jsl.inter.lang.string(287).replace(/\{option\}/g, k));
+        opts[k] = v;
+      }
+    } else {
+      // maybe last arg is an options object
+      if(args.length >= 1 && this.isPlainObject(args[args.length - 1])) {
+        const last = args[args.length - 1];
+        const hasAnyKnownKey = Object.keys(last).some((k) => allowedKeys.has(k));
+        if(hasAnyKnownKey) {
+          opts = { ...last };
+          cols = args.slice(0, -1);
+        } else {
+          cols = args;
+        }
+      } else {
+        cols = args;
+      }
+    }
+
+    // Defaults
+    const VariableNames = opts.VariableNames ?? [];
+    const RowNames = opts.RowNames ?? [];
+    const Format = opts.Format ?? [];
+    const Save = String(opts.Save ?? "no");
+    const File = String(opts.File ?? "table.tex");
+    const BrakeLine = String(opts.BrakeLine ?? "no");
+    const rlines = String(opts.rlines ?? "yes");
+    const clines = String(opts.clines ?? "yes");
+    const alignOpt = opts.align ?? "c";
+    const float = String(opts.float ?? "H");
+    const caption = String(opts.caption ?? "Table 1");
+    const label = String(opts.label ?? "table-1");
+    const escapeTeX = Boolean(opts.escapeTeX ?? false);
+
+    if(BrakeLine.toLowerCase() === "yes") {
+      throw new Error(this.jsl.inter.lang.string(288));
+    }
+
+    const N_col = cols.length;
+    if(N_col <= 0) throw new Error(this.jsl.inter.lang.string(289));
+
+    cols = cols.map((c, idx) => {
+      const arr = toArray(c);
+      if(!Array.isArray(arr)) throw new Error(this.jsl.inter.lang.string(290).replace(/\{index\}/g, idx + 1));
+      // disallow multi-column style like [[a,b],[c,d]]
+      if(arr.length > 0 && Array.isArray(arr[0])) {
+        const ok = arr.every((x) => Array.isArray(x) && x.length === 1);
+        if(!ok) throw new Error(this.jsl.inter.lang.string(291));
+        return arr.map((x) => x[0]);
+      }
+      return arr;
+    });
+
+    const N_rows = cols[0].length;
+    for(let j = 1; j < N_col; j++) {
+      if(cols[j].length !== N_rows) throw new Error(this.jsl.inter.lang.string(292));
+    }
+
+    // VariableNames
+    let varNames;
+    if(Array.isArray(VariableNames) && VariableNames.length) {
+      if(VariableNames.length !== N_col) throw new Error(this.jsl.inter.lang.string(293));
+      varNames = VariableNames.map(String);
+    } else if(typeof VariableNames === "string" && VariableNames.length) {
+      // allow CSV-like "A,B,C"
+      varNames = VariableNames.split(",").map((s) => s.trim());
+      if(varNames.length !== N_col) throw new Error(this.jsl.inter.lang.string(293));
+    } else {
+      varNames = Array.from({ length: N_col }, (_, i) => `Col${i + 1}`);
+    }
+
+    // RowNames
+    let rowNames;
+    let rn_tab = 0;
+    if(Array.isArray(RowNames) && RowNames.length) {
+      if(RowNames.length !== N_rows) throw new Error(this.jsl.inter.lang.string(294));
+      rowNames = RowNames.map(String);
+      rn_tab = 1;
+    } else {
+      rowNames = Array.from({ length: N_rows }, () => "");
+      rn_tab = 0;
+    }
+
+    const cells = Array.from({ length: N_rows }, () => Array(N_col).fill(""));
+    const cellIsNumeric = Array.from({ length: N_rows }, () => Array(N_col).fill(false));
+
+    for(let j = 0; j < N_col; j++) {
+      const fmt = Array.isArray(Format) ? Format[j] : undefined;
+      for(let i = 0; i < N_rows; i++) {
+        const v = cols[j][i];
+
+        let s;
+        if(fmt != null && fmt !== "") {
+          s = this.jsl.inter.sprintf(String(fmt), v);
+          cellIsNumeric[i][j] = !(typeof v === "string" || typeof v === "boolean");
+        } else {
+          if(typeof v === "string") {
+            s = v;
+          } else if(typeof v === "boolean") {
+            s = v ? "true" : "false";
+          } else if(typeof v === "bigint") {
+            s = v.toString();
+            cellIsNumeric[i][j] = true;
+          } else if(typeof v === "number") {
+            if(Number.isInteger(v)) s = v.toString();
+            else s = Number.isFinite(v) ? v.toFixed(6) : String(v);
+            cellIsNumeric[i][j] = true;
+          } else if(v == null) {
+            s = "";
+          } else {
+            s = String(v);
+          }
+        }
+
+        cells[i][j] = s;
+      }
+    }
+
+    // widths
+    const vnWidth = varNames.map((x) => x.length);
+    const rnWidth = rowNames.map((x) => x.length);
+    const maxRnWidth = rn_tab ? Math.max(...rnWidth, 0) : 0;
+
+    const colDataWidth = Array(N_col).fill(0);
+    for(let j = 0; j < N_col; j++) {
+      let mx = 0;
+      for(let i = 0; i < N_rows; i++) mx = Math.max(mx, cells[i][j].length);
+      colDataWidth[j] = mx;
+    }
+    const colWidth = colDataWidth.map((w, j) => Math.max(w, vnWidth[j]));
+
+    const gap = 4;
+    const leftPad = " ".repeat(maxRnWidth + rn_tab * gap);
+
+    let plain = "";
+    // header
+    plain += "\n" + leftPad;
+    for(let j = 0; j < N_col; j++) {
+      plain += " ".repeat(gap) + centerPad(varNames[j], colWidth[j]);
+    }
+    plain += "\n" + leftPad;
+    for(let j = 0; j < N_col; j++) {
+      plain += " ".repeat(gap) + "_".repeat(colWidth[j]);
+    }
+    plain += "\n\n";
+
+    // rows
+    for(let i = 0; i < N_rows; i++) {
+      if(rn_tab) {
+        plain += " ".repeat(gap) + padRight(rowNames[i], maxRnWidth);
+      }
+      for(let j = 0; j < N_col; j++) {
+        const s = cells[i][j];
+        const seg = cellIsNumeric[i][j] ? padLeft(s, colWidth[j]) : centerPad(s, colWidth[j]);
+        plain += " ".repeat(gap) + seg;
+      }
+      plain += "\n";
+    }
+    plain += "\n";
+
+    // TeX table
+    const rl = rlines.toLowerCase() === "yes" ? "\\hline" : "";
+    const cl = clines.toLowerCase() === "yes" ? "|" : "";
+    const al = normalizeAlign(alignOpt, N_col);
+
+    const texCell = (s) => (escapeTeX ? this.escapeLatex(s) : s);
+
+    let tex = "";
+    tex += `\n\\begin{table}[${float}]\n`;
+    tex += `  \\centering\n`;
+    tex += `  \\captionof{table}{${texCell(caption)}}\n`;
+    tex += `  \\label{${texCell(label)}}\n`;
+    tex += `  \\begin{tabular}[H]{`;
+
+    if(rn_tab) tex += `${cl}l${cl}`;
+    for(let j = 0; j < N_col; j++) tex += `${cl}${al[j]}`;
+    tex += `${cl}}\n`;
+
+    // header row
+    tex += `    ${rl}\n    `;
+    for(let j = 0; j < N_col; j++) {
+      const h = `\\textbf{${texCell(varNames[j])}}`;
+      if(j === 0 && !rn_tab) tex += h;
+      else tex += ` & ${h}`;
+    }
+    tex += ` \\\\ \\hline\n`;
+
+    // data rows
+    for(let i = 0; i < N_rows; i++) {
+      if(rowNames[i]) tex += `    \\textbf{${texCell(rowNames[i])}}`;
+      else tex += "    ";
+
+      for(let j = 0; j < N_col; j++) {
+        const v = texCell(cells[i][j]);
+        if(j === 0 && !rn_tab) tex += `${v}`;
+        else tex += ` & ${v}`;
+      }
+      tex += ` \\\\ ${rl}\n`;
+    }
+
+    tex += `  \\end{tabular}\n`;
+    tex += `\\end{table}\n`;
+
+    // Save / print behavior
+    const saveMode = Save.toLowerCase();
+    if(saveMode !== "no") {
+      if(saveMode === "plain") {
+        this.jsl.inter.writeFile(File, plain, "utf8");
+        this.jsl.inter.dispMonospaced(plain);
+      } else if(saveMode === "tex") {
+        this.jsl.inter.writeFile(File, tex, "utf8");
+      } else {
+        throw new Error(this.jsl.inter.lang.string(266));
+      }
+    } else {
+      this.jsl.inter.dispMonospaced(plain);
+    }
+
+    return { plain, tex };
   }
 }
 

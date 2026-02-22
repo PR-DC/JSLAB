@@ -94,6 +94,9 @@ class PRDC_JSLAB_WIN_MAIN {
         case 'disp-latex':
           obj.command_window.messageLatex(data);
           break;
+        case 'show-inspector':
+          obj.command_window.showInspector(data);
+          break;
         case 'error':
           obj.command_window.error(data);
           ipcRenderer.send('MainProcess', 'focus-win');
@@ -116,6 +119,10 @@ class PRDC_JSLAB_WIN_MAIN {
           obj.eval.evalCommand(data[0]);
           ipcRenderer.send('MainProcess', 'focus-win');
           break;
+        case 'eval-command-preserve-input':
+          obj.command_window.evalCommandPreserveInput(data[0]);
+          ipcRenderer.send('MainProcess', 'focus-win');
+          break;
         case 'help':
           obj.gui.help();
           break;
@@ -127,6 +134,9 @@ class PRDC_JSLAB_WIN_MAIN {
           break;
         case 'clear':
           obj.command_window.clear();
+          break;
+        case 'diary':
+          obj.command_window.diary(data);
           break;
         case 'save-path':
           var new_path = data;

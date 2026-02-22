@@ -50,15 +50,16 @@ class PRDC_JSLAB_LIB_CONTROL {
    * @returns {object} State-space representation of the system.
    */
   tf2ss(num, den) {
+    const inter = this.jsl.inter;
     const n = den.length;
-    num = [...zeros(n - num.length), ...num];
+    num = [...inter.zeros(n - num.length), ...num];
 
-    let A = zeros(n-1).map(() => zeros(n-1));
+    let A = inter.zeros(n-1).map(() => inter.zeros(n-1));
     for(let i = 1; i < n - 1; i++) A[i-1][i] = 1;
-    A[n - 2] = fliplr(den.slice(1).map(d => -d));
+    A[n - 2] = inter.fliplr(den.slice(1).map(d => -d));
 
-    const C = fliplr(num.map((c, i) => c - den[i] * num[0]).slice(1));
-    const B = zeros(n - 2).concat([1]);
+    const C = inter.fliplr(num.map((c, i) => c - den[i] * num[0]).slice(1));
+    const B = inter.zeros(n - 2).concat([1]);
     const D = num[0];
 
     return this.ss(A, B, C, D);
@@ -70,15 +71,16 @@ class PRDC_JSLAB_LIB_CONTROL {
    * @returns {object} Transfer function representation { num, den }.
    */
   ss2tf(sys) {
+    const inter = this.jsl.inter;
     const { A, B, C, D } = sys;
   
-    const den = charpoly(A);
-    const num = plus(charpoly(minus(A, this.jsl.env.math.multiply(B, [C]))),
-      scale(den, D-1));
+    const den = inter.charpoly(A);
+    const num = inter.plus(inter.charpoly(inter.minus(A, this.jsl.inter.env.math.multiply(B, [C]))),
+      inter.scale(den, D-1));
 
     var p = den.length - num.length;
     if(p > 0) {
-      num = [...zeros(p), ...num];
+      num = [...inter.zeros(p), ...num];
     }
     return { num, den };
   }
@@ -103,12 +105,13 @@ class PRDC_JSLAB_LIB_CONTROL {
    * @returns {object} Discrete-time state-space system { A, B, C, D, Ts }.
    */
   _c2dZOH(sysc, Ts) {
+    const inter = this.jsl.inter;
     const { A, B, C, D } = sysc;
     const n = A.length;
 
     const M = A.map((row, i) => [...row, B[i]]);
-    M.push(zeros(n + 1));
-    const M_exp = jsl.env.math.expm(jsl.env.math.multiply(M, Ts))._data.slice(0, n);
+    M.push(inter.zeros(n + 1));
+    const M_exp = this.jsl.inter.env.math.expm(this.jsl.inter.env.math.multiply(M, Ts))._data.slice(0, n);
 
     const Ad = M_exp.map(row => row.slice(0, n));
     const Bd = M_exp.map(row => row.slice(n));
@@ -126,6 +129,7 @@ class PRDC_JSLAB_LIB_CONTROL {
    *                   - t: Time vector array (same as input).
    */
   lsim(sys, u, t, Ts) {
+    const inter = this.jsl.inter;
     var sysd = sys;
     if(!sys.Ts && Ts) {
       sysd = this.c2d(sys.num, sys.den, Ts);
@@ -145,7 +149,7 @@ class PRDC_JSLAB_LIB_CONTROL {
     }
 
     const N = u.length;
-    var y = zeros(N); // Initialize output array with zeros
+    var y = inter.zeros(N); // Initialize output array with zeros
 
     // Iterate over each time step starting from n=1
     for(let n = 0; n < N; n++) {
@@ -168,7 +172,7 @@ class PRDC_JSLAB_LIB_CONTROL {
     
     if(num.length < den.length) {
       var n = den.length - num.length;
-      y = [...zeros(n), ...y.slice(0, y.length - n)];
+      y = [...inter.zeros(n), ...y.slice(0, y.length - n)];
     }
     
     return { y, t };
@@ -181,8 +185,9 @@ class PRDC_JSLAB_LIB_CONTROL {
    * @returns {Object} The simulation result.
    */
   step(sys, Tfinal) {
-    var u = ones(101);
-    var t = linspace(0, Tfinal, 101);
+    const inter = this.jsl.inter;
+    var u = inter.ones(101);
+    var t = inter.linspace(0, Tfinal, 101);
     var Ts = Tfinal/100;
     return this.lsim(sys, u, t, Ts);
   }
@@ -198,16 +203,17 @@ class PRDC_JSLAB_LIB_CONTROL {
    * @returns {{sys: object, error: number}} Estimated transfer function and mean squared error.
    */
   tfest(t, u, y, np, nz, method = 'NelderMead') {
+    const inter = this.jsl.inter;
     var obj = this;
-    var Ts = mean(diff(t));
+    var Ts = inter.mean(inter.diff(t));
     var N = np+nz+1;
     var f = (x) => { // funkcija prilagodjenosti
       try {
         var den = [1, ...x.slice(0, np)];
         var num = x.slice(np);
-        var sys = tf(num, den);
+        var sys = inter.tf(num, den);
         var r = obj.lsim(sys, u, t, Ts);
-        var mse = obj.jsl.math.mse(y, r.y);
+        var mse = obj.jsl.inter.math.mse(y, r.y);
         return mse;
       } catch(err) {
         return Infinity;
@@ -215,13 +221,13 @@ class PRDC_JSLAB_LIB_CONTROL {
     };
     var r;
     if(method == 'NelderMead') {
-      r = this.jsl.optim.optimNelderMead(f, zeros(N));
+      r = this.jsl.inter.optim.optimNelderMead(f, inter.zeros(N));
     } else if(method == 'Powell') {
-      r = this.jsl.optim.optimPowell(f, zeros(N));
+      r = this.jsl.inter.optim.optimPowell(f, inter.zeros(N));
     }
     var den = [1, ...r.x.slice(0, np)];
     var num = r.x.slice(np);
-    return {sys: tf(num, den), error: r.fx};
+    return {sys: inter.tf(num, den), error: r.fx};
   }
 }
 

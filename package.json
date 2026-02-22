@@ -1,34 +1,37 @@
 {
   "name": "JSLAB",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "JavaScript LABoratory environment",
   "main": "js/init.js",
   "repository": "https://github.com/PR-DC/JSLAB",
-  "license": "GPL-3.0-or-later",
+  "license": "LGPL-3.0-or-later",
   "author": "Milos Petrasinovic <mpetrasinovic@prdc.rs>",
   "homepage": "https://pr-dc.com",
   "scripts": {
     "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
     "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron .",
     "start": "electron .",
+    "inspect": "electron . --inspect=9229 --remote-debugging-port=9222",
     "debug": "electron . --debug-app",
     "test": "electron . --test-app",
-    "build": "node js/dev/build-configure.js & node-gyp rebuild & electron .",
-    "pack": "node js/dev/build-configure.js --action pack & node-gyp rebuild & electron-builder --dir",
-    "dist": "node js/dev/build-configure.js --action dist & node-gyp rebuild & electron-builder --win",
-    "dist-portable": "node js/dev/build-configure.js --action dist-portable & node-gyp rebuild & electron-builder --win portable",
-    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build & node-gyp rebuild & electron-builder --win",
+    "auto-test": "electron . --auto-test-app",
+    "build": "node js/dev/build-configure.js && node-gyp rebuild && electron .",
+    "pack": "node js/dev/build-configure.js --action pack && node-gyp rebuild && electron-builder --dir",
+    "dist": "node js/dev/build-configure.js --action dist && node-gyp rebuild && electron-builder --win",
+    "dist-portable": "node js/dev/build-configure.js --action dist-portable && node-gyp rebuild && electron-builder --win portable",
+    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build && node-gyp rebuild && electron-builder --win",
     "clear-app-data": "node js/dev/clear-app-data.js --confirm",
     "make-doc": "node js/dev/make-doc.js",
     "make-source-code-book": "node js/dev/make-source-code-book.js",
-    "update-libs": "node js/dev/download-libs.js --force --confirm",
-    "upload-source": "node js/dev/upload-source-code.js"
+    "make-codebase-source": "node js/dev/make-codebase-source.js",
+    "check-sandbox-globals": "node js/dev/check-sandbox-globals.js",
+    "check-sandbox-inter": "node js/dev/check-sandbox-inter-usage.js"
   },
   "build": {
     "asar": false,
     "appId": "com.pr-dc.jslab",
     "productName": "PR-DC JSLAB",
-    "copyright": "Copyright 2024 @ PR-DC",
+    "copyright": "Copyright 2026 @ PR-DC",
     "nodeGypRebuild": true,
     "directories": {
       "buildResources": "build",
@@ -43,6 +46,8 @@
       "!bin",
       "!binding.gyp",
       "!js/dev",
+      "!**/tests/**",
+      "!**/*.test.js",
       "!lib/boost-1.86.0",
       "!lib/cgal-6.0.1",
       "!lib/eigen-3.4.0"
@@ -83,14 +88,12 @@
     "win": {
       "icon": "icons/icon.ico",
       "target": "nsis",
-      "signtoolOptions": {
-        "publisherName": [
-          "PR-DC"
-        ],
-        "signingHashAlgorithms": [
-          "sha256"
-        ]
-      }
+      "publisherName": [
+        "PR-DC"
+      ],
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
     },
     "linux": {
       "icon": "icons/",
@@ -107,8 +110,8 @@
       "uninstallerIcon": "icons/nsis_un_icon.ico",
       "installerHeader": "img/nsis_in_header.bmp",
       "installerHeaderIcon": "icons/icon.ico",
-      "installerSidebar": "img/nsis_in_welcom.bmp",
-      "uninstallerSidebar": "img/nsis_un_welcom.bmp",
+      "installerSidebar": "img/nsis_in_welcome.bmp",
+      "uninstallerSidebar": "img/nsis_un_welcome.bmp",
       "uninstallDisplayName": "JSLAB ${version}",
       "shortcutName": "JSLAB",
       "language": "1033",
@@ -120,24 +123,28 @@
       "multiLanguageInstaller": true,
       "warningsAsErrors": false
     },
-    "artifactName": "JSLAB_1.0.3.${ext}"
+    "artifactName": "JSLAB_1.0.4.${ext}"
   },
   "devDependencies": {
-    "electron": "36.4.0",
-    "electron-builder": "26.0.12"
+    "electron": "30.0.2",
+    "electron-builder": "24.13.3"
   },
   "dependencies": {
     "@babel/parser": "7.27.5",
     "@babel/plugin-syntax-top-level-await": "7.14.5",
+    "@lydell/node-pty": "1.1.0",
     "7zip-bin": "^5.2.0",
     "big-json-viewer": "0.1.7",
     "bytenode": "1.5.7",
     "dir-compare": "5.0.0",
+    "egm96-universal": "1.1.1",
     "electron-context-menu": "3.6.1",
     "electron-store": "8.2.0",
     "eslint": "9.29.0",
     "fast-xml-parser": "5.2.5",
     "fmin": "0.0.4",
+    "geo-tz": "8.1.4",
+    "geotiff": "2.1.4-beta.1",
     "glob": "11.0.3",
     "jsdoc-api": "9.3.4",
     "ml-regression-polynomial": "3.0.2",

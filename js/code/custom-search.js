@@ -164,7 +164,7 @@
         findNext(cm, rev);
       }
     } else {
-      dialog(cm, getQueryDialog(cm), "Search for:", q, function(query) {
+      dialog(cm, getQueryDialog(cm), language.currentString(324), q, function(query) {
         if(query && !state.query) cm.operation(function() {
           startSearch(cm, state, query);
           state.posFrom = state.posTo = cm.getCursor();
@@ -198,16 +198,16 @@
 
 
   function getQueryDialog(cm)  {
-    return '<span class="CodeMirror-search-label">' + cm.phrase("Search:") + '</span> <input type="text" style="width: 10em" class="CodeMirror-search-field"/> <span style="color: #888" class="CodeMirror-search-hint">' + cm.phrase("(Use /re/ syntax for regexp search)") + '</span>';
+    return '<span class="CodeMirror-search-label">' + language.currentString(325) + '</span> <input type="text" style="width: 10em" class="CodeMirror-search-field"/> <span style="color: #888" class="CodeMirror-search-hint">' + language.currentString(326) + '</span>';
   }
   function getReplaceQueryDialog(cm) {
-    return ' <input type="text" style="width: 10em" class="CodeMirror-search-field"/> <span style="color: #888" class="CodeMirror-search-hint">' + cm.phrase("(Use /re/ syntax for regexp search)") + '</span>';
+    return ' <input type="text" style="width: 10em" class="CodeMirror-search-field"/> <span style="color: #888" class="CodeMirror-search-hint">' + language.currentString(326) + '</span>';
   }
   function getReplacementQueryDialog(cm) {
-    return '<span class="CodeMirror-search-label">' + cm.phrase("With:") + '</span> <input type="text" style="width: 10em" class="CodeMirror-search-field"/>';
+    return '<span class="CodeMirror-search-label">' + language.currentString(327) + '</span> <input type="text" style="width: 10em" class="CodeMirror-search-field"/>';
   }
   function getDoReplaceConfirm(cm) {
-    return '<span class="CodeMirror-search-label">' + cm.phrase("Replace?") + '</span> <button>' + cm.phrase("Yes") + '</button> <button>' + cm.phrase("No") + '</button> <button>' + cm.phrase("All") + '</button> <button>' + cm.phrase("Stop") + '</button> ';
+    return '<span class="CodeMirror-search-label">' + language.currentString(328) + '</span> <button>' + language.currentString(329) + '</button> <button>' + language.currentString(330) + '</button> <button>' + language.currentString(331) + '</button> <button>' + language.currentString(332) + '</button> ';
   }
 
   function replaceAll(cm, query, text) {
@@ -224,11 +224,11 @@
   function replace(cm, all) {
     if(cm.getOption("readOnly")) return;
     var query = cm.getSelection() || getSearchState(cm).lastQuery;
-    var dialogText = '<span class="CodeMirror-search-label">' + (all ? cm.phrase("Replace all:") : cm.phrase("Replace:")) + '</span>';
+    var dialogText = '<span class="CodeMirror-search-label">' + (all ? language.currentString(333) : language.currentString(334)) + '</span>';
     dialog(cm, dialogText + getReplaceQueryDialog(cm), dialogText, query, function(query) {
       if(!query) return;
       query = parseQuery(query);
-      dialog(cm, getReplacementQueryDialog(cm), cm.phrase("Replace with:"), "", function(text) {
+      dialog(cm, getReplacementQueryDialog(cm), language.currentString(335), "", function(text) {
         text = parseString(text);
         if(all) {
           replaceAll(cm, query, text);
@@ -244,7 +244,7 @@
             }
             cm.setSelection(cursor.from(), cursor.to());
             cm.scrollIntoView({from: cursor.from(), to: cursor.to()});
-            confirmDialog(cm, getDoReplaceConfirm(cm), cm.phrase("Replace?"),
+            confirmDialog(cm, getDoReplaceConfirm(cm), language.currentString(328),
                           [function() {doReplace(match);}, advance,
                            function() {replaceAll(cm, query, text);}]);
           };

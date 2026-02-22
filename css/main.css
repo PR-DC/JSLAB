@@ -535,7 +535,7 @@ lang {
   bottom: 0px;
 }
 
-#help-container, #info-container, #settings-container, #paths-container, #script-path-container {
+#help-container, #info-container, #settings-container, #paths-container, #script-path-container, #inspector-input-container {
   display: none;
   top: 79px;
   left: 0;
@@ -883,6 +883,32 @@ lang {
   background: url(../img/clear.svg) no-repeat center;
 }
 
+#workspace-options.options input.workspace-search {
+  width: 140px;
+  height: 18px;
+  line-height: 18px;
+  display: block;
+  float: left;
+  clear: none;
+  margin: 3px 5px 0 0;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  color: #666;
+  font-size: 12px;
+}
+
+#workspace-options.options input.workspace-search:focus {
+  outline: none;
+  border-color: #2e85c7;
+}
+
+#workspace-options.options input.workspace-search::placeholder {
+  color: #999;
+}
+
 #file-browser-options.options i.refresh {
   background: url(../img/refresh.svg) no-repeat center;
 }
@@ -929,7 +955,8 @@ lang {
   padding-top: 10px;
 }
 
-#script-path-dialog-buttons button {
+#script-path-dialog-buttons button,
+#inspector-input-buttons button {
   color: #fff;
   background: #2e85c7;
   cursor: pointer;
@@ -945,9 +972,30 @@ lang {
   width: auto;
 }
 
-#script-path-dialog-buttons button:hover {
+#script-path-dialog-buttons button:hover,
+#inspector-input-buttons button:hover {
   background: transparent;
   color: #2e85c7;
+}
+
+#inspector-input-container .page-cont {
+  width: 540px;
+}
+
+#inspector-input-message {
+  color: #333;
+  line-height: 22px;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+#inspector-input-row-2 {
+  display: none;
+}
+
+#inspector-input-buttons {
+  float: right;
+  padding-top: 10px;
 }
 
 .page-cont {

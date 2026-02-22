@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Editor - JSLAB | PR-DC</title>
+    <title str="518">Editor - JSLAB | PR-DC</title>
     <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/tabs.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-editor-custom.css">
 		<link rel="stylesheet" type="text/css" href="../css/editor.css" />
+    <link rel="stylesheet" type="text/css" href="../css/context-menu.css" />
     <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
     
     <style id="dynamic-style-rules"></style>
@@ -32,7 +33,7 @@
           <li id="win-restore"><img src="../img/win-restore.svg"></li>
           <li id="win-close"><img src="../img/win-close.svg"></li>
         </ul>
-        <div id="app-title">JSLAB / EDITOR</div>
+        <div id="app-title"><str sid="507"></str></div>
         <div class="clear"></div>
       </div>
     </div>
@@ -63,10 +64,55 @@
     <div id="editor-more-popup" style="display: none;">
       <ul>
         <li id="search-dialog-menu" title-str="169"><img src="../img/search-dialog.svg"/><str sid="168"></str></li>
+        <li id="search-all-menu" title-str="373"><img src="../img/search-all-dialog.svg"/><str sid="373"></str></li>
+        <li id="symbol-input-menu" title-str="364"><img src="../img/symbols.svg"/><str sid="364"></str></li>
         <li id="compile-dialog-menu" class="arduino" title-str="227"><img src="../img/compile-dialog.svg"/><str sid="227"></str></li>
         <li id="upload-dialog-menu" class="arduino" title-str="228"><img src="../img/upload-dialog.svg"/><str sid="228"></str></li>
       </ul>
       <div class="popup-triangle"></div>
+    </div>
+    
+    <div id="editor-symbol-popup" style="display: none;">
+      <div class="editor-symbol-header">
+        <span><str sid="364"></str></span>
+      </div>
+      <div id="editor-symbol-groups"></div>
+      <div class="popup-triangle"></div>
+    </div>
+    
+    <div id="editor-search-all-resizer"></div>
+    <div id="editor-search-all-panel" style="display: none;">
+      <div class="editor-search-all-header">
+        <input id="editor-search-all-input" type="text" str="374" title-str="373" autocomplete="off" spellcheck="false">
+        <button id="editor-search-all-case-btn" class="editor-search-all-icon-btn editor-search-all-case-btn" title-str="341" type="button"></button>
+        <button id="editor-search-all-regex-btn" class="editor-search-all-icon-btn editor-search-all-regex-btn" title-str="342" type="button"></button>
+        <button id="editor-search-all-run" class="editor-search-all-icon-btn editor-search-all-run-btn" title-str="336" type="button"></button>
+        <button id="editor-search-all-close" class="editor-search-all-icon-btn editor-search-all-close-btn" title-str="376" type="button"></button>
+      </div>
+      <div class="editor-search-all-replace-row">
+        <input id="editor-search-all-replace-input" type="text" str="339" title-str="339" autocomplete="off" spellcheck="false">
+        <button id="editor-search-all-replace-btn" class="editor-search-all-icon-btn editor-search-all-replace-btn" title-str="339" type="button"></button>
+        <button id="editor-search-all-replace-all-btn" class="editor-search-all-icon-btn editor-search-all-replace-all-btn" title-str="340" type="button"></button>
+      </div>
+      <div class="editor-search-all-results-header">
+        <span><str sid="375"></str></span>
+        <span id="editor-search-all-summary"></span>
+      </div>
+      <div id="editor-search-all-results"></div>
+    </div>
+
+    <div id="editor-context-menu" class="app-context-menu">
+      <button id="editor-context-run-line" type="button"><str sid="378"></str></button>
+      <button id="editor-context-run-section" type="button"><str sid="379"></str></button>
+      <button id="editor-context-toggle-comment" type="button"><str sid="320"></str></button>
+      <div class="app-context-separator"></div>
+      <button id="editor-context-undo" type="button"><str sid="381"></str></button>
+      <button id="editor-context-redo" type="button"><str sid="382"></str></button>
+      <div class="app-context-separator"></div>
+      <button id="editor-context-cut" type="button"><str sid="383"></str></button>
+      <button id="editor-context-copy" type="button"><str sid="384"></str></button>
+      <button id="editor-context-paste" type="button"><str sid="385"></str></button>
+      <button id="editor-context-select-all" type="button"><str sid="323"></str></button>
     </div>
     
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
