@@ -1185,123 +1185,6 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent Runs a script from a specified path, optionally focusing on specific lines and controlling output visibility.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{helpToJSON([name], [type])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
-  \item \texttt{type} \texttt{<string>}: The type of the documentation (e.g., 'category').
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
-
-\noindent Retrieves documentation in JSON format based on the provided name and type.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{help(name, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
-  \item \texttt{type} \texttt{<string>}: The type of the documentation.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
-
-\noindent Retrieves documentation based on the provided name and type.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{doc(name, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
-  \item \texttt{type} \texttt{<string>}: The type of the documentation.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
-
-\noindent Retrieves documentation based on the provided name and type.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{documentation(name, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
-  \item \texttt{type} \texttt{<string>}: The type of the documentation.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
-
-\noindent Retrieves documentation based on the provided name and type.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{helpSearch(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{query} \texttt{<string>}: The search query containing keywords to match within the documentation.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Array of matching documentation entries, each entry containing \textasciigrave{}type\textasciigrave{} and \textasciigrave{}category\textasciigrave{} properties.
-
-\noindent Searches the documentation for methods that match all words in the given query, regardless of order.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{docSearch(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{query} \texttt{<string>}: The search query containing keywords to match within the documentation.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Array of matching documentation entries, each entry containing \textasciigrave{}type\textasciigrave{} and \textasciigrave{}category\textasciigrave{} properties.
-
-\noindent Searches the documentation for methods that match all words in the given query, regardless of order.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{documentationSearch(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{query} \texttt{<string>}: The search query containing keywords to match within the documentation.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Array of matching documentation entries, each entry containing \textasciigrave{}type\textasciigrave{} and \textasciigrave{}category\textasciigrave{} properties.
-
-\noindent Searches the documentation for methods that match all words in the given query, regardless of order.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{source(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{name} \texttt{<string>}: The name of the source to locate.
-\end{itemize}
-
-\noindent Opens the source file and navigates to the specified line based on the provided name.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{docGraph(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{name} \texttt{<string>}: The name of the function.
-\end{itemize}
-
-\noindent Showing graph of function.
-
-\vspace{5mm}
 \noindent \codeBlock{\texttt{jslFileName()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -1338,6 +1221,162 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent Removes a previously saved path from the application's list of saved paths.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{addpath(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<string>}: Path entries to add.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
+
+\noindent Adds one or more paths to the search path list.
+Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{rmpath(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<string>}: Path entries to remove.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
+
+\noindent Removes one or more paths from the search path list.
+Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{path(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<string>}: Path entries to set.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Active search path entries.
+
+\noindent Retrieves or sets the active search path list.
+Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{ls([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{target} \texttt{<string>}: Folder, file, or wildcard.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Entry names.
+
+\noindent Lists contents of a folder or wildcard target.
+Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{dir([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{target} \texttt{<string>}: Folder, file, or wildcard.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Directory entries.
+
+\noindent Lists directory entries with metadata.
+Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isfile(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path\_in} \texttt{<string>}: Path or symbol.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Returns true when the path resolves to a file.
+Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isfolder(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path\_in} \texttt{<string>}: Path or folder symbol.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Returns true when the path resolves to a folder.
+Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{exist(name, [kind])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: Symbol or path.
+  \item \texttt{kind} \texttt{<string>}: Optional query kind.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: Existence code.
+
+\noindent Checks existence with MATLAB-compatible return codes.
+\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.
+Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{which(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: File/module name.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: Resolved absolute path, or false if not found.
+
+\noindent Resolves a file/module using the active search path.
+Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{who(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{names} \texttt{<string>}: Optional names to filter.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Variable names.
+
+\noindent Lists workspace variable names.
+Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{whos(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{names} \texttt{<string>}: Optional names to filter.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array.<string>>>}: Workspace descriptor rows.
+
+\noindent Lists workspace variable descriptors (name/type/class).
+Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{cd(new\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -1367,6 +1406,21 @@ We encourage active participation and appreciate all forms of feedback that help
 
 
 \noindent Updates the file browser display based on the current state.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{diary([mode\_or\_file])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{mode\_or\_file} \texttt{<string>}: Mode token or log file path.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when command was accepted.
+
+\noindent Controls command window transcript logging.
+\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,
+and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{error(msg)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1474,16 +1528,58 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent Displays a synchronous message box to the user and waits for their response.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{saveObject(value, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Value to serialize.
+  \item \texttt{options} \texttt{<Object>}: Serialization options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Serialized payload.
+
+\noindent Serializes a single value with class/reference metadata.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{loadObject(payload, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{payload} \texttt{<Object>}: Serialized object payload.
+  \item \texttt{options} \texttt{<Object>}: Deserialization options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<*>>}: Restored value.
+
+\noindent Restores a single serialized value payload.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{loadClass(class\_name, class\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{class\_name} \texttt{<string>}: Class name.
+  \item \texttt{class\_path} \texttt{<string>}: Class source path.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<boolean>>}: True if class was loaded.
+
+\noindent Attempts to load a class definition into the workspace.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{save(file\_path, args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{file\_path} \texttt{<string>}: Path where the JSON file will be saved.
-  \item \texttt{args} \texttt{<string>}: Variables to save. If 'all' is specified, saves all available variables.
+  \item \texttt{file\_path} \texttt{<string>}: Path where variables will be saved.
+  \item \texttt{args} \texttt{<string>}: Variables to save. If omitted or 'all', saves all workspace variables.
 \end{itemize}
 
-\noindent Saves specified variables to a JSON file.
+\noindent Saves specified variables to a file using workspace serializer.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{load(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1494,21 +1590,7 @@ We encourage active participation and appreciate all forms of feedback that help
   \item \texttt{args} \texttt{<*>}: A single filename or a scope and filename to specify where to load the variables.
 \end{itemize}
 
-\noindent Loads variables from a specified JSON file into the specified scope or the default script context.
-If an error occurs during file reading or parsing, it logs an error message.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{system(arg)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{arg} \texttt{<*>}: The command and its arguments to be executed.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<string>}: The output of the executed command.
-
-\noindent Executes a system shell command.
+\noindent Loads variables from a specified file into the specified scope or the default script context.Supports current JSLAB workspace format and legacy plain JSON object files.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getCompletions(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1621,6 +1703,32 @@ If an error occurs during file reading or parsing, it logs an error message.
 \noindent Opens the developer tools for the sandbox environment in the current context.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{installModule(path, [show\_output])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path} \texttt{<string>}: The path to the module.
+  \item \texttt{show\_output} \texttt{<boolean>}: Whether to show output in the command window.
+\end{itemize}
+
+\noindent Installs a module located at the specified path.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{addForCleanup(obj, fun)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{obj} \texttt{<Object>}: The object to be registered for cleanup.
+  \item \texttt{fun} \texttt{<function>}: The function to execute during cleanup.
+\end{itemize}
+
+\noindent Registers an object for cleanup with a specified cleanup function.
+
+
+\subsection{compile}
+\vspace{5mm}
 \noindent \codeBlock{\texttt{compileNapi(path, [show\_output])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -1649,29 +1757,191 @@ If an error occurs during file reading or parsing, it logs an error message.
 \noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
 The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
 
+
+\subsection{docs}
 \vspace{5mm}
-\noindent \codeBlock{\texttt{installModule(path, [show\_output])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{helpToJSON([name], [type])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{path} \texttt{<string>}: The path to the module.
-  \item \texttt{show\_output} \texttt{<boolean>}: Whether to show output in the command window.
+  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
+  \item \texttt{type} \texttt{<string>}: The type of the documentation (e.g., 'category').
 \end{itemize}
 
-\noindent Installs a module located at the specified path.
+\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
+
+\noindent Retrieves documentation in JSON format based on the provided name and type.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{addForCleanup(obj, fun)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{help(name, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{obj} \texttt{<Object>}: The object to be registered for cleanup.
-  \item \texttt{fun} \texttt{<function>}: The function to execute during cleanup.
+  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
+  \item \texttt{type} \texttt{<string>}: The type of the documentation.
 \end{itemize}
 
-\noindent Registers an object for cleanup with a specified cleanup function.
+\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
+
+\noindent Retrieves documentation based on the provided name and type.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{doc(name, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
+  \item \texttt{type} \texttt{<string>}: The type of the documentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
+
+\noindent Retrieves documentation based on the provided name and type.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{documentation(name, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: The name of the documentation item.
+  \item \texttt{type} \texttt{<string>}: The type of the documentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: The JSON string of the documentation or undefined if not found.
+
+\noindent Retrieves documentation based on the provided name and type.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{helpSearch(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{query} \texttt{<string>}: The search query containing keywords to match within the documentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Array of matching documentation entries, each entry containing \textasciigrave{}type\textasciigrave{} and \textasciigrave{}category\textasciigrave{} properties.
+
+\noindent Searches the documentation for methods that match all words in the given query, regardless of order.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{docSearch(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{query} \texttt{<string>}: The search query containing keywords to match within the documentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Array of matching documentation entries, each entry containing \textasciigrave{}type\textasciigrave{} and \textasciigrave{}category\textasciigrave{} properties.
+
+\noindent Searches the documentation for methods that match all words in the given query, regardless of order.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{documentationSearch(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{query} \texttt{<string>}: The search query containing keywords to match within the documentation.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Array of matching documentation entries, each entry containing \textasciigrave{}type\textasciigrave{} and \textasciigrave{}category\textasciigrave{} properties.
+
+\noindent Searches the documentation for methods that match all words in the given query, regardless of order.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{lookfor(query)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{query} \texttt{<string>}: Search query.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Matching summary lines.
+
+\noindent Searches documentation by keyword and prints matching symbols.
+MATLAB-compatible alias for documentation search.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{source(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: The name of the source to locate.
+\end{itemize}
+
+\noindent Opens the source file and navigates to the specified line based on the provided name.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{docGraph(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: The name of the function.
+\end{itemize}
+
+\noindent Showing graph of function.
+
+
+\subsection{inspector}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{inspectVariable(variable\_name, [options], [options.max\_rows], [options.max\_cols], [options.max\_chars], [options.filter], [options.filter\_expr], [options.sort\_by], [options.sort\_dir])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{variable\_name} \texttt{<string>}: Variable name in workspace.
+  \item \texttt{options} \texttt{<Object>}: Optional rendering options.
+  \item \texttt{options.max\_rows} \texttt{<number>}: Maximum rows to render.
+  \item \texttt{options.max\_cols} \texttt{<number>}: Maximum columns to render.
+  \item \texttt{options.max\_chars} \texttt{<number>}: Maximum characters shown in a single cell.
+  \item \texttt{options.filter} \texttt{<string>}: Case-insensitive substring row filter.
+  \item \texttt{options.filter\_expr} \texttt{<string>}: JavaScript expression filter using row object.
+  \item \texttt{options.sort\_by} \texttt{<string>}: Sort column key.
+  \item \texttt{options.sort\_dir} \texttt{<string>}: Sort direction.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when rendered.
+
+\noindent Displays a spreadsheet-like inspector for a workspace variable in the command window.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{inspectSetVariable(variable\_name, path, expression)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{variable\_name} \texttt{<string>}: Workspace variable name.
+  \item \texttt{path} \texttt{<Array>}: Property/index path.
+  \item \texttt{expression} \texttt{<string>}: JavaScript expression representing new value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True if updated.
+
+\noindent Sets variable value at path using a JavaScript expression from inspector.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{inspectTableAction(variable\_name, action, [payload])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{variable\_name} \texttt{<string>}: Workspace variable name.
+  \item \texttt{action} \texttt{<string>}: Action name.
+  \item \texttt{payload} \texttt{<Object>}: Action payload.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when action is completed.
+
+\noindent Executes table inspector actions that change table structure/content.
 
 
 \subsection{math}
@@ -1795,8 +2065,7 @@ The method automatically selects \textasciigrave{}emcc\textasciigrave{} for nati
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Grid object: \{ xAxis, yAxis, Z, m, n, filled \}.
 
-\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.
-Ordering can be arbitrary. Values that are NaN/Inf are ignored.
+\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{gridSolveYforXZ(x, y, z, x0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1820,9 +2089,7 @@ Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: Array of y solutions.
 
-\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.
-If z is a flat array, the function tries to rebuild a grid automatically.
-Returns an array of solutions (can be empty or multiple).
+\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{gridSolveXforYZ(x, y, z, y0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1844,9 +2111,7 @@ Returns an array of solutions (can be empty or multiple).
   \item \texttt{opts.minFillIfMissing} \texttt{<number>}: Minimum filled ratio when allowMissing is true.
 \end{itemize}
 
-\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.
-If z is a flat array, the function tries to rebuild a grid automatically.
-Returns an array of solutions (can be empty or multiple).
+\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bilinearFunction(x, midPoint, midValue)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2067,8 +2332,7 @@ Returns an array of solutions (can be empty or multiple).
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{A} \texttt{<Array>}: If \textasciigrave{}A\textasciigrave{} is a matrix (2D array), computes its characteristic polynomial.
-                   If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polynomial with those roots.
+  \item \texttt{A} \texttt{<Array>}: If \textasciigrave{}A\textasciigrave{} is a matrix (2D array), computes its characteristic polynomial.                   If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polynomial with those roots.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - Coefficients of the resulting polynomial.
@@ -2145,7 +2409,7 @@ Returns an array of solutions (can be empty or multiple).
   \item \texttt{opts} \texttt{<Object>}: Optional settings for the polynomial string.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<string>}: The polynomial string formatted for C language.
+\noindent \textbf{Returns:} \texttt{<string>}: The polynomial string formatted for C syntax.
 
 \noindent Generates a C language formatted string representation of a polynomial.
 
@@ -2216,12 +2480,7 @@ Returns an array of solutions (can be empty or multiple).
 
 \noindent \textbf{Returns:} \texttt{<number>}: The minimum value found in the array.
 
-\noindent Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.
-Complex numbers are represented as objects with 'real' and 'imag' properties.
-The comparison follows Octave's rules:
-1. Compare magnitudes (absolute values) of the numbers.
-2. If magnitudes are equal, compare real parts.
-3. If real parts are equal, compare imaginary parts.
+\noindent Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{max(arr)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2234,12 +2493,7 @@ The comparison follows Octave's rules:
 
 \noindent \textbf{Returns:} \texttt{<number>}: The maximum value found in the array.
 
-\noindent Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.
-Complex numbers are represented as objects with 'real' and 'imag' properties.
-The comparison follows Octave's rules:
-1. Compare magnitudes (absolute values) of the numbers.
-2. If magnitudes are equal, compare real parts.
-3. If real parts are equal, compare imaginary parts.
+\noindent Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clamp(v, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2254,8 +2508,7 @@ The comparison follows Octave's rules:
 
 \noindent \textbf{Returns:} \texttt{<number>}: The clamped value.
 
-\noindent Clamps a value to the inclusive range [a, b].
-Assumes a <= b.
+\noindent Clamps a value to the inclusive range [a, b].Assumes a <= b.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{real(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2268,8 +2521,7 @@ Assumes a <= b.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The real part(s) of the input.
 
-\noindent Extracts the real part of a number or an array of numbers.
-Handles mixed inputs containing both real numbers and complex numbers.
+\noindent Extracts the real part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{imag(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2282,8 +2534,7 @@ Handles mixed inputs containing both real numbers and complex numbers.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The imaginary part(s) of the input.
 
-\noindent Extracts the imaginary part of a number or an array of numbers.
-Handles mixed inputs containing both real numbers and complex numbers.
+\noindent Extracts the imaginary part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cumtrapz(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -4525,8 +4776,7 @@ Handles mixed inputs containing both real numbers and complex numbers.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of adding all operands.
 
-\noindent Adds multiple operands, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{add(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -4539,8 +4789,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of adding all operands.
 
-\noindent Adds multiple operands, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{minus(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -4553,8 +4802,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of subtracting all subsequent operands from the first one.
 
-\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{subtract(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -4567,8 +4815,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of subtracting all subsequent operands from the first one.
 
-\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cross3D(A, B, cols)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5715,8 +5962,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<string>}: The generated CSV as a string, with each row representing an entry and each column representing data from the corresponding key in the input object.
 
-\noindent Generates a CSV string from an simple object containing arrays of values.
-Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
+\noindent Generates a CSV string from an simple object containing arrays of values.Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{simpleArray2Csv(data, [delimiter])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5820,7 +6066,7 @@ Each key in the object represents a column in the CSV. This function handles une
 \noindent Upload Arduino project.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{parseArduinoOtuput(output)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{parseArduinoOutput(output)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
@@ -6311,8 +6557,7 @@ Each key in the object represents a column in the CSV. This function handles une
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the directory was successfully created or already exists, false if an error occurred.
 
-\noindent Creates a directory at the specified path if it does not already exist.
-This method delegates the directory creation task to the environment's makeDirectory function.
+\noindent Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{mkdir(directory)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6325,8 +6570,7 @@ This method delegates the directory creation task to the environment's makeDirec
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the directory was successfully created or already exists, false if an error occurred.
 
-\noindent Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.
-This method delegates the directory creation task to the environment's makeDirectory function.
+\noindent Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openDir(filepath)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6572,8 +6816,7 @@ This method delegates the directory creation task to the environment's makeDirec
   \item \texttt{program\_name} \texttt{<string>}: The name of the program to check.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array>}: An array where the first element is a boolean indicating if the program is running, 
-                 and the second element is an array of process IDs if the program is running.
+\noindent \textbf{Returns:} \texttt{<Array>}: An array where the first element is a boolean indicating if the program is running,                  and the second element is an array of process IDs if the program is running.
 
 \noindent Checks if a specific program is running and retrieves its process IDs.
 
@@ -7082,8 +7325,7 @@ This method delegates the directory creation task to the environment's makeDirec
 
 \noindent \textbf{Returns:} \texttt{<string>}: A string containing the formatted number.
 
-\noindent Formats a floating-point number to a fixed number of significant digits,
-automatically adjusting decimal places depending on the integer part length.
+\noindent Formats a floating-point number to a fixed number of significant digits,automatically adjusting decimal places depending on the integer part length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clip(number, control\_number, clip\_value, [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7207,6 +7449,212 @@ automatically adjusting decimal places depending on the integer part length.
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the value is an object, false otherwise.
 
 \noindent Determines if the provided value is an object.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isPlainObject(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: The value to check.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True if the value is a plain object, false otherwise.
+
+\noindent Determines if the provided value is a plain object.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isTypedArray(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: The value to check.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True if the value is a typed array, false otherwise.
+
+\noindent Determines if the provided value is a typed array.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isColumnLike(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: The value to check.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True if the value is an array or typed array.
+
+\noindent Determines if the provided value is array-like for column-style input.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{ensureUniqueNames(names, [error\_factory])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{names} \texttt{<Array.<string>>}: Name list.
+  \item \texttt{error\_factory} \texttt{<function>}: Optional function that returns an Error for a duplicate name.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when all names are unique.
+
+\noindent Ensures that name list contains unique values.
+Throws when a duplicate name is found.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{compareMixedValues(a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{a} \texttt{<*>}: First value.
+  \item \texttt{b} \texttt{<*>}: Second value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: Comparison result.
+
+\noindent Compares mixed values for stable sorting.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{buildSortedIndices(length, getter, [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{length} \texttt{<number>}: Number of rows/items.
+  \item \texttt{getter} \texttt{<function>}: Getter by index.
+  \item \texttt{direction} \texttt{<string>}: Sort direction.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<number>>}: Sorted indices.
+
+\noindent Builds stable sorted index order.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{rangeIndices(n)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{n} \texttt{<number>}: Length.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<number>>}: Range indices.
+
+\noindent Creates [0, ..., n - 1].
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isMissingValue(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Candidate value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: True when value is missing.
+
+\noindent Checks if value should be treated as missing.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{valueTypeLabel(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Candidate value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: Type label.
+
+\noindent Resolves type label for table-like display.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{csvEscapeCell(value, [delimiter])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Cell value.
+  \item \texttt{delimiter} \texttt{<string>}: Delimiter.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: Escaped CSV token.
+
+\noindent Escapes CSV cell text.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{parseCsvLine(line, [delimiter])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{line} \texttt{<string>}: Input line.
+  \item \texttt{delimiter} \texttt{<string>}: Delimiter.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Parsed fields.
+
+\noindent Parses a CSV line with quoted fields support.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{parseCsvText(text, [delimiter])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{text} \texttt{<string>}: CSV text.
+  \item \texttt{delimiter} \texttt{<string>}: Delimiter.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array.<string>>>}: Parsed rows.
+
+\noindent Parses CSV-like text into rows.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{detectDelimiter(text, [fallback])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{text} \texttt{<string>}: Input text.
+  \item \texttt{fallback} \texttt{<string>}: Fallback delimiter.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: Detected delimiter.
+
+\noindent Detects CSV delimiter from the first non-empty line.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{parseCsvScalar(text, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{text} \texttt{<string>}: Raw text.
+  \item \texttt{options} \texttt{<Object>}: Parse options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<*>}: Parsed scalar value.
+
+\noindent Converts textual CSV token into a typed scalar.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{aggregateValues(values, method)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{values} \texttt{<Array>}: Input values.
+  \item \texttt{method} \texttt{<string>}: Aggregation method.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<*>}: Aggregated result.
+
+\noindent Aggregates values using the selected method.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isNumber(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7483,8 +7931,7 @@ automatically adjusting decimal places depending on the integer part length.
 
 \noindent \textbf{Returns:} \texttt{<string>}: A JSON string representation of the object, with special handling for deep objects, circular references, and HTML escaping of strings.
 
-\noindent Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.
-It also escapes strings to prevent HTML injection.
+\noindent Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.It also escapes strings to prevent HTML injection.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{escapeHTML(string)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7498,6 +7945,19 @@ It also escapes strings to prevent HTML injection.
 \noindent \textbf{Returns:} \texttt{<string>}: - The escaped string with HTML characters replaced.
 
 \noindent Escapes special HTML characters in a string to prevent HTML injection.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{escapeHTMLAttr(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: The value to escape.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: Escaped attribute-safe text.
+
+\noindent Escapes text for use in HTML attributes.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{escapeLatex(string)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7524,8 +7984,7 @@ It also escapes strings to prevent HTML injection.
 
 \noindent \textbf{Returns:} \texttt{<string>}: A unique key string not present in the object.
 
-\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,
-numerical suffixes are appended until uniqueness is achieved.
+\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,numerical suffixes are appended until uniqueness is achieved.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{randomString(num)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7592,8 +8051,7 @@ numerical suffixes are appended until uniqueness is achieved.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when the value is valid.
 
-\noindent Checks that an input contains a finite number
-and—if supplied—is within the inclusive range [min, max].
+\noindent Checks that an input contains a finite numberand—if supplied—is within the inclusive range [min, max].
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bold(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7684,13 +8142,280 @@ and—if supplied—is within the inclusive range [min, max].
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Result object with \textasciigrave{}plain\textasciigrave{} and \textasciigrave{}tex\textasciigrave{} strings.
 
-\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.
+\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/valuepairs or as a final options object.Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,align, float, caption, label, escapeTeX.
 
-Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
-pairs or as a final options object.
 
-Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
-align, float, caption, label, escapeTeX.
+\subsection{table}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{table(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<*>}: Columns and options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Creates a table from columns.Usage examples:table(colA, colB, \{ VariableNames: ['A', 'B'] \})table(\{ A: colA, B: colB \})table(colA, colB, 'VariableNames', ['A', 'B'])
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{timetable(row\_times, args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_times} \texttt{<Array>}: Row times.
+  \item \texttt{args} \texttt{<*>}: Columns and options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Creates a timetable from row times and columns.Usage examples:timetable(times, colA, colB, \{ VariableNames: ['A', 'B'] \})timetable(times, \{ A: colA, B: colB \})
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{array2table(A, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{A} \texttt{<Array>}: 2D row-major array.
+  \item \texttt{options} \texttt{<Object>}: Table options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Creates a table from a 2D array.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{struct2table(rows, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{rows} \texttt{<Array.<Object>>}: Array of row objects.
+  \item \texttt{options} \texttt{<Object>}: Table options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Creates a table from an array of objects.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{table2array(T)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{T} \texttt{<PRDC\_JSLAB\_TABLE>}: Table-like object.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array>>}: 
+
+\noindent Converts a table/timetable into a 2D array.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{istable(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Candidate value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Checks whether value is a table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{istimetable(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Candidate value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Checks whether value is a timetable.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{readtable(file\_path, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<string>}: File path.
+  \item \texttt{options} \texttt{<Object>}: Read options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Reads a delimited text file into a table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{readtimetable(file\_path, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<string>}: File path.
+  \item \texttt{options} \texttt{<Object>}: Read options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Reads a delimited text file into a timetable.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{table2csv(T, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{T} \texttt{<PRDC\_JSLAB\_TABLE>}: Table-like value.
+  \item \texttt{options} \texttt{<Object>}: CSV options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<string>}: 
+
+\noindent Serializes table/timetable into CSV text.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{writetable(T, file\_path, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{T} \texttt{<PRDC\_JSLAB\_TABLE>}: Table-like value.
+  \item \texttt{file\_path} \texttt{<string>}: Output file path.
+  \item \texttt{options} \texttt{<Object>}: Write options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Writes table/timetable to CSV/TSV file.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{retime(TT, step, [method], [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{TT} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: Input timetable.
+  \item \texttt{step} \texttt{<number>}: Bucket step.
+  \item \texttt{method} \texttt{<string>}: Aggregation method.
+  \item \texttt{options} \texttt{<Object>}: Additional options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Retime timetable using fixed bucket step.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{join(left, right, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{left} \texttt{<PRDC\_JSLAB\_TABLE>}: Left table.
+  \item \texttt{right} \texttt{<PRDC\_JSLAB\_TABLE>}: Right table.
+  \item \texttt{options} \texttt{<Object>}: Join options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Alias for innerjoin.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{innerjoin(left, right, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{left} \texttt{<PRDC\_JSLAB\_TABLE>}: Left table.
+  \item \texttt{right} \texttt{<PRDC\_JSLAB\_TABLE>}: Right table.
+  \item \texttt{options} \texttt{<Object>}: Join options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Performs inner join.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{outerjoin(left, right, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{left} \texttt{<PRDC\_JSLAB\_TABLE>}: Left table.
+  \item \texttt{right} \texttt{<PRDC\_JSLAB\_TABLE>}: Right table.
+  \item \texttt{options} \texttt{<Object>}: Join options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Performs outer join.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{groupsummary(T, groupvars, [method], [datavars])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{T} \texttt{<PRDC\_JSLAB\_TABLE>}: Input table.
+  \item \texttt{groupvars} \texttt{<Array>}: Grouping variables.
+  \item \texttt{method} \texttt{<Array>}: Aggregation method(s).
+  \item \texttt{datavars} \texttt{<Array>}: Variables to aggregate.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Groups rows and computes aggregates.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{varfun(fun, T, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{fun} \texttt{<function>}: Function or aggregator name.
+  \item \texttt{T} \texttt{<PRDC\_JSLAB\_TABLE>}: Input table.
+  \item \texttt{options} \texttt{<Object>}: Options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Applies a function to selected table variables.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{ismissing(value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Input value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<*>}: 
+
+\noindent Missing-value mask for scalar/array/table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{fillmissing(value, [method], [fill\_value])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{value} \texttt{<*>}: Input value.
+  \item \texttt{method} \texttt{<string>}: Fill method.
+  \item \texttt{fill\_value} \texttt{<*>}: Constant replacement value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<*>}: 
+
+\noindent Fills missing values for scalar/array/table.
 
 
 \subsection{render}
@@ -7781,11 +8506,9 @@ align, float, caption, label, escapeTeX.
   \item \texttt{i} \texttt{<Array.<number>>}: a unit direction vector of the line
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: d   - shortest distance
-  P1  - point on the line with the smallest distance to P
+\noindent \textbf{Returns:} \texttt{<Object>}: d   - shortest distance  P1  - point on the line with the smallest distance to P
 
-\noindent Returns the shortest distance from point P to the line defined by (A, i)
-and the closest point (P1) on that line.
+\noindent Returns the shortest distance from point P to the line defined by (A, i)and the closest point (P1) on that line.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{pointSegmentDistance(p, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7800,11 +8523,7 @@ and the closest point (P1) on that line.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The minimal distance from p to the segment a-b.
 
-\noindent Computes the shortest distance from a point to a line segment in 2D.
-
-The point and segment endpoints are expected as objects with numeric
-properties \{x, y\}. The result is the Euclidean distance to the closest
-point on the segment.
+\noindent Computes the shortest distance from a point to a line segment in 2D.The point and segment endpoints are expected as objects with numericproperties \{x, y\}. The result is the Euclidean distance to the closestpoint on the segment.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{lineCircleIntersection(P, i, O, r)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7818,12 +8537,9 @@ point on the segment.
   \item \texttt{r} \texttt{<number>}: circle radius
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> intersection (two points)
-  flag = 1 -> tangent (one point)
-  flag = 2 -> no intersection
+\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> intersection (two points)  flag = 1 -> tangent (one point)  flag = 2 -> no intersection
 
-\noindent Returns the intersection points of a circle (center O, radius r) 
-in a plane with a line passing through point P with direction i.
+\noindent Returns the intersection points of a circle (center O, radius r) in a plane with a line passing through point P with direction i.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{planesIntersection(P1, n1, P2, n2)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7837,12 +8553,9 @@ in a plane with a line passing through point P with direction i.
   \item \texttt{n2} \texttt{<Array.<number>>}: normal to plane 2
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> planes intersect
-  flag = 1 -> planes are the same
-  flag = 2 -> planes are parallel (no intersection)
+\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> planes intersect  flag = 1 -> planes are the same  flag = 2 -> planes are parallel (no intersection)
 
-\noindent Returns the line (point P, direction i) that is the intersection 
-of two planes, or indicates if they are the same or parallel.
+\noindent Returns the line (point P, direction i) that is the intersection of two planes, or indicates if they are the same or parallel.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isPointOnLine(P, A, B)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7857,8 +8570,7 @@ of two planes, or indicates if they are the same or parallel.
 
 \noindent \textbf{Returns:} \texttt{<number>}: 1 (on segment), 0 (not on segment)
 
-\noindent Checks if point P lies on the line segment A-B.
-Returns 1 if on segment, 0 otherwise.
+\noindent Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 otherwise.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{linesOverlap(P1, P2, P3, P4)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7874,8 +8586,7 @@ Returns 1 if on segment, 0 otherwise.
 
 \noindent \textbf{Returns:} \texttt{<Object>}: 
 
-\noindent Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,
-or indicates no overlap.
+\noindent Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,or indicates no overlap.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{minPointsDistance3D(P1i, P2i)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7887,9 +8598,7 @@ or indicates no overlap.
   \item \texttt{P2i} \texttt{<Array.<Array.<number>>>}: Another array of 3D points.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: L  - The minimal distance found.
-  P1 - The point in P1i corresponding to the minimal distance.
-  P2 - The point in P2i corresponding to the minimal distance.
+\noindent \textbf{Returns:} \texttt{<Object>}: L  - The minimal distance found.  P1 - The point in P1i corresponding to the minimal distance.  P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent Finds the minimal 3D distance between all pairs of points in two arrays.
 
@@ -8232,9 +8941,7 @@ or indicates no overlap.
   \item \texttt{t} \texttt{<Array.<number>>}: Time vector array.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: An object containing the response:
-                  - y: Output signal array.
-                  - t: Time vector array (same as input).
+\noindent \textbf{Returns:} \texttt{<object>}: An object containing the response:                  - y: Output signal array.                  - t: Time vector array (same as input).
 
 \noindent Simulate the time response of a discrete-time linear system.
 
@@ -8280,16 +8987,10 @@ or indicates no overlap.
 \begin{itemize}
   \item \texttt{fnc} \texttt{<function>}: Function to be minimized. Accepts an array of size N and returns a scalar.
   \item \texttt{x0} \texttt{<Array>}: Initial guess for the parameters as an array of size N.
-  \item \texttt{options} \texttt{<Object>}: Optional parameters:
-  - eps: Convergence threshold (default: 1e-6)
-  - alpha: Initial step size scaling factor (default: 0.001)
-  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
-  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
+  \item \texttt{options} \texttt{<Object>}: Optional parameters:  - eps: Convergence threshold (default: 1e-6)  - alpha: Initial step size scaling factor (default: 0.001)  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:
-  - argument: The parameter array that minimizes the function.
-  - fncvalue: The function value at the minimized parameters.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:  - argument: The parameter array that minimizes the function.  - fncvalue: The function value at the minimized parameters.
 
 \noindent Minimizes an unconstrained function using a coordinate descent-like Powell algorithm.
 
@@ -8314,9 +9015,7 @@ or indicates no overlap.
   \item \texttt{parameters.history} \texttt{<Array.<Object>>}: Optional array to store the history of simplex states for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
 
 \noindent Performs optimization using the Nelder-Mead algorithm.
 
@@ -8333,10 +9032,7 @@ or indicates no overlap.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
-  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Conjugate Gradient method.
 
@@ -8354,10 +9050,7 @@ or indicates no overlap.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
-  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Gradient Descent method.
 
@@ -8377,10 +9070,7 @@ or indicates no overlap.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis, including line search details.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
-  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Gradient Descent method with Wolfe Line Search.
 
@@ -8423,9 +9113,7 @@ or indicates no overlap.
   \item \texttt{parameters.history} \texttt{<Array.<Object>>}: Optional array to store the history of simplex states for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
 
 \noindent Performs search using the Nelder-Mead algorithm.
 
@@ -8441,9 +9129,7 @@ or indicates no overlap.
   \item \texttt{tol} \texttt{<number>}: The tolerance for convergence (optional).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-  - \textasciigrave{}x\textasciigrave{}: The x-value where the function attains its minimum within [a, b].
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The x-value where the function attains its minimum within [a, b].
 
 \noindent Finds the minimum of a univariate function within a specified interval using a bracketing method.
 
@@ -8554,19 +9240,6 @@ or indicates no overlap.
 
 
 \subsection{gui}
-\vspace{5mm}
-\noindent \codeBlock{\texttt{escapeHTML(string)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{string} \texttt{<string>}: The raw text whose special characters should be converted to HTML entities.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<string>}: The sanitized string safe for insertion into the DOM.
-
-\noindent Escapes reserved HTML characters in a string to prevent injection or XSS.
-
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isVisible(el)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
@@ -9547,6 +10220,558 @@ or indicates no overlap.
 \noindent Converts the object to a pretty string representation.
 
 
+\subsection{Table}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{height()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<number>}: 
+
+\noindent Gets table height (number of rows).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{width()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<number>}: 
+
+\noindent Gets table width (number of variables).
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{size([dim])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{dim} \texttt{<number>}: Dimension index (0 or 1).
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<number>>}: 
+
+\noindent Gets size tuple [height, width] or one dimension.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{hasVariable(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: Variable name.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Checks whether variable name exists.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getVariable(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: Variable name.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array>}: 
+
+\noindent Gets variable column.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setVariable(name, values)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: Variable name.
+  \item \texttt{values} \texttt{<*>}: Column values.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Sets or creates a variable column.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{selectvars(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{names} \texttt{<Array>}: Variable names.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Returns selected variables as a new table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{removevars(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{names} \texttt{<Array>}: Variable names to remove.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Removes variables and returns a new table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{renamevars(old\_names, new\_names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{old\_names} \texttt{<Array>}: Existing variable names.
+  \item \texttt{new\_names} \texttt{<Array>}: New variable names.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Renames variables and returns a new table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{addvars(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{args} \texttt{<*>}: Variables and optional \{ NewVariableNames: [] \}.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Appends variables and returns a new table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{subsetRows(row\_selector)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_selector} \texttt{<number>}: Row selector.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Returns a row subset as a new table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{rows(row\_selector)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_selector} \texttt{<number>}: Row selector.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Alias for subsetRows.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{head([n])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{n} \texttt{<number>}: Rows count.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Returns first N rows.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{tail([n])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{n} \texttt{<number>}: Rows count.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Returns last N rows.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{filter(predicate)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{predicate} \texttt{<function>}: Row predicate.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Filters rows using predicate.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{sortrows(by, [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{by} \texttt{<string>}: Variable name or column index.
+  \item \texttt{direction} \texttt{<string>}: Sort direction.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Sorts rows by variable.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{innerjoin(right, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{right} \texttt{<PRDC\_JSLAB\_TABLE>}: Right table.
+  \item \texttt{options} \texttt{<Object>}: Join options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Inner join with another table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{outerjoin(right, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{right} \texttt{<PRDC\_JSLAB\_TABLE>}: Right table.
+  \item \texttt{options} \texttt{<Object>}: Join options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Outer join with another table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{join(right, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{right} \texttt{<PRDC\_JSLAB\_TABLE>}: Right table.
+  \item \texttt{options} \texttt{<Object>}: Join options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Alias for inner join.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{groupsummary(groupvars, [method], [datavars])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{groupvars} \texttt{<Array>}: Grouping variables.
+  \item \texttt{method} \texttt{<Array>}: Aggregation method(s).
+  \item \texttt{datavars} \texttt{<Array>}: Data variable names.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Group summary for this table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{varfun(fun, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{fun} \texttt{<function>}: Function or aggregate name.
+  \item \texttt{options} \texttt{<Object>}: varfun options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Applies a function to table variables.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{ismissing()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Missing-value mask table.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{fillmissing([method], [fill\_value])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{method} \texttt{<string>}: Fill method.
+  \item \texttt{fill\_value} \texttt{<*>}: Fill value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+
+\noindent Filled table copy.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{variableTypes([max\_scan\_rows])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{max\_scan\_rows} \texttt{<number>}: Max rows to inspect per variable.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object.<string, string>>}: 
+
+\noindent Returns inferred variable types.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toObjectRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+
+\noindent Converts table to row objects.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toArray()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array>>}: 
+
+\noindent Converts table to 2D array.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toColumns()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Object.<string, Array>>}: 
+
+\noindent Returns plain object with cloned columns.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{summary()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Object>}: 
+
+\noindent Returns summary object.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getInspectorColumns()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+
+\noindent Returns inspector column definitions.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getInspectorRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+
+\noindent Returns inspector row payload.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setCell(row\_index, column\_name, value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_index} \texttt{<number>}: Row index.
+  \item \texttt{column\_name} \texttt{<string>}: Column name or index.
+  \item \texttt{value} \texttt{<*>}: New value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Sets cell value.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getCell(row\_index, column\_name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_index} \texttt{<number>}: Row index.
+  \item \texttt{column\_name} \texttt{<string>}: Column name or index.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<*>}: 
+
+\noindent Gets cell value.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toString()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<string>}: 
+
+\noindent String representation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toJSON()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Object>}: 
+
+\noindent JSON representation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toSafeJSON()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Object>}: 
+
+\noindent Safe JSON representation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toPrettyString()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<string>}: 
+
+\noindent Pretty string representation.
+
+
+\subsection{Timetable}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{height()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<number>}: 
+
+\noindent Gets timetable height.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setRowTimes(row\_times)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_times} \texttt{<*>}: Row times column.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Sets row times.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{subsetRows(row\_selector)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_selector} \texttt{<number>}: Row selector.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Returns row subset as new timetable.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{sortrows([by], [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{by} \texttt{<string>}: Sort key.
+  \item \texttt{direction} \texttt{<string>}: Sort direction.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Sorts rows by row times or variable.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{retime(step, [method], [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{step} \texttt{<number>}: Bucket step.
+  \item \texttt{method} \texttt{<string>}: Aggregation method.
+  \item \texttt{options} \texttt{<Object>}: Additional options.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Retimes timetable with fixed bucket size.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{timerange(start\_time, end\_time)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{start\_time} \texttt{<*>}: Inclusive lower bound.
+  \item \texttt{end\_time} \texttt{<*>}: Inclusive upper bound.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+
+\noindent Selects rows within [start\_time, end\_time].
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toObjectRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+
+\noindent Converts timetable to row objects.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getInspectorColumns()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+
+\noindent Returns inspector column definitions.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getInspectorRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+
+\noindent Returns inspector row payload.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setCell(row\_index, column\_name, value)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{row\_index} \texttt{<number>}: Row index.
+  \item \texttt{column\_name} \texttt{<string>}: Column name.
+  \item \texttt{value} \texttt{<*>}: New value.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: 
+
+\noindent Sets cell value (supports row times through "\_\_rowtime\_\_").
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toString()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<string>}: 
+
+\noindent String representation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{toJSON()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Object>}: 
+
+\noindent JSON representation.
+
+
 \subsection{Window}
 \vspace{5mm}
 \noindent \codeBlock{\texttt{open(file)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10109,15 +11334,13 @@ or indicates no overlap.
   \item \texttt{options} \texttt{<Object>}: Configuration options such as port and host.
 \end{itemize}
 
-\noindent Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.
-Attempts to start FreeCAD if it's not running and connects to its TCP server.
+\noindent Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.Attempts to start FreeCAD if it's not running and connects to its TCP server.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{findServer()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.
-Checks if the TCP server is reachable by sending a 'PING' command.
+\noindent Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.Checks if the TCP server is reachable by sending a 'PING' command.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{send(message, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10131,8 +11354,7 @@ Checks if the TCP server is reachable by sending a 'PING' command.
 
 \noindent \textbf{Returns:} \texttt{<Buffer>}: - The response from the server or false if the request times out.
 
-\noindent Sends a message to the FreeCAD TCP server and waits for a response.
-Manages the TCP communication by ensuring message integrity and handling timeouts.
+\noindent Sends a message to the FreeCAD TCP server and waits for a response.Manages the TCP communication by ensuring message integrity and handling timeouts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{inputParser(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10145,8 +11367,7 @@ Manages the TCP communication by ensuring message integrity and handling timeout
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - An array of parsed message components.
 
-\noindent Parses the input from FreeCAD responses to identify errors and data.
-Splits the message by '|' and checks for error or data messages.
+\noindent Parses the input from FreeCAD responses to identify errors and data.Splits the message by '|' and checks for error or data messages.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{showMessage(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10157,15 +11378,13 @@ Splits the message by '|' and checks for error or data messages.
   \item \texttt{message} \texttt{<string>}: The message received from FreeCAD.
 \end{itemize}
 
-\noindent Displays a message from FreeCAD in the JSLAB interface.
-Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
+\noindent Displays a message from FreeCAD in the JSLAB interface.Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{quit()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Closes the FreeCAD application gracefully.
-Sends a quit command and handles the termination of the TCP connection.
+\noindent Closes the FreeCAD application gracefully.Sends a quit command and handles the termination of the TCP connection.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{open(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10177,8 +11396,7 @@ Sends a quit command and handles the termination of the TCP connection.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Opens a specified file in FreeCAD.
-Sends a command to open a file and handles responses to confirm file access.
+\noindent Opens a specified file in FreeCAD.Sends a command to open a file and handles responses to confirm file access.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{importFile(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10190,8 +11408,7 @@ Sends a command to open a file and handles responses to confirm file access.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Imports a file into the current FreeCAD document.
-Sends an import command and handles responses to confirm the import operation.
+\noindent Imports a file into the current FreeCAD document.Sends an import command and handles responses to confirm the import operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{newDocument(filename, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10203,8 +11420,7 @@ Sends an import command and handles responses to confirm the import operation.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Creates a new document in FreeCAD, optionally specifying a filename.
-Sends a command to create a new document and handles the document creation response.
+\noindent Creates a new document in FreeCAD, optionally specifying a filename.Sends a command to create a new document and handles the document creation response.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{save(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10215,8 +11431,7 @@ Sends a command to create a new document and handles the document creation respo
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Saves the current document in FreeCAD.
-Sends a save command and handles responses to confirm the save operation.
+\noindent Saves the current document in FreeCAD.Sends a save command and handles responses to confirm the save operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{saveAs(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10228,8 +11443,7 @@ Sends a save command and handles responses to confirm the save operation.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Saves the current document in FreeCAD under a new filename.
-Sends a save as command and handles responses to confirm the operation.
+\noindent Saves the current document in FreeCAD under a new filename.Sends a save as command and handles responses to confirm the operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{close(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10240,8 +11454,7 @@ Sends a save as command and handles responses to confirm the operation.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Closes the current document in FreeCAD.
-Sends a close command and handles responses to confirm the document closure.
+\noindent Closes the current document in FreeCAD.Sends a close command and handles responses to confirm the document closure.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{evaluate(command, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10253,8 +11466,7 @@ Sends a close command and handles responses to confirm the document closure.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Executes a command in FreeCAD and returns the evaluation result.
-Sends an evaluate command with the specified command string.
+\noindent Executes a command in FreeCAD and returns the evaluation result.Sends an evaluate command with the specified command string.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{callScript(script, param, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10267,8 +11479,7 @@ Sends an evaluate command with the specified command string.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Runs a script in FreeCAD with optional parameters.
-Sends a script command along with parameters and handles the script execution response.
+\noindent Runs a script in FreeCAD with optional parameters.Sends a script command along with parameters and handles the script execution response.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getArea(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10279,8 +11490,7 @@ Sends a script command along with parameters and handles the script execution re
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Retrieves the area of the selected object in FreeCAD.
-Sends a measure area command and parses the response to extract the area value.
+\noindent Retrieves the area of the selected object in FreeCAD.Sends a measure area command and parses the response to extract the area value.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getVolume(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10291,8 +11501,7 @@ Sends a measure area command and parses the response to extract the area value.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Retrieves the volume of the selected object in FreeCAD.
-Sends a measure volume command and parses the response to extract the volume value.
+\noindent Retrieves the volume of the selected object in FreeCAD.Sends a measure volume command and parses the response to extract the volume value.
 
 
 \subsection{om\_link}
@@ -10305,9 +11514,7 @@ Sends a measure volume command and parses the response to extract the volume val
   \item \texttt{exe} \texttt{<string>}: Path to the executable to be run, defaults to the OpenModelica compiler if not provided.
 \end{itemize}
 
-\noindent Starts the interaction with an external executable by initializing the necessary environment and parameters.
-Launches the executable with the appropriate command-line arguments for interaction via ZMQ.
-Waits for a port file to be created to establish the ZMQ communication.
+\noindent Starts the interaction with an external executable by initializing the necessary environment and parameters.Launches the executable with the appropriate command-line arguments for interaction via ZMQ.Waits for a port file to be created to establish the ZMQ communication.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{sendExpression(expr)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10320,8 +11527,7 @@ Waits for a port file to be created to establish the ZMQ communication.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<any>>}: - A promise that resolves with the parsed result of the expression evaluation.
 
-\noindent Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.
-Parses the response using a dedicated expression parser.
+\noindent Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.Parses the response using a dedicated expression parser.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ModelicaSystem(filename, modelname, [libraries], [command\_line\_options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10335,8 +11541,7 @@ Parses the response using a dedicated expression parser.
   \item \texttt{command\_line\_options} \texttt{<string>}: Additional command-line options for the simulation.
 \end{itemize}
 
-\noindent Initializes and configures a Modelica system with the specified parameters and libraries.
-Loads necessary files and prepares the environment for simulation.
+\noindent Initializes and configures a Modelica system with the specified parameters and libraries.Loads necessary files and prepares the environment for simulation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{BuildModelicaModel()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10626,15 +11831,13 @@ Loads necessary files and prepares the environment for simulation.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - The parsed data which could be an array, an object, or a string.
 
-\noindent Parses a given expression string into structured data based on predefined formats.
-Handles various formats including single and nested lists, records, and single elements.
+\noindent Parses a given expression string into structured data based on predefined formats.Handles various formats including single and nested lists, records, and single elements.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{close()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.
-Terminates any active processes and removes temporary port files.
+\noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
 
 
 \subsection{tcp\_client}
@@ -15289,17 +16492,7 @@ Terminates any active processes and removes temporary port files.
   \item \texttt{dz} \texttt{<number>}: Fine grid spacing in Z (must be >0).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: Result object:
-  - dim: 3
-  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
-  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
-  - surfaceCells: number of mixed voxels visited (surface voxel count)
-  - evalCount: total feasibility evaluations performed
-  - N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]
-  - grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics
-  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
-  - fineBracket: refined fine flip bracket used to start flood-fill
-  - startVoxel: voxel indices used as flood-fill start
+\noindent \textbf{Returns:} \texttt{<Object>}: Result object:  - dim: 3  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise  - surfaceCells: number of mixed voxels visited (surface voxel count)  - evalCount: total feasibility evaluations performed  - N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]  - grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)  - fineBracket: refined fine flip bracket used to start flood-fill  - startVoxel: voxel indices used as flood-fill start
 
 \noindent Main entry (3D).
 
@@ -15724,8 +16917,7 @@ Terminates any active processes and removes temporary port files.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves when the libraries are loaded.
 
-\noindent Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
-Initializes the Python environment for symbolic computations.
+\noindent Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.Initializes the Python environment for symbolic computations.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getSymbolName(symbol)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
