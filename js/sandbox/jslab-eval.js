@@ -581,6 +581,91 @@ class PRDC_JSLAB_EVAL {
     const rewriteMemberExpressionRoot = (memberExpression) =>
       obj.rewriteMemberExpressionRoot(memberExpression, transformPatternToContext);
 
+    // Track block-scoped bindings that must stay local (e.g., non-rewritten let/const).
+    const lexicalBindingsByNode = new WeakMap();
+
+    function collectPatternIdentifiers(pattern, out) {
+      if(!pattern) {
+        return;
+      }
+
+      if(pattern.type === 'Identifier') {
+        out.push(pattern.name);
+        return;
+      }
+
+      if(pattern.type === 'RestElement') {
+        collectPatternIdentifiers(pattern.argument, out);
+        return;
+      }
+
+      if(pattern.type === 'AssignmentPattern') {
+        collectPatternIdentifiers(pattern.left, out);
+        return;
+      }
+
+      if(pattern.type === 'ArrayPattern') {
+        pattern.elements.forEach((element) => {
+          if(element) {
+            collectPatternIdentifiers(element, out);
+          }
+        });
+        return;
+      }
+
+      if(pattern.type === 'ObjectPattern') {
+        pattern.properties.forEach((prop) => {
+          if(prop.type === 'RestElement') {
+            collectPatternIdentifiers(prop.argument, out);
+          } else if(prop.value) {
+            collectPatternIdentifiers(prop.value, out);
+          }
+        });
+      }
+    }
+
+    function recordLexicalBinding(scopeNode, pattern) {
+      if(!scopeNode || !pattern) {
+        return;
+      }
+
+      const names = [];
+      collectPatternIdentifiers(pattern, names);
+      if(!names.length) {
+        return;
+      }
+
+      let scopeBindings = lexicalBindingsByNode.get(scopeNode);
+      if(!scopeBindings) {
+        scopeBindings = new Set();
+        lexicalBindingsByNode.set(scopeNode, scopeBindings);
+      }
+      names.forEach((name) => scopeBindings.add(name));
+    }
+
+    function isLexicallyBoundInAncestors(path, identifierName) {
+      let currentPath = path;
+      while(currentPath) {
+        const scopeBindings = lexicalBindingsByNode.get(currentPath.node);
+        if(scopeBindings && scopeBindings.has(identifierName)) {
+          return true;
+        }
+        currentPath = currentPath.parentPath;
+      }
+      return false;
+    }
+
+    function getMemberExpressionRootIdentifierName(memberExpression) {
+      let root = memberExpression;
+      while(root && root.object && root.object.type === 'MemberExpression') {
+        root = root.object;
+      }
+      if(root && root.object && root.object.type === 'Identifier') {
+        return root.object.name;
+      }
+      return undefined;
+    }
+
     const visitObj = {
       // If top-level, after the function declaration, assign it to jsl.context
       visitFunctionDeclaration(path) {
@@ -676,6 +761,16 @@ class PRDC_JSLAB_EVAL {
         }
       },
 
+      visitCatchClause(path) {
+        const node = path.node;
+        if(node && node.param) {
+          // Catch parameters are always lexical to the catch block.
+          recordLexicalBinding(node, node.param);
+        }
+        this.traverse(path);
+        return false;
+      },
+
       visitVariableDeclaration(path) {
         const node = path.node;
         const parent = path.parent.node;
@@ -702,6 +797,12 @@ class PRDC_JSLAB_EVAL {
           ((node.kind === 'let' || node.kind === 'const') && parentType === 'Program');
 
         if(!shouldRewrite) {
+          if(node.kind === 'let' || node.kind === 'const') {
+            // Keep non-rewritten block-scoped declarations local.
+            node.declarations.forEach((decl) => {
+              recordLexicalBinding(parent, decl.id);
+            });
+          }
           this.traverse(path);
           return false;
         }
@@ -816,9 +917,19 @@ class PRDC_JSLAB_EVAL {
           isTopLevel &&
           ['Identifier', 'ObjectPattern', 'ArrayPattern', 'RestElement', 'AssignmentPattern'].includes(node.left.type)
         ) {
-          node.left = transformPatternToContext(node.left);
+          if(
+            node.left.type === 'Identifier' &&
+            isLexicallyBoundInAncestors(path, node.left.name)
+          ) {
+            // Keep assignments to local lexical bindings untouched.
+          } else {
+            node.left = transformPatternToContext(node.left);
+          }
         } else if(isTopLevel && node.left.type === 'MemberExpression') {
-          rewriteMemberExpressionRoot(node.left);
+          const rootIdentifier = getMemberExpressionRootIdentifierName(node.left);
+          if(!rootIdentifier || !isLexicallyBoundInAncestors(path, rootIdentifier)) {
+            rewriteMemberExpressionRoot(node.left);
+          }
         }
 
         this.traverse(path);
@@ -830,9 +941,14 @@ class PRDC_JSLAB_EVAL {
         const isTopLevel = (functionDepth === 0);
 
         if(isTopLevel && node.argument.type === 'Identifier') {
-          node.argument = transformPatternToContext(node.argument);
+          if(!isLexicallyBoundInAncestors(path, node.argument.name)) {
+            node.argument = transformPatternToContext(node.argument);
+          }
         } else if(isTopLevel && node.argument.type === 'MemberExpression') {
-          rewriteMemberExpressionRoot(node.argument);
+          const rootIdentifier = getMemberExpressionRootIdentifierName(node.argument);
+          if(!rootIdentifier || !isLexicallyBoundInAncestors(path, rootIdentifier)) {
+            rewriteMemberExpressionRoot(node.argument);
+          }
         }
 
         this.traverse(path);

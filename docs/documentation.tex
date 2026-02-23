@@ -1231,8 +1231,7 @@ We encourage active participation and appreciate all forms of feedback that help
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
 
-\noindent Adds one or more paths to the search path list.
-Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
+\noindent Adds one or more paths to the search path list.Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{rmpath(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1245,8 +1244,7 @@ Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
 
-\noindent Removes one or more paths from the search path list.
-Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
+\noindent Removes one or more paths from the search path list.Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{path(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1259,8 +1257,7 @@ Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Active search path entries.
 
-\noindent Retrieves or sets the active search path list.
-Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
+\noindent Retrieves or sets the active search path list.Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ls([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1273,8 +1270,7 @@ Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Entry names.
 
-\noindent Lists contents of a folder or wildcard target.
-Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
+\noindent Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{dir([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1287,8 +1283,7 @@ Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Directory entries.
 
-\noindent Lists directory entries with metadata.
-Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
+\noindent Lists directory entries with metadata.Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isfile(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1301,8 +1296,7 @@ Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: 
 
-\noindent Returns true when the path resolves to a file.
-Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
+\noindent Returns true when the path resolves to a file.Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isfolder(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1315,8 +1309,7 @@ Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: 
 
-\noindent Returns true when the path resolves to a folder.
-Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
+\noindent Returns true when the path resolves to a folder.Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{exist(name, [kind])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1330,9 +1323,7 @@ Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<number>}: Existence code.
 
-\noindent Checks existence with MATLAB-compatible return codes.
-\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.
-Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
+\noindent Checks existence with MATLAB-compatible return codes.\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{which(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1345,8 +1336,7 @@ Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave
 
 \noindent \textbf{Returns:} \texttt{<string>}: Resolved absolute path, or false if not found.
 
-\noindent Resolves a file/module using the active search path.
-Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
+\noindent Resolves a file/module using the active search path.Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{who(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1359,8 +1349,7 @@ Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Variable names.
 
-\noindent Lists workspace variable names.
-Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
+\noindent Lists workspace variable names.Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{whos(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1373,8 +1362,7 @@ Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<Array.<string>>>}: Workspace descriptor rows.
 
-\noindent Lists workspace variable descriptors (name/type/class).
-Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
+\noindent Lists workspace variable descriptors (name/type/class).Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cd(new\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1418,9 +1406,7 @@ Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when command was accepted.
 
-\noindent Controls command window transcript logging.
-\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,
-and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
+\noindent Controls command window transcript logging.\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{error(msg)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1754,8 +1740,7 @@ and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the spe
 
 \noindent \textbf{Returns:} \texttt{<Array>}: Tuple \textasciigrave{}[success, wasm\_path|undefined]\textasciigrave{}.
 
-\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
-The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
+\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
 
 
 \subsection{docs}
@@ -1865,8 +1850,7 @@ The method automatically selects \textasciigrave{}emcc\textasciigrave{} for nati
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Matching summary lines.
 
-\noindent Searches documentation by keyword and prints matching symbols.
-MATLAB-compatible alias for documentation search.
+\noindent Searches documentation by keyword and prints matching symbols.MATLAB-compatible alias for documentation search.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{source(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7501,8 +7485,7 @@ MATLAB-compatible alias for documentation search.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when all names are unique.
 
-\noindent Ensures that name list contains unique values.
-Throws when a duplicate name is found.
+\noindent Ensures that name list contains unique values.Throws when a duplicate name is found.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{compareMixedValues(a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

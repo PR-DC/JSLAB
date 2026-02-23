@@ -187,6 +187,18 @@ tests.add('rewriteCode rewrites top-level declarations into runtime context', fu
   assert.ok(/return\s+alpha/.test(out.code));
 }, { tags: ['unit', 'eval'] });
 
+tests.add('rewriteCode keeps block-scoped let updates local', function(assert) {
+  var harness = createEvalHarness();
+  var out = harness.eval_module.rewriteCode(
+    'if(true){ let processed = 0, positives = 0; processed++; processed; }'
+  );
+
+  assert.ok(out && typeof out.code === 'string');
+  assert.ok(/let processed = 0, positives = 0;/.test(out.code));
+  assert.ok(!/jsl\.context\.processed\+\+/.test(out.code));
+  assert.ok(/processed\+\+/.test(out.code));
+}, { tags: ['unit', 'eval'] });
+
 tests.add('rewriteCode rewrites top-level import into require assignments', function(assert) {
   var harness = createEvalHarness();
   var out = harness.eval_module.rewriteCode('import { join } from "path"; join("a", "b");');
