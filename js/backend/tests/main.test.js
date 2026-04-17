@@ -212,4 +212,78 @@ tests.add('handleMessages binds dialog handlers to sender BrowserWindow', functi
   assert.equal(sync_dialog_call.params.properties[0], 'openFile');
 }, { tags: ['unit', 'backend', 'main'] });
 
+tests.add('handleMessages requests taskbar attention after top-level script completion', function(assert) {
+  var state = {};
+  var PRDC_JSLAB_MAIN = loadMainClass(undefined, state);
+  var ipc_handlers = { handle: {}, on: {} };
+  var attention_requests = 0;
+
+  state.electron.ipcMain.handle = function(channel, fn) {
+    ipc_handlers.handle[channel] = fn;
+  };
+  state.electron.ipcMain.on = function(channel, fn) {
+    ipc_handlers.on[channel] = fn;
+  };
+
+  var main = Object.create(PRDC_JSLAB_MAIN.prototype);
+  main.app_icon = 'app-icon.ico';
+  main.win_sandbox = { send: function() {} };
+  main.sandbox_sub_wins = {};
+  main.pty = {};
+  main.win_main = {
+    isDestroyed: function() { return false; },
+    send: function() {},
+    webContents: {}
+  };
+  main.win_editor = { send: function() {} };
+  main.requestScriptFinishedAttention = function() {
+    attention_requests += 1;
+    return true;
+  };
+
+  main.handleMessages();
+
+  ipc_handlers.on.MainProcess(
+    { sender: {}, returnValue: undefined },
+    'code-evaluated',
+    { top_level_script_finished: true }
+  );
+
+  assert.equal(attention_requests, 1);
+}, { tags: ['unit', 'backend', 'main'] });
+
+tests.add('requestScriptFinishedAttention flashes main window only when app is unfocused on Windows', function(assert) {
+  var PRDC_JSLAB_MAIN = loadMainClass();
+  var main = Object.create(PRDC_JSLAB_MAIN.prototype);
+  var flash_calls = [];
+
+  main.sandbox_sub_wins = {};
+  main.win_main = {
+    isDestroyed: function() { return false; },
+    isFocused: function() { return false; },
+    flashFrame: function(flag) {
+      flash_calls.push(flag);
+    }
+  };
+  main.win_editor = {
+    isDestroyed: function() { return false; },
+    isFocused: function() { return false; }
+  };
+  main.win_sandbox = {
+    isDestroyed: function() { return false; },
+    isFocused: function() { return false; }
+  };
+
+  var out = main.requestScriptFinishedAttention();
+
+  if(process.platform === 'win32') {
+    assert.equal(out, true);
+    assert.deepEqual(flash_calls, [true]);
+    assert.equal(main.attention_flash_active, true);
+  } else {
+    assert.equal(out, false);
+    assert.deepEqual(flash_calls, []);
+  }
+}, { tags: ['unit', 'backend', 'main'] });
+
 exports.MODULE_TESTS = tests;
