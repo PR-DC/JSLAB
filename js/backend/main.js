@@ -50,6 +50,7 @@ class PRDC_JSLAB_MAIN {
     this.win_opacity = 0;
     this.editor_close_ready = false;
     this.stop_loop_in = false;
+    this.attention_flash_active = false;
     this.script_opener = new PRDC_JSLAB_SCRIPT_OPENER(this);
     this.instance_router = new PRDC_JSLAB_INSTANCE_ROUTER({
       on_open_scripts: function(script_paths) {
@@ -230,6 +231,7 @@ class PRDC_JSLAB_MAIN {
     };
     options = this.getWindowBounds('mainWinBounds', options);
     this.win_main = new BrowserWindow(options);
+    this.bindAttentionReset(this.win_main);
     
     // Hide menu
     this.win_main.setMenu(null);
@@ -290,6 +292,7 @@ class PRDC_JSLAB_MAIN {
         backgroundThrottling: false
       }
     });
+    this.bindAttentionReset(this.win_sandbox);
 
     // Hide menu
     this.win_sandbox.setMenu(null);
@@ -330,6 +333,7 @@ class PRDC_JSLAB_MAIN {
       var wid = details.frameName;
       obj.sandbox_sub_wins[wid] = sub_win;
       obj.instance_router.trackWindowActivity(sub_win);
+      obj.bindAttentionReset(sub_win);
       
       // Hide menu
       sub_win.setMenu(null);
@@ -415,6 +419,7 @@ class PRDC_JSLAB_MAIN {
     };
     options = this.getWindowBounds('editorWinBounds', options);
     this.win_editor = new BrowserWindow(options);
+    this.bindAttentionReset(this.win_editor);
     
     // Hide menu
     this.win_editor.setMenu(null);
@@ -716,6 +721,9 @@ class PRDC_JSLAB_MAIN {
               }, 500);
             }
           });
+          if(data && data.top_level_script_finished) {
+            obj.requestScriptFinishedAttention();
+          }
           break;
         case 'set-win-size':
           obj.win_main.setSize(data[0], data[1]);
@@ -851,6 +859,75 @@ class PRDC_JSLAB_MAIN {
     this.win_main.webContents.session.setUSBProtectedClassesHandler(function() {
       return [];
     });
+  }
+
+  /**
+   * Clears any active taskbar attention flash when a tracked window regains focus.
+   * @param {BrowserWindow} win - Window that should clear the flash on focus.
+   */
+  bindAttentionReset(win) {
+    if(win && typeof win.on === 'function') {
+      win.on('focus', this.clearAttentionFlash.bind(this));
+    }
+  }
+
+  /**
+   * Returns all currently tracked application windows.
+   * @returns {BrowserWindow[]} Active application windows.
+   */
+  getAppWindows() {
+    var sub_windows = Object.values(this.sandbox_sub_wins || {});
+    return [this.win_main, this.win_editor, this.win_sandbox].concat(sub_windows)
+      .filter(function(win) {
+        return win && typeof win.isDestroyed === 'function' && !win.isDestroyed();
+      });
+  }
+
+  /**
+   * Reports whether any visible application window currently has focus.
+   * @returns {boolean} True when any application window is focused.
+   */
+  isAnyAppWindowFocused() {
+    return this.getAppWindows().some(function(win) {
+      return typeof win.isFocused === 'function' && win.isFocused();
+    });
+  }
+
+  /**
+   * Starts flashing the main taskbar button on Windows to indicate script completion.
+   * @returns {boolean} True when flashing was started.
+   */
+  requestScriptFinishedAttention() {
+    if(process.platform !== 'win32' || this.isAnyAppWindowFocused()) {
+      return false;
+    }
+    if(!this.win_main ||
+        typeof this.win_main.isDestroyed !== 'function' ||
+        this.win_main.isDestroyed() ||
+        typeof this.win_main.flashFrame !== 'function') {
+      return false;
+    }
+    this.attention_flash_active = true;
+    this.win_main.flashFrame(true);
+    return true;
+  }
+
+  /**
+   * Stops any active taskbar attention flash.
+   * @returns {boolean} True when flashing was cleared.
+   */
+  clearAttentionFlash() {
+    if(!this.attention_flash_active) {
+      return false;
+    }
+    this.attention_flash_active = false;
+    if(this.win_main &&
+        typeof this.win_main.isDestroyed === 'function' &&
+        !this.win_main.isDestroyed() &&
+        typeof this.win_main.flashFrame === 'function') {
+      this.win_main.flashFrame(false);
+    }
+    return true;
   }
   
   /**

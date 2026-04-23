@@ -9,7 +9,7 @@ const RUNTIME_SCOPE = typeof self === 'object' && self ? self : globalThis;
 const IS_WORKER_CONTEXT = !!(RUNTIME_SCOPE && RUNTIME_SCOPE.is_worker);
 
 if(!IS_WORKER_CONTEXT) {
-  var { ipcRenderer } = require('electron');
+  var { ipcRenderer, shell } = require('electron');
 }
 
 const { PRDC_JSLAB_FREECAD_LINK } = require('./freecad-link');
@@ -1008,6 +1008,18 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Plays the operating system beep sound.
+   * @returns {boolean} True when the beep request was dispatched.
+   */
+  beep() {
+    if(!this.is_worker && shell && typeof shell.beep === 'function') {
+      shell.beep();
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Sends an error message to be displayed in the main window.
    * @param {string} msg The error message to be displayed.
    */
@@ -1167,10 +1179,10 @@ class PRDC_JSLAB_ENV {
   /**
    * Notifies the main window that code evaluation has finished.
    */
-  codeEvaluated() {
+  codeEvaluated(data = {}) {
     if(!this.is_worker) {
-      ipcRenderer.send("MainWindow", "code-evaluated");
-      ipcRenderer.send("MainProcess", "code-evaluated");
+      ipcRenderer.send("MainWindow", "code-evaluated", data);
+      ipcRenderer.send("MainProcess", "code-evaluated", data);
     }
   }
 

@@ -52,6 +52,14 @@ class PRDC_JSLAB_LIB_BASIC {
     Object.defineProperty(this.jsl.context, 'cls', { configurable: true, get: this._clc });
 
     /**
+     * Plays the system beep sound.
+     * @name beep
+     * @kind function
+     * @memberof PRDC_JSLAB_LIB_BASIC
+     */
+    this.jsl.context.beep = this.beep.bind(this);
+
+    /**
      * Returns the current version of the JSLAB.
      * @name version
      * @kind member
@@ -207,6 +215,9 @@ class PRDC_JSLAB_LIB_BASIC {
       if(is_top_level_run && !force_run && this.jsl.inter.env.checkScriptDir(script_path)) {
         return;
       }
+    }
+    if(is_top_level_run) {
+      this.jsl.pending_top_level_script_finish = true;
     }
     return await this.jsl.inter.eval.runScript(script_path, lines, silent);
   }
@@ -976,6 +987,17 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.inter.env.clc();
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
+  }
+
+  /**
+   * Plays the operating system beep sound.
+   * @returns {boolean} True when the beep request was accepted.
+   */
+  beep() {
+    var out = this.jsl.inter.env.beep();
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    return out;
   }
 
   /**

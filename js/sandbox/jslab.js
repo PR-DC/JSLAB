@@ -38,6 +38,7 @@ class PRDC_JSLAB_LIB {
     this.last_script_path;
     this.last_script_lines;
     this.last_script_silent;
+    this.pending_top_level_script_finish = false;
     
     this.current_script;
     this.class_registry = {};
@@ -452,6 +453,7 @@ class PRDC_JSLAB_LIB {
     this.no_ans = false;
     this.stop_loop = false;
     this.no_stats = false;
+    this.pending_top_level_script_finish = false;
     this.env.resetStopLoop();
     this.env.setStatus('busy', this.lang.string(88));
   }
@@ -460,8 +462,10 @@ class PRDC_JSLAB_LIB {
    * Invoked after code evaluation to finalize the state and update the environment accordingly.
    */
   onEvaluated() {
+    var top_level_script_finished = this.pending_top_level_script_finish === true;
+    this.pending_top_level_script_finish = false;
     this.env.setWorkspace();
-    this.env.codeEvaluated();
+    this.env.codeEvaluated({ top_level_script_finished: top_level_script_finished });
     this.env.setStatus('ready', this.lang.string(87));
   }
 

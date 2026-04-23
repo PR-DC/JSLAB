@@ -104,6 +104,92 @@ tests.add('diary rejects invalid argument type and reports error', function(asse
   assert.equal(harness.jsl.ignore_output, true);
 }, { tags: ['unit', 'basic'] });
 
+function createBasicBeepHarness() {
+  var state = { beep_calls: 0 };
+  var jsl = {
+    no_ans: false,
+    ignore_output: false,
+    inter: {
+      env: {
+        beep: function() {
+          state.beep_calls += 1;
+          return true;
+        }
+      }
+    }
+  };
+
+  var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
+  basic.jsl = jsl;
+  return { basic, jsl, state };
+}
+
+tests.add('beep delegates to environment bridge and suppresses ans output', function(assert) {
+  var harness = createBasicBeepHarness();
+  var out = harness.basic.beep();
+
+  assert.equal(out, true);
+  assert.equal(harness.state.beep_calls, 1);
+  assert.equal(harness.jsl.no_ans, true);
+  assert.equal(harness.jsl.ignore_output, true);
+}, { tags: ['unit', 'basic'] });
+
+function createBasicRunHarness(options = {}) {
+  var run_calls = [];
+  var jsl = {
+    current_script: options.current_script || 'jslcmdwindow',
+    jsl_file_name: options.jsl_file_name || 'jslcmdwindow',
+    last_script_path: undefined,
+    last_script_lines: undefined,
+    last_script_silent: undefined,
+    pending_top_level_script_finish: false,
+    inter: {
+      env: {
+        pathIsAbsolute: function(file_path) {
+          return path.isAbsolute(file_path);
+        },
+        checkScriptDir: function() {
+          return false;
+        }
+      },
+      eval: {
+        runScript: async function(script_path, lines, silent) {
+          run_calls.push([script_path, lines, silent]);
+          return 'run-result';
+        }
+      }
+    }
+  };
+
+  var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
+  basic.jsl = jsl;
+  return { basic, jsl, run_calls };
+}
+
+tests.add('run marks absolute top-level scripts for finish attention', async function(assert) {
+  var harness = createBasicRunHarness();
+  var script_path = path.join('C:', 'temp', 'outer.jsl');
+
+  var out = await harness.basic.run(script_path, [1, 3], true);
+
+  assert.equal(out, 'run-result');
+  assert.equal(harness.jsl.last_script_path, script_path);
+  assert.deepEqual(harness.run_calls[0], [script_path, [1, 3], true]);
+  assert.equal(harness.jsl.pending_top_level_script_finish, true);
+}, { tags: ['unit', 'basic'] });
+
+tests.add('run leaves nested script executions without top-level finish attention', async function(assert) {
+  var harness = createBasicRunHarness({
+    current_script: path.join('C:', 'temp', 'parent.jsl'),
+    jsl_file_name: 'parent.jsl'
+  });
+  var script_path = path.join('C:', 'temp', 'child.jsl');
+
+  await harness.basic.run(script_path);
+
+  assert.equal(harness.jsl.pending_top_level_script_finish, false);
+}, { tags: ['unit', 'basic'] });
+
 function createBasicInstallModuleHarness(system_output = 'install ok') {
   var errors = [];
   var disp_calls = [];
