@@ -23,7 +23,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   /**
    * Opens an existing presentation in a new window and returns its context.
    * In the opened presentation, press Ctrl+S to toggle the slide controls.
-   * Press Ctrl+Alt+T to toggle the stopwatch overlay.
+   * Press Ctrl+T to toggle the stopwatch overlay.
    * When the stopwatch is visible, right-click it for Start, Stop, and Reset,
    * drag it to move it, and drag any corner to resize it.
    * @param {String} file_path - Absolute or relative path to the presentation directory.
@@ -33,6 +33,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   async openPresentation(file_path, type) {
     file_path = this._getPath('openPresentation', file_path);
     if(this._checkPresentation('editPresentation', file_path)) {
+      this._updatePresentationBackend(file_path);
       var obj = this;
       var name = this.jsl.inter.env.pathBaseName(file_path);
       if(type == 'standalone') {
@@ -57,6 +58,18 @@ class PRDC_JSLAB_LIB_PRESENTATION {
         });
       } else {
         context.document.getElementById('webview').src = url;
+        context.document.addEventListener('keydown', function(event) {
+          var key = event.key ? event.key.toLowerCase() : '';
+          if(event.ctrlKey && !event.altKey && !event.shiftKey &&
+              key === 's') {
+            event.preventDefault();
+            context.webview.send('data', { toggle_slide_nav: true });
+          } else if(event.ctrlKey && !event.altKey && !event.shiftKey &&
+              (event.code == 'KeyT' || key === 't')) {
+            event.preventDefault();
+            context.webview.send('data', { toggle_stopwatch: true });
+          }
+        });
         context.webview.addEventListener('ipc-message', (e) => {
           if(e.args[0].key !== undefined) {
             if(e.args[0].key == 'F11') {
@@ -75,7 +88,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   /**
    * Opens the presentation editor for the specified project and returns its context.
    * The preview uses the same runtime controls as openPresentation,
-   * including Ctrl+S for slide controls and Ctrl+Alt+T for the stopwatch.
+   * including Ctrl+S for slide controls and Ctrl+T for the stopwatch.
    * @async
    * @param {String} file_path - Absolute or relative path to the presentation directory.
    * @param {String} type - Type of presentation.

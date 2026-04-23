@@ -309,4 +309,90 @@ tests.add('editPresentation updates backend before starting preview server', asy
   });
 }, { tags: ['unit', 'presentation', 'async'] });
 
+tests.add('openPresentation updates backend before starting presentation server', async function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/open-pres';
+  var calls = [];
+  var keydown_handler;
+  var sent_messages = [];
+  var webview = {
+    src: '',
+    addEventListener: function() {},
+    send: function(channel, payload) {
+      sent_messages.push({ channel: channel, payload: payload });
+    }
+  };
+  var context = {
+    document: {
+      getElementById: function(id) {
+        if(id == 'webview') {
+          return webview;
+        }
+      },
+      addEventListener: function(type, handler) {
+        if(type == 'keydown') {
+          keydown_handler = handler;
+        }
+      }
+    },
+    webview: webview
+  };
+
+  harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._updatePresentationBackend = function(file_path) {
+    calls.push({ name: 'update', value: file_path });
+  };
+  harness.presentation._startPresentation = async function(exe_file) {
+    calls.push({ name: 'start', value: exe_file });
+    return 'http://127.0.0.1:1234/';
+  };
+  harness.presentation.jsl.inter.windows = {
+    open_windows: {
+      1: {
+        ready: Promise.resolve(),
+        context: context,
+        setTitle: function(title) {
+          calls.push({ name: 'title', value: title });
+        }
+      }
+    },
+    openWindow: function(file) {
+      calls.push({ name: 'open', value: file });
+      return 1;
+    }
+  };
+
+  await harness.presentation.openPresentation(pres_path);
+
+  assert.deepEqual(calls.slice(0, 3).map(function(call) {
+    return call.name;
+  }), ['update', 'start', 'open']);
+  assert.equal(calls[0].value, pres_path);
+  assert.ok(calls[1].value.endsWith(path.join('open-pres', 'open-pres.exe')));
+  assert.equal(webview.src, 'http://127.0.0.1:1234/');
+  assert.equal(typeof keydown_handler, 'function');
+  
+  keydown_handler({
+    ctrlKey: true,
+    altKey: false,
+    shiftKey: false,
+    code: 'KeyT',
+    key: 't',
+    preventDefault: function() {}
+  });
+  keydown_handler({
+    ctrlKey: true,
+    altKey: false,
+    shiftKey: false,
+    code: 'KeyS',
+    key: 's',
+    preventDefault: function() {}
+  });
+  
+  assert.deepEqual(sent_messages, [
+    { channel: 'data', payload: { toggle_stopwatch: true } },
+    { channel: 'data', payload: { toggle_slide_nav: true } }
+  ]);
+}, { tags: ['unit', 'presentation', 'async'] });
+
 exports.MODULE_TESTS = tests;

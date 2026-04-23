@@ -70,12 +70,14 @@ class PRDC_JSLAB_PRESENTATION {
     if(!this._validTransitions.has(this.transition)) this.transition = 'fade';
     
     document.addEventListener('keydown', (event) => {
-      if(event.ctrlKey && event.altKey && !event.shiftKey && event.key.toLowerCase() === 't') {
+      var key = event.key ? event.key.toLowerCase() : '';
+      if(event.ctrlKey && !event.altKey && !event.shiftKey &&
+          (event.code == 'KeyT' || key == 't')) {
         event.preventDefault();
         this.stopwatch.toggle();
         return;
       }
-      if(event.ctrlKey && event.key.toLowerCase() === 's'){
+      if(event.ctrlKey && key === 's'){
         event.preventDefault();
         this._toggleSlideNav();
       }
@@ -157,6 +159,10 @@ class PRDC_JSLAB_PRESENTATION {
         obj.setSlide(e.data.set);
       } else if(typeof e.data.show === 'number'){
         obj.showSlide(e.data.show);
+      } else if(e.data.toggle_slide_nav) {
+        obj._toggleSlideNav();
+      } else if(e.data.toggle_stopwatch) {
+        obj.stopwatch.toggle();
       }
     });
     
@@ -166,6 +172,10 @@ class PRDC_JSLAB_PRESENTATION {
           obj.setSlide(data.set);
         } else if(typeof data.show === 'number'){
           obj.showSlide(data.show);
+        } else if(data.toggle_slide_nav) {
+          obj._toggleSlideNav();
+        } else if(data.toggle_stopwatch) {
+          obj.stopwatch.toggle();
         }
       });
     
@@ -725,9 +735,11 @@ class PRDC_JSLAB_PRESENTATION_STOPWATCH {
         align-items: center;
         justify-content: center;
         color: #fff;
-        background: rgba(0, 0, 0, .65);
+        background: rgba(0, 0, 0, .72);
+        border: 1px solid rgba(255, 255, 255, .35);
         border-radius: 4px;
         box-sizing: border-box;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, .28);
         cursor: move;
         user-select: none;
         font-family: Arial, sans-serif;
