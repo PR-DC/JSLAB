@@ -273,6 +273,9 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes("customElements.define('plot-json'"));
   assert.ok(presentation_source.includes("customElements.define('scene-3d-json'"));
   assert.ok(presentation_source.includes('%presentation_config%'));
+  assert.ok(presentation_source.includes('class PRDC_JSLAB_PRESENTATION_STOPWATCH'));
+  assert.ok(presentation_source.includes("event.ctrlKey && event.altKey"));
+  assert.ok(presentation_source.includes("'contextmenu'"));
 
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB'));
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR'));

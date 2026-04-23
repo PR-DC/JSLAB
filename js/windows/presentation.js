@@ -55,6 +55,7 @@ class PRDC_JSLAB_PRESENTATION {
     document.head.appendChild(style);
     
     this._buildSlideNav();
+    this.stopwatch = new PRDC_JSLAB_PRESENTATION_STOPWATCH();
     
     this._validTransitions = new Set([
       'none', 'fade', 'zoom', 
@@ -69,6 +70,11 @@ class PRDC_JSLAB_PRESENTATION {
     if(!this._validTransitions.has(this.transition)) this.transition = 'fade';
     
     document.addEventListener('keydown', (event) => {
+      if(event.ctrlKey && event.altKey && !event.shiftKey && event.key.toLowerCase() === 't') {
+        event.preventDefault();
+        this.stopwatch.toggle();
+        return;
+      }
       if(event.ctrlKey && event.key.toLowerCase() === 's'){
         event.preventDefault();
         this._toggleSlideNav();
@@ -619,6 +625,376 @@ class PRDC_JSLAB_PRESENTATION {
       }
     }, { passive: true });
     slidesArea.addEventListener('pointercancel', () => { tracking = false; });
+  }
+}
+
+/**
+ * Class for presentation stopwatch overlay.
+ */
+class PRDC_JSLAB_PRESENTATION_STOPWATCH {
+  
+  /**
+   * Initializes a stopwatch overlay.
+   */
+  constructor() {
+    this.elapsed_ms = 0;
+    this.started_at = 0;
+    this.interval = null;
+    this.min_width = 80;
+    this.min_height = 36;
+    
+    this._build();
+    this._update();
+  }
+  
+  /**
+   * Starts counting elapsed time.
+   */
+  start() {
+    if(this.interval) return;
+    this.started_at = Date.now();
+    this.interval = setInterval(() => this._update(), 250);
+    this._update();
+  }
+  
+  /**
+   * Stops counting elapsed time.
+   */
+  stop() {
+    if(!this.interval) return;
+    this.elapsed_ms += Date.now() - this.started_at;
+    clearInterval(this.interval);
+    this.interval = null;
+    this._update();
+  }
+  
+  /**
+   * Resets elapsed time.
+   */
+  reset() {
+    this.elapsed_ms = 0;
+    if(this.interval) {
+      this.started_at = Date.now();
+    }
+    this._update();
+  }
+  
+  /**
+   * Shows stopwatch.
+   */
+  show() {
+    this.el.hidden = false;
+    this._fitText();
+  }
+  
+  /**
+   * Hides stopwatch.
+   */
+  hide() {
+    this.el.hidden = true;
+    this._hideMenu();
+  }
+  
+  /**
+   * Toggles stopwatch visibility.
+   */
+  toggle() {
+    if(this.el.hidden) {
+      this.show();
+    } else {
+      this.hide();
+    }
+  }
+  
+  /**
+   * Builds stopwatch DOM and events.
+   */
+  _build() {
+    var style = document.createElement('style');
+    style.textContent = `
+      #presentation-stopwatch {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        width: 116px;
+        height: 50px;
+        min-width: 80px;
+        min-height: 36px;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: rgba(0, 0, 0, .65);
+        border-radius: 4px;
+        box-sizing: border-box;
+        cursor: move;
+        user-select: none;
+        font-family: Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      #presentation-stopwatch[hidden] {
+        display: none;
+      }
+      #presentation-stopwatch .time {
+        pointer-events: none;
+      }
+      #presentation-stopwatch .resize-handle {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+      }
+      #presentation-stopwatch .resize-handle.nw {
+        top: -2px;
+        left: -2px;
+        cursor: nwse-resize;
+      }
+      #presentation-stopwatch .resize-handle.ne {
+        top: -2px;
+        right: -2px;
+        cursor: nesw-resize;
+      }
+      #presentation-stopwatch .resize-handle.sw {
+        bottom: -2px;
+        left: -2px;
+        cursor: nesw-resize;
+      }
+      #presentation-stopwatch .resize-handle.se {
+        right: -2px;
+        bottom: -2px;
+        cursor: nwse-resize;
+      }
+      #presentation-stopwatch-menu {
+        position: fixed;
+        z-index: 10001;
+        display: none;
+        min-width: 120px;
+        padding: 4px;
+        color: #1f1f1f;
+        background: #fdfdfd;
+        border: 1px solid #cfcfcf;
+        border-radius: 6px;
+        font: 13px "Segoe UI", Arial, sans-serif;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+        user-select: none;
+      }
+      #presentation-stopwatch-menu .item {
+        padding: 5px 26px 5px 12px;
+        border: 1px solid transparent;
+        border-radius: 3px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      #presentation-stopwatch-menu .item:hover {
+        background: #e5f3ff;
+        border-color: #c7e2ff;
+      }`;
+    document.head.appendChild(style);
+    
+    this.el = document.createElement('div');
+    this.el.id = 'presentation-stopwatch';
+    this.el.hidden = true;
+    this.el.innerHTML = `
+      <span class="time"></span>
+      <span class="resize-handle nw" data-corner="nw"></span>
+      <span class="resize-handle ne" data-corner="ne"></span>
+      <span class="resize-handle sw" data-corner="sw"></span>
+      <span class="resize-handle se" data-corner="se"></span>`;
+    this.time_el = this.el.querySelector('.time');
+    document.body.appendChild(this.el);
+    
+    this.menu = document.createElement('div');
+    this.menu.id = 'presentation-stopwatch-menu';
+    this.menu.innerHTML = `
+      <div class="item" data-action="start">Start</div>
+      <div class="item" data-action="stop">Stop</div>
+      <div class="item" data-action="reset">Reset</div>`;
+    document.body.appendChild(this.menu);
+    
+    this.el.addEventListener('pointerdown', (e) => this._onPointerDown(e));
+    this.el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._showMenu(e.clientX, e.clientY);
+    });
+    this.menu.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.menu.addEventListener('click', (e) => {
+      var item = e.target.closest('.item');
+      if(!item) return;
+      if(item.dataset.action == 'start') {
+        this.start();
+      } else if(item.dataset.action == 'stop') {
+        this.stop();
+      } else if(item.dataset.action == 'reset') {
+        this.reset();
+      }
+      this._hideMenu();
+    });
+    document.addEventListener('pointerdown', (e) => {
+      if(!this.menu.contains(e.target)) {
+        this._hideMenu();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if(e.key == 'Escape') {
+        this._hideMenu();
+      }
+    });
+    
+    this._fitText();
+  }
+  
+  /**
+   * Handles pointer down for drag or resize.
+   * @param {PointerEvent} e
+   */
+  _onPointerDown(e) {
+    if(e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    this._hideMenu();
+    
+    var corner = e.target.dataset ? e.target.dataset.corner : '';
+    if(corner) {
+      this._startResize(e, corner);
+    } else {
+      this._startDrag(e);
+    }
+  }
+  
+  /**
+   * Starts moving stopwatch.
+   * @param {PointerEvent} e
+   */
+  _startDrag(e) {
+    var rect = this.el.getBoundingClientRect();
+    var start_x = e.clientX;
+    var start_y = e.clientY;
+    
+    var move = (event) => {
+      this._applyBox(
+        rect.left + event.clientX - start_x,
+        rect.top + event.clientY - start_y,
+        rect.width,
+        rect.height
+      );
+    };
+    var up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+    };
+    
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  }
+  
+  /**
+   * Starts resizing stopwatch.
+   * @param {PointerEvent} e
+   * @param {String} corner
+   */
+  _startResize(e, corner) {
+    var rect = this.el.getBoundingClientRect();
+    var start_x = e.clientX;
+    var start_y = e.clientY;
+    
+    var move = (event) => {
+      var dx = event.clientX - start_x;
+      var dy = event.clientY - start_y;
+      var left = rect.left;
+      var top = rect.top;
+      var width = rect.width;
+      var height = rect.height;
+      
+      if(corner.includes('e')) {
+        width = rect.width + dx;
+      }
+      if(corner.includes('s')) {
+        height = rect.height + dy;
+      }
+      if(corner.includes('w')) {
+        width = rect.width - dx;
+        left = rect.right - Math.max(width, this.min_width);
+      }
+      if(corner.includes('n')) {
+        height = rect.height - dy;
+        top = rect.bottom - Math.max(height, this.min_height);
+      }
+      
+      this._applyBox(left, top, width, height);
+    };
+    var up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+    };
+    
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  }
+  
+  /**
+   * Applies clamped stopwatch box.
+   * @param {Number} left
+   * @param {Number} top
+   * @param {Number} width
+   * @param {Number} height
+   */
+  _applyBox(left, top, width, height) {
+    width = Math.max(this.min_width, Math.min(width, window.innerWidth));
+    height = Math.max(this.min_height, Math.min(height, window.innerHeight));
+    left = Math.max(0, Math.min(left, window.innerWidth - width));
+    top = Math.max(0, Math.min(top, window.innerHeight - height));
+    
+    this.el.style.left = left + 'px';
+    this.el.style.top = top + 'px';
+    this.el.style.width = width + 'px';
+    this.el.style.height = height + 'px';
+    this._fitText();
+  }
+  
+  /**
+   * Fits time text into current box.
+   */
+  _fitText() {
+    var rect = this.el.getBoundingClientRect();
+    var size = Math.floor(Math.min(rect.height * .62, rect.width * .22));
+    this.time_el.style.fontSize = Math.max(16, size) + 'px';
+  }
+  
+  /**
+   * Shows stopwatch context menu.
+   * @param {Number} x
+   * @param {Number} y
+   */
+  _showMenu(x, y) {
+    this.menu.style.display = 'block';
+    var rect = this.menu.getBoundingClientRect();
+    var left = Math.min(x, window.innerWidth - rect.width - 4);
+    var top = Math.min(y, window.innerHeight - rect.height - 4);
+    this.menu.style.left = Math.max(4, left) + 'px';
+    this.menu.style.top = Math.max(4, top) + 'px';
+  }
+  
+  /**
+   * Hides stopwatch context menu.
+   */
+  _hideMenu() {
+    this.menu.style.display = 'none';
+  }
+  
+  /**
+   * Updates displayed time.
+   */
+  _update() {
+    var elapsed = this.elapsed_ms;
+    if(this.interval) {
+      elapsed += Date.now() - this.started_at;
+    }
+    var total_seconds = Math.floor(elapsed / 1000);
+    var minutes = Math.floor(total_seconds / 60);
+    var seconds = total_seconds % 60;
+    this.time_el.textContent = String(minutes).padStart(2, '0') + ':' +
+      String(seconds).padStart(2, '0');
   }
 }
 

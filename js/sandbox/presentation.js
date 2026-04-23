@@ -22,6 +22,10 @@ class PRDC_JSLAB_LIB_PRESENTATION {
 
   /**
    * Opens an existing presentation in a new window and returns its context.
+   * In the opened presentation, press Ctrl+S to toggle the slide controls.
+   * Press Ctrl+Alt+T to toggle the stopwatch overlay.
+   * When the stopwatch is visible, right-click it for Start, Stop, and Reset,
+   * drag it to move it, and drag any corner to resize it.
    * @param {String} file_path - Absolute or relative path to the presentation directory.
    * @param {String} type - Type of presentation.
    * @returns {Promise<Window>} Resolves to the window context of the opened presentation.
@@ -70,6 +74,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   
   /**
    * Opens the presentation editor for the specified project and returns its context.
+   * The preview uses the same runtime controls as openPresentation,
+   * including Ctrl+S for slide controls and Ctrl+Alt+T for the stopwatch.
    * @async
    * @param {String} file_path - Absolute or relative path to the presentation directory.
    * @param {String} type - Type of presentation.
@@ -78,6 +84,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   async editPresentation(file_path, type) {
     file_path = this._getPath('editPresentation', file_path);
     if(this._checkPresentation('editPresentation', file_path)) {
+      this._updatePresentationBackend(file_path);
       var name = this.jsl.inter.env.pathBaseName(file_path);
       if(type == 'standalone') {
         var url = this.jsl.inter.env.pathJoin(file_path, 'index.html')
@@ -151,26 +158,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'main.css'), '');
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'main.js'), '');
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/config.json'), JSON.stringify(presentation_config, false, 2));
-    var presentation_language_strings = {
-      "315": this.jsl.inter.lang.currentString(315),
-      "316": this.jsl.inter.lang.currentString(316),
-      "317": this.jsl.inter.lang.currentString(317),
-      "318": this.jsl.inter.lang.currentString(318),
-      "363": this.jsl.inter.lang.currentString(363),
-    };
-    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/globals.js'), `
-window._standalone = window.location.protocol == 'file:';
-window.language = {
-  currentString: function(id) {
-    var strings = ${JSON.stringify(presentation_language_strings)};
-    var key = String(id);
-    if(Object.prototype.hasOwnProperty.call(strings, key)) {
-      return strings[key];
-    }
-    return '';
-  }
-};
-    `);
+    this._writePresentationGlobals(file_path);
     
     var presentation_scripts = '';
     var presentation_stylesheets = '';
@@ -414,6 +402,66 @@ window.language = {
       plot_div.parentNode.replaceChild(img, plot_div);
       await this.jsl.inter.waitMSeconds(1);
     }
+  }
+
+  /**
+   * Updates generated presentation backend files in an existing presentation.
+   * @param {String} file_path - Path to presentation directory.
+   */
+  _updatePresentationBackend(file_path) {
+    var name = this.jsl.inter.env.pathBaseName(file_path);
+    var config_file = this.jsl.inter.env.pathJoin(file_path, 'res/internal/config.json');
+    var presentation_config = {
+      "jslab_version": this.jsl.context.version,
+      "slide_width": 1920,
+      "slide_height": 1080,
+    };
+    
+    this.jsl.inter.env.makeDirectory(this.jsl.inter.env.pathJoin(file_path, 'res/'));
+    this.jsl.inter.env.makeDirectory(this.jsl.inter.env.pathJoin(file_path, 'res/internal/'));
+    
+    if(this.jsl.inter.file_system.existFile(config_file)) {
+      presentation_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file).toString());
+      presentation_config.jslab_version = this.jsl.context.version;
+    }
+    
+    var js = this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/presentation.js')).toString();
+    js = js.replace('%presentation_config%', JSON.stringify(presentation_config, false, 2));
+    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.js'), js);
+    this.jsl.inter.file_system.writeFile(config_file, JSON.stringify(presentation_config, false, 2));
+    this._writePresentationGlobals(file_path);
+    
+    this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/portable_server/portable_server.exe'),
+      this.jsl.inter.env.pathJoin(file_path, name + '.exe'));
+    this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'css/presentation.css'),
+      this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.css'));
+  }
+  
+  /**
+   * Writes globals required by generated presentation runtime files.
+   * @param {String} file_path - Path to presentation directory.
+   */
+  _writePresentationGlobals(file_path) {
+    var presentation_language_strings = {
+      "315": this.jsl.inter.lang.currentString(315),
+      "316": this.jsl.inter.lang.currentString(316),
+      "317": this.jsl.inter.lang.currentString(317),
+      "318": this.jsl.inter.lang.currentString(318),
+      "363": this.jsl.inter.lang.currentString(363),
+    };
+    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/globals.js'), `
+window._standalone = window.location.protocol == 'file:';
+window.language = {
+  currentString: function(id) {
+    var strings = ${JSON.stringify(presentation_language_strings)};
+    var key = String(id);
+    if(Object.prototype.hasOwnProperty.call(strings, key)) {
+      return strings[key];
+    }
+    return '';
+  }
+};
+    `);
   }
   
   /**

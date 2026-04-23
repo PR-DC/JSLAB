@@ -9143,6 +9143,10 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the opened presentation.
 
 \noindent Opens an existing presentation in a new window and returns its context.
+In the opened presentation, press Ctrl+S to toggle the slide controls.
+Press Ctrl+Alt+T to toggle the stopwatch overlay.
+When the stopwatch is visible, right-click it for Start, Stop, and Reset,
+drag it to move it, and drag any corner to resize it.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{editPresentation(file\_path, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9157,6 +9161,8 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the editor window.
 
 \noindent Opens the presentation editor for the specified project and returns its context.
+The preview uses the same runtime controls as openPresentation,
+including Ctrl+S for slide controls and Ctrl+Alt+T for the stopwatch.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{createPresentation(file\_path, [opts\_in], [open\_editor])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

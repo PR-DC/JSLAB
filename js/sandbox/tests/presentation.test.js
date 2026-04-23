@@ -25,6 +25,7 @@ function withTempDir(fn) {
 function createPresentationHarness() {
   var errors = [];
   var write_calls = [];
+  var copy_calls = [];
   var spawn_calls = [];
   var existing_files = new Set();
   var last_child = null;
@@ -80,7 +81,8 @@ function createPresentationHarness() {
           write_calls.push({ file_path: file_path, content: content });
           return true;
         },
-        copyFile: function() {
+        copyFile: function(source, destination) {
+          copy_calls.push({ source: source, destination: destination });
           return true;
         },
         copyFolder: function() {
@@ -97,6 +99,7 @@ function createPresentationHarness() {
     presentation,
     errors,
     write_calls,
+    copy_calls,
     spawn_calls,
     setExistingFiles: function(list) {
       existing_files = new Set(list);
@@ -189,5 +192,121 @@ tests.add('createPresentation writes globals.js with language provider for windo
     assert.ok(globals_write.content.includes('"363":"LANG_363"'));
   });
 }, { tags: ['unit', 'presentation'] });
+
+tests.add('_updatePresentationBackend refreshes generated backend files', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'old-pres');
+    var config_path = path.join(pres_path, 'res', 'internal', 'config.json');
+    fs.mkdirSync(path.dirname(config_path), { recursive: true });
+    fs.writeFileSync(config_path, JSON.stringify({
+      jslab_version: 'old-version',
+      slide_width: 800,
+      slide_height: 600,
+      custom: true
+    }), 'utf8');
+    harness.setExistingFiles([config_path]);
+
+    harness.presentation._updatePresentationBackend(pres_path);
+
+    var presentation_js_path = path.join(pres_path, 'res', 'internal', 'presentation.js');
+    var presentation_js_write = harness.write_calls.find(function(entry) {
+      return entry.file_path === presentation_js_path;
+    });
+    var config_write = harness.write_calls.find(function(entry) {
+      return entry.file_path === config_path;
+    });
+    var globals_write = harness.write_calls.find(function(entry) {
+      return entry.file_path === path.join(pres_path, 'res', 'internal', 'globals.js');
+    });
+
+    assert.ok(!!presentation_js_write);
+    assert.ok(!presentation_js_write.content.includes('%presentation_config%'));
+    assert.ok(presentation_js_write.content.includes('"jslab_version": "test-version"'));
+    assert.ok(presentation_js_write.content.includes('"slide_width": 800'));
+    assert.ok(!!config_write);
+    assert.deepEqual(JSON.parse(config_write.content), {
+      jslab_version: 'test-version',
+      slide_width: 800,
+      slide_height: 600,
+      custom: true
+    });
+    assert.ok(!!globals_write);
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.source.endsWith(path.join('lib', 'portable_server', 'portable_server.exe')) &&
+        entry.destination === path.join(pres_path, 'old-pres.exe');
+    }));
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.source.endsWith(path.join('css', 'presentation.css')) &&
+        entry.destination === path.join(pres_path, 'res', 'internal', 'presentation.css');
+    }));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('editPresentation updates backend before starting preview server', async function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/edit-pres';
+  var calls = [];
+  var set_path_calls = [];
+  var context = {
+    presentation_editor: {
+      setPath: function(file_path, url) {
+        set_path_calls.push({ file_path: file_path, url: url });
+      }
+    },
+    preview: {
+      addEventListener: function() {}
+    },
+    document: {
+      body: {
+        classList: {
+          add: function() {},
+          remove: function() {}
+        }
+      },
+      addEventListener: function() {}
+    }
+  };
+
+  harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._updatePresentationBackend = function(file_path) {
+    calls.push({ name: 'update', value: file_path });
+  };
+  harness.presentation._startPresentation = async function(exe_file) {
+    calls.push({ name: 'start', value: exe_file });
+    return 'http://127.0.0.1:1234/';
+  };
+  harness.presentation.jsl.inter.non_blocking = {
+    waitMSeconds: async function() {}
+  };
+  harness.presentation.jsl.inter.windows = {
+    open_windows: {
+      1: {
+        ready: Promise.resolve(),
+        context: context,
+        setFullscreen: function() {},
+        setTitle: function(title) {
+          calls.push({ name: 'title', value: title });
+        }
+      }
+    },
+    openWindow: function(file) {
+      calls.push({ name: 'open', value: file });
+      return 1;
+    }
+  };
+
+  await harness.presentation.editPresentation(pres_path);
+
+  assert.deepEqual(calls.slice(0, 3).map(function(call) {
+    return call.name;
+  }), ['update', 'start', 'open']);
+  assert.equal(calls[0].value, pres_path);
+  assert.ok(calls[1].value.endsWith(path.join('edit-pres', 'edit-pres.exe')));
+  assert.deepEqual(set_path_calls[0], {
+    file_path: pres_path,
+    url: 'http://127.0.0.1:1234/'
+  });
+}, { tags: ['unit', 'presentation', 'async'] });
 
 exports.MODULE_TESTS = tests;
