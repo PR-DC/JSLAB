@@ -246,7 +246,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.current_slide = 0;
     this.total_slides = 0;
     this.pending_slide_after_reload = undefined;
-    this.thumb_worker_count = 4;
+    this.thumb_worker_count = 2;
     this.thumb_workers = [];
     this.thumb_ready = false;
     this.thumb_render_token = 0;

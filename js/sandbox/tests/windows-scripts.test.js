@@ -315,7 +315,7 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(editor_source.includes('renderSlideThumbnails'));
   assert.ok(editor_source.includes('capturePage()'));
   assert.ok(editor_source.includes("document.getElementById('thumbnail-preview')"));
-  assert.ok(editor_source.includes('thumb_worker_count = 4'));
+  assert.ok(editor_source.includes('thumb_worker_count = 2'));
   assert.ok(editor_source.includes('initThumbnailWorkers()'));
   assert.ok(editor_source.includes('getReadyThumbnailWorkers()'));
   assert.ok(editor_source.includes('show-presentation-editor-slide-context-menu'));

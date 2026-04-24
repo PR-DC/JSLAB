@@ -13,6 +13,7 @@ if(has_node) {
 }
 
 var is_iframe = window.parent != window;
+var is_lazy = new URLSearchParams(window.location.search).has('lazy');
 
 /**
  * Stores file buffer.
@@ -702,6 +703,9 @@ class PRDC_JSLAB_PRESENTATION {
    * Schedules background preload of the remaining slide deck while the current slide is shown.
    */
   _scheduleNextSlidePreload() {
+    if(is_lazy) {
+      return;
+    }
     this._next_slide_preload_token += 1;
     var token = this._next_slide_preload_token;
     var order = this._getPreloadOrder();
