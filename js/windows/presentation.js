@@ -13,7 +13,6 @@ if(has_node) {
 }
 
 var is_iframe = window.parent != window;
-var is_lazy = new URLSearchParams(location.search).has('lazy');
 
 /**
  * Stores file buffer.
@@ -36,12 +35,17 @@ class PRDC_JSLAB_PRESENTATION {
     var obj = this;
     
     this.config = %presentation_config%;
-    this.slides = document.querySelectorAll('slide');
     this.slides_cont = document.getElementById('slides-cont');
+    this._normalizeLayoutHelpers(this.slides_cont);
+    this.slides = document.querySelectorAll('slide');
     this.current_slide = -1;
     this.total_slides = this.slides.length;
     this._interpolated = new WeakSet();
     this._animating = false;
+    this._resource_promises = {};
+    this._failed_resources = new Set();
+    this._next_slide_preload_token = 0;
+    this._next_slide_preload_job = undefined;
 
     const style = document.createElement('style');
     style.textContent = `
@@ -71,8 +75,8 @@ class PRDC_JSLAB_PRESENTATION {
     
     document.addEventListener('keydown', (event) => {
       var key = event.key ? event.key.toLowerCase() : '';
-      if(event.ctrlKey && !event.altKey && !event.shiftKey &&
-          (event.code == 'KeyT' || key == 't')) {
+      if(!event.ctrlKey && !event.altKey && !event.shiftKey &&
+          event.key == 'F9') {
         event.preventDefault();
         this.stopwatch.toggle();
         return;
@@ -136,12 +140,17 @@ class PRDC_JSLAB_PRESENTATION {
       setTimeout(() => (wheelGuard = false), WHEEL_DEBOUNCE);
     }, { passive: true });
 
-    window.addEventListener('DOMContentLoaded', () => {
+    var init_slide = () => {
       var m = window.location.hash.match(/^#s(\d+)$/);
       var wanted = m ? parseInt(m[1], 10) - 1 : 
         this.current_slide > -1 ? this.current_slide : 0;
       this.setSlide(wanted);
-    })
+    };
+    if(document.readyState == 'loading') {
+      window.addEventListener('DOMContentLoaded', init_slide, { once: true });
+    } else {
+      init_slide();
+    }
 
     window.addEventListener('hashchange', () => {
       const m = location.hash.match(/^#s(\d+)$/);
@@ -207,9 +216,6 @@ class PRDC_JSLAB_PRESENTATION {
     }
     
     this._attachGestureControl();
-    if(!is_lazy && window.MathJax && MathJax.Hub && typeof MathJax.Hub.Queue === "function") {
-      MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-    }
   }
 
   /**
@@ -238,6 +244,7 @@ class PRDC_JSLAB_PRESENTATION {
       this._interpolateSlide(active);
       this._interpolated.add(active);
     }
+    this._ensureSlideMath(active);
     
     this._updateHash(index);
     if(has_node) {
@@ -246,9 +253,8 @@ class PRDC_JSLAB_PRESENTATION {
     if(is_iframe) {
       window.parent.postMessage({ slide: index }, '*');
     }
-    if(is_lazy) {
-      this._lazyRender(this.slides[index]);
-    }
+    this._lazyRender(this.slides[index]);
+    this._scheduleNextSlidePreload();
   }
 
   /**
@@ -310,6 +316,7 @@ class PRDC_JSLAB_PRESENTATION {
       this._interpolateSlide(incoming);
       this._interpolated.add(incoming);
     }
+    this._ensureSlideMath(incoming);
     
     this._updateHash(index);
     if(has_node) {
@@ -318,9 +325,8 @@ class PRDC_JSLAB_PRESENTATION {
     if(is_iframe) {
       window.parent.postMessage({ slide: index }, '*');
     }
-    if(is_lazy) {
-      this._lazyRender(this.slides[index]);
-    }
+    this._lazyRender(this.slides[index]);
+    this._scheduleNextSlidePreload();
   }
   
   /**
@@ -359,6 +365,415 @@ class PRDC_JSLAB_PRESENTATION {
    */
   slideCount() {
     return this.total_slides;
+  }
+
+  /**
+   * Refreshes cached slide references after editor-side DOM updates.
+   */
+  _refreshSlides() {
+    this.slides = document.querySelectorAll('slide');
+    this.total_slides = this.slides.length;
+    this._updateSlideNav();
+  }
+
+  /**
+   * Returns whether a custom slide element should render immediately.
+   * @param {HTMLElement} el
+   * @returns {Boolean}
+   */
+  _shouldRenderElementNow(el) {
+    var slide = el ? el.closest('slide') : undefined;
+    return !slide || slide.classList.contains('active');
+  }
+
+  /**
+   * Resolves a generated presentation resource URL.
+   * @param {String} rel_path
+   * @returns {String}
+   */
+  _resourceUrl(rel_path) {
+    return new URL(rel_path, window.location.href).href;
+  }
+
+  /**
+   * Returns whether a generated presentation resource is available.
+   * Older presentations may not define these flags, so they default to true.
+   * @param {String} key
+   * @returns {Boolean}
+   */
+  _hasPresentationResource(key) {
+    if(window.presentation_resources &&
+        Object.prototype.hasOwnProperty.call(window.presentation_resources, key)) {
+      return !!window.presentation_resources[key];
+    }
+    return true;
+  }
+
+  /**
+   * Loads a script resource once and caches the promise.
+   * @param {String} key
+   * @param {String} rel_path
+   * @returns {Promise<Boolean>}
+   */
+  async _loadScriptOnce(key, rel_path) {
+    if(this._failed_resources.has(key)) {
+      return false;
+    }
+    if(this._resource_promises[key]) {
+      return this._resource_promises[key];
+    }
+    this._resource_promises[key] = new Promise((resolve) => {
+      var script = document.createElement('script');
+      script.src = this._resourceUrl(rel_path);
+      script.async = true;
+      script.onload = function() {
+        resolve(true);
+      };
+      script.onerror = () => {
+        this._failed_resources.add(key);
+        resolve(false);
+      };
+      document.head.appendChild(script);
+    });
+    return this._resource_promises[key];
+  }
+
+  /**
+   * Loads the first available script from the supplied candidate paths.
+   * @param {String} key
+   * @param {String[]} rel_paths
+   * @returns {Promise<Boolean>}
+   */
+  async _loadScriptCandidatesOnce(key, rel_paths) {
+    if(this._failed_resources.has(key)) {
+      return false;
+    }
+    if(this._resource_promises[key]) {
+      return this._resource_promises[key];
+    }
+    this._resource_promises[key] = (async() => {
+      for(var rel_path of rel_paths) {
+        var loaded = await new Promise((resolve) => {
+          var script = document.createElement('script');
+          script.src = this._resourceUrl(rel_path);
+          script.async = true;
+          script.onload = function() {
+            resolve(true);
+          };
+          script.onerror = function() {
+            script.remove();
+            resolve(false);
+          };
+          document.head.appendChild(script);
+        });
+        if(loaded) {
+          return true;
+        }
+      }
+      this._failed_resources.add(key);
+      return false;
+    })();
+    return this._resource_promises[key];
+  }
+
+  /**
+   * Loads PDF.js on demand.
+   * @returns {Promise<Boolean>}
+   */
+  async ensurePdfJs() {
+    if(!this._hasPresentationResource('pdfjs')) return false;
+    if(window.pdfjsLib) {
+      if(pdfjsLib.GlobalWorkerOptions) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          this._resourceUrl('./res/pdf.worker.min.js');
+      }
+      return true;
+    }
+    var loaded = await this._loadScriptOnce('pdfjs', './res/pdf.min.js');
+    if(loaded && window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        this._resourceUrl('./res/pdf.worker.min.js');
+    }
+    return !!window.pdfjsLib;
+  }
+
+  /**
+   * Loads Plotly on demand.
+   * @returns {Promise<Boolean>}
+   */
+  async ensurePlotly() {
+    if(!this._hasPresentationResource('plotly')) return false;
+    if(window.Plotly) return true;
+    await this._loadScriptCandidatesOnce('plotly', [
+      './res/plotly-3.3.0.min.js',
+      './res/plotly-2.24.2.min.js'
+    ]);
+    return !!window.Plotly;
+  }
+
+  /**
+   * Loads MathJax on demand.
+   * @returns {Promise<Boolean>}
+   */
+  async ensureMathJax() {
+    if(!this._hasPresentationResource('mathjax')) return false;
+    if(window.MathJax && typeof MathJax.typesetPromise == 'function') {
+      if(MathJax.startup && MathJax.startup.promise &&
+          typeof MathJax.startup.promise.then == 'function') {
+        await MathJax.startup.promise;
+      }
+      return true;
+    }
+    var config_loaded = await this._loadScriptOnce('mathjax-config',
+      './res/mathjax-config.js');
+    if(!config_loaded) return false;
+    var mathjax_loaded = await this._loadScriptCandidatesOnce('mathjax-runtime', [
+      './res/MathJax-3.2.0/tex-mml-chtml.js',
+      './res/tex-mml-chtml-3.2.0/tex-mml-chtml-3.2.0.js'
+    ]);
+    if(!mathjax_loaded || !window.MathJax) {
+      return false;
+    }
+    if(MathJax.startup && MathJax.startup.promise &&
+        typeof MathJax.startup.promise.then == 'function') {
+      await MathJax.startup.promise;
+    }
+    return typeof MathJax.typesetPromise == 'function';
+  }
+
+  /**
+   * Loads THREE on demand for non-standalone presentations.
+   * @returns {Promise<Boolean>}
+   */
+  async ensureThree() {
+    if(!this._hasPresentationResource('three')) return false;
+    if(window.THREE) return true;
+    if(window._standalone) return false;
+    if(this._failed_resources.has('three')) {
+      return false;
+    }
+    if(!this._resource_promises.three) {
+      this._resource_promises.three = import(
+        this._resourceUrl('./res/three.js-r162/build/three.module.js')
+      ).then((THREE) => {
+        window.THREE = THREE;
+        return true;
+      }).catch((err) => {
+        this._failed_resources.add('three');
+        console.error(language.currentString(360), err);
+        return false;
+      });
+    }
+    return this._resource_promises.three;
+  }
+
+  /**
+   * Returns whether the slide likely contains LaTeX markup.
+   * @param {HTMLElement} slide
+   * @returns {Boolean}
+   */
+  _slideMayContainMath(slide) {
+    if(!slide) return false;
+    var html = slide.innerHTML || '';
+    return html.includes('\\(') ||
+      html.includes('\\[') ||
+      html.includes('$$') ||
+      /(^|[^\\])\$[^$\s]/.test(html) ||
+      html.includes('\\begin{');
+  }
+
+  /**
+   * Starts loading regular slide assets in the background.
+   * @param {HTMLElement} slide
+   */
+  _primeSlideAssets(slide) {
+    if(!slide) return;
+    slide.querySelectorAll('img').forEach((img) => {
+      if(img.loading == 'lazy') {
+        img.loading = 'eager';
+      }
+      if(typeof img.decode == 'function' && img.complete && img.naturalWidth !== 0) {
+        img.decode().catch(function() {});
+      }
+    });
+    slide.querySelectorAll('video').forEach((video) => {
+      if(video.preload == 'none') {
+        video.preload = 'auto';
+      }
+      try {
+        video.load();
+      } catch(err) {}
+    });
+  }
+
+  /**
+   * Preloads a slide in the background so navigation can be instant later.
+   * @param {Number} index
+   * @param {Number} token
+   * @returns {Promise<Boolean>}
+   */
+  async _preloadSlide(index, token = this._next_slide_preload_token) {
+    if(index < 0 || index >= this.slides.length) return false;
+    var slide = this.slides[index];
+    if(!slide || slide._preloaded) return true;
+    if(slide._preload_promise) return slide._preload_promise;
+    slide._preload_promise = (async() => {
+      this._primeSlideAssets(slide);
+      await this._lazyRender(slide);
+      await this._waitForSlideAssets(slide);
+      await new Promise(resolve => {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(resolve);
+        });
+      });
+      slide._preloaded = true;
+      return true;
+    })().catch(function() {
+      return false;
+    }).finally(() => {
+      slide._preload_promise = null;
+    });
+    return slide._preload_promise;
+  }
+
+  /**
+   * Returns the background preload order, starting from the next slide.
+   * @returns {Number[]}
+   */
+  _getPreloadOrder() {
+    var order = [];
+    if(this.current_slide < 0 || this.total_slides <= 1) {
+      return order;
+    }
+    for(var offset = 1; offset < this.total_slides; offset++) {
+      order.push((this.current_slide + offset) % this.total_slides);
+    }
+    return order;
+  }
+
+  /**
+   * Cancels any scheduled background preload job.
+   */
+  _cancelScheduledPreloadJob() {
+    if(this._next_slide_preload_job === undefined) {
+      return;
+    }
+    if(typeof cancelIdleCallback == 'function') {
+      cancelIdleCallback(this._next_slide_preload_job);
+    } else {
+      clearTimeout(this._next_slide_preload_job);
+    }
+    this._next_slide_preload_job = undefined;
+  }
+
+  /**
+   * Schedules one background preload step without blocking current slide display.
+   * @param {Number[]} order
+   * @param {Number} token
+   * @param {Number} position
+   */
+  _schedulePreloadStep(order, token, position) {
+    if(position >= order.length) {
+      return;
+    }
+    var run = async() => {
+      this._next_slide_preload_job = undefined;
+      if(token != this._next_slide_preload_token) {
+        return;
+      }
+      await this._preloadSlide(order[position], token);
+      if(token != this._next_slide_preload_token) {
+        return;
+      }
+      this._schedulePreloadStep(order, token, position + 1);
+    };
+    if(typeof requestIdleCallback == 'function') {
+      this._next_slide_preload_job = requestIdleCallback(function() {
+        void run();
+      }, { timeout: position === 0 ? 120 : 250 });
+    } else {
+      this._next_slide_preload_job = setTimeout(function() {
+        void run();
+      }, position === 0 ? 60 : 120);
+    }
+  }
+
+  /**
+   * Schedules background preload of the remaining slide deck while the current slide is shown.
+   */
+  _scheduleNextSlidePreload() {
+    this._next_slide_preload_token += 1;
+    var token = this._next_slide_preload_token;
+    var order = this._getPreloadOrder();
+    this._cancelScheduledPreloadJob();
+    if(!order.length) {
+      return;
+    }
+    this._schedulePreloadStep(order, token, 0);
+  }
+
+  /**
+   * Marks legacy HTML layout helpers without affecting SVG <line> elements.
+   * @param {HTMLElement} root
+   */
+  _normalizeLayoutHelpers(root) {
+    if(!root || typeof root.querySelectorAll !== 'function') return;
+    var html_namespace = 'http://www.w3.org/1999/xhtml';
+    root.querySelectorAll('line').forEach(el => {
+      if(el.namespaceURI === html_namespace) {
+        el.classList.add('presentation-line');
+      }
+    });
+  }
+
+  /**
+   * Parses slide HTML into a slide element.
+   * @param {String} slide_html
+   * @returns {HTMLElement|null}
+   */
+  _parseSlideHtml(slide_html) {
+    var wrap = document.createElement('div');
+    wrap.innerHTML = String(slide_html).trim();
+    this._normalizeLayoutHelpers(wrap);
+    return wrap.querySelector('slide');
+  }
+
+  /**
+   * Replaces a single slide in-place without reloading the document.
+   * @param {Number} index
+   * @param {String} slide_html
+   * @returns {Number}
+   */
+  replaceSlide(index, slide_html) {
+    if(index < 0 || index >= this.slides.length) return this.current_slide;
+    var slide = this._parseSlideHtml(slide_html);
+    if(!slide) return this.current_slide;
+    if(this._animating) this._stopAllAnimations();
+    this.slides[index].replaceWith(slide);
+    this._interpolated = new WeakSet();
+    this._refreshSlides();
+    this.current_slide = -1;
+    this.setSlide(Math.max(0, Math.min(index, this.total_slides - 1)));
+    return this.current_slide;
+  }
+
+  /**
+   * Replaces the full slide list in-place without reloading the document.
+   * @param {String} slides_html
+   * @param {Number} active_index
+   * @returns {Number}
+   */
+  replaceSlides(slides_html, active_index) {
+    if(this._animating) this._stopAllAnimations();
+    this.slides_cont.innerHTML = String(slides_html);
+    this._normalizeLayoutHelpers(this.slides_cont);
+    this._interpolated = new WeakSet();
+    this._refreshSlides();
+    this.current_slide = -1;
+    if(this.total_slides) {
+      this.setSlide(Math.max(0, Math.min(active_index, this.total_slides - 1)));
+    }
+    return this.current_slide;
   }
   
   /**
@@ -460,23 +875,188 @@ class PRDC_JSLAB_PRESENTATION {
   }
 
   /**
+   * Ensures LaTeX on the supplied slide is typeset once.
+   * @param {HTMLElement} slide
+   * @returns {Promise<void>}
+   */
+  async _ensureSlideMath(slide) {
+    if(!slide || slide._math_typeset) return;
+    if(slide._math_typeset_promise) return slide._math_typeset_promise;
+    slide._math_typeset_promise = this.ensureMathJax()
+      .then((ready) => {
+        if(ready) {
+          return this._typesetMath(slide);
+        }
+      })
+      .then(() => {
+        slide._math_typeset = true;
+      })
+      .finally(() => {
+        slide._math_typeset_promise = null;
+      });
+    return slide._math_typeset_promise;
+  }
+
+  /**
+   * Typesets LaTeX with the generated MathJax 3 runtime.
+   * @param {HTMLElement} root
+   * @returns {Promise<void>}
+   */
+  async _typesetMath(root) {
+    if(!window.MathJax || typeof MathJax.typesetPromise !== 'function') return;
+    if(MathJax.startup && MathJax.startup.promise &&
+        typeof MathJax.startup.promise.then === 'function') {
+      await MathJax.startup.promise;
+    }
+    await MathJax.typesetPromise(root ? [root] : undefined);
+  }
+
+  /**
    * Lazy-render MathJax, <img-pdf> and <plot-json> elements that
    * live inside the currently visible slide.
    * @param {HTMLElement} slide – the active <slide> element
    */
-  _lazyRender(slide) {
+  async _lazyRender(slide) {
     if(!slide) return;
+    var tasks = [];
     slide.querySelectorAll('img-pdf, plot-json, scene-3d-json').forEach(el => {
-      if (el._lazyRendered) return;
-      if (typeof el._render === 'function') {
-        el._lazyRendered = true;
-        el._render();
+      if(typeof el._render !== 'function') return;
+      el._lazyRendered = true;
+      if(el._render_promise) {
+        tasks.push(Promise.resolve(el._render_promise));
+      } else if(!el._finished_loading) {
+        tasks.push(Promise.resolve(el._render()));
       }
     });
+    tasks.push(this._ensureSlideMath(slide));
+    await Promise.allSettled(tasks);
+  }
 
-    if(!is_lazy && window.MathJax && typeof MathJax.typesetPromise === 'function') {
-      MathJax.typesetPromise();
+  /**
+   * Waits for regular slide assets such as images, fonts, and videos.
+   * @param {HTMLElement} slide
+   * @returns {Promise<void>}
+   */
+  async _waitForSlideAssets(slide) {
+    if(!slide) return;
+
+    var tasks = [];
+
+    if(document.fonts && typeof document.fonts.ready == 'object') {
+      tasks.push(document.fonts.ready);
     }
+
+    slide.querySelectorAll('img').forEach((img) => {
+      if(img.complete && img.naturalWidth !== 0) {
+        return;
+      }
+      tasks.push(new Promise((resolve) => {
+        var done = function() {
+          img.removeEventListener('load', done);
+          img.removeEventListener('error', done);
+          resolve();
+        };
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+      }));
+    });
+
+    slide.querySelectorAll('video').forEach((video) => {
+      if(video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        return;
+      }
+      tasks.push(new Promise((resolve) => {
+        var done = function() {
+          video.removeEventListener('loadeddata', done);
+          video.removeEventListener('error', done);
+          resolve();
+        };
+        video.addEventListener('loadeddata', done, { once: true });
+        video.addEventListener('error', done, { once: true });
+      }));
+    });
+
+    if(tasks.length) {
+      await Promise.allSettled(tasks);
+    }
+  }
+
+  /**
+   * Returns whether the slide still has pending async render work.
+   * @param {HTMLElement} slide
+   * @returns {Boolean}
+   */
+  _isSlideReadyForCapture(slide) {
+    if(!slide) return false;
+
+    if(document.fonts && document.fonts.status &&
+        document.fonts.status != 'loaded') {
+      return false;
+    }
+
+    for(var el of slide.querySelectorAll('img-pdf, plot-json, scene-3d-json')) {
+      if(el._render_promise || !el._finished_loading) {
+        return false;
+      }
+    }
+
+    for(var img of slide.querySelectorAll('img')) {
+      if(!img.complete || img.naturalWidth === 0) {
+        return false;
+      }
+    }
+
+    for(var video of slide.querySelectorAll('video')) {
+      if(video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Waits until the slide and its async content are stable enough to capture.
+   * @param {HTMLElement} slide
+   * @param {Number} timeout_ms
+   * @returns {Promise<Boolean>}
+   */
+  async waitForSlideReadyForCapture(slide, timeout_ms = 5000) {
+    if(!slide) return false;
+    var start = Date.now();
+    while(true) {
+      await this._lazyRender(slide);
+      await this._waitForSlideAssets(slide);
+      await new Promise(resolve => {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(resolve);
+        });
+      });
+      if(this._isSlideReadyForCapture(slide)) {
+        return true;
+      }
+      if(Date.now() - start >= timeout_ms) {
+        return false;
+      }
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  }
+  
+  /**
+   * Prepares a slide for thumbnail capture.
+   * @param {Number} index
+   * @returns {Promise<number>}
+   */
+  async prepareSlideForCapture(index) {
+    if(index < 0 || index >= this.slides.length) {
+      return { current_slide: this.current_slide, ready: false };
+    }
+    if(index != this.current_slide) {
+      this.setSlide(index);
+    }
+    var slide = this.slides[index];
+    var ready = await this.waitForSlideReadyForCapture(slide, 8000);
+    return { current_slide: this.current_slide, ready: ready };
   }
   
   /**
@@ -1050,7 +1630,7 @@ class ImagePDF extends HTMLElement {
    * Callback called when element is added to page
    */
   connectedCallback() {
-    if(!is_lazy) this._render();
+    if(presentation._shouldRenderElementNow(this)) this._render();
     this.is_connected = true;
   }
   
@@ -1059,7 +1639,7 @@ class ImagePDF extends HTMLElement {
    */
   attributeChangedCallback() { 
     if(!this.is_connected) return;
-    if(!is_lazy || this.closest('slide')?.classList.contains('active')) {
+    if(presentation._shouldRenderElementNow(this)) {
       this._render();
     }
   }
@@ -1068,8 +1648,23 @@ class ImagePDF extends HTMLElement {
    * Renders element
    */
   async _render() {
+    if(this._render_promise) return this._render_promise;
+    this._render_promise = this._renderImpl();
+    try {
+      await this._render_promise;
+    } finally {
+      this._render_promise = null;
+    }
+    return this._finished_loading;
+  }
+
+  /**
+   * Renders element internals.
+   */
+  async _renderImpl() {
     var src_attr = this.getAttribute('src');
     if(!src_attr) return;
+    if(!await presentation.ensurePdfJs()) return;
     
     let loadingTask;
     try {
@@ -1127,7 +1722,7 @@ class PlotJSON extends HTMLElement {
    * Callback called when element is added to page
    */
   connectedCallback() {
-    if(!is_lazy) this._render();
+    if(presentation._shouldRenderElementNow(this)) this._render();
     this.is_connected = true;
   }
   
@@ -1136,7 +1731,7 @@ class PlotJSON extends HTMLElement {
    */
   attributeChangedCallback() { 
     if(!this.is_connected) return;
-    if(!is_lazy || this.closest('slide')?.classList.contains('active')) {
+    if(presentation._shouldRenderElementNow(this)) {
       this._render();
     }
   }
@@ -1145,8 +1740,23 @@ class PlotJSON extends HTMLElement {
    * Renders element
    */
   async _render() {
+    if(this._render_promise) return this._render_promise;
+    this._render_promise = this._renderImpl();
+    try {
+      await this._render_promise;
+    } finally {
+      this._render_promise = null;
+    }
+    return this._finished_loading;
+  }
+
+  /**
+   * Renders element internals.
+   */
+  async _renderImpl() {
     var src_attr = this.getAttribute('src');
     if(!src_attr) return;
+    if(!await presentation.ensurePlotly()) return;
     
     try {
       if(this.src != src_attr) {
@@ -1195,7 +1805,7 @@ class Scene3dJSON extends HTMLElement {
    * Callback called when element is added to page
    */
   connectedCallback() {
-    if(!is_lazy) this._render();
+    if(presentation._shouldRenderElementNow(this)) this._render();
     this.is_connected = true;
   }
   
@@ -1204,7 +1814,7 @@ class Scene3dJSON extends HTMLElement {
    */
   attributeChangedCallback() {
     if(!this.is_connected) return;
-    if(!is_lazy || this.closest('slide')?.classList.contains('active')) {
+    if(presentation._shouldRenderElementNow(this)) {
       this._render();
     }
   }
@@ -1213,6 +1823,20 @@ class Scene3dJSON extends HTMLElement {
    * Renders element
    */
   async _render() {
+    if(this._render_promise) return this._render_promise;
+    this._render_promise = this._renderImpl();
+    try {
+      await this._render_promise;
+    } finally {
+      this._render_promise = null;
+    }
+    return this._finished_loading;
+  }
+
+  /**
+   * Renders element internals.
+   */
+  async _renderImpl() {
     var src_attr = this.getAttribute('src');
     if(!src_attr) return;
 
@@ -1230,9 +1854,9 @@ class Scene3dJSON extends HTMLElement {
 
       var w = presentation.toPixels(this.getAttribute('width') , 'width')  || 640;
       var h = presentation.toPixels(this.getAttribute('height'), 'height') || 480;
-      
+
       if(!window._standalone){
-        await presentation.waitForGlobal('THREE');
+        if(!await presentation.ensureThree()) return;
 
         var loader = new window.THREE.ObjectLoader();
         this.scene = loader.parse(this.data);

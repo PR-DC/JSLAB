@@ -2673,6 +2673,31 @@
     "en": "20",
     "rs": "20",
     "rsc": "20"
+  },
+  "537": {
+    "en": "Insert Slide After",
+    "rs": "Umetni slajd posle",
+    "rsc": "Ð£Ð¼ÐµÑ‚Ð½Ð¸ ÑÐ»Ð°Ñ˜Ð´ Ð¿Ð¾ÑÐ»Ðµ"
+  },
+  "538": {
+    "en": "Duplicate Slide",
+    "rs": "Dupliciraj slajd",
+    "rsc": "Ð”ÑƒÐ¿Ð»Ð¸Ñ€Ð°Ñ˜ ÑÐ»Ð°Ñ˜Ð´"
+  },
+  "539": {
+    "en": "Presentation modified",
+    "rs": "Prezentacija je izmenjena",
+    "rsc": "ÐŸÑ€ÐµÐ·ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ˜Ð° Ñ˜Ðµ Ð¸Ð·Ð¼ÐµÑšÐµÐ½Ð°"
+  },
+  "540": {
+    "en": "The presentation",
+    "rs": "Prezentacija",
+    "rsc": "ÐŸÑ€ÐµÐ·ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ˜Ð°"
+  },
+  "541": {
+    "en": "is about to be closed but has been modified. Do you want to save or discard the changes?",
+    "rs": "Ä‡e biti zatvorena ali je izmenjena. Da li Å¾elite da saÄuvate ili odbacite izmene?",
+    "rsc": "Ñ›Ðµ Ð±Ð¸Ñ‚Ð¸ Ð·Ð°Ñ‚Ð²Ð¾Ñ€ÐµÐ½Ð° Ð°Ð»Ð¸ Ñ˜Ðµ Ð¸Ð·Ð¼ÐµÑšÐµÐ½Ð°. Ð”Ð° Ð»Ð¸ Ð¶ÐµÐ»Ð¸Ñ‚Ðµ Ð´Ð° ÑÐ°Ñ‡ÑƒÐ²Ð°Ñ‚Ðµ Ð¸Ð»Ð¸ Ð¾Ð´Ð±Ð°Ñ†Ð¸Ñ‚Ðµ Ð¸Ð·Ð¼ÐµÐ½Ðµ?"
   }
 }
 

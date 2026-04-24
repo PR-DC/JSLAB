@@ -97,37 +97,59 @@ strong i {
   text-decoration: underline; 
 }
 
-.one_half {
+.presentation-line {
+  display: block;
+  width: 100%;
+  position: relative;
+}
+
+.presentation-line::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+.one_half,
+.one-half {
 	width: 48%;
 }
 
-.one_third {
+.one_third,
+.one-third {
 	width: 30.66%;
 }
 
-.two_third {
+.two_third,
+.two-third {
   width: 65.33%;
 }
 
-.one_half_center {
+.one_half_center,
+.one-half-center {
 	width: 48%;
 	margin: 0 auto;
 	position: relative;
 }
 
+.one_fourth,
 .one-fourth {
   width: 22%;
   margin-right: 4%; 
   float: left;
 }
 
-.one_five {
+.one_five,
+.one-five {
 	width: 20%;
 	float: left;
 	position: relative;
 }
 
-.one_half, .one_third, .two_third, .one_fourth, .three_fourth {
+.one_half, .one-half,
+.one_third, .one-third,
+.two_third, .two-third,
+.one_fourth, .one-fourth,
+.three_fourth, .three-fourth {
 	float: left;
 	margin-right: 4%;
 	position: relative;

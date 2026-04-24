@@ -5,8 +5,8 @@
  * info@pr-dc.com
  */
 
-const { app, BrowserWindow, ipcMain, dialog, powerSaveBlocker, shell, 
-  MenuItem , desktopCapturer, screen, webContents } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, powerSaveBlocker, shell,
+  Menu, MenuItem, desktopCapturer, screen, webContents } = require('electron');
 
 const contextMenu = require('electron-context-menu');
 const fs = require('fs');
@@ -113,6 +113,26 @@ class PRDC_JSLAB_MAIN {
             label: obj.backend_language.currentString(322),
             click: function() {
               win.webContents.send('PresentationEditorWindow', 'go-to-slide');
+            },
+            visible: p.formControlType == 'text-area' &&
+              p.titleText == 'html' &&
+              p.pageURL.endsWith('/presentation-editor.html')
+          }),
+          new MenuItem({
+            label: obj.backend_language.currentString(537),
+            click: function() {
+              win.webContents.send('PresentationEditorWindow', 'insert-slide-after',
+                { source: 'code' });
+            },
+            visible: p.formControlType == 'text-area' &&
+              p.titleText == 'html' &&
+              p.pageURL.endsWith('/presentation-editor.html')
+          }),
+          new MenuItem({
+            label: obj.backend_language.currentString(538),
+            click: function() {
+              win.webContents.send('PresentationEditorWindow', 'duplicate-slide',
+                { source: 'code' });
             },
             visible: p.formControlType == 'text-area' &&
               p.titleText == 'html' &&
@@ -356,9 +376,25 @@ class PRDC_JSLAB_MAIN {
             append: function(default_actions, p, win) {
               return [
                 new MenuItem({
-                  label: obj.backend_language.currentString(322),
+                  label: obj.backend_language.currentString(321),
                   click: function() {
                     sub_win.webContents.send('PresentationEditorWindow', 'go-to-code');
+                  },
+                  visible: true
+                }),
+                new MenuItem({
+                  label: obj.backend_language.currentString(537),
+                  click: function() {
+                    sub_win.webContents.send('PresentationEditorWindow',
+                      'insert-slide-after', { source: 'preview' });
+                  },
+                  visible: true
+                }),
+                new MenuItem({
+                  label: obj.backend_language.currentString(538),
+                  click: function() {
+                    sub_win.webContents.send('PresentationEditorWindow',
+                      'duplicate-slide', { source: 'preview' });
                   },
                   visible: true
                 })
@@ -370,10 +406,20 @@ class PRDC_JSLAB_MAIN {
   
       // Close all windows
       sub_win.on('close', function(e) {
+        var is_presentation_editor = false;
+        try {
+          is_presentation_editor = sub_win.webContents.getURL().endsWith('/presentation-editor.html');
+        } catch(err) {}
+        if(is_presentation_editor && !sub_win.presentation_editor_close_ready) {
+          e.preventDefault();
+          sub_win.webContents.send('PresentationEditorWindow', 'request-close');
+          return;
+        }
         e.preventDefault();
         obj.win_sandbox.webContents.executeJavaScript('jsl.windows._closedWindow('+wid+');');
         sub_win.hide();
         sub_win.forClose = true;
+        sub_win.presentation_editor_close_ready = false;
       });
       
     });
@@ -688,6 +734,38 @@ class PRDC_JSLAB_MAIN {
           obj.editor_close_ready = true;
           obj.win_editor.close();
           break;  
+        case 'close-presentation-editor':
+          var sub_win = BrowserWindow.fromWebContents(e.sender);
+          if(sub_win) {
+            sub_win.presentation_editor_close_ready = true;
+            sub_win.close();
+          }
+          break;
+        case 'show-presentation-editor-slide-context-menu':
+          var sub_win = BrowserWindow.fromWebContents(e.sender);
+          if(sub_win) {
+            Menu.buildFromTemplate([
+              {
+                label: obj.backend_language.currentString(537),
+                click: function() {
+                  sub_win.webContents.send('PresentationEditorWindow',
+                    'insert-slide-after', { source: 'thumbnail', index: data.index });
+                }
+              },
+              {
+                label: obj.backend_language.currentString(538),
+                click: function() {
+                  sub_win.webContents.send('PresentationEditorWindow',
+                    'duplicate-slide', { source: 'thumbnail', index: data.index });
+                }
+              }
+            ]).popup({
+              window: sub_win,
+              x: Number.isFinite(data && data.x) ? data.x : undefined,
+              y: Number.isFinite(data && data.y) ? data.y : undefined
+            });
+          }
+          break;
         case 'capture-page':
           obj.win_main.webContents.capturePage(undefined, {
             stayHidden: true, 

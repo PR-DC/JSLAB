@@ -267,6 +267,14 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
 tests.add('presentation and editor window scripts retain expected runtime markers', function(assert) {
   var presentation_source = readWindowScript('presentation.js');
   var editor_source = readWindowScript('presentation-editor.js');
+  var presentation_css = fs.readFileSync(
+    path.join(__dirname, '..', '..', '..', 'css', 'presentation.css'),
+    'utf8'
+  );
+  var presentation_editor_css = fs.readFileSync(
+    path.join(__dirname, '..', '..', '..', 'css', 'presentation-editor.css'),
+    'utf8'
+  );
 
   assert.ok(presentation_source.includes('class PRDC_JSLAB_PRESENTATION'));
   assert.ok(presentation_source.includes("customElements.define('img-pdf'"));
@@ -275,11 +283,46 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('%presentation_config%'));
   assert.ok(presentation_source.includes('class PRDC_JSLAB_PRESENTATION_STOPWATCH'));
   assert.ok(presentation_source.includes("event.ctrlKey && !event.altKey && !event.shiftKey"));
-  assert.ok(presentation_source.includes("event.code == 'KeyT'"));
+  assert.ok(presentation_source.includes("event.key == 'F9'"));
+  assert.ok(presentation_source.includes('ensurePdfJs()'));
+  assert.ok(presentation_source.includes('ensurePlotly()'));
+  assert.ok(presentation_source.includes('ensureMathJax()'));
+  assert.ok(presentation_source.includes('ensureThree()'));
+  assert.ok(presentation_source.includes('_loadScriptOnce('));
+  assert.ok(presentation_source.includes('_scheduleNextSlidePreload()'));
+  assert.ok(presentation_source.includes('_preloadSlide(index'));
+  assert.ok(presentation_source.includes('_shouldRenderElementNow(el)'));
+  assert.ok(presentation_source.includes('prepareSlideForCapture'));
+  assert.ok(presentation_source.includes('_ensureSlideMath(slide)'));
+  assert.ok(presentation_source.includes('_typesetMath(root)'));
+  assert.ok(presentation_source.includes('replaceSlide(index, slide_html)'));
+  assert.ok(presentation_source.includes('replaceSlides(slides_html, active_index)'));
   assert.ok(presentation_source.includes("'contextmenu'"));
+  assert.ok(presentation_css.includes('.presentation-line {'));
+  assert.ok(presentation_css.includes(".presentation-line::after"));
+  assert.ok(presentation_source.includes('_normalizeLayoutHelpers'));
 
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB'));
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR'));
+  assert.ok(editor_source.includes('insertSlideAfter'));
+  assert.ok(editor_source.includes('duplicateSlide'));
+  assert.ok(editor_source.includes('moveSlide'));
+  assert.ok(editor_source.includes('syncAllSlidesToViews'));
+  assert.ok(editor_source.includes('syncCurrentSlideToViews'));
+  assert.ok(editor_source.includes('requestThumbnailRender'));
+  assert.ok(editor_source.includes('request-close'));
+  assert.ok(editor_source.includes('closeDialogButton'));
+  assert.ok(editor_source.includes('renderSlideThumbnails'));
+  assert.ok(editor_source.includes('capturePage()'));
+  assert.ok(editor_source.includes("document.getElementById('thumbnail-preview')"));
+  assert.ok(editor_source.includes('thumb_worker_count = 4'));
+  assert.ok(editor_source.includes('initThumbnailWorkers()'));
+  assert.ok(editor_source.includes('getReadyThumbnailWorkers()'));
+  assert.ok(editor_source.includes('show-presentation-editor-slide-context-menu'));
+  assert.ok(editor_source.includes('getThumbnailDropData'));
+  assert.ok(editor_source.includes("slide_thumbnails.addEventListener('contextmenu'"));
+  assert.ok(editor_source.includes("--slide-thumbnail-drop-y"));
+  assert.ok(presentation_editor_css.includes('#slide-thumbnails::before'));
   assert.ok(editor_source.includes('var presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR();'));
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
@@ -308,6 +351,10 @@ tests.add('language workflow is explicit for editor and presentation-editor wind
   assert.ok(pe_dialog_idx > -1);
   assert.ok(pe_window_idx > -1);
   assert.ok(pe_dialog_idx < pe_window_idx);
+  assert.ok(presentation_editor_html.includes('id="slide-thumbnails"'));
+  assert.ok(presentation_editor_html.includes('id="thumbnail-preview"'));
+  assert.ok(presentation_editor_html.includes('id="close-dialog-cont"'));
+  assert.ok(presentation_editor_html.includes('id="close-dialog-save"'));
 
   var globals_idx = presentation_html.indexOf('./res/internal/globals.js');
   var presentation_js_idx = presentation_html.indexOf('./res/internal/presentation.js');

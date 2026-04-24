@@ -23,7 +23,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   /**
    * Opens an existing presentation in a new window and returns its context.
    * In the opened presentation, press Ctrl+S to toggle the slide controls.
-   * Press Ctrl+T to toggle the stopwatch overlay.
+   * Press F9 to toggle the stopwatch overlay.
    * When the stopwatch is visible, right-click it for Start, Stop, and Reset,
    * drag it to move it, and drag any corner to resize it.
    * @param {String} file_path - Absolute or relative path to the presentation directory.
@@ -32,8 +32,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   async openPresentation(file_path, type) {
     file_path = this._getPath('openPresentation', file_path);
-    if(this._checkPresentation('editPresentation', file_path)) {
-      this._updatePresentationBackend(file_path);
+    if(this._checkPresentation('openPresentation', file_path)) {
       var obj = this;
       var name = this.jsl.inter.env.pathBaseName(file_path);
       if(type == 'standalone') {
@@ -64,8 +63,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
               key === 's') {
             event.preventDefault();
             context.webview.send('data', { toggle_slide_nav: true });
-          } else if(event.ctrlKey && !event.altKey && !event.shiftKey &&
-              (event.code == 'KeyT' || key === 't')) {
+          } else if(!event.ctrlKey && !event.altKey && !event.shiftKey &&
+              event.key == 'F9') {
             event.preventDefault();
             context.webview.send('data', { toggle_stopwatch: true });
           }
@@ -88,7 +87,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   /**
    * Opens the presentation editor for the specified project and returns its context.
    * The preview uses the same runtime controls as openPresentation,
-   * including Ctrl+S for slide controls and Ctrl+T for the stopwatch.
+   * including Ctrl+S for slide controls and F9 for the stopwatch.
    * @async
    * @param {String} file_path - Absolute or relative path to the presentation directory.
    * @param {String} type - Type of presentation.
@@ -97,7 +96,6 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   async editPresentation(file_path, type) {
     file_path = this._getPath('editPresentation', file_path);
     if(this._checkPresentation('editPresentation', file_path)) {
-      this._updatePresentationBackend(file_path);
       var name = this.jsl.inter.env.pathBaseName(file_path);
       if(type == 'standalone') {
         var url = this.jsl.inter.env.pathJoin(file_path, 'index.html')
@@ -139,6 +137,17 @@ class PRDC_JSLAB_LIB_PRESENTATION {
       return context;
     }
   }
+
+  /**
+   * Updates generated presentation internal files to the latest JSLAB runtime.
+   * @param {String} file_path - Absolute or relative path to the presentation directory.
+   */
+  updatePresentation(file_path) {
+    file_path = this._getPath('updatePresentation', file_path);
+    if(this._checkPresentation('updatePresentation', file_path)) {
+      this._updatePresentationBackend(file_path);
+    }
+  }
   
   /**
    * Creates a new presentation project on disk and optionally opens it in the editor.
@@ -171,11 +180,9 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'main.css'), '');
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'main.js'), '');
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/config.json'), JSON.stringify(presentation_config, false, 2));
-    this._writePresentationGlobals(file_path);
     
     var presentation_scripts = '';
     var presentation_stylesheets = '';
-    var threeLoadFailMsg = JSON.stringify(this.jsl.inter.lang.currentString(360));
     if(opts_in.hasOwnProperty('modules')) {
       var handled = new Set();
       for(var module of opts_in.modules) {
@@ -186,15 +193,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
         if(module == 'img-pdf') {
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/pdfjs-dist-3.11.174/pdf.min.js'), this.jsl.inter.env.pathJoin(file_path, 'res/pdf.min.js'));
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/pdfjs-dist-3.11.174/pdf.worker.min.js'), this.jsl.inter.env.pathJoin(file_path, 'res/pdf.worker.min.js'));
-          presentation_scripts += `
-  <script type="text/javascript" src="./res/pdf.min.js"></script>
-  <script type="text/javascript" src="./res/pdf.worker.min.js"></script>
-`;
         } else if(module == 'plot') {
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/plotly-3.3.0/plotly-3.3.0.min.js'), this.jsl.inter.env.pathJoin(file_path, 'res/plotly-3.3.0.min.js'));
-          presentation_scripts += `
-  <script type="text/javascript" src="./res/plotly-3.3.0.min.js"></script>
-`;
         } else if(module == 'ui') {
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'css/ui.css'), this.jsl.inter.env.pathJoin(file_path, 'res/ui.css'));
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/ui.js'), this.jsl.inter.env.pathJoin(file_path, 'res/ui.js'));
@@ -207,39 +207,15 @@ class PRDC_JSLAB_LIB_PRESENTATION {
         } else if(module == 'latex') {
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/mathjax-config.js'), this.jsl.inter.env.pathJoin(file_path, 'res/mathjax-config.js'));
           this.jsl.inter.file_system.copyFolder(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/MathJax-3.2.0'), this.jsl.inter.env.pathJoin(file_path, 'res/MathJax-3.2.0'));
-          presentation_scripts += `
-  <script type="text/javascript" src="./res/mathjax-config.js"></script>        
-  <script type="text/javascript" src="./res/MathJax-3.2.0/tex-mml-chtml.js"></script>
-`;
         } else if(module == 'scene-3d-json') {
           this.jsl.inter.file_system.copyFolder(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/three.js-r162'), this.jsl.inter.env.pathJoin(file_path, 'res/three.js-r162'));
-          presentation_scripts += `
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "./res/three.js-r162/build/three.module.js",
-        "three/addons/": "./res/three.js-r162/examples/jsm/"
-      }
-    }
-  </script>
-  <script type="module">
-    if(!window._standalone) {
-      try {
-        const THREE = await import('three');
-
-        window.THREE = THREE;
-      } catch(err) {
-        console.error(${threeLoadFailMsg}, err);
-      }
-    }
-  </script>
-`;
         }
       }        
     }
     var html = this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'html/presentation.html')).toString();
     html = html.replace('%presentation_scripts%', presentation_scripts);
     html = html.replace('%presentation_stylesheets%', presentation_stylesheets);
+    this._writePresentationGlobals(file_path, opts_in.modules);
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'index.html'), html);
     
     if(open_editor) {
@@ -418,6 +394,46 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   }
 
   /**
+   * Rewrites generated presentation include blocks while preserving slide content.
+   * @param {String} file_path - Path to presentation directory.
+   */
+  _refreshPresentationHtmlIncludes(file_path) {
+    var html_file = this.jsl.inter.env.pathJoin(file_path, 'index.html');
+    if(!this.jsl.inter.file_system.existFile(html_file)) {
+      return;
+    }
+
+    var html = this.jsl.inter.env.readFileSync(html_file).toString();
+    var styles = '';
+    var scripts = '';
+    if(this.jsl.inter.file_system.existFile(
+        this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.css'))) {
+      styles += '  <link rel="stylesheet" type="text/css" href="./res/ui.css" />\n';
+    }
+    if(this.jsl.inter.file_system.existFile(
+        this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.js'))) {
+      scripts += '  <script type="text/javascript" src="./res/ui.js"></script>\n';
+    }
+
+    var css_block = `<!-- CSS files begin -->
+${styles}  <link rel="stylesheet" type="text/css" href="./res/internal/presentation.css" />
+  <link rel="stylesheet" type="text/css" href="./main.css" />
+<!-- CSS files end -->`;
+    var js_block = `<!-- JS files begin -->
+  <script type="text/javascript" src="./res/internal/globals.js"></script>
+
+${scripts}  <script type="text/javascript" src="./res/internal/presentation.js"></script>
+  <script type="text/javascript" src="./main.js"></script>
+<!-- JS files end -->`;
+
+    html = html.replace(/<!-- CSS files begin -->[\s\S]*?<!-- CSS files end -->/,
+      css_block);
+    html = html.replace(/<!-- JS files begin -->[\s\S]*?<!-- JS files end -->/,
+      js_block);
+    this.jsl.inter.file_system.writeFile(html_file, html);
+  }
+
+  /**
    * Updates generated presentation backend files in an existing presentation.
    * @param {String} file_path - Path to presentation directory.
    */
@@ -442,19 +458,128 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     js = js.replace('%presentation_config%', JSON.stringify(presentation_config, false, 2));
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.js'), js);
     this.jsl.inter.file_system.writeFile(config_file, JSON.stringify(presentation_config, false, 2));
+    this._refreshPresentationModuleResources(file_path);
     this._writePresentationGlobals(file_path);
     
     this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/portable_server/portable_server.exe'),
       this.jsl.inter.env.pathJoin(file_path, name + '.exe'));
     this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'css/presentation.css'),
       this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.css'));
+    this._refreshPresentationHtmlIncludes(file_path);
+  }
+
+  /**
+   * Returns whether a file contains the supplied text fragment.
+   * @param {String} file_path
+   * @param {String} marker
+   * @returns {Boolean}
+   */
+  _fileContains(file_path, marker) {
+    if(!this.jsl.inter.file_system.existFile(file_path)) {
+      return false;
+    }
+    try {
+      return this.jsl.inter.env.readFileSync(file_path).toString().includes(marker);
+    } catch(err) {
+      return false;
+    }
+  }
+
+  /**
+   * Refreshes generated presentation module resources when embedded versions differ.
+   * @param {String} file_path - Path to presentation directory.
+   */
+  _refreshPresentationModuleResources(file_path) {
+    var res_path = this.jsl.inter.env.pathJoin(file_path, 'res');
+    var plotly_current = this.jsl.inter.env.pathJoin(res_path, 'plotly-3.3.0.min.js');
+    var plotly_legacy = this.jsl.inter.env.pathJoin(res_path, 'plotly-2.24.2.min.js');
+    var pdf_min = this.jsl.inter.env.pathJoin(res_path, 'pdf.min.js');
+    var pdf_worker = this.jsl.inter.env.pathJoin(res_path, 'pdf.worker.min.js');
+    var mathjax_current = this.jsl.inter.env.pathJoin(res_path, 'MathJax-3.2.0', 'tex-mml-chtml.js');
+    var mathjax_legacy = this.jsl.inter.env.pathJoin(res_path, 'tex-mml-chtml-3.2.0', 'tex-mml-chtml-3.2.0.js');
+    var three_current = this.jsl.inter.env.pathJoin(res_path, 'three.js-r162', 'build', 'three.module.js');
+    var three_root = this.jsl.inter.env.pathJoin(res_path, 'three.js-r162');
+    var ui_css = this.jsl.inter.env.pathJoin(res_path, 'ui.css');
+    var ui_js = this.jsl.inter.env.pathJoin(res_path, 'ui.js');
+    var mathjax_config = this.jsl.inter.env.pathJoin(res_path, 'mathjax-config.js');
+
+    var has_pdf = this.jsl.inter.file_system.existFile(pdf_min) ||
+      this.jsl.inter.file_system.existFile(pdf_worker);
+    if(has_pdf && !this._fileContains(pdf_min, 'apiVersion:"3.11.174"')) {
+      this.jsl.inter.file_system.copyFile(
+        this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/pdfjs-dist-3.11.174/pdf.min.js'),
+        pdf_min);
+      this.jsl.inter.file_system.copyFile(
+        this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/pdfjs-dist-3.11.174/pdf.worker.min.js'),
+        pdf_worker);
+    }
+
+    var has_plotly = this.jsl.inter.file_system.existFile(plotly_current) ||
+      this.jsl.inter.file_system.existFile(plotly_legacy);
+    if(has_plotly && !this.jsl.inter.file_system.existFile(plotly_current)) {
+      this.jsl.inter.file_system.copyFile(
+        this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/plotly-3.3.0/plotly-3.3.0.min.js'),
+        plotly_current);
+    }
+
+    var has_mathjax = this.jsl.inter.file_system.existFile(mathjax_config) ||
+      this.jsl.inter.file_system.existFile(mathjax_current) ||
+      this.jsl.inter.file_system.existFile(mathjax_legacy);
+    if(has_mathjax) {
+      this.jsl.inter.file_system.copyFile(
+        this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/mathjax-config.js'),
+        mathjax_config);
+      if(!this.jsl.inter.file_system.existFile(mathjax_current) &&
+          !this.jsl.inter.file_system.existFile(mathjax_legacy)) {
+        this.jsl.inter.file_system.copyFolder(
+          this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/MathJax-3.2.0'),
+          this.jsl.inter.env.pathJoin(res_path, 'MathJax-3.2.0'));
+      }
+    }
+
+    if(this.jsl.inter.file_system.existFile(three_current) ||
+        this.jsl.inter.env.checkDirectory(three_root)) {
+      if(!this.jsl.inter.file_system.existFile(three_current)) {
+        this.jsl.inter.file_system.copyFolder(
+          this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/three.js-r162'),
+          three_root);
+      }
+    }
+
+    if(this.jsl.inter.file_system.existFile(ui_css) ||
+        this.jsl.inter.file_system.existFile(ui_js)) {
+      this.jsl.inter.file_system.copyFile(
+        this.jsl.inter.env.pathJoin(this.jsl.app_path, 'css/ui.css'),
+        ui_css);
+      this.jsl.inter.file_system.copyFile(
+        this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/ui.js'),
+        ui_js);
+    }
   }
   
   /**
    * Writes globals required by generated presentation runtime files.
    * @param {String} file_path - Path to presentation directory.
    */
-  _writePresentationGlobals(file_path) {
+  _writePresentationGlobals(file_path, modules) {
+    var handled = new Set((Array.isArray(modules) ? modules : []).map(function(module) {
+      return module === 'plot-json' ? 'plot' : module;
+    }));
+    var resources = {
+      pdfjs: handled.size ? handled.has('img-pdf') :
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'pdf.min.js')),
+      plotly: handled.size ? handled.has('plot') :
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'plotly-3.3.0.min.js')) ||
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'plotly-2.24.2.min.js')),
+      mathjax: handled.size ? handled.has('latex') :
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'mathjax-config.js')) ||
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'MathJax-3.2.0', 'tex-mml-chtml.js')) ||
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'tex-mml-chtml-3.2.0', 'tex-mml-chtml-3.2.0.js')),
+      three: handled.size ? handled.has('scene-3d-json') :
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'three.js-r162', 'build', 'three.module.js')),
+      ui: handled.size ? handled.has('ui') :
+        this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.js'))
+    };
     var presentation_language_strings = {
       "315": this.jsl.inter.lang.currentString(315),
       "316": this.jsl.inter.lang.currentString(316),
@@ -464,6 +589,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     };
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/globals.js'), `
 window._standalone = window.location.protocol == 'file:';
+window.presentation_resources = ${JSON.stringify(resources)};
 window.language = {
   currentString: function(id) {
     var strings = ${JSON.stringify(presentation_language_strings)};

@@ -26,6 +26,7 @@ function createPresentationHarness() {
   var errors = [];
   var write_calls = [];
   var copy_calls = [];
+  var copy_folder_calls = [];
   var spawn_calls = [];
   var existing_files = new Set();
   var last_child = null;
@@ -45,6 +46,9 @@ function createPresentationHarness() {
     },
     pathResolve: function(value) {
       return path.resolve(value);
+    },
+    checkDirectory: function(target_path) {
+      return existing_files.has(target_path);
     },
     makeDirectory: function() {
       return true;
@@ -85,7 +89,8 @@ function createPresentationHarness() {
           copy_calls.push({ source: source, destination: destination });
           return true;
         },
-        copyFolder: function() {
+        copyFolder: function(source, destination) {
+          copy_folder_calls.push({ source: source, destination: destination });
           return true;
         }
       }
@@ -100,6 +105,7 @@ function createPresentationHarness() {
     errors,
     write_calls,
     copy_calls,
+    copy_folder_calls,
     spawn_calls,
     setExistingFiles: function(list) {
       existing_files = new Set(list);
@@ -184,12 +190,107 @@ tests.add('createPresentation writes globals.js with language provider for windo
     });
 
     assert.ok(!!globals_write);
+    assert.ok(globals_write.content.includes('window.presentation_resources'));
+    assert.ok(globals_write.content.includes('"mathjax":false'));
     assert.ok(globals_write.content.includes('window.language'));
     assert.ok(globals_write.content.includes('"315":"LANG_315"'));
     assert.ok(globals_write.content.includes('"316":"LANG_316"'));
     assert.ok(globals_write.content.includes('"317":"LANG_317"'));
     assert.ok(globals_write.content.includes('"318":"LANG_318"'));
     assert.ok(globals_write.content.includes('"363":"LANG_363"'));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('createPresentation writes presentation resource flags from modules', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'resource-pres');
+
+    harness.presentation.createPresentation(pres_path, {
+      modules: ['latex', 'plot-json', 'ui']
+    }, false);
+
+    var globals_path = path.join(pres_path, 'res', 'internal', 'globals.js');
+    var globals_write = harness.write_calls.find(function(entry) {
+      return entry.file_path === globals_path;
+    });
+
+    assert.ok(!!globals_write);
+    assert.ok(globals_write.content.includes('"pdfjs":false'));
+    assert.ok(globals_write.content.includes('"plotly":true'));
+    assert.ok(globals_write.content.includes('"mathjax":true'));
+    assert.ok(globals_write.content.includes('"three":false'));
+    assert.ok(globals_write.content.includes('"ui":true'));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_writePresentationGlobals detects legacy embedded module resources', function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/legacy-resource-pres';
+
+  harness.setExistingFiles([
+    path.join(pres_path, 'res', 'plotly-2.24.2.min.js'),
+    path.join(pres_path, 'res', 'mathjax-config.js'),
+    path.join(pres_path, 'res', 'tex-mml-chtml-3.2.0', 'tex-mml-chtml-3.2.0.js')
+  ]);
+
+  harness.presentation._writePresentationGlobals(pres_path);
+
+  var globals_write = harness.write_calls.find(function(entry) {
+    return entry.file_path === path.join(pres_path, 'res', 'internal', 'globals.js');
+  });
+
+  assert.ok(!!globals_write);
+  assert.ok(globals_write.content.includes('"plotly":true'));
+  assert.ok(globals_write.content.includes('"mathjax":true'));
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_refreshPresentationHtmlIncludes rewrites generated includes for lean startup', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'refresh-pres');
+    var html_path = path.join(pres_path, 'index.html');
+    var ui_css_path = path.join(pres_path, 'res', 'ui.css');
+    var ui_js_path = path.join(pres_path, 'res', 'ui.js');
+
+    fs.mkdirSync(path.dirname(ui_css_path), { recursive: true });
+    fs.writeFileSync(html_path, `<!DOCTYPE html>
+<html>
+<head>
+<!-- CSS files begin -->
+  <link rel="stylesheet" type="text/css" href="./res/ui.css" />
+  <link rel="stylesheet" type="text/css" href="./res/internal/presentation.css" />
+  <link rel="stylesheet" type="text/css" href="./main.css" />
+<!-- CSS files end -->
+</head>
+<body>
+<!-- JS files begin -->
+  <script type="text/javascript" src="./res/internal/globals.js"></script>
+  <script type="text/javascript" src="./res/pdf.min.js"></script>
+  <script type="text/javascript" src="./res/plotly-3.3.0.min.js"></script>
+  <script type="text/javascript" src="./res/mathjax-config.js"></script>
+  <script type="text/javascript" src="./res/MathJax-3.2.0/tex-mml-chtml.js"></script>
+  <script type="text/javascript" src="./res/ui.js"></script>
+  <script type="text/javascript" src="./res/internal/presentation.js"></script>
+  <script type="text/javascript" src="./main.js"></script>
+<!-- JS files end -->
+</body>
+</html>`, 'utf8');
+
+    harness.setExistingFiles([html_path, ui_css_path, ui_js_path]);
+    harness.presentation._refreshPresentationHtmlIncludes(pres_path);
+
+    var html_write = harness.write_calls.find(function(entry) {
+      return entry.file_path === html_path;
+    });
+
+    assert.ok(!!html_write);
+    assert.ok(html_write.content.includes('./res/ui.css'));
+    assert.ok(html_write.content.includes('./res/ui.js'));
+    assert.ok(!html_write.content.includes('./res/pdf.min.js'));
+    assert.ok(!html_write.content.includes('./res/plotly-3.3.0.min.js'));
+    assert.ok(!html_write.content.includes('./res/mathjax-config.js'));
+    assert.ok(!html_write.content.includes('./res/MathJax-3.2.0/tex-mml-chtml.js'));
   });
 }, { tags: ['unit', 'presentation'] });
 
@@ -243,7 +344,84 @@ tests.add('_updatePresentationBackend refreshes generated backend files', functi
   });
 }, { tags: ['unit', 'presentation'] });
 
-tests.add('editPresentation updates backend before starting preview server', async function(assert) {
+tests.add('_updatePresentationBackend skips MathJax folder copy when legacy version matches', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'legacy-mathjax-pres');
+    var config_path = path.join(pres_path, 'res', 'internal', 'config.json');
+    var legacy_mathjax_path = path.join(pres_path, 'res', 'tex-mml-chtml-3.2.0',
+      'tex-mml-chtml-3.2.0.js');
+    fs.mkdirSync(path.dirname(config_path), { recursive: true });
+    fs.mkdirSync(path.dirname(legacy_mathjax_path), { recursive: true });
+    fs.writeFileSync(config_path, JSON.stringify({
+      jslab_version: 'old-version',
+      slide_width: 800,
+      slide_height: 600
+    }), 'utf8');
+    fs.writeFileSync(legacy_mathjax_path, 'legacy mathjax', 'utf8');
+    harness.setExistingFiles([
+      config_path,
+      path.join(pres_path, 'res', 'mathjax-config.js'),
+      legacy_mathjax_path
+    ]);
+
+    harness.presentation._updatePresentationBackend(pres_path);
+
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.source.endsWith(path.join('js', 'windows', 'mathjax-config.js')) &&
+        entry.destination === path.join(pres_path, 'res', 'mathjax-config.js');
+    }));
+    assert.equal(harness.copy_folder_calls.some(function(entry) {
+      return entry.source.endsWith(path.join('lib', 'MathJax-3.2.0')) &&
+        entry.destination === path.join(pres_path, 'res', 'MathJax-3.2.0');
+    }), false);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_updatePresentationBackend copies current Plotly when only legacy version exists', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'legacy-plotly-pres');
+    var config_path = path.join(pres_path, 'res', 'internal', 'config.json');
+    var legacy_plotly_path = path.join(pres_path, 'res', 'plotly-2.24.2.min.js');
+    fs.mkdirSync(path.dirname(config_path), { recursive: true });
+    fs.mkdirSync(path.dirname(legacy_plotly_path), { recursive: true });
+    fs.writeFileSync(config_path, JSON.stringify({
+      jslab_version: 'old-version',
+      slide_width: 800,
+      slide_height: 600
+    }), 'utf8');
+    fs.writeFileSync(legacy_plotly_path, 'legacy plotly', 'utf8');
+    harness.setExistingFiles([
+      config_path,
+      legacy_plotly_path
+    ]);
+
+    harness.presentation._updatePresentationBackend(pres_path);
+
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.source.endsWith(path.join('lib', 'plotly-3.3.0', 'plotly-3.3.0.min.js')) &&
+        entry.destination === path.join(pres_path, 'res', 'plotly-3.3.0.min.js');
+    }));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('updatePresentation refreshes backend explicitly', function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/update-pres';
+  var calls = [];
+
+  harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._updatePresentationBackend = function(file_path) {
+    calls.push(file_path);
+  };
+
+  harness.presentation.updatePresentation(pres_path);
+
+  assert.deepEqual(calls, [pres_path]);
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('editPresentation starts preview server without updating backend', async function(assert) {
   var harness = createPresentationHarness();
   var pres_path = 'C:/tmp/edit-pres';
   var calls = [];
@@ -269,9 +447,6 @@ tests.add('editPresentation updates backend before starting preview server', asy
   };
 
   harness.setExistingFiles([path.join(pres_path, 'index.html')]);
-  harness.presentation._updatePresentationBackend = function(file_path) {
-    calls.push({ name: 'update', value: file_path });
-  };
   harness.presentation._startPresentation = async function(exe_file) {
     calls.push({ name: 'start', value: exe_file });
     return 'http://127.0.0.1:1234/';
@@ -298,18 +473,17 @@ tests.add('editPresentation updates backend before starting preview server', asy
 
   await harness.presentation.editPresentation(pres_path);
 
-  assert.deepEqual(calls.slice(0, 3).map(function(call) {
+  assert.deepEqual(calls.slice(0, 2).map(function(call) {
     return call.name;
-  }), ['update', 'start', 'open']);
-  assert.equal(calls[0].value, pres_path);
-  assert.ok(calls[1].value.endsWith(path.join('edit-pres', 'edit-pres.exe')));
+  }), ['start', 'open']);
+  assert.ok(calls[0].value.endsWith(path.join('edit-pres', 'edit-pres.exe')));
   assert.deepEqual(set_path_calls[0], {
     file_path: pres_path,
     url: 'http://127.0.0.1:1234/'
   });
 }, { tags: ['unit', 'presentation', 'async'] });
 
-tests.add('openPresentation updates backend before starting presentation server', async function(assert) {
+tests.add('openPresentation starts presentation server without updating backend', async function(assert) {
   var harness = createPresentationHarness();
   var pres_path = 'C:/tmp/open-pres';
   var calls = [];
@@ -339,9 +513,6 @@ tests.add('openPresentation updates backend before starting presentation server'
   };
 
   harness.setExistingFiles([path.join(pres_path, 'index.html')]);
-  harness.presentation._updatePresentationBackend = function(file_path) {
-    calls.push({ name: 'update', value: file_path });
-  };
   harness.presentation._startPresentation = async function(exe_file) {
     calls.push({ name: 'start', value: exe_file });
     return 'http://127.0.0.1:1234/';
@@ -364,20 +535,18 @@ tests.add('openPresentation updates backend before starting presentation server'
 
   await harness.presentation.openPresentation(pres_path);
 
-  assert.deepEqual(calls.slice(0, 3).map(function(call) {
+  assert.deepEqual(calls.slice(0, 2).map(function(call) {
     return call.name;
-  }), ['update', 'start', 'open']);
-  assert.equal(calls[0].value, pres_path);
-  assert.ok(calls[1].value.endsWith(path.join('open-pres', 'open-pres.exe')));
+  }), ['start', 'open']);
+  assert.ok(calls[0].value.endsWith(path.join('open-pres', 'open-pres.exe')));
   assert.equal(webview.src, 'http://127.0.0.1:1234/');
   assert.equal(typeof keydown_handler, 'function');
   
   keydown_handler({
-    ctrlKey: true,
+    ctrlKey: false,
     altKey: false,
     shiftKey: false,
-    code: 'KeyT',
-    key: 't',
+    key: 'F9',
     preventDefault: function() {}
   });
   keydown_handler({

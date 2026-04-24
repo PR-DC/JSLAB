@@ -23,17 +23,24 @@
           <div class="panel-title"><str sid="242"></str></div>
           
           <div id="left-panel-cont">
-            <div id="presentation-title"></div>
-            <div id="webview-wrap">
-              <webview id="preview" useragent="presentation-editor-preview" nodeintegration webpreferences="backgroundThrottling=no, contextIsolation=no"></webview>
+            <div id="slides-panel">
+              <div id="slide-thumbnails"></div>
             </div>
-            <div id="slide-controls">
-              <div id="first-slide" class="button" title-str="315">|⏴</div>
-              <div id="prev-slide" class="button" title-str="316">⏴</div>
-              <input id="set-slide" type="number" min="1" step="1">
-              <span id="total-slides">/ 0</span>
-              <div id="next-slide" class="button" title-str="317">⏵</div>
-              <div id="last-slide" class="button" title-str="318">⏵|</div>
+            <div id="preview-panel">
+              <div id="presentation-title"></div>
+              <div id="preview-stage">
+                <div id="webview-wrap">
+                  <webview id="preview" useragent="presentation-editor-preview" nodeintegration webpreferences="backgroundThrottling=no, contextIsolation=no"></webview>
+                </div>
+              </div>
+              <div id="slide-controls">
+                <div id="first-slide" class="button" title-str="315">|⏴</div>
+                <div id="prev-slide" class="button" title-str="316">⏴</div>
+                <input id="set-slide" type="number" min="1" step="1">
+                <span id="total-slides">/ 0</span>
+                <div id="next-slide" class="button" title-str="317">⏵</div>
+                <div id="last-slide" class="button" title-str="318">⏵|</div>
+              </div>
             </div>
           </div>
         </div>
@@ -87,6 +94,25 @@
           </div>
         </div>
       </div>
+    </div>
+    <div id="close-dialog-cont" style="display: none;">
+      <div id="close-dialog">
+        <div id="close-dialog-header">
+          <span><str sid="539"></str></span>
+        </div>
+        <div id="close-dialog-msg">
+          <str sid="540"></str> <span id="close-file"></span> <str sid="541"></str>
+        </div>
+        <div id="close-dialog-buttons">
+          <button id="close-dialog-save"><str sid="50"></str></button>
+          <button id="close-dialog-discard"><str sid="51"></str></button>
+          <button id="close-dialog-cancel"><str sid="52"></str></button>
+        </div>
+        <br class="clear">
+      </div>
+    </div>
+    <div id="thumbnail-preview-host">
+      <webview id="thumbnail-preview" useragent="presentation-editor-thumbnail" nodeintegration webpreferences="backgroundThrottling=no, contextIsolation=no"></webview>
     </div>
     
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
