@@ -140,6 +140,7 @@
     "egm96-universal": "1.1.1",
     "electron-context-menu": "3.6.1",
     "electron-store": "8.2.0",
+    "esbuild": "0.28.0",
     "eslint": "9.29.0",
     "fast-xml-parser": "5.2.5",
     "fmin": "0.0.4",

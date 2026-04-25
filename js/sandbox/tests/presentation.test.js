@@ -8,6 +8,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const vm = require('vm');
 const { EventEmitter } = require('events');
 const { PRDC_JSLAB_LIB_PRESENTATION } = require('../presentation');
 const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
@@ -144,20 +145,26 @@ tests.add('_checkPresentation validates existence of index.html', function(asser
   assert.equal(harness.presentation._checkPresentation('openPresentation', pres_path), true);
 }, { tags: ['unit', 'presentation'] });
 
-tests.add('_startPresentation resolves URL parsed from server stdout line', async function(assert) {
-  var harness = createPresentationHarness();
-  var promise = harness.presentation._startPresentation('C:/server.exe');
+tests.add('_startPresentation serves presentation files from internal HTTP server', async function(assert) {
+  var tmp_dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-presentation-test-'));
+  try {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'server-pres');
+    fs.mkdirSync(pres_path, { recursive: true });
+    fs.writeFileSync(path.join(pres_path, 'index.html'),
+      '<!DOCTYPE html><html><body>ok</body></html>', 'utf8');
 
-  var child = harness.getLastChild();
-  assert.ok(child);
-  process.nextTick(function() {
-    child.stdout.emit('data', 'url:http://127.0.0.1:1234\n');
-  });
+    var url = await harness.presentation._startPresentation(pres_path);
+    var response = await fetch(url);
 
-  var url = await promise;
-  assert.equal(url, 'http://127.0.0.1:1234');
-  assert.equal(harness.spawn_calls.length, 1);
-  assert.equal(harness.spawn_calls[0].exe_file, 'C:/server.exe');
+    assert.equal(response.status, 200);
+    assert.ok(url.startsWith('http://127.0.0.1:'));
+    assert.ok((await response.text()).includes('<body>ok</body>'));
+
+    harness.presentation._stopPresentationServer(pres_path);
+  } finally {
+    fs.rmSync(tmp_dir, { recursive: true, force: true });
+  }
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_fileToBuffer writes JS wrapper with encoded path and base64 payload', function(assert) {
@@ -190,14 +197,25 @@ tests.add('createPresentation writes globals.js with language provider for windo
     });
 
     assert.ok(!!globals_write);
+    new vm.Script(globals_write.content, { filename: 'globals.js' });
     assert.ok(globals_write.content.includes('window.presentation_resources'));
     assert.ok(globals_write.content.includes('"mathjax":false'));
+    assert.ok(globals_write.content.includes('window.__importPresentationModule'));
+    assert.ok(globals_write.content.includes('window.__getPresentationStandaloneModulePath'));
+    assert.ok(globals_write.content.includes('Invalid presentation script path'));
+    assert.ok(globals_write.content.includes('Refusing to load presentation page as script'));
     assert.ok(globals_write.content.includes('window.language'));
     assert.ok(globals_write.content.includes('"315":"LANG_315"'));
     assert.ok(globals_write.content.includes('"316":"LANG_316"'));
     assert.ok(globals_write.content.includes('"317":"LANG_317"'));
     assert.ok(globals_write.content.includes('"318":"LANG_318"'));
     assert.ok(globals_write.content.includes('"363":"LANG_363"'));
+
+    var config_write = harness.write_calls.find(function(entry) {
+      return entry.file_path === path.join(pres_path, 'res', 'internal', 'config.json');
+    });
+    var config = JSON.parse(config_write.content);
+    assert.equal(config.presentation_mode, 'online');
   });
 }, { tags: ['unit', 'presentation'] });
 
@@ -333,10 +351,9 @@ tests.add('_updatePresentationBackend refreshes generated backend files', functi
       custom: true
     });
     assert.ok(!!globals_write);
-    assert.ok(harness.copy_calls.some(function(entry) {
-      return entry.source.endsWith(path.join('lib', 'portable_server', 'portable_server.exe')) &&
-        entry.destination === path.join(pres_path, 'old-pres.exe');
-    }));
+    assert.equal(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(pres_path, 'old-pres.exe');
+    }), false);
     assert.ok(harness.copy_calls.some(function(entry) {
       return entry.source.endsWith(path.join('css', 'presentation.css')) &&
         entry.destination === path.join(pres_path, 'res', 'internal', 'presentation.css');
@@ -406,19 +423,563 @@ tests.add('_updatePresentationBackend copies current Plotly when only legacy ver
   });
 }, { tags: ['unit', 'presentation'] });
 
-tests.add('updatePresentation refreshes backend explicitly', function(assert) {
+tests.add('_bundleStandaloneModuleResources bundles exported module graphs for standalone mode', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'three-bundle-pres');
+    var main_path = path.join(pres_path, 'main.js');
+    var module_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.module.js');
+    var dep_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'dep.js');
+    var unused_module_path = path.join(pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'libs', 'unused.module.js');
+    fs.mkdirSync(path.dirname(module_path), { recursive: true });
+    fs.mkdirSync(path.dirname(unused_module_path), { recursive: true });
+    fs.writeFileSync(main_path,
+      'window.__importPresentationModule("./res/three.js-r162/build/three.module.js");',
+      'utf8');
+    fs.writeFileSync(dep_path, 'export const ANSWER = 42;\n', 'utf8');
+    fs.writeFileSync(module_path, [
+      "import { ANSWER } from './dep.js';",
+      'export const value = ANSWER + 1;'
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(unused_module_path, 'export const UNUSED = true;\n', 'utf8');
+
+    harness.presentation._bundleStandaloneModuleResources(pres_path);
+
+    var bundle_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.standalone.js');
+    var bundle = fs.readFileSync(bundle_path, 'utf8');
+    var context = { window: {} };
+    vm.runInNewContext(bundle, context);
+
+    assert.ok(bundle.includes('window.__standalone_modules'));
+    assert.equal(
+      context.window.__standalone_modules['./res/three.js-r162/build/three.module.js'].value,
+      43
+    );
+    assert.equal(fs.existsSync(path.join(
+      pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'libs', 'unused.standalone.js'
+    )), false);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_getStandaloneModuleEntries discovers only referenced module entries', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'module-entry-pres');
+    fs.mkdirSync(path.join(pres_path, 'res', 'internal'), { recursive: true });
+    fs.mkdirSync(path.join(pres_path, 'res', 'mods'), { recursive: true });
+    fs.writeFileSync(path.join(pres_path, 'main.js'), [
+      'async function loadA() {',
+      '  return await import("./res/mods/a.module.js");',
+      '}'
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(path.join(pres_path, 'res', 'internal', 'presentation.js'), [
+      'async function loadB() {',
+      '  return this._importResourceModule("./res/mods/b.js");',
+      '}'
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(path.join(pres_path, 'res', 'mods', 'a.module.js'), 'export const A = 1;\n', 'utf8');
+    fs.writeFileSync(path.join(pres_path, 'res', 'mods', 'b.js'), 'export const B = 2;\n', 'utf8');
+    fs.writeFileSync(path.join(pres_path, 'res', 'mods', 'unused.module.js'), 'export const U = 3;\n', 'utf8');
+
+    assert.deepEqual(harness.presentation._getStandaloneModuleEntries(pres_path), [
+      './res/mods/a.module.js',
+      './res/mods/b.js'
+    ]);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_getStandaloneModuleEntries parses generated runtime numeric separators', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'numeric-separator-pres');
+    fs.mkdirSync(path.join(pres_path, 'res', 'internal'), { recursive: true });
+    fs.mkdirSync(path.join(pres_path, 'res', 'three.js-r162', 'build'), { recursive: true });
+    fs.writeFileSync(path.join(pres_path, 'res', 'internal', 'presentation.js'), [
+      'function pingLater() {',
+      '  setInterval(function() {}, 10_000);',
+      '}',
+      'async function loadThree() {',
+      '  return this._importResourceModule("./res/three.js-r162/build/three.module.js");',
+      '}'
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(
+      path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.module.js'),
+      'export const THREE_OK = true;\n',
+      'utf8');
+
+    assert.deepEqual(harness.presentation._getStandaloneModuleEntries(pres_path), [
+      './res/three.js-r162/build/three.module.js'
+    ]);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_getStandaloneModuleEntries discovers inline auto-loaded three globals', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'orbit-controls-pres');
+    fs.mkdirSync(path.join(pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'controls'), { recursive: true });
+    fs.writeFileSync(path.join(pres_path, 'index.html'), [
+      '<scene-3d-json src="./res/mehanizam-3d.json">',
+      '<script type="x-scene-setup">',
+      "  await presentation.waitForGlobal('OrbitControls');",
+      '  var controls = new OrbitControls(this.camera, this.renderer.domElement);',
+      '</script>',
+      '</scene-3d-json>'
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(
+      path.join(pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'controls', 'OrbitControls.js'),
+      "export class OrbitControls {}\nexport class MapControls {}\n",
+      'utf8');
+
+    assert.deepEqual(harness.presentation._getAutoGlobalModuleEntries(pres_path), [
+      './res/three.js-r162/examples/jsm/controls/OrbitControls.js'
+    ]);
+    assert.deepEqual(harness.presentation._getStandaloneModuleEntries(pres_path), [
+      './res/three.js-r162/examples/jsm/controls/OrbitControls.js'
+    ]);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_bundleStandaloneModuleResources resolves bare three imports for addon globals', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'orbit-controls-bundle-pres');
+    var three_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.module.js');
+    var orbit_path = path.join(pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'controls', 'OrbitControls.js');
+    fs.mkdirSync(path.dirname(three_path), { recursive: true });
+    fs.mkdirSync(path.dirname(orbit_path), { recursive: true });
+    fs.writeFileSync(three_path, [
+      'export class EventDispatcher {}',
+      'export const MOUSE = {};',
+      'export class Quaternion {}',
+      'export class Spherical {}',
+      'export const TOUCH = {};',
+      'export class Vector2 {}',
+      'export class Vector3 {}',
+      'export class Plane {}',
+      'export class Ray {}',
+      'export const MathUtils = {};'
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(orbit_path, [
+      "import { EventDispatcher } from 'three';",
+      'class OrbitControls extends EventDispatcher {}',
+      'class MapControls extends OrbitControls {}',
+      'export { OrbitControls, MapControls };'
+    ].join('\n'), 'utf8');
+
+    harness.presentation._bundleStandaloneModuleResources(pres_path, [
+      './res/three.js-r162/examples/jsm/controls/OrbitControls.js'
+    ]);
+
+    var bundle_path = path.join(
+      pres_path,
+      'res',
+      'three.js-r162',
+      'examples',
+      'jsm',
+      'controls',
+      'OrbitControls.standalone.js'
+    );
+    var bundle = fs.readFileSync(bundle_path, 'utf8');
+    var EventDispatcher = class EventDispatcher {};
+    var context = {
+      window: {
+        THREE: { EventDispatcher: EventDispatcher }
+      }
+    };
+    context.window.window = context.window;
+    context.globalThis = context.window;
+    vm.runInNewContext(bundle, context);
+
+    assert.equal(bundle.includes('Multiple instances of Three.js being imported.'), false);
+    assert.equal(
+      typeof context.window.__standalone_modules['./res/three.js-r162/examples/jsm/controls/OrbitControls.js'].OrbitControls,
+      'function'
+    );
+    assert.equal(
+      Object.getPrototypeOf(
+        context.window.__standalone_modules['./res/three.js-r162/examples/jsm/controls/OrbitControls.js'].OrbitControls.prototype
+      ).constructor,
+      EventDispatcher
+    );
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_collectStandaloneBufferedAssets finds only standalone-buffered asset refs', function(assert) {
   var harness = createPresentationHarness();
-  var pres_path = 'C:/tmp/update-pres';
+  var assets = harness.presentation._collectStandaloneBufferedAssets([
+    '<img-pdf src="./doc.pdf"></img-pdf>',
+    '<plot-json src="./plot.json"></plot-json>',
+    '<scene-3d-json src="./scene.json"></scene-3d-json>',
+    '<img src="./plain.png">'
+  ].join('\n'));
+
+  assert.deepEqual(Array.from(assets).sort(), [
+    './doc.pdf',
+    './plot.json',
+    './scene.json'
+  ]);
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_rewriteStandaloneImports rewrites dynamic imports to standalone helper', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var main_path = path.join(tmp_dir, 'main.js');
+    fs.writeFileSync(main_path, [
+      'async function loadThing(path) {',
+      '  return await import(path);',
+      '}'
+    ].join('\n'), 'utf8');
+
+    harness.presentation._rewriteStandaloneImports(tmp_dir);
+
+    var rewritten = fs.readFileSync(main_path, 'utf8');
+    assert.ok(rewritten.includes('window.__importPresentationModule(path)'));
+    assert.ok(!rewritten.includes('import(path)'));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_rewriteStandaloneImports keeps generated globals fallback import intact', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var globals_path = path.join(tmp_dir, 'res', 'internal', 'globals.js');
+    fs.mkdirSync(path.dirname(globals_path), { recursive: true });
+    fs.writeFileSync(globals_path, [
+      'window.__importPresentationModule = async function(module_path) {',
+      '  return import(new URL(module_path, window.location.href).href);',
+      '};'
+    ].join('\n'), 'utf8');
+
+    harness.presentation._rewriteStandaloneImports(tmp_dir);
+
+    assert.equal(
+      fs.readFileSync(globals_path, 'utf8'),
+      [
+        'window.__importPresentationModule = async function(module_path) {',
+        '  return import(new URL(module_path, window.location.href).href);',
+        '};'
+      ].join('\n')
+    );
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_syncStandaloneBufferedAssets regenerates current buffers and removes stale ones', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var current_asset = path.join(tmp_dir, 'scene.json');
+    var stale_asset = path.join(tmp_dir, 'old.json');
+    var current_buf = current_asset + '.buf.js';
+    var stale_buf = stale_asset + '.buf.js';
+
+    fs.writeFileSync(current_asset, '{"ok":true}', 'utf8');
+    fs.writeFileSync(stale_asset, '{"old":true}', 'utf8');
+    fs.writeFileSync(stale_buf, 'stale', 'utf8');
+
+    harness.presentation._syncStandaloneBufferedAssets(tmp_dir, ['./scene.json']);
+
+    assert.ok(harness.write_calls.some(function(entry) {
+      return entry.file_path === current_buf;
+    }));
+    assert.equal(fs.existsSync(current_asset), false);
+    assert.equal(fs.existsSync(stale_buf), false);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_removePresentationServerExecutable removes stale portable server exe', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'standalone-pres');
+    var exe_path = path.join(pres_path, 'standalone-pres.exe');
+
+    fs.mkdirSync(pres_path, { recursive: true });
+    fs.writeFileSync(exe_path, 'exe', 'utf8');
+
+    harness.presentation._removePresentationServerExecutable(pres_path);
+
+    assert.equal(fs.existsSync(exe_path), false);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_getPresentationMode prefers config marker and falls back to artifacts', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var online_path = path.join(tmp_dir, 'online-pres');
+    var standalone_path = path.join(tmp_dir, 'standalone-pres');
+    var legacy_standalone_path = path.join(tmp_dir, 'legacy-standalone');
+    var legacy_online_path = path.join(tmp_dir, 'legacy-online');
+
+    fs.mkdirSync(path.join(online_path, 'res', 'internal'), { recursive: true });
+    fs.writeFileSync(path.join(online_path, 'res', 'internal', 'config.json'),
+      JSON.stringify({ presentation_mode: 'online' }), 'utf8');
+    fs.mkdirSync(path.join(standalone_path, 'res', 'internal'), { recursive: true });
+    fs.writeFileSync(path.join(standalone_path, 'res', 'internal', 'config.json'),
+      JSON.stringify({ presentation_mode: 'standalone' }), 'utf8');
+    fs.mkdirSync(path.join(legacy_standalone_path, 'res'), { recursive: true });
+    fs.writeFileSync(path.join(legacy_standalone_path, 'doc.pdf.buf.js'),
+      'registerFile("doc.pdf", "AQID");', 'utf8');
+    fs.mkdirSync(path.join(legacy_online_path, 'res'), { recursive: true });
+
+    assert.equal(harness.presentation._getPresentationMode(online_path), 'online');
+    assert.equal(harness.presentation._getPresentationMode(standalone_path), 'standalone');
+    assert.equal(harness.presentation._getPresentationMode(legacy_standalone_path), 'standalone');
+    assert.equal(harness.presentation._getPresentationMode(legacy_online_path), 'online');
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_setPresentationMode persists mode in config.json', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+
+    harness.presentation._setPresentationMode(tmp_dir, 'standalone');
+
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(tmp_dir, 'res', 'internal', 'config.json'), 'utf8')).presentation_mode,
+      'standalone'
+    );
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_readPresentationResourceFlags parses persisted globals resources', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var globals_path = path.join(tmp_dir, 'res', 'internal', 'globals.js');
+    fs.mkdirSync(path.dirname(globals_path), { recursive: true });
+    fs.writeFileSync(globals_path, [
+      'window.presentation_resources = {"pdfjs":true,"plotly":false,"mathjax":true,"three":false,"ui":true};'
+    ].join('\n'), 'utf8');
+
+    assert.deepEqual(harness.presentation._readPresentationResourceFlags(tmp_dir), {
+      pdfjs: true,
+      plotly: false,
+      mathjax: true,
+      three: false,
+      ui: true
+    });
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_restoreStandaloneBufferedAssets recreates raw files from .buf.js wrappers', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var buf_path = path.join(tmp_dir, 'doc.pdf.buf.js');
+    fs.writeFileSync(buf_path, 'registerFile("doc.pdf", "AQID");', 'utf8');
+
+    harness.presentation._restoreStandaloneBufferedAssets(tmp_dir);
+
+    assert.equal(fs.readFileSync(path.join(tmp_dir, 'doc.pdf')).toString('hex'), '010203');
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_restorePresentationModuleResources copies resources from persisted flags', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+
+    harness.presentation._restorePresentationModuleResources(tmp_dir, {
+      pdfjs: true,
+      plotly: true,
+      mathjax: true,
+      three: true,
+      ui: true
+    });
+
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'pdf.min.js');
+    }));
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'pdf.worker.min.js');
+    }));
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'plotly-3.3.0.min.js');
+    }));
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'mathjax-config.js');
+    }));
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'ui.css');
+    }));
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'ui.js');
+    }));
+    assert.ok(harness.copy_folder_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'MathJax-3.2.0');
+    }));
+    assert.ok(harness.copy_folder_calls.some(function(entry) {
+      return entry.destination === path.join(tmp_dir, 'res', 'three.js-r162');
+    }));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('_removeStandaloneGeneratedArtifacts removes standalone-only outputs', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var buf_path = path.join(tmp_dir, 'doc.pdf.buf.js');
+    var bundle_path = path.join(tmp_dir, 'res', 'mod.standalone.js');
+    fs.mkdirSync(path.dirname(bundle_path), { recursive: true });
+    fs.writeFileSync(buf_path, 'registerFile("doc.pdf", "AQID");', 'utf8');
+    fs.writeFileSync(bundle_path, 'bundle', 'utf8');
+
+    harness.presentation._removeStandaloneGeneratedArtifacts(tmp_dir);
+
+    assert.equal(fs.existsSync(buf_path), false);
+    assert.equal(fs.existsSync(bundle_path), false);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('makeStandalonePresentation bundles resource modules automatically', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'standalone-pres');
+    var index_path = path.join(pres_path, 'index.html');
+    var bundled = 0;
+    var rewritten = 0;
+    var sync_calls = [];
+    var removed = 0;
+
+    fs.mkdirSync(pres_path, { recursive: true });
+    fs.writeFileSync(index_path,
+      '<scene-3d-json src="./scene.json"></scene-3d-json>', 'utf8');
+    harness.setExistingFiles([index_path]);
+    harness.presentation._bundleStandaloneModuleResources = function(file_path) {
+      bundled += 1;
+      assert.equal(file_path, pres_path);
+    };
+    harness.presentation._rewriteStandaloneImports = function(file_path) {
+      rewritten += 1;
+      assert.equal(file_path, pres_path);
+    };
+    harness.presentation._setPresentationMode = function(file_path, mode) {
+      assert.equal(file_path, pres_path);
+      assert.equal(mode, 'standalone');
+    };
+    harness.presentation._syncStandaloneBufferedAssets = function(file_path, assets) {
+      sync_calls.push({
+        file_path: file_path,
+        assets: Array.from(assets).sort()
+      });
+    };
+    harness.presentation._removePresentationServerExecutable = function(file_path) {
+      removed += 1;
+      assert.equal(file_path, pres_path);
+    };
+
+    harness.presentation.makeStandalonePresentation(pres_path);
+
+    assert.equal(bundled, 1);
+    assert.equal(rewritten, 1);
+    assert.equal(removed, 1);
+    assert.deepEqual(sync_calls, [{
+      file_path: pres_path,
+      assets: ['./scene.json']
+    }]);
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('makeOnlinePresentation restores online resources and removes standalone artifacts', function(assert) {
+  withTempDir(function(tmp_dir) {
+    var harness = createPresentationHarness();
+    var pres_path = path.join(tmp_dir, 'online-pres');
+    var index_path = path.join(pres_path, 'index.html');
+    var globals_path = path.join(pres_path, 'res', 'internal', 'globals.js');
+    var buf_path = path.join(pres_path, 'doc.pdf.buf.js');
+    var bundle_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.standalone.js');
+    var update_calls = [];
+
+    fs.mkdirSync(path.dirname(globals_path), { recursive: true });
+    fs.mkdirSync(path.dirname(bundle_path), { recursive: true });
+    fs.writeFileSync(index_path, '<html></html>', 'utf8');
+    fs.writeFileSync(globals_path,
+      'window.presentation_resources = {"pdfjs":true,"plotly":false,"mathjax":false,"three":true,"ui":false};',
+      'utf8');
+    fs.writeFileSync(buf_path, 'registerFile("doc.pdf", "AQID");', 'utf8');
+    fs.writeFileSync(bundle_path, 'bundle', 'utf8');
+    harness.setExistingFiles([index_path]);
+    harness.presentation._updatePresentationBackend = function(file_path) {
+      update_calls.push(file_path);
+    };
+    harness.presentation._setPresentationMode = function(file_path, mode) {
+      assert.equal(file_path, pres_path);
+      assert.equal(mode, 'online');
+    };
+
+    harness.presentation.makeOnlinePresentation(pres_path);
+
+    assert.deepEqual(update_calls, [pres_path]);
+    assert.equal(fs.readFileSync(path.join(pres_path, 'doc.pdf')).toString('hex'), '010203');
+    assert.equal(fs.existsSync(buf_path), false);
+    assert.equal(fs.existsSync(bundle_path), false);
+    assert.ok(harness.copy_calls.some(function(entry) {
+      return entry.destination === path.join(pres_path, 'res', 'pdf.min.js');
+    }));
+    assert.ok(harness.copy_folder_calls.some(function(entry) {
+      return entry.destination === path.join(pres_path, 'res', 'three.js-r162');
+    }));
+  });
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('updatePresentation refreshes backend and reapplies standalone mode', function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/update-standalone-pres';
   var calls = [];
 
   harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._getPresentationMode = function(file_path) {
+    calls.push(['mode', file_path]);
+    return 'standalone';
+  };
   harness.presentation._updatePresentationBackend = function(file_path) {
-    calls.push(file_path);
+    calls.push(['backend', file_path]);
+  };
+  harness.presentation._setPresentationMode = function(file_path, mode) {
+    calls.push(['set', file_path, mode]);
+  };
+  harness.presentation._applyStandalonePresentationState = function(file_path) {
+    calls.push(['standalone', file_path]);
+  };
+  harness.presentation._applyOnlinePresentationState = function(file_path) {
+    calls.push(['online', file_path]);
   };
 
   harness.presentation.updatePresentation(pres_path);
 
-  assert.deepEqual(calls, [pres_path]);
+  assert.deepEqual(calls, [
+    ['mode', pres_path],
+    ['backend', pres_path],
+    ['set', pres_path, 'standalone'],
+    ['standalone', pres_path]
+  ]);
+}, { tags: ['unit', 'presentation'] });
+
+tests.add('updatePresentation refreshes backend and reapplies online mode', function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/update-online-pres';
+  var calls = [];
+
+  harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._getPresentationMode = function(file_path) {
+    calls.push(['mode', file_path]);
+    return 'online';
+  };
+  harness.presentation._updatePresentationBackend = function(file_path) {
+    calls.push(['backend', file_path]);
+  };
+  harness.presentation._setPresentationMode = function(file_path, mode) {
+    calls.push(['set', file_path, mode]);
+  };
+  harness.presentation._applyStandalonePresentationState = function(file_path) {
+    calls.push(['standalone', file_path]);
+  };
+  harness.presentation._applyOnlinePresentationState = function(file_path) {
+    calls.push(['online', file_path]);
+  };
+
+  harness.presentation.updatePresentation(pres_path);
+
+  assert.deepEqual(calls, [
+    ['mode', pres_path],
+    ['backend', pres_path],
+    ['set', pres_path, 'online'],
+    ['online', pres_path]
+  ]);
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('editPresentation starts preview server without updating backend', async function(assert) {
@@ -447,8 +1008,8 @@ tests.add('editPresentation starts preview server without updating backend', asy
   };
 
   harness.setExistingFiles([path.join(pres_path, 'index.html')]);
-  harness.presentation._startPresentation = async function(exe_file) {
-    calls.push({ name: 'start', value: exe_file });
+  harness.presentation._startPresentation = async function(file_path) {
+    calls.push({ name: 'start', value: file_path });
     return 'http://127.0.0.1:1234/';
   };
   harness.presentation.jsl.inter.non_blocking = {
@@ -476,7 +1037,7 @@ tests.add('editPresentation starts preview server without updating backend', asy
   assert.deepEqual(calls.slice(0, 2).map(function(call) {
     return call.name;
   }), ['start', 'open']);
-  assert.ok(calls[0].value.endsWith(path.join('edit-pres', 'edit-pres.exe')));
+  assert.equal(calls[0].value, pres_path);
   assert.deepEqual(set_path_calls[0], {
     file_path: pres_path,
     url: 'http://127.0.0.1:1234/'
@@ -513,8 +1074,8 @@ tests.add('openPresentation starts presentation server without updating backend'
   };
 
   harness.setExistingFiles([path.join(pres_path, 'index.html')]);
-  harness.presentation._startPresentation = async function(exe_file) {
-    calls.push({ name: 'start', value: exe_file });
+  harness.presentation._startPresentation = async function(file_path) {
+    calls.push({ name: 'start', value: file_path });
     return 'http://127.0.0.1:1234/';
   };
   harness.presentation.jsl.inter.windows = {
@@ -538,7 +1099,7 @@ tests.add('openPresentation starts presentation server without updating backend'
   assert.deepEqual(calls.slice(0, 2).map(function(call) {
     return call.name;
   }), ['start', 'open']);
-  assert.ok(calls[0].value.endsWith(path.join('open-pres', 'open-pres.exe')));
+  assert.equal(calls[0].value, pres_path);
   assert.equal(webview.src, 'http://127.0.0.1:1234/');
   assert.equal(typeof keydown_handler, 'function');
   
@@ -562,6 +1123,124 @@ tests.add('openPresentation starts presentation server without updating backend'
     { channel: 'data', payload: { toggle_stopwatch: true } },
     { channel: 'data', payload: { toggle_slide_nav: true } }
   ]);
+}, { tags: ['unit', 'presentation', 'async'] });
+
+tests.add('openPresentation infers standalone mode from presentation config', async function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/open-standalone-pres';
+  var calls = [];
+  var keydown_handler;
+  var context = {
+    presentation: {},
+    document: {
+      addEventListener: function(type, handler) {
+        if(type == 'keydown') {
+          keydown_handler = handler;
+        }
+      }
+    }
+  };
+
+  harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._getPresentationMode = function(file_path) {
+    calls.push({ name: 'mode', value: file_path });
+    return 'standalone';
+  };
+  harness.presentation._startPresentation = async function() {
+    assert.fail('_startPresentation should not be used for inferred standalone mode');
+  };
+  harness.presentation.jsl.inter.non_blocking = {
+    waitMSeconds: async function() {}
+  };
+  harness.presentation.jsl.inter.windows = {
+    open_windows: {
+      1: {
+        ready: Promise.resolve(),
+        context: context,
+        setFullscreen: function() {},
+        setTitle: function(title) {
+          calls.push({ name: 'title', value: title });
+        }
+      }
+    },
+    openWindow: function(file) {
+      calls.push({ name: 'open', value: file });
+      return 1;
+    }
+  };
+
+  await harness.presentation.openPresentation(pres_path);
+
+  assert.deepEqual(calls.slice(0, 2), [
+    { name: 'mode', value: pres_path },
+    { name: 'open', value: path.join(pres_path, 'index.html') }
+  ]);
+  assert.equal(typeof keydown_handler, 'function');
+}, { tags: ['unit', 'presentation', 'async'] });
+
+tests.add('editPresentation infers standalone mode from presentation config', async function(assert) {
+  var harness = createPresentationHarness();
+  var pres_path = 'C:/tmp/edit-standalone-pres';
+  var calls = [];
+  var set_path_calls = [];
+  var context = {
+    presentation_editor: {
+      setPath: function(file_path, url) {
+        set_path_calls.push({ file_path: file_path, url: url });
+      }
+    },
+    preview: {
+      addEventListener: function() {}
+    },
+    document: {
+      body: {
+        classList: {
+          add: function() {},
+          remove: function() {}
+        }
+      },
+      addEventListener: function() {}
+    }
+  };
+
+  harness.setExistingFiles([path.join(pres_path, 'index.html')]);
+  harness.presentation._getPresentationMode = function(file_path) {
+    calls.push({ name: 'mode', value: file_path });
+    return 'standalone';
+  };
+  harness.presentation._startPresentation = async function() {
+    assert.fail('_startPresentation should not be used for inferred standalone mode');
+  };
+  harness.presentation.jsl.inter.non_blocking = {
+    waitMSeconds: async function() {}
+  };
+  harness.presentation.jsl.inter.windows = {
+    open_windows: {
+      1: {
+        ready: Promise.resolve(),
+        context: context,
+        setFullscreen: function() {},
+        setTitle: function(title) {
+          calls.push({ name: 'title', value: title });
+        }
+      }
+    },
+    openWindow: function(file) {
+      calls.push({ name: 'open', value: file });
+      return 1;
+    }
+  };
+
+  await harness.presentation.editPresentation(pres_path);
+
+  assert.deepEqual(calls.slice(0, 2), [
+    { name: 'mode', value: pres_path },
+    { name: 'open', value: 'presentation-editor.html' }
+  ]);
+  assert.deepEqual(set_path_calls[0], {
+    file_path: pres_path,
+    url: path.join(pres_path, 'index.html')
+  });
 }, { tags: ['unit', 'presentation', 'async'] });
 
 exports.MODULE_TESTS = tests;

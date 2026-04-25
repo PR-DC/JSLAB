@@ -288,6 +288,12 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('ensurePlotly()'));
   assert.ok(presentation_source.includes('ensureMathJax()'));
   assert.ok(presentation_source.includes('ensureThree()'));
+  assert.ok(presentation_source.includes('_getStandaloneModulePath(module_path)'));
+  assert.ok(presentation_source.includes('_importBundledResourceModule(module_path)'));
+  assert.ok(presentation_source.includes("_getAutoGlobalModulePath(prop)"));
+  assert.ok(presentation_source.includes('_importResourceModule(module_path)'));
+  assert.ok(presentation_source.includes('__standalone_modules'));
+  assert.ok(presentation_source.includes('__importPresentationModule'));
   assert.ok(presentation_source.includes('_loadScriptOnce('));
   assert.ok(presentation_source.includes('_scheduleNextSlidePreload()'));
   assert.ok(presentation_source.includes('_preloadSlide(index'));
@@ -295,6 +301,7 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('prepareSlideForCapture'));
   assert.ok(presentation_source.includes('_ensureSlideMath(slide)'));
   assert.ok(presentation_source.includes('_typesetMath(root)'));
+  assert.ok(presentation_source.includes("var has_hash_sync = window.location.protocol != 'file:';"));
   assert.ok(presentation_source.includes('replaceSlide(index, slide_html)'));
   assert.ok(presentation_source.includes('replaceSlides(slides_html, active_index)'));
   assert.ok(presentation_source.includes("'contextmenu'"));

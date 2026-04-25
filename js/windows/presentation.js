@@ -14,6 +14,25 @@ if(has_node) {
 
 var is_iframe = window.parent != window;
 var is_lazy = new URLSearchParams(window.location.search).has('lazy');
+var has_hash_sync = window.location.protocol != 'file:';
+var auto_global_modules = Object.freeze({
+  THREE: './res/three.js-r162/build/three.module.js',
+  OrbitControls: './res/three.js-r162/examples/jsm/controls/OrbitControls.js',
+  MapControls: './res/three.js-r162/examples/jsm/controls/OrbitControls.js',
+  ArcballControls: './res/three.js-r162/examples/jsm/controls/ArcballControls.js',
+  DragControls: './res/three.js-r162/examples/jsm/controls/DragControls.js',
+  FirstPersonControls: './res/three.js-r162/examples/jsm/controls/FirstPersonControls.js',
+  FlyControls: './res/three.js-r162/examples/jsm/controls/FlyControls.js',
+  PointerLockControls: './res/three.js-r162/examples/jsm/controls/PointerLockControls.js',
+  TrackballControls: './res/three.js-r162/examples/jsm/controls/TrackballControls.js',
+  TransformControls: './res/three.js-r162/examples/jsm/controls/TransformControls.js',
+  FBXLoader: './res/three.js-r162/examples/jsm/loaders/FBXLoader.js',
+  GLTFLoader: './res/three.js-r162/examples/jsm/loaders/GLTFLoader.js',
+  MTLLoader: './res/three.js-r162/examples/jsm/loaders/MTLLoader.js',
+  OBJLoader: './res/three.js-r162/examples/jsm/loaders/OBJLoader.js',
+  RGBELoader: './res/three.js-r162/examples/jsm/loaders/RGBELoader.js',
+  STLLoader: './res/three.js-r162/examples/jsm/loaders/STLLoader.js'
+});
 
 /**
  * Stores file buffer.
@@ -153,12 +172,14 @@ class PRDC_JSLAB_PRESENTATION {
       init_slide();
     }
 
-    window.addEventListener('hashchange', () => {
-      const m = location.hash.match(/^#s(\d+)$/);
-      if(!m) return;
-      const idx = parseInt(m[1], 10) - 1;
-      if(idx !== this.current_slide) this.showSlide(idx);
-    });
+    if(has_hash_sync) {
+      window.addEventListener('hashchange', () => {
+        const m = location.hash.match(/^#s(\d+)$/);
+        if(!m) return;
+        const idx = parseInt(m[1], 10) - 1;
+        if(idx !== this.current_slide) this.showSlide(idx);
+      });
+    }
     
     window.addEventListener('beforeprint', () => {
       obj._interpolateAllSlides();
@@ -543,21 +564,142 @@ class PRDC_JSLAB_PRESENTATION {
   }
 
   /**
-   * Loads THREE on demand for non-standalone presentations.
+   * Resolves a bundled module path for standalone mode.
+   * @param {String} module_path
+   * @returns {String}
+   */
+  _getStandaloneModulePath(module_path) {
+    if(module_path.endsWith('.module.js')) {
+      return module_path.replace(/\.module\.js$/, '.standalone.js');
+    }
+    if(module_path.endsWith('.js')) {
+      return module_path.replace(/\.js$/, '.standalone.js');
+    }
+    if(module_path.endsWith('.mjs')) {
+      return module_path.replace(/\.mjs$/, '.standalone.mjs');
+    }
+    return module_path + '.standalone.js';
+  }
+
+  /**
+   * Loads a resource module either via dynamic import or standalone bundle.
+   * @param {String} module_path
+   * @returns {Promise<(Object|false)>}
+   */
+  async _importResourceModule(module_path) {
+    if(typeof window.__importPresentationModule == 'function') {
+      return window.__importPresentationModule(module_path);
+    }
+
+    if(window._standalone) {
+      window.__standalone_modules = window.__standalone_modules || {};
+      if(window.__standalone_modules[module_path]) {
+        return window.__standalone_modules[module_path];
+      }
+
+      var standalone_path = this._getStandaloneModulePath(module_path);
+      await this._loadScriptOnce('module:' + standalone_path, standalone_path);
+      return window.__standalone_modules[module_path] || false;
+    }
+
+    return import(this._resourceUrl(module_path));
+  }
+
+  /**
+   * Loads a bundled standalone resource module and returns its registered exports.
+   * Works in both standalone and server-backed presentation modes.
+   * @param {String} module_path
+   * @returns {Promise<(Object|false)>}
+   */
+  async _importBundledResourceModule(module_path) {
+    window.__standalone_modules = window.__standalone_modules || {};
+    if(window.__standalone_modules[module_path]) {
+      return window.__standalone_modules[module_path];
+    }
+
+    var standalone_path = this._getStandaloneModulePath(module_path);
+    if(typeof window.__loadPresentationScript == 'function') {
+      await window.__loadPresentationScript(standalone_path);
+    } else {
+      await this._loadScriptOnce('module:' + standalone_path, standalone_path);
+    }
+    return window.__standalone_modules[module_path] || false;
+  }
+
+  /**
+   * Returns the resource module path for a known runtime global.
+   * @param {String} prop
+   * @returns {(String|null)}
+   */
+  _getAutoGlobalModulePath(prop) {
+    return auto_global_modules[prop] || null;
+  }
+
+  /**
+   * Attempts to load and expose a known runtime global automatically.
+   * @param {String} prop
+   * @returns {Promise<Boolean>}
+   */
+  async _ensureKnownGlobal(prop) {
+    if(window[prop]) {
+      return true;
+    }
+
+    var module_path = this._getAutoGlobalModulePath(prop);
+    if(!module_path) {
+      return false;
+    }
+
+    if(prop == 'THREE') {
+      return this.ensureThree();
+    }
+
+    if(module_path.includes('/three.js-r162/') && !await this.ensureThree()) {
+      return false;
+    }
+
+    try {
+      var mod = await this._importBundledResourceModule(module_path);
+      if(!mod) {
+        return false;
+      }
+      if(mod.default && typeof window[prop] == 'undefined') {
+        window[prop] = mod.default;
+      }
+      if(typeof mod == 'object') {
+        Object.keys(mod).forEach(function(key) {
+          if(typeof window[key] == 'undefined') {
+            window[key] = mod[key];
+          }
+        });
+      }
+      return !!window[prop];
+    } catch(err) {
+      console.error('presentation:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Loads THREE on demand.
    * @returns {Promise<Boolean>}
    */
   async ensureThree() {
     if(!this._hasPresentationResource('three')) return false;
     if(window.THREE) return true;
-    if(window._standalone) return false;
     if(this._failed_resources.has('three')) {
       return false;
     }
     if(!this._resource_promises.three) {
-      this._resource_promises.three = import(
-        this._resourceUrl('./res/three.js-r162/build/three.module.js')
+      this._resource_promises.three = this._importResourceModule(
+        './res/three.js-r162/build/three.module.js'
       ).then((THREE) => {
+        if(!THREE) {
+          throw new Error('Failed to load THREE module');
+        }
         window.THREE = THREE;
+        window.__standalone_modules = window.__standalone_modules || {};
+        window.__standalone_modules['./res/three.js-r162/build/three.module.js'] = THREE;
         return true;
       }).catch((err) => {
         this._failed_resources.add('three');
@@ -804,15 +946,25 @@ class PRDC_JSLAB_PRESENTATION {
    * @param {string} prop - Name of variable
    */
   async waitForGlobal(prop) {
-    if(!window[prop]) {
-      await new Promise(resolve => {
-        const check = () => {
-          if(window[prop]) return resolve();
-          requestAnimationFrame(check);
-        };
-        check();
-      });
+    if(window[prop]) {
+      return;
     }
+
+    if(await this._ensureKnownGlobal(prop)) {
+      return;
+    }
+
+    if(this._getAutoGlobalModulePath(prop)) {
+      throw new Error('Failed to load global: ' + prop);
+    }
+
+    await new Promise(resolve => {
+      const check = () => {
+        if(window[prop]) return resolve();
+        requestAnimationFrame(check);
+      };
+      check();
+    });
   }
   
   /**
@@ -872,6 +1024,9 @@ class PRDC_JSLAB_PRESENTATION {
    * @param {number} idx – zero-based slide index.
    */
   _updateHash(idx) {
+    if(!has_hash_sync) {
+      return;
+    }
     const newHash = `#s${idx + 1}`;
     if(location.hash !== newHash) {
       history.replaceState(null, '', newHash);
@@ -1859,47 +2014,49 @@ class Scene3dJSON extends HTMLElement {
       var w = presentation.toPixels(this.getAttribute('width') , 'width')  || 640;
       var h = presentation.toPixels(this.getAttribute('height'), 'height') || 480;
 
-      if(!window._standalone){
-        if(!await presentation.ensureThree()) return;
-
-        var loader = new window.THREE.ObjectLoader();
-        this.scene = loader.parse(this.data);
-        this.camera = new window.THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
-        this.renderer = new window.THREE.WebGLRenderer({ canvas: this._canvas, alpha: true, antialias: true });
-        this.renderer.setSize(w, h);
-        this.renderer.setAnimationLoop(() => { 
-          this.renderer.render(this.scene, this.camera) 
-        });
-
-        var script = this.querySelector('script[type="x-scene-setup"]');
-        if(script) {
-          var AsyncFunction = Object.getPrototypeOf(
-            async function () {}).constructor;
-          var fn = new AsyncFunction(
-            'presentation',
-            script.textContent
-          ).bind(this);
-          await fn(presentation);
+      if(!await presentation.ensureThree()) {
+        var ph = this.querySelector('.scene-3d-error');
+        if(!ph) {
+          ph = document.createElement('div');
+          ph.className = 'error-element scene-3d-error';
+          this.appendChild(ph);
+          var txt_ph = document.createElement('div');
+          txt_ph.innerHTML = language.currentString(363);
+          ph.appendChild(txt_ph);
         }
-
-        this.renderer.render(this.scene, this.camera);
-        this._finished_loading = true;
-      } else {
-        var ph = document.createElement('div');
-        ph.className = 'error-element scene-3d-error';
-        this.appendChild(ph);
         this._canvas.width = 0;
         this._canvas.height = 0;
         Object.assign(ph.style, {
           width:  w + 'px',
           height: h + 'px'
         });
-        var txt_ph = document.createElement('div');
-          txt_ph.innerHTML = language.currentString(363);
-          ph.appendChild(txt_ph);
-          this._finished_loading = true;
-          console.error('scene-3d-json:', language.currentString(363));
-        }
+        this._finished_loading = true;
+        console.error('scene-3d-json:', language.currentString(363));
+        return;
+      }
+
+      var loader = new window.THREE.ObjectLoader();
+      this.scene = loader.parse(this.data);
+      this.camera = new window.THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+      this.renderer = new window.THREE.WebGLRenderer({ canvas: this._canvas, alpha: true, antialias: true });
+      this.renderer.setSize(w, h);
+      this.renderer.setAnimationLoop(() => { 
+        this.renderer.render(this.scene, this.camera) 
+      });
+
+      var script = this.querySelector('script[type="x-scene-setup"]');
+      if(script) {
+        var AsyncFunction = Object.getPrototypeOf(
+          async function () {}).constructor;
+        var fn = new AsyncFunction(
+          'presentation',
+          script.textContent
+        ).bind(this);
+        await fn(presentation);
+      }
+
+      this.renderer.render(this.scene, this.camera);
+      this._finished_loading = true;
     } catch(err) {
       console.error('scene-3d-json:', err);
     }
