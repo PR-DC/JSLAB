@@ -2698,6 +2698,11 @@
     "en": "is about to be closed but has been modified. Do you want to save or discard the changes?",
     "rs": "Ä‡e biti zatvorena ali je izmenjena. Da li Å¾elite da saÄuvate ili odbacite izmene?",
     "rsc": "Ñ›Ðµ Ð±Ð¸Ñ‚Ð¸ Ð·Ð°Ñ‚Ð²Ð¾Ñ€ÐµÐ½Ð° Ð°Ð»Ð¸ Ñ˜Ðµ Ð¸Ð·Ð¼ÐµÑšÐµÐ½Ð°. Ð”Ð° Ð»Ð¸ Ð¶ÐµÐ»Ð¸Ñ‚Ðµ Ð´Ð° ÑÐ°Ñ‡ÑƒÐ²Ð°Ñ‚Ðµ Ð¸Ð»Ð¸ Ð¾Ð´Ð±Ð°Ñ†Ð¸Ñ‚Ðµ Ð¸Ð·Ð¼ÐµÐ½Ðµ?"
+  },
+  "542": {
+    "en": "This presentation must be opened inside JSLAB.",
+    "rs": "Ova prezentacija mora biti otvorena unutar JSLAB-a.",
+    "rsc": "Ova prezentacija mora biti otvorena unutar JSLAB-a."
   }
 }
 

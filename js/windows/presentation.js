@@ -77,6 +77,12 @@ class PRDC_JSLAB_PRESENTATION {
       }
     }`;
     document.head.appendChild(style);
+
+    this.open_mode_error = this._getOpenModeError();
+    if(this.open_mode_error) {
+      this._showOpenModeError(this.open_mode_error);
+      return;
+    }
     
     this._buildSlideNav();
     this.stopwatch = new PRDC_JSLAB_PRESENTATION_STOPWATCH();
@@ -241,10 +247,39 @@ class PRDC_JSLAB_PRESENTATION {
   }
 
   /**
+   * Returns the message to show when the current open mode is not supported.
+   * @returns {String}
+   */
+  _getOpenModeError() {
+    if(window._standalone && this.config.presentation_mode == 'online') {
+      return language.currentString(542);
+    }
+    return '';
+  }
+
+  /**
+   * Shows a blocking open-mode error message.
+   * @param {String} message
+   */
+  _showOpenModeError(message) {
+    if(this.slides_cont) {
+      this.slides_cont.style.display = 'none';
+    }
+    var blocker = document.createElement('div');
+    blocker.id = 'presentation-open-error';
+    blocker.className = 'error-element';
+    var text = document.createElement('div');
+    text.textContent = message;
+    blocker.appendChild(text);
+    document.body.appendChild(blocker);
+  }
+
+  /**
    * Shows the slide at the supplied zero-based index.
    * @param {number} index – Index of the <slide> element to activate.
    */
   setSlide(index) {
+    if(this.open_mode_error) return;
     if(this._animating) this._stopAllAnimations();
     if(index == this.current_slide) return;
     if(index < 0 || index >= this.slides.length) return;
@@ -284,6 +319,7 @@ class PRDC_JSLAB_PRESENTATION {
    * @param {number} index – Index of the <slide> element to activate.
    */
   showSlide(index) {
+    if(this.open_mode_error) return;
     if(this._animating) return;
     if(index === this.current_slide) return;
     if(index < 0 || index >= this.slides.length) return;
@@ -1763,7 +1799,10 @@ async function loadFileBuf(buf_url) {
     s.src = buf_url + '.buf.js';
     s.onload = () => {
       resolve(window.file_buffers[name]);
-    }
+    };
+    s.onerror = () => {
+      reject(new Error('Failed to load buffered file: ' + buf_url));
+    };
     document.head.appendChild(s);
   });
 }

@@ -210,6 +210,7 @@ tests.add('createPresentation writes globals.js with language provider for windo
     assert.ok(globals_write.content.includes('"317":"LANG_317"'));
     assert.ok(globals_write.content.includes('"318":"LANG_318"'));
     assert.ok(globals_write.content.includes('"363":"LANG_363"'));
+    assert.ok(globals_write.content.includes('"542":"LANG_542"'));
 
     var config_write = harness.write_calls.find(function(entry) {
       return entry.file_path === path.join(pres_path, 'res', 'internal', 'config.json');
@@ -830,6 +831,7 @@ tests.add('makeStandalonePresentation bundles resource modules automatically', f
     var harness = createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'standalone-pres');
     var index_path = path.join(pres_path, 'index.html');
+    var calls = [];
     var bundled = 0;
     var rewritten = 0;
     var sync_calls = [];
@@ -847,7 +849,12 @@ tests.add('makeStandalonePresentation bundles resource modules automatically', f
       rewritten += 1;
       assert.equal(file_path, pres_path);
     };
+    harness.presentation._updatePresentationBackend = function(file_path) {
+      calls.push({ name: 'update', value: file_path });
+      assert.equal(file_path, pres_path);
+    };
     harness.presentation._setPresentationMode = function(file_path, mode) {
+      calls.push({ name: 'set', value: file_path, mode: mode });
       assert.equal(file_path, pres_path);
       assert.equal(mode, 'standalone');
     };
@@ -864,6 +871,10 @@ tests.add('makeStandalonePresentation bundles resource modules automatically', f
 
     harness.presentation.makeStandalonePresentation(pres_path);
 
+    assert.deepEqual(calls, [
+      { name: 'set', value: pres_path, mode: 'standalone' },
+      { name: 'update', value: pres_path }
+    ]);
     assert.equal(bundled, 1);
     assert.equal(rewritten, 1);
     assert.equal(removed, 1);
@@ -882,7 +893,7 @@ tests.add('makeOnlinePresentation restores online resources and removes standalo
     var globals_path = path.join(pres_path, 'res', 'internal', 'globals.js');
     var buf_path = path.join(pres_path, 'doc.pdf.buf.js');
     var bundle_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.standalone.js');
-    var update_calls = [];
+    var calls = [];
 
     fs.mkdirSync(path.dirname(globals_path), { recursive: true });
     fs.mkdirSync(path.dirname(bundle_path), { recursive: true });
@@ -894,16 +905,20 @@ tests.add('makeOnlinePresentation restores online resources and removes standalo
     fs.writeFileSync(bundle_path, 'bundle', 'utf8');
     harness.setExistingFiles([index_path]);
     harness.presentation._updatePresentationBackend = function(file_path) {
-      update_calls.push(file_path);
+      calls.push({ name: 'update', value: file_path });
     };
     harness.presentation._setPresentationMode = function(file_path, mode) {
+      calls.push({ name: 'set', value: file_path, mode: mode });
       assert.equal(file_path, pres_path);
       assert.equal(mode, 'online');
     };
 
     harness.presentation.makeOnlinePresentation(pres_path);
 
-    assert.deepEqual(update_calls, [pres_path]);
+    assert.deepEqual(calls, [
+      { name: 'set', value: pres_path, mode: 'online' },
+      { name: 'update', value: pres_path }
+    ]);
     assert.equal(fs.readFileSync(path.join(pres_path, 'doc.pdf')).toString('hex'), '010203');
     assert.equal(fs.existsSync(buf_path), false);
     assert.equal(fs.existsSync(bundle_path), false);
@@ -943,8 +958,8 @@ tests.add('updatePresentation refreshes backend and reapplies standalone mode', 
 
   assert.deepEqual(calls, [
     ['mode', pres_path],
-    ['backend', pres_path],
     ['set', pres_path, 'standalone'],
+    ['backend', pres_path],
     ['standalone', pres_path]
   ]);
 }, { tags: ['unit', 'presentation'] });
@@ -976,8 +991,8 @@ tests.add('updatePresentation refreshes backend and reapplies online mode', func
 
   assert.deepEqual(calls, [
     ['mode', pres_path],
-    ['backend', pres_path],
     ['set', pres_path, 'online'],
+    ['backend', pres_path],
     ['online', pres_path]
   ]);
 }, { tags: ['unit', 'presentation'] });

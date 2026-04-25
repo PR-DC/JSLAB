@@ -302,11 +302,15 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('_ensureSlideMath(slide)'));
   assert.ok(presentation_source.includes('_typesetMath(root)'));
   assert.ok(presentation_source.includes("var has_hash_sync = window.location.protocol != 'file:';"));
+  assert.ok(presentation_source.includes('_getOpenModeError()'));
+  assert.ok(presentation_source.includes('_showOpenModeError('));
+  assert.ok(presentation_source.includes("this.config.presentation_mode == 'online'"));
   assert.ok(presentation_source.includes('replaceSlide(index, slide_html)'));
   assert.ok(presentation_source.includes('replaceSlides(slides_html, active_index)'));
   assert.ok(presentation_source.includes("'contextmenu'"));
   assert.ok(presentation_css.includes('.presentation-line {'));
   assert.ok(presentation_css.includes(".presentation-line::after"));
+  assert.ok(presentation_css.includes('#presentation-open-error'));
   assert.ok(presentation_source.includes('_normalizeLayoutHelpers'));
 
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB'));

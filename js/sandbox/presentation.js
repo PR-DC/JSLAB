@@ -175,8 +175,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     file_path = this._getPath('updatePresentation', file_path);
     if(this._checkPresentation('updatePresentation', file_path)) {
       var mode = this._getPresentationMode(file_path);
-      this._updatePresentationBackend(file_path);
       this._setPresentationMode(file_path, mode);
+      this._updatePresentationBackend(file_path);
       if(mode == 'standalone') {
         this._applyStandalonePresentationState(file_path);
       } else {
@@ -277,6 +277,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     file_path = this._getPath('makeStandalonePresentation', file_path);
     if(this._checkPresentation('makeStandalonePresentation', file_path)) {
       this._setPresentationMode(file_path, 'standalone');
+      this._updatePresentationBackend(file_path);
       this._applyStandalonePresentationState(file_path);
     }
   }
@@ -291,8 +292,8 @@ class PRDC_JSLAB_LIB_PRESENTATION {
       var resources = this._readPresentationResourceFlags(file_path);
       this._restoreStandaloneBufferedAssets(file_path);
       this._restorePresentationModuleResources(file_path, resources);
-      this._updatePresentationBackend(file_path);
       this._setPresentationMode(file_path, 'online');
+      this._updatePresentationBackend(file_path);
       this._applyOnlinePresentationState(file_path);
     }
   }
@@ -1447,6 +1448,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
       "317": this.jsl.inter.lang.currentString(317),
       "318": this.jsl.inter.lang.currentString(318),
       "363": this.jsl.inter.lang.currentString(363),
+      "542": this.jsl.inter.lang.currentString(542),
     };
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/globals.js'), `
 window._standalone = window.location.protocol == 'file:';

@@ -258,6 +258,17 @@ plot-json .js-plotly-plot, plot-json .plot-container, plot-json .svg-container {
   height: 100%;
 }
 
+#presentation-open-error {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10001;
+  width: min(70vw, 760px);
+  min-height: 120px;
+  font-size: 32px;
+}
+
 @media print {
   html  { 
     overflow: auto;
