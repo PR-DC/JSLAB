@@ -154,7 +154,18 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string|string[]} The selected file path(s) or an empty array if canceled.
    */
   chooseFile(options) {
-    var file_path = this.jsl.inter.env.showOpenDialogSync(options);
+    var file_path = typeof this.jsl.inter.env.showOpenDialog == 'function'
+      ? this.jsl.inter.env.showOpenDialog(options)
+      : this.jsl.inter.env.showOpenDialogSync(options);
+    if(file_path && typeof file_path.then == 'function') {
+      return file_path.then((out) => {
+        if(out === undefined || out === false) {
+          this.jsl.inter.env.error('@chooseFile: '+this.jsl.inter.lang.string(126));
+          return [];
+        }
+        return out;
+      });
+    }
     if(file_path === undefined) {
       this.jsl.inter.env.error('@chooseFile: '+this.jsl.inter.lang.string(126));
       return [];
@@ -172,7 +183,18 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
       properties: ['openDirectory'],
       ...options_in
     };
-    var file_path = this.jsl.inter.env.showOpenDialogSync(options);
+    var file_path = typeof this.jsl.inter.env.showOpenDialog == 'function'
+      ? this.jsl.inter.env.showOpenDialog(options)
+      : this.jsl.inter.env.showOpenDialogSync(options);
+    if(file_path && typeof file_path.then == 'function') {
+      return file_path.then((out) => {
+        if(out === undefined || out === false) {
+          this.jsl.inter.env.error('@chooseFolder: '+this.jsl.inter.lang.string(126));
+          return [];
+        }
+        return out;
+      });
+    }
     if(file_path === undefined) {
       this.jsl.inter.env.error('@chooseFolder: '+this.jsl.inter.lang.string(126));
       return [];

@@ -1,6 +1,6 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
-**Quick links:** [Website](https://pr-dc.com/jslab/) · [Discourse](https://discourse.jsl.pr-dc.com/) · [Documentation](https://pr-dc.com/jslab/doc/) · [Releases](https://github.com/PR-DC/JSLAB/releases) · [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/w) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
 <p align="center">
   <img src="https://pr-dc.com/img/github/JSLAB.svg?v1" width="150">
@@ -15,6 +15,10 @@ The **JavaScript Laboratory (JSLAB)** is an open-source environment designed for
 The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.
 
 `JSLAB` offers a streamlined, dual-window interface designed to boost productivity and foster innovation. The main window combines a versatile workspace with a sandbox terminal, allowing users to run, test, and iterate on code in real time. The dedicated editor window introduces the **.JSL file format**—a plain text format tailored for `JSLAB` scripts. With advanced linting and intelligent autocompletion, the editor makes it easy to write precise, reusable code with minimal errors.
+
+## Try it online
+
+Use JSLAB directly in your browser: [https://pr-dc.com/jslab/w](https://pr-dc.com/jslab/w)
 
 ## Why Choose JSLAB?
 
@@ -480,6 +484,7 @@ In order to download necessary tools, clone the repository, and install dependen
 - **npm:** npm is typically installed alongside Node.js.
 - **node-gyp:** node-gyp is installed alongside the application but it requires additional tools and libraries depending on your operating system. Follow the instructions for your specific OS from: [https://github.com/nodejs/node-gyp](https://github.com/nodejs/node-gyp)
 - **Git:** Suggested for cloning the repository. Download it from the official website: [https://git-scm.com/](https://git-scm.com/)
+- **Emscripten:** Required for the full web build (`npm run dist-web`), including wasm builds of supported native modules. Install and activate the Emscripten SDK from: [https://emscripten.org/docs/getting_started/downloads.html](https://emscripten.org/docs/getting_started/downloads.html)
 
 ### Installation Steps
 

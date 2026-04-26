@@ -14,6 +14,10 @@ class PRDC_APP_CONFIG {
    * Create JSLAB configuration object.
    */
   constructor() {
+    var process_env = (typeof process != 'undefined' && process && process.env)
+      ? process.env
+      : {};
+
     this.PRODUCTION = false;
     this.DEBUG = false;
     this.TEST = false;
@@ -181,9 +185,9 @@ class PRDC_APP_CONFIG {
     this.EDITOR_SEARCH_ALL_MAX_RENDERED_LINES = 2000;
     
     // Build sign
-    this.COMPANY_NAME = process.env.COMPANY_NAME;
-    this.TIMESTAMP_SERVER = process.env.TIMESTAMP_SERVER;
-    this.SIGN_TOOL_PATH = process.env.SIGN_TOOL_PATH;
+    this.COMPANY_NAME = process_env.COMPANY_NAME;
+    this.TIMESTAMP_SERVER = process_env.TIMESTAMP_SERVER;
+    this.SIGN_TOOL_PATH = process_env.SIGN_TOOL_PATH;
     
     this.PANEL_RESIZER_WIDTH = 10;
     this.PANEL_MIN_SIZE = 10;

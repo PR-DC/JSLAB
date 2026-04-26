@@ -5,9 +5,6 @@
  * info@pr-dc.com
  */
 
-const fs = require('fs');
-const path = require('path');
-
 /**
  * Provides hover tooltips for CodeMirror identifiers backed by documentation.
  */
@@ -637,22 +634,41 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
     PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name = Object.create(null);
     PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower = Object.create(null);
 
-    var docs_path;
-    if(typeof app_path !== 'undefined') {
-      docs_path = path.join(app_path, 'docs', 'documentation.json');
-    } else {
-      docs_path = path.join(process.cwd(), 'docs', 'documentation.json');
-    }
+    var docs = this._getPreloadedDocs();
+    if(!docs || typeof docs !== 'object') {
+      var fs = false;
+      var path = false;
+      var node_require = false;
+      try {
+        node_require = eval('require');
+      } catch {}
+      if(typeof node_require == 'function') {
+        try {
+          fs = node_require('fs');
+          path = node_require('path');
+        } catch {}
+      }
 
-    if(!fs.existsSync(docs_path)) {
-      return;
-    }
+      if(!fs || !path) {
+        return;
+      }
 
-    var docs;
-    try {
-      docs = JSON.parse(fs.readFileSync(docs_path, 'utf8'));
-    } catch(err) {
-      return;
+      var docs_path;
+      if(typeof app_path !== 'undefined') {
+        docs_path = path.join(app_path, 'docs', 'documentation.json');
+      } else {
+        docs_path = path.join(process.cwd(), 'docs', 'documentation.json');
+      }
+
+      if(!fs.existsSync(docs_path)) {
+        return;
+      }
+
+      try {
+        docs = JSON.parse(fs.readFileSync(docs_path, 'utf8'));
+      } catch(err) {
+        return;
+      }
     }
 
     Object.keys(docs).forEach(function(scope) {
@@ -696,6 +712,25 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
         });
       });
     });
+  }
+
+  /**
+   * Returns docs preloaded into the browser runtime when available.
+   * @returns {(Object|false)}
+   */
+  _getPreloadedDocs() {
+    if(typeof globalThis != 'undefined' && globalThis.__JSLAB_WEB_DOCS__) {
+      return globalThis.__JSLAB_WEB_DOCS__;
+    }
+    try {
+      if(typeof globalThis != 'undefined' &&
+          globalThis.parent &&
+          globalThis.parent !== globalThis &&
+          globalThis.parent.__JSLAB_WEB_DOCS__) {
+        return globalThis.parent.__JSLAB_WEB_DOCS__;
+      }
+    } catch {}
+    return false;
   }
 
   /**

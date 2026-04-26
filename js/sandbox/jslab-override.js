@@ -4,6 +4,11 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
+
+var {
+  getWebSubmoduleConstructor,
+  getWebUnavailableSubmodule
+} = require('./jslab-web-submodules');
  
 /**
  * Class for JSLAB override submodule.
@@ -17,10 +22,12 @@ class PRDC_JSLAB_OVERRIDE {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    const cfg = this.jsl.inter.config;
+    this.is_web_runtime = typeof globalThis != 'undefined' &&
+      globalThis.__JSLAB_RUNTIME__ == 'web';
+    var cfg = this.jsl.inter.config;
     
     this.jsl.builtin_workspace = Object.getOwnPropertyNames(this.jsl.context);
-    this._Module = require('module');
+    this._Module = this._getModuleRuntime();
     
     // Overrides
     this.jsl._console = this.jsl.context.console;
@@ -42,7 +49,7 @@ class PRDC_JSLAB_OVERRIDE {
     this.jsl._isNaN = this.jsl.context.isNaN;
     
     // Add toJSON methods to some classes
-    const GamepadCtor = this.jsl.context.Gamepad;
+    var GamepadCtor = this.jsl.context.Gamepad;
     if(typeof GamepadCtor != 'undefined' && GamepadCtor && !GamepadCtor.prototype.toJSON) {
       GamepadCtor.prototype.toJSON = function() {
         return {
@@ -59,7 +66,7 @@ class PRDC_JSLAB_OVERRIDE {
         };
       };
     }
-    const MediaDeviceInfoCtor = this.jsl.context.MediaDeviceInfo;
+    var MediaDeviceInfoCtor = this.jsl.context.MediaDeviceInfo;
     if(typeof MediaDeviceInfoCtor != 'undefined' && MediaDeviceInfoCtor && !MediaDeviceInfoCtor.prototype.toJSON) {
       MediaDeviceInfoCtor.prototype.toJSON = function() {
         return {
@@ -101,13 +108,11 @@ class PRDC_JSLAB_OVERRIDE {
     // Construct objects of submodules
     var submodules = {};
     cfg.SUBMODULES['builtin'].forEach(function(module) {  
-      var exp = require('./'+module.file);
-      submodules[module.name] = new exp[module.class_name](obj.jsl);
+      submodules[module.name] = obj._constructSubmodule('builtin', module);
     });
 
     cfg.SUBMODULES['lib'].forEach(function(lib) {  
-      var exp = require('./'+lib.file);
-      obj.jsl.context[lib.name] = new exp[lib.class_name](obj.jsl);
+      obj.jsl.context[lib.name] = obj._constructSubmodule('lib', lib);
       obj.jsl[lib.name] = obj.jsl.context[lib.name];
     });
 
@@ -137,8 +142,6 @@ class PRDC_JSLAB_OVERRIDE {
       });
     });
     
-    this.jsl.initial_workspace = Object.getOwnPropertyNames(this.jsl.context);
-
     // Execute override submodule
     this.execute();
     Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(function(prop) {
@@ -156,6 +159,89 @@ class PRDC_JSLAB_OVERRIDE {
       obj.jsl.context.Promise = obj.Promise;
       obj.jsl.context.console = obj.console;
     }, 500);
+
+    if(this.is_web_runtime && typeof this.jsl.context.require != 'function') {
+      this.jsl.context.require = function(module_name) {
+        return obj.jsl.inter.env.reportUnavailable('Module "' + module_name + '"');
+      };
+    }
+
+    this.jsl.initial_workspace = Object.getOwnPropertyNames(this.jsl.context);
+  }
+
+  /**
+   * Returns the module runtime object appropriate for the current environment.
+   * @returns {Object}
+   */
+  _getModuleRuntime() {
+    var obj = this;
+    if(this.is_web_runtime) {
+      function BrowserModule() {}
+      BrowserModule.prototype.require = function(module_name) {
+        return obj.jsl.inter.env.reportUnavailable('Module "' + module_name + '"');
+      };
+      BrowserModule._resolveFilename = function(module_name) {
+        throw new Error('Module "' + module_name + '" is not available in web mode.');
+      };
+      return BrowserModule;
+    }
+    return eval('require')('module');
+  }
+
+  /**
+   * Loads and constructs a configured submodule.
+   * @param {string} group
+   * @param {Object} module_data
+   * @returns {Object}
+   */
+  _constructSubmodule(group, module_data) {
+    var ctor = this._getSubmoduleConstructor(group, module_data);
+    if(typeof ctor == 'function') {
+      return new ctor(this.jsl);
+    }
+    return this._createUnavailableSubmodule(group, module_data);
+  }
+
+  /**
+   * Resolves the constructor for a submodule.
+   * @param {string} group
+   * @param {Object} module_data
+   * @returns {Function|undefined}
+   */
+  _getSubmoduleConstructor(group, module_data) {
+    if(this.is_web_runtime) {
+      return getWebSubmoduleConstructor(module_data);
+    }
+    var exp = eval('require')('./' + module_data.file);
+    return exp[module_data.class_name];
+  }
+
+  /**
+   * Creates a stub module that reports the feature as unavailable.
+   * @param {string} group
+   * @param {Object} module_data
+   * @returns {Object}
+   */
+  _createUnavailableSubmodule(group, module_data) {
+    var obj = this;
+    var unavailable = getWebUnavailableSubmodule(module_data) || {};
+    var methods = Array.isArray(unavailable.methods) ? unavailable.methods : [];
+    var label = module_data.name.replaceAll('_', ' ');
+    var message = label.charAt(0).toUpperCase() + label.slice(1);
+
+    function UnavailableSubmodule(jsl) {
+      this.jsl = jsl;
+      this.name = module_data.name;
+      this.unavailable_in_web = true;
+    }
+
+    methods.forEach(function(method_name) {
+      UnavailableSubmodule.prototype[method_name] = function() {
+        return obj.jsl.inter.env.reportUnavailable(message);
+      };
+    });
+
+    return new UnavailableSubmodule(this.jsl);
   }
   
   /**
@@ -171,8 +257,19 @@ class PRDC_JSLAB_OVERRIDE {
     
     // Delete globals
     this.delete_globals.forEach(function(prop) {
-      obj.deleted[prop] = obj.jsl.inter.env.context[prop];
-      delete obj.jsl.inter.env.context[prop];
+      var context = obj.jsl.inter.env.context;
+      try {
+        obj.deleted[prop] = context[prop];
+      } catch {
+        obj.deleted[prop] = undefined;
+      }
+
+      try {
+        var descriptor = Object.getOwnPropertyDescriptor(context, prop);
+        if(descriptor && descriptor.configurable) {
+          delete context[prop];
+        }
+      } catch {}
     });
     
     /**
@@ -310,17 +407,23 @@ class PRDC_JSLAB_OVERRIDE {
       }
     };
     
-    this._Module.prototype.require = function(...args) {
-      var name = obj.jsl.pathResolve(args[0], this);
-      if(name) {
-        if(!obj.jsl.required_modules.includes(name)) {
-          obj.jsl.required_modules.push(name);
+    if(this.is_web_runtime) {
+      this._Module.prototype.require = function(module_name) {
+        return obj.jsl.inter.env.reportUnavailable('Module "' + module_name + '"');
+      };
+    } else {
+      this._Module.prototype.require = function(...args) {
+        var name = obj.jsl.pathResolve(args[0], this);
+        if(name) {
+          if(!obj.jsl.required_modules.includes(name)) {
+            obj.jsl.required_modules.push(name);
+          }
+          args[0] = name;
+          return obj.jsl._require.apply(this, args);
         }
-        args[0] = name;
-        return obj.jsl._require.apply(this, args);
-      }
-      return false;
-    };
+        return false;
+      };
+    }
   }
   
   /**

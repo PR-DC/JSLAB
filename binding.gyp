@@ -3,7 +3,7 @@
     {
       "target_name": "native_module",
       "sources": [
-        "cpp/native-module.cpp"
+        "cpp/native-module-napi.cpp"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
@@ -29,7 +29,7 @@
     {
       "target_name": "alpha_shape_3d",
       "sources": [
-        "cpp/alpha-shape-3d.cpp"
+        "cpp/alpha-shape-3d-napi.cpp"
       ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",

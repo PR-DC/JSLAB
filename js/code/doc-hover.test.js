@@ -70,4 +70,53 @@ tests.add('_signature and _formatType produce expected display strings', functio
   assert.equal(PRDC_JSLAB_CODE_DOC_HOVER._formatType({}), '');
 }, { tags: ['unit', 'code', 'doc-hover'] });
 
+tests.add('_ensureIndex loads browser-preloaded docs without filesystem access', function(assert) {
+  var old_by_name = PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name;
+  var old_by_name_lower = PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower;
+  var old_docs = globalThis.__JSLAB_WEB_DOCS__;
+  try {
+    delete PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name;
+    delete PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower;
+    globalThis.__JSLAB_WEB_DOCS__ = {
+      lib: {
+        math: {
+          sin: {
+            name: 'sin',
+            kind: 'function',
+            description: 'Sine.',
+            params: [{ name: 'x' }],
+            returns: [{ type: { names: ['number'] } }]
+          }
+        }
+      }
+    };
+
+    var hover = Object.create(PRDC_JSLAB_CODE_DOC_HOVER.prototype);
+    hover._getPreloadedDocs = PRDC_JSLAB_CODE_DOC_HOVER.prototype._getPreloadedDocs;
+    hover._ensureIndex = PRDC_JSLAB_CODE_DOC_HOVER.prototype._ensureIndex;
+    hover._ensureIndex();
+
+    assert.equal(Array.isArray(PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name.sin), true);
+    assert.equal(PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name.sin.length, 1);
+    assert.equal(PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name.sin[0].doc_query, 'math.sin');
+    assert.equal(PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower.sin[0].description, 'Sine.');
+  } finally {
+    if(typeof old_by_name == 'undefined') {
+      delete PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name;
+    } else {
+      PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name = old_by_name;
+    }
+    if(typeof old_by_name_lower == 'undefined') {
+      delete PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower;
+    } else {
+      PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower = old_by_name_lower;
+    }
+    if(typeof old_docs == 'undefined') {
+      delete globalThis.__JSLAB_WEB_DOCS__;
+    } else {
+      globalThis.__JSLAB_WEB_DOCS__ = old_docs;
+    }
+  }
+}, { tags: ['unit', 'code', 'doc-hover'] });
+
 exports.MODULE_TESTS = tests;

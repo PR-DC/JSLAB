@@ -22,9 +22,9 @@ class PRDC_JSLAB_LIB_FIGURES {
     this._fonts = [];
     this._fid = 0;
     this._pid = 0;
-    this._html_figure = this.jsl.inter.env.readFileSync(this.jsl.app_path + '/html/html_figure.html').toString();
-    this._i_html_figure = this.jsl.inter.env.readFileSync(this.jsl.app_path + '/html/i_html_figure.html').toString();
-    this._io_html_figure = this.jsl.inter.env.readFileSync(this.jsl.app_path + '/html/io_html_figure.html').toString();
+    this._html_figure_path = this.jsl.app_path + '/html/html_figure.html';
+    this._i_html_figure_path = this.jsl.app_path + '/html/i_html_figure.html';
+    this._io_html_figure_path = this.jsl.app_path + '/html/io_html_figure.html';
 
     /**
      * Array of open figures.
@@ -296,12 +296,14 @@ class PRDC_JSLAB_LIB_FIGURES {
   close(id, type = 'figure') {
     if(id == "all") {
       this._fid = 0;
-      this.jsl.inter.env.closeWindow(id);
+      Object.keys(this.open_figures).forEach((fid) => {
+        this.closeFigure(fid);
+      });
     } else {
       if(type == 'window') {
         this.jsl.inter.env.closeWindow(id);
       } else if(type == 'figure') {
-        this.jsl.inter.env.closeFigure(id);
+        this.closeFigure(id);
       } 
     }
     this.jsl.no_ans = true;
@@ -313,7 +315,7 @@ class PRDC_JSLAB_LIB_FIGURES {
    * @param {String} fid - The figure identifier.
    */
   async saveFigureDialog(fid) {
-    let options = {
+    var options = {
      title: this.jsl.inter.lang.currentString(143),
      defaultPath: fid + '.svg',
      buttonLabel: this.jsl.inter.lang.currentString(143),
@@ -329,9 +331,18 @@ class PRDC_JSLAB_LIB_FIGURES {
       {name: 'interactive offline html', extensions: ['io.html']}
      ]
     };
-    var figure_path = this.jsl.inter.env.showSaveDialogSync(options);
-    if(figure_path) {
-      await this.saveFigure(fid, figure_path);
+    var figure_target = false;
+    if(typeof this.jsl.inter.env.showSaveDialog == 'function') {
+      figure_target = await this.jsl.inter.env.showSaveDialog(options);
+      if(figure_target && figure_target.canceled) {
+        return;
+      }
+    }
+    if(!figure_target && typeof this.jsl.inter.env.showSaveDialogSync == 'function') {
+      figure_target = this.jsl.inter.env.showSaveDialogSync(options);
+    }
+    if(figure_target) {
+      await this.saveFigure(fid, figure_target);
     }
   }
   
@@ -341,21 +352,41 @@ class PRDC_JSLAB_LIB_FIGURES {
    * @param {String} figure_path - The path where the figure should be saved.
    * @param {Array} size - Optional dimensions [width, height] to use if saving as a PDF.
    */
-  async saveFigure(fid, figure_path, size) {
+  async saveFigure(fid, figure_target, size) {
+    var figure_path = typeof figure_target == 'object' && figure_target !== null
+      ? figure_target.filePath
+      : figure_target;
     var pdf_flag = false;
     var html_flag = false;
     var ext = figure_path.split('.').pop();
+    var obj = this;
+    var save_output = async function(data, mime_type) {
+      if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
+          figure_target && typeof figure_target == 'object') {
+        var result = await obj.jsl.inter.env.saveLocalFile(figure_target, data, {
+          mimeType: mime_type,
+          filePath: figure_path
+        });
+        if(result !== false) {
+          return true;
+        }
+      }
+      return obj.jsl.inter.env.writeFileSync(figure_path, data);
+    };
     if(['svg', 'pdf', 'png', 'jpg', 'jpeg', 'webp', 'html', 'json'].includes(ext)) {
       if(ext == 'json' || figure_path.endsWith('.i.html') || figure_path.endsWith('.io.html')) {
         var data = this.open_figures[fid].context.plot.toJSON();
         if(figure_path.endsWith('.i.html')) {
-          var html = this._i_html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
+          var html = this._readFigureTemplate(this._i_html_figure_path).replaceAll('%title%', this.open_figures[fid].dom.title);
           data = html.replace('%figure_data%', data);
         } else if(figure_path.endsWith('.io.html')) {
-          var html = this._io_html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
+          var html = this._readFigureTemplate(this._io_html_figure_path).replaceAll('%title%', this.open_figures[fid].dom.title);
           data = html.replace('%figure_data%', data);
         }
-        this.jsl.inter.env.writeFileSync(figure_path, data);
+        await save_output(data,
+          figure_path.endsWith('.json')
+            ? 'application/json;charset=utf-8'
+            : 'text/html;charset=utf-8');
         return;
       } else if(ext == 'jpg') {
         ext = 'jpeg';
@@ -371,7 +402,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       var data;
       if(ext == 'svg') {
         if(html_flag) {
-          var html = this._html_figure.replaceAll('%title%', this.open_figures[fid].dom.title);
+          var html = this._readFigureTemplate(this._html_figure_path).replaceAll('%title%', this.open_figures[fid].dom.title);
           data = html.replace('%image_source%', data_url);
         } else {
           data = decodeURIComponent(data_url.replace('data:image/svg+xml,',''));
@@ -381,18 +412,26 @@ class PRDC_JSLAB_LIB_FIGURES {
         data_url = data_url.replace('data:image/png;base64,','');
         data_url = data_url.replace('data:image/jpeg;base64,','');
         data_url = data_url.replace('data:image/webp;base64,','');
-        data = new Buffer(data_url, 'base64');
+        data = this._decodeBase64(data_url);
       }
       if(pdf_flag) {
         var pdf_data = await this._svg2pdf(fid, data, size);
+        if(!pdf_data) {
+          this.jsl.inter.env.error('@saveFigure: PDF export is not available.');
+        }
         try {
-          this.jsl.inter.env.writeFileSync(figure_path, pdf_data);
+          await save_output(pdf_data, 'application/pdf');
         } catch(err) {
           this.jsl.inter.env.error('@saveFigure: '+err.stack);
         }
       } else {
         try {
-          this.jsl.inter.env.writeFileSync(figure_path, data);
+          await save_output(data,
+            ext == 'svg' ? 'image/svg+xml;charset=utf-8' :
+            ext == 'png' ? 'image/png' :
+            ext == 'jpeg' ? 'image/jpeg' :
+            ext == 'webp' ? 'image/webp' :
+            'application/octet-stream');
         } catch(err) {
           this.jsl.inter.env.error('@saveFigure: '+err.stack);
         }
@@ -400,6 +439,19 @@ class PRDC_JSLAB_LIB_FIGURES {
     } else {
       this.jsl.inter.env.error('@saveFigure: '+this.jsl.inter.lang.string(124));
     }
+  }
+
+  /**
+   * Reads a figure export template on demand.
+   * @param {string} file_path
+   * @returns {string}
+   */
+  _readFigureTemplate(file_path) {
+    var data = this.jsl.inter.env.readFileSync(file_path, 'utf8');
+    if(data === false) {
+      this.jsl.inter.env.error('@saveFigure: unable to load figure template ' + file_path + '.');
+    }
+    return typeof data == 'string' ? data : data.toString();
   }
   
   /**
@@ -629,14 +681,16 @@ class PRDC_JSLAB_LIB_FIGURES {
    * @param {Number} id Identifier for the figure.
    * @returns {Number} The identifier of the opened or updated figure.
    */
-  loadJsonFigure(fid, file_path) {
+  async loadJsonFigure(fid, file_path) {
     if(!file_path) {
       var options = {
         title: this.jsl.inter.lang.currentString(247),
         buttonLabel: this.jsl.inter.lang.currentString(231)
       };
-      file_path = this.jsl.inter.env.showOpenDialogSync(options);
-      if(file_path === undefined) {
+      file_path = typeof this.jsl.inter.env.showOpenDialog == 'function'
+        ? await this.jsl.inter.env.showOpenDialog(options)
+        : this.jsl.inter.env.showOpenDialogSync(options);
+      if(file_path === undefined || file_path === false) {
         this.jsl.inter.env.error('loadJsonFigure: '+this.jsl.inter.lang.string(132)+'.');
         return false;
       } else {
@@ -745,13 +799,21 @@ class PRDC_JSLAB_LIB_FIGURES {
       width = size[0];
       height = size[1];
     }
+
+    if(typeof this.jsl.inter.env.svgToPdf == 'function') {
+      return this.jsl.inter.env.svgToPdf(data, width, height, this._fonts);
+    }
     
     return new Promise(function(resolve) {
       var doc = new obj.jsl.inter.env.PDFDocument({
         size: [width, height]
       });
-      doc.registerFont('Roboto', obj._fonts[0]);
-      doc.registerFont('LatinModernMath', obj._fonts[1]);
+      if(obj._fonts[0]) {
+        doc.registerFont('Roboto', obj._fonts[0]);
+      }
+      if(obj._fonts[1]) {
+        doc.registerFont('LatinModernMath', obj._fonts[1]);
+      }
       obj.jsl.inter.env.SVGtoPDF(doc, data, 0, 0, {
         width: width,
         height: height,
@@ -765,6 +827,26 @@ class PRDC_JSLAB_LIB_FIGURES {
       });
       doc.end();
     });
+  }
+
+  /**
+   * Decodes a base64 string into a binary payload.
+   * @param {string} data_url
+   * @returns {Buffer|Uint8Array}
+   */
+  _decodeBase64(data_url) {
+    if(typeof Buffer != 'undefined' && typeof Buffer.from == 'function') {
+      return Buffer.from(data_url, 'base64');
+    }
+    if(typeof atob == 'function') {
+      var binary = atob(data_url);
+      var data = new Uint8Array(binary.length);
+      for(var i = 0; i < binary.length; i++) {
+        data[i] = binary.charCodeAt(i);
+      }
+      return data;
+    }
+    this.jsl.inter.env.error('@saveFigure: Base64 decoding is not available.');
   }
 }
 

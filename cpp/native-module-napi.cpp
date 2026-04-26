@@ -1,10 +1,10 @@
-﻿// JSLAB - native-module.cpp
+// JSLAB - native-module-napi.cpp
 // Author: Milos Petrasinovic <mpetrasinovic@prdc.rs>
 // PR-DC, Republic of Serbia
 // info@prdc.rs
 // --------------------
 
-#include "native-module.h"
+#include "native-module-napi.h"
 
 namespace native_module_ns {
 
@@ -100,7 +100,10 @@ Napi::Object NativeModule::Init(Napi::Env env, Napi::Object exports) {
 // --------------------
 Napi::Value NativeModule::roots(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  const double TOLERANCE = 1e-10;
+  native_module_core::RootsResult roots_result;
+  std::vector<double> coefficients;
+  int degree;
+  int i;
   
   // Ensure the input is an array
   if(!info[0].IsArray()) {
@@ -110,41 +113,26 @@ Napi::Value NativeModule::roots(const Napi::CallbackInfo& info) {
 
   // Extract the polynomial coefficients from the input
   Napi::Array coefficientsArray = info[0].As<Napi::Array>();
-  int degree = coefficientsArray.Length() - 1;
-  
-  // Create an Eigen vector for the coefficients
-  VectorXd coefficients(degree + 1);
-  for(int i = 0; i <= degree; ++i) {
-    coefficients(i) = coefficientsArray.Get(i).As<Napi::Number>().DoubleValue();
+  degree = static_cast<int>(coefficientsArray.Length()) - 1;
+  coefficients.resize(degree + 1);
+  for(i = 0; i <= degree; ++i) {
+    coefficients[i] = coefficientsArray.Get(i).As<Napi::Number>().DoubleValue();
   }
 
-  // Create the companion matrix
-  MatrixXd companionMatrix = MatrixXd::Zero(degree, degree);
-  for(int i = 1; i < degree; ++i) {
-    companionMatrix(i, i - 1) = 1.0;
+  if(!native_module_core::roots(coefficients, &roots_result)) {
+    Napi::TypeError::New(env, "Expected at least two polynomial coefficients").ThrowAsJavaScriptException();
+    return Napi::Array::New(env);
   }
-  for(int i = 0; i < degree; ++i) {
-    companionMatrix(i, degree - 1) = -coefficients(degree - i) / coefficients(0);
-  }
-
-  // Use Eigen's eigenvalue solver to find the roots
-  EigenSolver<MatrixXd> solver(companionMatrix);
-  VectorXcd roots = solver.eigenvalues();
 
   // Convert the result to a JavaScript array
   Napi::Array result = Napi::Array::New(env, degree);
-  for (int i = 0; i < degree; ++i) {
-    double realPart = roots(i).real();
-    double imagPart = roots(i).imag();
-
-    if(abs(imagPart) < TOLERANCE || isnan(imagPart)) {
-      // If the imaginary part is close to zero, return as a real number
-      result[i] = Napi::Number::New(env, realPart);
+  for(i = 0; i < degree; ++i) {
+    if(roots_result.imag[i] == 0.0) {
+      result[i] = Napi::Number::New(env, roots_result.real[i]);
     } else {
-      // Otherwise, return as a complex number object
       Napi::Object complexRoot = Napi::Object::New(env);
-      complexRoot.Set("real", Napi::Number::New(env, realPart));
-      complexRoot.Set("imag", Napi::Number::New(env, imagPart));
+      complexRoot.Set("real", Napi::Number::New(env, roots_result.real[i]));
+      complexRoot.Set("imag", Napi::Number::New(env, roots_result.imag[i]));
       result[i] = complexRoot;
     }
   }
@@ -156,6 +144,11 @@ Napi::Value NativeModule::roots(const Napi::CallbackInfo& info) {
 // --------------------
 Napi::Value NativeModule::cumtrapz(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
+  std::vector<double> y_values;
+  std::vector<double> x_values;
+  std::vector<double> result_values;
+  std::vector<double>* x_ptr = nullptr;
+  uint32_t i;
 
   // Ensure at least one argument is provided
   if(info.Length() < 1) {
@@ -196,52 +189,37 @@ Napi::Value NativeModule::cumtrapz(const Napi::CallbackInfo& info) {
     return Napi::Array::New(env, 0);
   }
 
-  // Initialize Eigen vectors
-  Eigen::VectorXd y(n);
-  Eigen::VectorXd x(n);
-  Eigen::VectorXd result(n);
-
-  // Load y values from JavaScript array
-  for(uint32_t i = 0; i < n; ++i) {
+  y_values.resize(n);
+  for(i = 0; i < n; ++i) {
     Napi::Value val = yInput.Get(i);
     if(!val.IsNumber()) {
       Napi::TypeError::New(env, "y array must contain only numbers").ThrowAsJavaScriptException();
       return env.Null();
     }
-    y[i] = val.As<Napi::Number>().DoubleValue();
+    y_values[i] = val.As<Napi::Number>().DoubleValue();
   }
 
-  // If x is provided, load x values; otherwise, assume uniform spacing
   if(hasX) {
-    for(uint32_t i = 0; i < n; ++i) {
+    x_values.resize(n);
+    x_ptr = &x_values;
+    for(i = 0; i < n; ++i) {
       Napi::Value val = xInput.Get(i);
       if (!val.IsNumber()) {
         Napi::TypeError::New(env, "x array must contain only numbers").ThrowAsJavaScriptException();
         return env.Null();
       }
-      x[i] = val.As<Napi::Number>().DoubleValue();
-    }
-  } else {
-    // Uniform spacing: x = [0, 1, 2, ..., n-1]
-    for(uint32_t i = 0; i < n; ++i) {
-      x[i] = static_cast<double>(i);
+      x_values[i] = val.As<Napi::Number>().DoubleValue();
     }
   }
 
-  // Initialize result: first value is always 0
-  result[0] = 0.0;
-
-  // Cumulative trapezoidal integration
-  for(uint32_t i = 1; i < n; ++i) {
-    double dx = x[i] - x[i - 1];  // Difference in x
-    double dy = 0.5 * (y[i] + y[i - 1]);  // Average height (trapezoid rule)
-    result[i] = result[i - 1] + dx * dy;
+  if(!native_module_core::cumtrapz(y_values, x_ptr, &result_values)) {
+    Napi::RangeError::New(env, "x and y arrays must have the same length").ThrowAsJavaScriptException();
+    return env.Null();
   }
 
-  // Convert Eigen vector back to JavaScript array
   Napi::Array jsResult = Napi::Array::New(env, n);
-  for(uint32_t i = 0; i < n; ++i) {
-    jsResult.Set(i, Napi::Number::New(env, result[i]));
+  for(i = 0; i < n; ++i) {
+    jsResult.Set(i, Napi::Number::New(env, result_values[i]));
   }
 
   return jsResult;
@@ -251,6 +229,11 @@ Napi::Value NativeModule::cumtrapz(const Napi::CallbackInfo& info) {
 // --------------------
 Napi::Value NativeModule::trapz(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
+  std::vector<double> y_values;
+  std::vector<double> x_values;
+  std::vector<double>* x_ptr = nullptr;
+  double total = 0.0;
+  uint32_t i;
 
   // Ensure at least one argument is provided
   if(info.Length() < 1) {
@@ -292,43 +275,32 @@ Napi::Value NativeModule::trapz(const Napi::CallbackInfo& info) {
     return env.Null();
   }
 
-  // Initialize Eigen vectors
-  Eigen::VectorXd y(n);
-  Eigen::VectorXd x(n);
-
-  // Load y values from JavaScript array
-  for(uint32_t i = 0; i < n; ++i) {
+  y_values.resize(n);
+  for(i = 0; i < n; ++i) {
     Napi::Value val = yInput.Get(i);
     if(!val.IsNumber()) {
       Napi::TypeError::New(env, "y array must contain only numbers").ThrowAsJavaScriptException();
       return env.Null();
     }
-    y[i] = val.As<Napi::Number>().DoubleValue();
+    y_values[i] = val.As<Napi::Number>().DoubleValue();
   }
 
-  // If x is provided, load x values; otherwise, assume uniform spacing
   if(hasX) {
-    for(uint32_t i = 0; i < n; ++i) {
+    x_values.resize(n);
+    x_ptr = &x_values;
+    for(i = 0; i < n; ++i) {
       Napi::Value val = xInput.Get(i);
       if (!val.IsNumber()) {
         Napi::TypeError::New(env, "x array must contain only numbers").ThrowAsJavaScriptException();
         return env.Null();
       }
-      x[i] = val.As<Napi::Number>().DoubleValue();
-    }
-  } else {
-    // Uniform spacing: x = [0, 1, 2, ..., n-1]
-    for(uint32_t i = 0; i < n; ++i) {
-      x[i] = static_cast<double>(i);
+      x_values[i] = val.As<Napi::Number>().DoubleValue();
     }
   }
 
-  // Perform trapezoidal integration
-  double total = 0.0;
-  for(uint32_t i = 1; i < n; ++i) {
-    double dx = x[i] - x[i - 1];
-    double dy = 0.5 * (y[i] + y[i - 1]);
-    total += dx * dy;
+  if(!native_module_core::trapz(y_values, x_ptr, &total)) {
+    Napi::RangeError::New(env, "x and y arrays must have the same length").ThrowAsJavaScriptException();
+    return env.Null();
   }
 
   return Napi::Number::New(env, total);

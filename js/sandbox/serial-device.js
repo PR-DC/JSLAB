@@ -27,6 +27,18 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
   async listSerialPorts() {
     return await this.jsl.inter.env.SerialPort.list();
   }
+
+  /**
+   * Prompts the browser to authorize a serial port if supported.
+   * @returns {Promise<Object|false>}
+   */
+  async requestSerialPort() {
+    if(this.jsl.inter.env.SerialPort &&
+        typeof this.jsl.inter.env.SerialPort.requestPort == 'function') {
+      return await this.jsl.inter.env.SerialPort.requestPort();
+    }
+    return false;
+  }
   
   /**
    * Checks if there is a USB device connected with the specified Vendor ID and Product ID.
@@ -105,9 +117,13 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    * @returns {Promise<string|false>}
    */
   async chooseSerialPort() {
+    var ports = await this.listSerialPorts();
+    if(ports.length == 0) {
+      await this.requestSerialPort();
+      ports = await this.listSerialPorts();
+    }
     var context = await this.jsl.inter.windows.openWindowBlank();
     context.setTitle(this.jsl.inter.lang.currentString(361));
-    var ports = await this.listSerialPorts();
     var ports_list = '';
     if(ports.length > 0) {
       for(var port of ports) {
@@ -157,9 +173,13 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    * @returns {Promise<string|false>}
    */
   async chooseSerialOptions() {
+    var ports = await this.listSerialPorts();
+    if(ports.length == 0) {
+      await this.requestSerialPort();
+      ports = await this.listSerialPorts();
+    }
     var context = await this.jsl.inter.windows.openWindowBlank();
     context.setTitle(this.jsl.inter.lang.currentString(362));
-    var ports = await this.listSerialPorts();
     var ports_list = '';
     if(ports.length > 0) {
       for(var port of ports) {
@@ -312,8 +332,8 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
       }, 30);
     });
     
-    function saveLog() {
-      let options = {
+    async function saveLog() {
+      var options = {
        title: obj.jsl.inter.lang.currentString(58),
        defaultPath: 'terminal_'+ obj.jsl.inter.time.getDateTimeStr() + '.log',
        buttonLabel: obj.jsl.inter.lang.currentString(58),
@@ -322,14 +342,32 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         {name: obj.jsl.inter.lang.currentString(345), extensions: ['*']}
        ]
       };
-      var log_path = obj.jsl.inter.env.showSaveDialogSync(options);
-      if(log_path) {
+      var save_target = false;
+      if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
+        save_target = await obj.jsl.inter.env.showSaveDialog(options);
+        if(save_target && save_target.canceled) {
+          return;
+        }
+      }
+      if(!save_target) {
+        save_target = obj.jsl.inter.env.showSaveDialogSync(options);
+      }
+      if(save_target) {
+        var log_path = typeof save_target == 'object' ? save_target.filePath : save_target;
         var data = context.terminal.getLog();
+        if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
+            save_target && typeof save_target == 'object') {
+          await obj.jsl.inter.env.saveLocalFile(save_target, data, {
+            mimeType: 'text/plain;charset=utf-8',
+            filePath: log_path
+          });
+          return;
+        }
         obj.jsl.inter.env.writeFileSync(log_path, data);
       }
     }
-    context.document.getElementById('save-log').addEventListener('click', () => {
-      saveLog();
+    context.document.getElementById('save-log').addEventListener('click', async() => {
+      await saveLog();
     });
     
     return context;

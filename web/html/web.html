@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSLAB / WEB | PR-DC</title>
+    <link rel="icon" type="image/svg+xml" href="./img/JSLAB.svg">
+    <link rel="stylesheet" type="text/css" href="./css/codemirror-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="./css/highlight-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="./css/big-json-viewer-notepadpp-theme.css">
+    <link rel="stylesheet" type="text/css" href="./lib/codemirror-5.49.2/addon/lint/lint.css">
+    <link rel="stylesheet" type="text/css" href="./lib/codemirror-5.49.2/addon/hint/show-hint.css">
+    <link rel="stylesheet" type="text/css" href="./lib/codemirror-5.49.2/lib/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="./css/codemirror-main-custom.css">
+    <link rel="stylesheet" type="text/css" href="./css/main.css">
+    <link rel="stylesheet" type="text/css" href="./css/context-menu.css">
+    <link rel="stylesheet" type="text/css" href="./css/terminal.css">
+    <link rel="stylesheet" type="text/css" href="./font/roboto.css">
+    <link rel="stylesheet" type="text/css" href="./font/RobotoMono.css">
+    <link rel="stylesheet" type="text/css" href="./css/web.css">
+  </head>
+  <body>
+    <div id="main-menu-container">
+      <div>
+        <img id="app-logo" src="./img/JSLAB.svg">
+        <img id="company-logo" src="./img/PR-DC_icon.svg">
+        <ul id="main-menu">
+          <li id="editor-menu"><img src="./img/editor.svg"><str sid="1"></str></li>
+          <li id="help-menu"><img src="./img/help.svg"><str sid="2"></str></li>
+          <li id="info-menu"><img src="./img/info.svg"><str sid="3"></str></li>
+          <li id="settings-menu"><img src="./img/settings-menu.svg"><str sid="9"></str></li>
+        </ul>
+        <ul id="web-main-actions">
+          <li id="github-button">GitHub</li>
+          <li id="download-button">Download</li>
+        </ul>
+        <div id="app-title">JSLAB / WEB</div>
+        <div class="clear"></div>
+      </div>
+    </div>
+
+    <div id="panels-container">
+      <div id="left-panel">
+        <div id="left-top-panel">
+          <div class="cell-padding">
+            <div class="panel-container">
+              <div class="panel-title"><str sid="4"></str></div>
+              <div id="file-browser-options" class="options">
+                <div class="options-right">
+                  <i id="file-browser-import-button" class="import" title="Import"></i>
+                  <i id="file-browser-import-url-button" class="import-url" title-str="543"></i>
+                </div>
+              </div>
+              <div id="file-browser" class="panel">
+                <div id="file-browser-cont"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="left-middle-panel">
+          <div class="cell-padding">
+            <div class="panel-container">
+              <div class="panel-title"><str sid="5"></str></div>
+              <div id="workspace-options" class="options">
+                <div class="options-right">
+                  <input id="workspace-search" class="workspace-search" type="text" str="168" title-str="168">
+                  <i id="clear-workspace-search" class="clear" title-str="38"></i>
+                </div>
+              </div>
+              <div id="workspace-table-head">
+                <div class="row">
+                  <div class="col col-1"><str sid="53"></str></div>
+                  <div class="col col-2"><str sid="54"></str></div>
+                  <div class="col col-3"><str sid="55"></str></div>
+                </div>
+              </div>
+              <div id="workspace" class="panel">
+                <div id="workspace-variable-table" class="table"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="left-bottom-panel">
+          <div class="cell-padding">
+            <div class="panel-container">
+              <div class="panel-title"><str sid="6"></str></div>
+              <div id="command-history-options" class="options">
+                <div class="options-right">
+                  <i id="clear-command-history-button" class="clear" title-str="39"></i>
+                </div>
+              </div>
+              <div id="command-history" class="panel"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="right-panel">
+        <div class="cell-padding">
+          <div class="panel-container">
+            <div class="panel-title"><str sid="7"></str></div>
+
+            <div id="command-window-options" class="options">
+              <div class="options-right">
+                <i id="command-window-settings-button" class="settings" title-str="40"></i>
+                <i id="command-window-timestamp-button" class="timestamp" title-str="41"></i>
+                <i id="command-window-autoscroll-button" class="autoscroll active" title-str="42"></i>
+                <i id="clear-console-button" class="clear" title-str="43"></i>
+                <i id="command-window-log-button" class="log" title-str="44"></i>
+                <i id="to-bottom-button" class="to-bottom" title-str="45"></i>
+              </div>
+            </div>
+
+            <div id="command-window" class="terminal-panel panel">
+              <div id="command-window-messages" class="messages no-timestamp"></div>
+
+              <div id="command-window-input-container">
+                <div id="command-window-input-submit-cont">
+                  <img src="./img/enter.svg" title-str="226">
+                </div>
+                <textarea id="command-window-input" spellcheck="false">cmd_help;</textarea>
+              </div>
+            </div>
+
+            %WEB_COMMAND_WINDOW_DIALOGS%
+          </div>
+        </div>
+      </div>
+    </div>
+
+    %WEB_WORKSPACE_CONTEXT_MENU%
+
+    <div id="file-browser-context-menu" class="app-context-menu">
+      <button id="file-browser-context-remove" type="button"><str sid="387"></str></button>
+    </div>
+
+    <div id="file-browser-import-menu" class="app-context-menu">
+      <button id="file-browser-import-files-action" type="button">Import files</button>
+      <button id="file-browser-import-folder-action" type="button">Import folder</button>
+    </div>
+
+    %WEB_HELP_CONTAINER%
+
+    %WEB_INFO_CONTAINER%
+
+    %WEB_INSPECTOR_INPUT_CONTAINER%
+
+    %WEB_SETTINGS_CONTAINER%
+
+    %WEB_SANDBOX_STATS_POPUP%
+
+    <div id="taskbar-container">
+      <div id="taskbar"></div>
+    </div>
+
+    <div id="status-container">
+      <div id="sandbox-stats-icon" class="ready"></div>
+      <div id="status"><str sid="87"></str></div>
+      <div id="status-icons"></div>
+      <div class="clear"></div>
+    </div>
+
+    <div id="window-layer"></div>
+
+    <input id="file-picker" type="file" multiple hidden>
+    <input id="folder-picker" type="file" webkitdirectory multiple hidden>
+
+    <script type="text/javascript" src="./js/web-runtime-data.js"></script>
+    <script type="text/javascript" src="./lib/jquery-3.7.0/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="./lib/highlight-11.0.1/highlight-11.0.1.min.js"></script>
+    <script type="text/javascript" src="./lib/pdfkit/pdfkit.standalone.js"></script>
+    <script type="text/javascript" src="./lib/svg-to-pdfkit/source.js"></script>
+    <script type="text/javascript" src="./js/windows/mathjax-config.js"></script>
+    <script type="text/javascript" src="./lib/MathJax-3.2.0/tex-mml-chtml.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/lib/codemirror.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/edit/matchbrackets.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/lint/lint.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/hint/show-hint.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/search/searchcursor.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/scroll/annotatescrollbar.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/search/matchesonscrollbar.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/search/match-highlighter.js"></script>
+    <script type="text/javascript" src="./lib/codemirror-5.49.2/mode/javascript/javascript.js"></script>
+    <script type="text/javascript" src="./js/code/custom-javascript-hint.js"></script>
+    <script src="./js/init-web.js"></script>
+  </body>
+</html>
+

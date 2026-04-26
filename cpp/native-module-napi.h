@@ -1,11 +1,11 @@
-// JSLAB - native-module.h
+// JSLAB - native-module-napi.h
 // Author: Milos Petrasinovic <mpetrasinovic@prdc.rs>
 // PR-DC, Republic of Serbia
 // info@prdc.rs
 // --------------------
 
-#ifndef NATIVE_MODULE_H
-#define NATIVE_MODULE_H
+#ifndef NATIVE_MODULE_NAPI_H
+#define NATIVE_MODULE_NAPI_H
 
 //#define DEBUG_NATIVE_MODULE
 //#define DEBUG_NATIVE_MODULE_LEVEL 0
@@ -25,14 +25,13 @@
 #include <filesystem>
 #include <vector>
 #include <complex>
-#include <Eigen/Dense>
+
+#include "native-module-core.h"
 
 namespace native_module_ns {
 
 using namespace std;
 using namespace std::chrono;
-using namespace Eigen;
-
 class NativeModule : public Napi::ObjectWrap<NativeModule> {
  public:
   static Napi::Object Init(Napi::Env env, Napi::Object exports);
@@ -47,4 +46,4 @@ class NativeModule : public Napi::ObjectWrap<NativeModule> {
 
 }// namespace native_module_ns
 
-#endif // NATIVE_MODULE_H
+#endif // NATIVE_MODULE_NAPI_H

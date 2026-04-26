@@ -12,6 +12,8 @@
 /bin/
 /build/
 /dist/
+/dist-web/
 /temp/
 /node_modules/
+/lib/native-wasm/
 package-lock.json

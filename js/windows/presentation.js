@@ -14,7 +14,10 @@ if(has_node) {
 
 var is_iframe = window.parent != window;
 var is_lazy = new URLSearchParams(window.location.search).has('lazy');
-var has_hash_sync = window.location.protocol != 'file:';
+var is_embedded_web = !!window.__JSLAB_PRESENTATION_EMBEDDED__;
+var has_hash_sync = window.location.protocol != 'file:' && !is_embedded_web;
+var embedded_resource_map = window.__JSLAB_PRESENTATION_RESOURCE_MAP__ || null;
+var embedded_resource_base = window.__JSLAB_PRESENTATION_BASE_URL__ || '';
 var auto_global_modules = Object.freeze({
   THREE: './res/three.js-r162/build/three.module.js',
   OrbitControls: './res/three.js-r162/examples/jsm/controls/OrbitControls.js',
@@ -41,6 +44,28 @@ var auto_global_modules = Object.freeze({
  */
 window.registerFile = function(file_path, data) {
   window.file_buffers[file_path] = atob(data);
+}
+
+function normalizeEmbeddedResourcePath(rel_path) {
+  return String(rel_path || '')
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .replace(/^\/+/, '');
+}
+
+function resolveEmbeddedResourceUrl(rel_path) {
+  var normalized = normalizeEmbeddedResourcePath(rel_path);
+  var lower_key;
+  if(embedded_resource_map &&
+      Object.prototype.hasOwnProperty.call(embedded_resource_map, normalized)) {
+    return embedded_resource_map[normalized];
+  }
+  lower_key = normalized.toLowerCase();
+  if(embedded_resource_map &&
+      Object.prototype.hasOwnProperty.call(embedded_resource_map, lower_key)) {
+    return embedded_resource_map[lower_key];
+  }
+  return '';
 }
 
 /**
@@ -232,7 +257,7 @@ class PRDC_JSLAB_PRESENTATION {
     });
     scaleSlides();
     
-    if(!window._standalone) {
+    if(!window._standalone && !is_embedded_web) {
       const ping = () => fetch('/keepalive', 
         { method: 'HEAD', cache: 'no-store', mode: "no-cors" })
       .then((data) => {}).catch((err) => {
@@ -251,6 +276,9 @@ class PRDC_JSLAB_PRESENTATION {
    * @returns {String}
    */
   _getOpenModeError() {
+    if(is_embedded_web) {
+      return '';
+    }
     if(window._standalone && this.config.presentation_mode == 'online') {
       return language.currentString(542);
     }
@@ -450,7 +478,18 @@ class PRDC_JSLAB_PRESENTATION {
    * @returns {String}
    */
   _resourceUrl(rel_path) {
-    return new URL(rel_path, window.location.href).href;
+    var embedded_url = resolveEmbeddedResourceUrl(rel_path);
+    if(embedded_url.length) {
+      return embedded_url;
+    }
+    if(embedded_resource_base) {
+      return new URL(rel_path, embedded_resource_base).href;
+    }
+    try {
+      return new URL(rel_path, window.location.href).href;
+    } catch(err) {
+      return String(rel_path || '');
+    }
   }
 
   /**
@@ -1793,10 +1832,11 @@ var presentation = new PRDC_JSLAB_PRESENTATION();
  */
 async function loadFileBuf(buf_url) {
   var name = encodeURIComponent(buf_url);
+  var resolved = resolveEmbeddedResourceUrl(buf_url + '.buf.js');
   if(window.file_buffers[name]) return Promise.resolve(window.file_buffers[name]);
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = buf_url + '.buf.js';
+    s.src = resolved.length ? resolved : (buf_url + '.buf.js');
     s.onload = () => {
       resolve(window.file_buffers[name]);
     };

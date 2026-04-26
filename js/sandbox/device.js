@@ -674,8 +674,26 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
         {name: ext, extensions: [ext]},
        ]
       };
-      var video_path = obj.jsl.inter.env.showSaveDialogSync(options);
-      if(video_path) {
+      var save_target = false;
+      if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
+        save_target = await obj.jsl.inter.env.showSaveDialog(options);
+        if(save_target && save_target.canceled) {
+          return;
+        }
+      }
+      if(!save_target) {
+        save_target = obj.jsl.inter.env.showSaveDialogSync(options);
+      }
+      if(save_target) {
+        var video_path = typeof save_target == 'object' ? save_target.filePath : save_target;
+        if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
+            save_target && typeof save_target == 'object') {
+          await obj.jsl.inter.env.saveLocalFile(save_target, buffer, {
+            mimeType: mimeType,
+            filePath: video_path
+          });
+          return;
+        }
         obj.jsl.inter.env.writeFileSync(video_path, buffer);
       }
     }

@@ -7,8 +7,16 @@
 
 const { PRDC_JSLAB_EVAL } = require('./jslab-eval');
 const { PRDC_JSLAB_OVERRIDE } = require('./jslab-override');
-const { PRDC_JSLAB_ENV } = require('./jslab-env-electron');
 const { CORE_INTERNAL_MODULE_NAMES } = require('./internal-protected-modules');
+
+function getEnvironmentModule() {
+  if(typeof globalThis !== 'undefined' && globalThis.__JSLAB_RUNTIME__ == 'web') {
+    return require('./jslab-env-web');
+  }
+  return eval('require')('./jslab-env-electron');
+}
+
+const { PRDC_JSLAB_ENV } = getEnvironmentModule();
 
 /**
  * Class for JSLAB library.
@@ -999,6 +1007,11 @@ class PRDC_JSLAB_LIB {
    * Removes all event listeners that have been added to the document body, effectively clearing any remaining event bindings.
    */
   clearEventListeners() {
+    if(typeof document == 'undefined' ||
+        !document.body ||
+        !document.body.parentNode) {
+      return;
+    }
     document.body.parentNode.replaceChild(document.body.cloneNode(true), document.body);
   }
 

@@ -1901,33 +1901,33 @@
   },
   "381": {
     "en": "Undo",
-    "rs": "Undo",
-    "rsc": "Undo"
+    "rs": "Poništi",
+    "rsc": "Поништи"
   },
   "382": {
     "en": "Redo",
-    "rs": "Redo",
-    "rsc": "Redo"
+    "rs": "Vrati",
+    "rsc": "Врати"
   },
   "383": {
     "en": "Cut",
-    "rs": "Cut",
-    "rsc": "Cut"
+    "rs": "Iseci",
+    "rsc": "Исеци"
   },
   "384": {
     "en": "Copy",
-    "rs": "Copy",
-    "rsc": "Copy"
+    "rs": "Kopiraj",
+    "rsc": "Копирај"
   },
   "385": {
     "en": "Paste",
-    "rs": "Paste",
-    "rsc": "Paste"
+    "rs": "Nalepi",
+    "rsc": "Налепи"
   },
   "386": {
     "en": "Inspect Variable",
     "rs": "Ispitaj promenljivu",
-    "rsc": "Ispitaj promenljivu"
+    "rsc": "Испитај променљиву"
   },
   "387": {
     "en": "Delete",
@@ -2556,8 +2556,8 @@
   },
   "513": {
     "en": "Sandbox | JSLAB",
-    "rs": "Sandbox | JSLAB",
-    "rsc": "Sandbox | JSLAB"
+    "rs": "Radni prostor | JSLAB",
+    "rsc": "Радни простор | JSLAB"
   },
   "514": {
     "en": "Editor | JSLAB",
@@ -2677,32 +2677,87 @@
   "537": {
     "en": "Insert Slide After",
     "rs": "Umetni slajd posle",
-    "rsc": "Ð£Ð¼ÐµÑ‚Ð½Ð¸ ÑÐ»Ð°Ñ˜Ð´ Ð¿Ð¾ÑÐ»Ðµ"
+    "rsc": "Уметни слајд после"
   },
   "538": {
     "en": "Duplicate Slide",
     "rs": "Dupliciraj slajd",
-    "rsc": "Ð”ÑƒÐ¿Ð»Ð¸Ñ€Ð°Ñ˜ ÑÐ»Ð°Ñ˜Ð´"
+    "rsc": "Дуплирај слајд"
   },
   "539": {
     "en": "Presentation modified",
     "rs": "Prezentacija je izmenjena",
-    "rsc": "ÐŸÑ€ÐµÐ·ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ˜Ð° Ñ˜Ðµ Ð¸Ð·Ð¼ÐµÑšÐµÐ½Ð°"
+    "rsc": "Презентација је измењена"
   },
   "540": {
     "en": "The presentation",
     "rs": "Prezentacija",
-    "rsc": "ÐŸÑ€ÐµÐ·ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ˜Ð°"
+    "rsc": "Презентација"
   },
   "541": {
     "en": "is about to be closed but has been modified. Do you want to save or discard the changes?",
-    "rs": "Ä‡e biti zatvorena ali je izmenjena. Da li Å¾elite da saÄuvate ili odbacite izmene?",
-    "rsc": "Ñ›Ðµ Ð±Ð¸Ñ‚Ð¸ Ð·Ð°Ñ‚Ð²Ð¾Ñ€ÐµÐ½Ð° Ð°Ð»Ð¸ Ñ˜Ðµ Ð¸Ð·Ð¼ÐµÑšÐµÐ½Ð°. Ð”Ð° Ð»Ð¸ Ð¶ÐµÐ»Ð¸Ñ‚Ðµ Ð´Ð° ÑÐ°Ñ‡ÑƒÐ²Ð°Ñ‚Ðµ Ð¸Ð»Ð¸ Ð¾Ð´Ð±Ð°Ñ†Ð¸Ñ‚Ðµ Ð¸Ð·Ð¼ÐµÐ½Ðµ?"
+    "rs": "će biti zatvorena ali je izmenjena. Da li želite da sačuvate ili odbacite izmene?",
+    "rsc": "ће бити затворена али је измењена. Да ли желите да сачувате или одбаците измене?"
   },
   "542": {
     "en": "This presentation must be opened inside JSLAB.",
     "rs": "Ova prezentacija mora biti otvorena unutar JSLAB-a.",
-    "rsc": "Ova prezentacija mora biti otvorena unutar JSLAB-a."
+    "rsc": "Ова презентација мора бити отворена унутар JSLAB-а."
+  },
+  "543": {
+    "en": "Import from URL",
+    "rs": "Uvezi sa URL-a",
+    "rsc": "Увези са URL-а"
+  },
+  "544": {
+    "en": "Enter a direct file URL. The remote server must allow CORS.",
+    "rs": "Unesite direktan URL datoteke. Udaljeni server mora da dozvoli CORS.",
+    "rsc": "Унесите директан URL датотеке. Удаљени сервер мора да дозволи CORS."
+  },
+  "545": {
+    "en": "URL",
+    "rs": "URL",
+    "rsc": "URL"
+  },
+  "546": {
+    "en": "Imported file from URL:",
+    "rs": "Uvezena datoteka sa URL-a:",
+    "rsc": "Увезена датотека са URL-а:"
+  },
+  "547": {
+    "en": "Failed to import from URL:",
+    "rs": "Neuspešan uvoz sa URL-a:",
+    "rsc": "Неуспешан увоз са URL-а:"
+  },
+  "548": {
+    "en": "Copy share link",
+    "rs": "Kopiraj link za deljenje",
+    "rsc": "Копирај линк за дељење"
+  },
+  "549": {
+    "en": "Share link copied:",
+    "rs": "Link za deljenje je kopiran:",
+    "rsc": "Линк за дељење је копиран:"
+  },
+  "550": {
+    "en": "Unable to copy automatically. Copy this share link manually.",
+    "rs": "Automatsko kopiranje nije uspelo. Ručno kopirajte ovaj link za deljenje.",
+    "rsc": "Аутоматско копирање није успело. Ручно копирајте овај линк за дељење."
+  },
+  "551": {
+    "en": "Enter a direct file URL to generate a JSLAB share link.",
+    "rs": "Unesite direktan URL datoteke za generisanje JSLAB linka za deljenje.",
+    "rsc": "Унесите директан URL датотеке за генерисање JSLAB линка за дељење."
+  },
+  "552": {
+    "en": "Share link",
+    "rs": "Link za deljenje",
+    "rsc": "Линк за дељење"
+  },
+  "553": {
+    "en": "IMPORT",
+    "rs": "UVEZI",
+    "rsc": "УВЕЗИ"
   }
 }
 

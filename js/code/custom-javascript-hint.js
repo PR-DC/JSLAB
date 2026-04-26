@@ -19,6 +19,39 @@
 })(function(CodeMirror) {
   var Pos = CodeMirror.Pos;
 
+  function getBridge() {
+    if(typeof globalThis != "undefined") {
+      if(typeof globalThis.__JSLAB_WEB_getBridge == "function") {
+        try {
+          return globalThis.__JSLAB_WEB_getBridge();
+        } catch {}
+      }
+      if(globalThis.__JSLAB_WEB_BRIDGE__) {
+        return globalThis.__JSLAB_WEB_BRIDGE__;
+      }
+    }
+    return null;
+  }
+
+  function requestCompletions(data) {
+    if(typeof ipcRenderer != "undefined" &&
+        ipcRenderer &&
+        typeof ipcRenderer.invoke == "function") {
+      return ipcRenderer.invoke('get-completions', data);
+    }
+
+    var bridge = getBridge();
+    if(bridge && typeof bridge.getCompletions == "function") {
+      try {
+        return Promise.resolve(bridge.getCompletions(data));
+      } catch(err) {
+        return Promise.reject(err);
+      }
+    }
+
+    return Promise.resolve([]);
+  }
+
   function scriptHint(editor, keywords, getToken, options) {
 
     // Find the token at the cursor
@@ -62,8 +95,12 @@
 
   function getCompletions(token, context, keywords, options, cur) {
     return new Promise(function(resolve) {
-      ipcRenderer.invoke('get-completions', [token.string, JSON.stringify(context), keywords]).then(function(found) {
+      requestCompletions([token.string, JSON.stringify(context), keywords]).then(function(found) {
         resolve({list: found,
+            from: Pos(cur.line, token.start),
+            to: Pos(cur.line, token.end)});
+      }).catch(function() {
+        resolve({list: [],
             from: Pos(cur.line, token.start),
             to: Pos(cur.line, token.end)});
       });

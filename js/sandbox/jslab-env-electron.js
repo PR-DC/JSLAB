@@ -154,7 +154,7 @@ class PRDC_JSLAB_ENV {
     this.Writable = Writable;
     
     // Which properties and methods to export to context
-    this.exports = ['debug', 'version', 'platform'];
+    this.exports = ['debug', 'version', 'platform', 'buildShareLink'];
   }
   
   /**
@@ -871,6 +871,11 @@ class PRDC_JSLAB_ENV {
     if(!this.is_worker) {
       return ipcRenderer.invoke("dialog", "showSaveDialog", options);
     }
+    return false;
+  }
+
+  buildShareLink() {
+    this.error('Web share links are not available in Electron.', false);
     return false;
   }
   

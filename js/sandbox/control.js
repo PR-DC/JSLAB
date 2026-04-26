@@ -75,7 +75,7 @@ class PRDC_JSLAB_LIB_CONTROL {
     const { A, B, C, D } = sys;
   
     const den = inter.charpoly(A);
-    const num = inter.plus(inter.charpoly(inter.minus(A, this.jsl.inter.env.math.multiply(B, [C]))),
+    let num = inter.plus(inter.charpoly(inter.minus(A, this.jsl.inter.env.math.multiply(B, [C]))),
       inter.scale(den, D-1));
 
     var p = den.length - num.length;

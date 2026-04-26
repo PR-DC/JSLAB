@@ -392,8 +392,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     var win = this.open_windows[wid];
     await win.ready;
     if(query) {
-      win.context.location.href = '../docs/documentation.html#'+encodeURI(query);
-      win.context.location.reload(true);
+      win.context.location.hash = encodeURI(query);
     }
     win.setTitle(this.jsl.inter.lang.currentString(534));
   }
@@ -477,10 +476,11 @@ class PRDC_JSLAB_LIB_WINDOWS {
       }
       await this.jsl.inter.non_blocking.waitMSeconds(1);
     }
-    context.sceneToJSON = function(file_path, scene = context.scene) {
+    context.sceneToJSON = async function(file_path, scene = context.scene) {
       if(!scene) return;
-      if(!file_path) {
-        let options = {
+      var save_target = file_path;
+      if(!save_target) {
+        var options = {
          title: obj.jsl.inter.lang.currentString(144),
          defaultPath: 'window-3d.json',
          buttonLabel: obj.jsl.inter.lang.currentString(144),
@@ -488,21 +488,39 @@ class PRDC_JSLAB_LIB_WINDOWS {
           {name: 'json', extensions: ['json']},
          ]
         };
-        file_path = obj.jsl.inter.env.showSaveDialogSync(options);
-        if(!file_path) return;
+        if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
+          save_target = await obj.jsl.inter.env.showSaveDialog(options);
+          if(save_target && save_target.canceled) return;
+        }
+        if(!save_target) {
+          save_target = obj.jsl.inter.env.showSaveDialogSync(options);
+        }
+        if(!save_target) return;
+        file_path = typeof save_target == 'object' ? save_target.filePath : save_target;
       }
       var scene_json = scene.toJSON();
-      obj.jsl.inter.env.writeFileSync(file_path, JSON.stringify(scene_json));
+      var scene_data = JSON.stringify(scene_json);
+      if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
+          save_target && typeof save_target == 'object') {
+        await obj.jsl.inter.env.saveLocalFile(save_target, scene_data, {
+          mimeType: 'application/json;charset=utf-8',
+          filePath: file_path
+        });
+        return;
+      }
+      obj.jsl.inter.env.writeFileSync(file_path, scene_data);
     }
     
-    context.sceneFromJSON = function(file_path) {
+    context.sceneFromJSON = async function(file_path) {
       if(!file_path) {
         var options = {
           title: obj.jsl.inter.lang.currentString(247),
           buttonLabel: obj.jsl.inter.lang.currentString(231)
         };
-        file_path = obj.jsl.inter.env.showOpenDialogSync(options);
-        if(file_path === undefined) {
+        file_path = typeof obj.jsl.inter.env.showOpenDialog == 'function'
+          ? await obj.jsl.inter.env.showOpenDialog(options)
+          : obj.jsl.inter.env.showOpenDialogSync(options);
+        if(file_path === undefined || file_path === false) {
           obj.jsl.inter.env.error('@openWindow3D.fromJSON: '+obj.jsl.inter.lang.string(132)+'.');
           return false;
         } else {
@@ -920,6 +938,13 @@ class PRDC_JSLAB_WINDOW {
    * @param {string} script_path The script's URL.
    */
   addScript(script_path) {
+    if(typeof globalThis != 'undefined' && globalThis.__JSLAB_RUNTIME__ == 'web') {
+      if(/^(\.\.\/)?js\/windows\//.test(script_path)) {
+        script_path = script_path.replace(/^(\.\.\/)?js\/windows\//, '../js/windows/');
+      } else if(/^(\.\.\/)?js\/shared\//.test(script_path)) {
+        script_path = script_path.replace(/^(\.\.\/)?js\/shared\//, '../js/shared/');
+      }
+    }
     const script = this.context.document.createElement("script");
     script.src = script_path;
     this.context.document.head.appendChild(script);

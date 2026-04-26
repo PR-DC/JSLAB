@@ -112,6 +112,79 @@ tests.add('custom-javascript-hint registers javascript helper and requests compl
   assert.equal(run.records.ipc_calls[0].channel, 'get-completions');
 }, { tags: ['unit', 'code', 'codemirror'] });
 
+tests.add('custom-javascript-hint falls back to web bridge completions', async function(assert) {
+  var source = fs.readFileSync(path.join(__dirname, 'custom-javascript-hint.js'), 'utf8');
+  var records = {
+    helpers: [],
+    bridge_calls: []
+  };
+
+  var fake_codemirror = {
+    Pos: function(line, ch) {
+      return { line: line, ch: ch };
+    },
+    commands: {},
+    keyMap: { default: {} },
+    innerMode: function() {
+      return { mode: { helperType: 'javascript' }, state: {} };
+    },
+    registerHelper: function(kind, name, fn) {
+      records.helpers.push({ kind: kind, name: name, fn: fn });
+    }
+  };
+
+  var context = {
+    module: { exports: {} },
+    exports: {},
+    CodeMirror: fake_codemirror,
+    require: function(module_path) {
+      if(module_path === '../../lib/codemirror') {
+        return fake_codemirror;
+      }
+      throw new Error('Unexpected require path: ' + module_path);
+    }
+  };
+  context.global = context;
+  context.globalThis = context;
+  context.globalThis.__JSLAB_WEB_getBridge = function() {
+    return {
+      getCompletions: function(payload) {
+        records.bridge_calls.push(payload);
+        return ['bridge-alpha', 'bridge-beta'];
+      }
+    };
+  };
+
+  vm.runInNewContext(source, context, { filename: 'custom-javascript-hint.js' });
+  var helper = records.helpers.find(function(entry) {
+    return entry.kind === 'hint' && entry.name === 'javascript';
+  });
+  assert.ok(!!helper);
+
+  var editor = {
+    getCursor: function() {
+      return { line: 0, ch: 2 };
+    },
+    getTokenAt: function() {
+      return {
+        start: 0,
+        end: 2,
+        string: 'si',
+        state: {},
+        type: 'variable'
+      };
+    },
+    getMode: function() {
+      return {};
+    }
+  };
+
+  var out = await helper.fn(editor, null, {});
+  assert.equal(Array.isArray(out.list), true);
+  assert.equal(out.list[0], 'bridge-alpha');
+  assert.equal(records.bridge_calls.length, 1);
+}, { tags: ['unit', 'code', 'codemirror'] });
+
 tests.add('custom-search registers expected search commands', function(assert) {
   var run = runCodeMirrorModule('custom-search.js');
   var expected = [
