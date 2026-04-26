@@ -1610,8 +1610,8 @@ window.language = {
   /**
    * Handles one internal presentation HTTP request.
    * @param {String} root_path - Absolute path to the presentation directory.
-   * @param {import('http').IncomingMessage} req
-   * @param {import('http').ServerResponse} res
+   * @param {Object} req
+   * @param {Object} res
    */
   _handlePresentationRequest(root_path, req, res) {
     if(req.method != 'GET' && req.method != 'HEAD') {
@@ -1659,8 +1659,8 @@ window.language = {
 
   /**
    * Serves one static file from the internal presentation HTTP server.
-   * @param {import('http').IncomingMessage} req
-   * @param {import('http').ServerResponse} res
+   * @param {Object} req
+   * @param {Object} res
    * @param {String} root_path
    * @param {String} file_path
    */

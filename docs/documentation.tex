@@ -265,7 +265,7 @@ Welcome to the \textbf{JSLAB} Documentation! This guide provides comprehensive i
 \textbf{Quick links:} 
 \begin{itemize}
   \item \href{https://pr-dc.com/jslab/}{Website - pr-dc.com/jslab/}
-  \item \href{https://pr-dc.com/jslab/w}{Try it online - pr-dc.com/jslab/w}
+  \item \href{https://pr-dc.com/jslab/web/}{Try it online - pr-dc.com/jslab/web/}
   \item \href{https://discourse.jsl.pr-dc.com/}{Discourse - discourse.jsl.pr-dc.com/}
   \item \href{https://pr-dc.com/jslab/doc/}{Documentation - pr-dc.com/jslab/doc/}
   \item \href{https://github.com/PR-DC/JSLAB/}{Source code - github.com/PR-DC/JSLAB/}
@@ -296,7 +296,7 @@ The program was developed to fulfill the need for performing calculations in a p
 % ----------
 \subsection{Try it online}
 
-Use JSLAB directly in your browser: \href{https://pr-dc.com/jslab/w}{https://pr-dc.com/jslab/w}
+Use JSLAB directly in your browser: \href{https://pr-dc.com/jslab/web/}{https://pr-dc.com/jslab/web/}
 
 % ----------
 \subsection{Why Choose JSLAB?}
@@ -6268,6 +6268,14 @@ We encourage active participation and appreciate all forms of feedback that help
 \noindent Retrieves all available serial ports.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{requestSerialPort()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Promise.<(Object|false)>>}: 
+
+\noindent Prompts the browser to authorize a serial port if supported.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{checkDeviceUSB(VID, PID)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -9223,6 +9231,17 @@ including Ctrl+S for slide controls and F9 for the stopwatch.
 \end{itemize}
 
 \noindent Converts an existing presentation to standalone presentation.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{makeOnlinePresentation(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<String>}: Path to the presentation directory.
+\end{itemize}
+
+\noindent Restores a standalone-cleaned presentation back to the normal server-backed form.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{presentationToPdf(file\_path, run\_make\_standalone)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

@@ -5974,7 +5974,7 @@
         "source_lineno": 390,
         "source_range": [
           11929,
-          12297
+          12217
         ]
       },
       "openDoc": {
@@ -5984,10 +5984,10 @@
         "params": [],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 404,
+        "source_lineno": 403,
         "source_range": [
-          12357,
-          12426
+          12276,
+          12345
         ]
       },
       "openDiscourse": {
@@ -5997,10 +5997,10 @@
         "params": [],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 411,
+        "source_lineno": 410,
         "source_range": [
-          12480,
-          12693
+          12399,
+          12612
         ]
       },
       "openWebpage": {
@@ -6031,10 +6031,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 422,
+        "source_lineno": 421,
         "source_range": [
-          12871,
-          13022
+          12790,
+          12941
         ]
       },
       "openWindow3D": {
@@ -6066,10 +6066,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 433,
+        "source_lineno": 432,
         "source_range": [
-          13306,
-          16761
+          13225,
+          17542
         ]
       },
       "openPlotlyjs": {
@@ -6089,10 +6089,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 528,
+        "source_lineno": 546,
         "source_range": [
-          16962,
-          17671
+          17743,
+          18452
         ]
       },
       "openCanvas": {
@@ -6112,10 +6112,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 553,
+        "source_lineno": 571,
         "source_range": [
-          17874,
-          18705
+          18655,
+          19486
         ]
       },
       "openWindowBlank": {
@@ -6135,10 +6135,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 580,
+        "source_lineno": 598,
         "source_range": [
-          18855,
-          19130
+          19636,
+          19911
         ]
       },
       "showMermaidGraph": {
@@ -6168,10 +6168,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 593,
+        "source_lineno": 611,
         "source_range": [
-          19379,
-          20355
+          20160,
+          21136
         ]
       }
     },
@@ -6183,8 +6183,8 @@
         "source_filename": "figures.js",
         "source_lineno": 33,
         "source_range": [
-          985,
-          1007
+          861,
+          883
         ]
       },
       "active_figure": {
@@ -6194,8 +6194,8 @@
         "source_filename": "figures.js",
         "source_lineno": 39,
         "source_range": [
-          1095,
-          1118
+          971,
+          994
         ]
       },
       "figure": {
@@ -6226,8 +6226,8 @@
         "source_filename": "figures.js",
         "source_lineno": 47,
         "source_range": [
-          1324,
-          1775
+          1200,
+          1651
         ]
       },
       "getFigure": {
@@ -6259,8 +6259,8 @@
         "source_filename": "figures.js",
         "source_lineno": 69,
         "source_range": [
-          2021,
-          2171
+          1897,
+          2047
         ]
       },
       "getFigureWindow": {
@@ -6292,8 +6292,8 @@
         "source_filename": "figures.js",
         "source_lineno": 82,
         "source_range": [
-          2431,
-          2591
+          2307,
+          2467
         ]
       },
       "getCurrentFigure": {
@@ -6315,8 +6315,8 @@
         "source_filename": "figures.js",
         "source_lineno": 94,
         "source_range": [
-          2740,
-          2924
+          2616,
+          2800
         ]
       },
       "gcf": {
@@ -6338,8 +6338,8 @@
         "source_filename": "figures.js",
         "source_lineno": 106,
         "source_range": [
-          3071,
-          3120
+          2947,
+          2996
         ]
       },
       "getPlot": {
@@ -6371,8 +6371,8 @@
         "source_filename": "figures.js",
         "source_lineno": 115,
         "source_range": [
-          3367,
-          3551
+          3243,
+          3427
         ]
       },
       "getAxes": {
@@ -6404,8 +6404,8 @@
         "source_filename": "figures.js",
         "source_lineno": 128,
         "source_range": [
-          3798,
-          3848
+          3674,
+          3724
         ]
       },
       "getCurrentPlot": {
@@ -6427,8 +6427,8 @@
         "source_filename": "figures.js",
         "source_lineno": 136,
         "source_range": [
-          4007,
-          4194
+          3883,
+          4070
         ]
       },
       "gcp": {
@@ -6450,8 +6450,8 @@
         "source_filename": "figures.js",
         "source_lineno": 148,
         "source_range": [
-          4351,
-          4398
+          4227,
+          4274
         ]
       },
       "getCurrentAxes": {
@@ -6473,8 +6473,8 @@
         "source_filename": "figures.js",
         "source_lineno": 156,
         "source_range": [
-          4557,
-          4615
+          4433,
+          4491
         ]
       },
       "gca": {
@@ -6496,8 +6496,8 @@
         "source_filename": "figures.js",
         "source_lineno": 164,
         "source_range": [
-          4772,
-          4819
+          4648,
+          4695
         ]
       },
       "focusFigure": {
@@ -6529,8 +6529,8 @@
         "source_filename": "figures.js",
         "source_lineno": 173,
         "source_range": [
-          5033,
-          5193
+          4909,
+          5069
         ]
       },
       "setFigureSize": {
@@ -6580,8 +6580,8 @@
         "source_filename": "figures.js",
         "source_lineno": 188,
         "source_range": [
-          5508,
-          5700
+          5384,
+          5576
         ]
       },
       "setFigurePos": {
@@ -6631,8 +6631,8 @@
         "source_filename": "figures.js",
         "source_lineno": 203,
         "source_range": [
-          6029,
-          6211
+          5905,
+          6087
         ]
       },
       "setFigureTitle": {
@@ -6673,8 +6673,8 @@
         "source_filename": "figures.js",
         "source_lineno": 217,
         "source_range": [
-          6481,
-          6659
+          6357,
+          6535
         ]
       },
       "getFigureSize": {
@@ -6706,8 +6706,8 @@
         "source_filename": "figures.js",
         "source_lineno": 230,
         "source_range": [
-          6883,
-          7047
+          6759,
+          6923
         ]
       },
       "getFigurePos": {
@@ -6739,8 +6739,8 @@
         "source_filename": "figures.js",
         "source_lineno": 243,
         "source_range": [
-          7271,
-          7433
+          7147,
+          7309
         ]
       },
       "getFigureMediaSourceId": {
@@ -6772,8 +6772,8 @@
         "source_filename": "figures.js",
         "source_lineno": 256,
         "source_range": [
-          7660,
-          7842
+          7536,
+          7718
         ]
       },
       "startFigureVideoRecording": {
@@ -6814,8 +6814,8 @@
         "source_filename": "figures.js",
         "source_lineno": 270,
         "source_range": [
-          8104,
-          8302
+          7980,
+          8178
         ]
       },
       "closeFigure": {
@@ -6847,8 +6847,8 @@
         "source_filename": "figures.js",
         "source_lineno": 283,
         "source_range": [
-          8496,
-          8656
+          8372,
+          8532
         ]
       },
       "close": {
@@ -6881,8 +6881,8 @@
         "source_filename": "figures.js",
         "source_lineno": 296,
         "source_range": [
-          8928,
-          9302
+          8804,
+          9206
         ]
       },
       "saveFigureDialog": {
@@ -6902,10 +6902,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 315,
+        "source_lineno": 317,
         "source_range": [
-          9434,
-          10264
+          9337,
+          10501
         ]
       },
       "saveFigure": {
@@ -6943,10 +6943,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 344,
+        "source_lineno": 355,
         "source_range": [
-          10568,
-          13040
+          10804,
+          14370
         ]
       },
       "legend": {
@@ -6965,10 +6965,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 409,
+        "source_lineno": 461,
         "source_range": [
-          13176,
-          13414
+          14915,
+          15153
         ]
       },
       "xlabel": {
@@ -6987,10 +6987,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 421,
+        "source_lineno": 473,
         "source_range": [
-          13550,
-          13788
+          15289,
+          15527
         ]
       },
       "ylabel": {
@@ -7009,10 +7009,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 433,
+        "source_lineno": 485,
         "source_range": [
-          13922,
-          14160
+          15661,
+          15899
         ]
       },
       "zlabel": {
@@ -7031,10 +7031,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 445,
+        "source_lineno": 497,
         "source_range": [
-          14294,
-          14532
+          16033,
+          16271
         ]
       },
       "title": {
@@ -7053,10 +7053,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 457,
+        "source_lineno": 509,
         "source_range": [
-          14643,
-          14879
+          16382,
+          16618
         ]
       },
       "xlim": {
@@ -7075,10 +7075,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 469,
+        "source_lineno": 521,
         "source_range": [
-          14979,
-          15209
+          16718,
+          16948
         ]
       },
       "ylim": {
@@ -7097,10 +7097,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 481,
+        "source_lineno": 533,
         "source_range": [
-          15311,
-          15541
+          17050,
+          17280
         ]
       },
       "zlim": {
@@ -7119,10 +7119,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 493,
+        "source_lineno": 545,
         "source_range": [
-          15641,
-          15871
+          17380,
+          17610
         ]
       },
       "view": {
@@ -7150,10 +7150,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 507,
+        "source_lineno": 559,
         "source_range": [
-          16063,
-          16323
+          17802,
+          18062
         ]
       },
       "zoom": {
@@ -7172,10 +7172,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 519,
+        "source_lineno": 571,
         "source_range": [
-          16436,
-          16672
+          18175,
+          18411
         ]
       },
       "axis": {
@@ -7194,10 +7194,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 531,
+        "source_lineno": 583,
         "source_range": [
-          16838,
-          17072
+          18577,
+          18811
         ]
       },
       "printFigure": {
@@ -7226,10 +7226,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 544,
+        "source_lineno": 596,
         "source_range": [
-          17286,
-          17564
+          19025,
+          19303
         ]
       },
       "plot": {
@@ -7267,10 +7267,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 558,
+        "source_lineno": 610,
         "source_range": [
-          17789,
-          18256
+          19528,
+          19995
         ]
       },
       "updatePlot": {
@@ -7298,10 +7298,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 583,
+        "source_lineno": 635,
         "source_range": [
-          18485,
-          18732
+          20224,
+          20471
         ]
       },
       "updatePlotById": {
@@ -7321,10 +7321,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 595,
+        "source_lineno": 647,
         "source_range": [
-          18916,
-          19164
+          20655,
+          20903
         ]
       },
       "hideFigureMenu": {
@@ -7333,10 +7333,10 @@
         "description": "Hides figure menu.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 606,
+        "source_lineno": 658,
         "source_range": [
-          19211,
-          19398
+          20950,
+          21137
         ]
       },
       "showFigureMenu": {
@@ -7345,10 +7345,10 @@
         "description": "Shows figure menu.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 618,
+        "source_lineno": 670,
         "source_range": [
-          19449,
-          19636
+          21188,
+          21375
         ]
       },
       "loadJsonFigure": {
@@ -7385,11 +7385,12 @@
             "description": "The identifier of the opened or updated figure."
           }
         ],
+        "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 632,
+        "source_lineno": 684,
         "source_range": [
-          19904,
-          20786
+          21643,
+          22665
         ]
       }
     },
@@ -14564,7 +14565,7 @@
         "source_lineno": 612,
         "source_range": [
           21237,
-          23653
+          24335
         ]
       }
     },
@@ -14589,7 +14590,29 @@
         "source_lineno": 27,
         "source_range": [
           660,
-          746
+          744
+        ]
+      },
+      "requestSerialPort": {
+        "name": "requestSerialPort",
+        "kind": "function",
+        "description": "Prompts the browser to authorize a serial port if supported.",
+        "params": [],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<(Object|false)>"
+              ]
+            }
+          }
+        ],
+        "async": true,
+        "source_filename": "serial-device.js",
+        "source_lineno": 35,
+        "source_range": [
+          864,
+          1097
         ]
       },
       "checkDeviceUSB": {
@@ -14628,10 +14651,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 37,
+        "source_lineno": 49,
         "source_range": [
-          1047,
-          1402
+          1397,
+          1752
         ]
       },
       "checkDeviceSTM": {
@@ -14663,10 +14686,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 53,
+        "source_lineno": 65,
         "source_range": [
-          1668,
-          1761
+          2018,
+          2111
         ]
       },
       "checkDeviceCH340": {
@@ -14686,10 +14709,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 61,
+        "source_lineno": 73,
         "source_range": [
-          1921,
-          2007
+          2271,
+          2357
         ]
       },
       "connectSerialPorts": {
@@ -14740,10 +14763,10 @@
           }
         ],
         "source_filename": "serial-device.js",
-        "source_lineno": 72,
+        "source_lineno": 84,
         "source_range": [
-          2261,
-          2899
+          2611,
+          3249
         ]
       },
       "chooseSerialPort": {
@@ -14762,10 +14785,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 107,
+        "source_lineno": 119,
         "source_range": [
-          3006,
-          4538
+          3356,
+          4999
         ]
       },
       "chooseSerialOptions": {
@@ -14784,10 +14807,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 159,
+        "source_lineno": 175,
         "source_range": [
-          4648,
-          6628
+          5109,
+          7200
         ]
       },
       "openSerialTerminal": {
@@ -14839,10 +14862,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 219,
+        "source_lineno": 239,
         "source_range": [
-          7027,
-          10755
+          7599,
+          12030
         ]
       },
       "chooseSerialTerminal": {
@@ -14874,10 +14897,10 @@
         ],
         "async": true,
         "source_filename": "serial-device.js",
-        "source_lineno": 343,
+        "source_lineno": 381,
         "source_range": [
-          11095,
-          11286
+          12370,
+          12561
         ]
       }
     },
@@ -15263,7 +15286,7 @@
         "source_lineno": 156,
         "source_range": [
           5144,
-          5404
+          5810
         ]
       },
       "chooseFolder": {
@@ -15293,10 +15316,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 170,
+        "source_lineno": 181,
         "source_range": [
-          5655,
-          6010
+          6061,
+          6820
         ]
       },
       "getDefaultPath": {
@@ -15325,10 +15348,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 188,
+        "source_lineno": 210,
         "source_range": [
-          6236,
-          6316
+          7046,
+          7126
         ]
       },
       "openFolder": {
@@ -15347,10 +15370,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 196,
+        "source_lineno": 218,
         "source_range": [
-          6450,
-          6523
+          7260,
+          7333
         ]
       },
       "makeDirectory": {
@@ -15379,10 +15402,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 206,
+        "source_lineno": 228,
         "source_range": [
-          6921,
-          7009
+          7731,
+          7819
         ]
       },
       "mkdir": {
@@ -15411,10 +15434,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 216,
+        "source_lineno": 238,
         "source_range": [
-          7434,
-          7514
+          8244,
+          8324
         ]
       },
       "openDir": {
@@ -15433,10 +15456,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 224,
+        "source_lineno": 246,
         "source_range": [
-          7680,
-          7747
+          8490,
+          8557
         ]
       },
       "showFolder": {
@@ -15455,10 +15478,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 232,
+        "source_lineno": 254,
         "source_range": [
-          7905,
-          7978
+          8715,
+          8788
         ]
       },
       "showDir": {
@@ -15477,10 +15500,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 240,
+        "source_lineno": 262,
         "source_range": [
-          8139,
-          8206
+          8949,
+          9016
         ]
       },
       "openProgramFolder": {
@@ -15489,10 +15512,10 @@
         "description": "Opens the program's root folder in the system's file manager.",
         "params": [],
         "source_filename": "file-system.js",
-        "source_lineno": 247,
+        "source_lineno": 269,
         "source_range": [
-          8294,
-          8399
+          9104,
+          9209
         ]
       },
       "showFileInFolder": {
@@ -15511,10 +15534,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 255,
+        "source_lineno": 277,
         "source_range": [
-          8559,
-          8644
+          9369,
+          9454
         ]
       },
       "showFileInDir": {
@@ -15533,10 +15556,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 263,
+        "source_lineno": 285,
         "source_range": [
-          8836,
-          8915
+          9646,
+          9725
         ]
       },
       "readcsv": {
@@ -15575,10 +15598,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 273,
+        "source_lineno": 295,
         "source_range": [
-          9235,
-          10299
+          10045,
+          11109
         ]
       },
       "checkFile": {
@@ -15597,10 +15620,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 305,
+        "source_lineno": 327,
         "source_range": [
-          10425,
-          10495
+          11235,
+          11305
         ]
       },
       "existFile": {
@@ -15619,10 +15642,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 313,
+        "source_lineno": 335,
         "source_range": [
-          10620,
-          10676
+          11430,
+          11486
         ]
       },
       "checkDirectory": {
@@ -15641,10 +15664,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 321,
+        "source_lineno": 343,
         "source_range": [
-          10816,
-          10906
+          11626,
+          11716
         ]
       },
       "existDirectory": {
@@ -15663,10 +15686,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 329,
+        "source_lineno": 351,
         "source_range": [
-          11046,
-          11122
+          11856,
+          11932
         ]
       },
       "copyDir": {
@@ -15694,10 +15717,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 338,
+        "source_lineno": 360,
         "source_range": [
-          11343,
-          12278
+          12153,
+          13088
         ]
       },
       "copyFolder": {
@@ -15725,10 +15748,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 370,
+        "source_lineno": 392,
         "source_range": [
-          12478,
-          12543
+          13288,
+          13353
         ]
       },
       "cp": {
@@ -15756,10 +15779,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 379,
+        "source_lineno": 401,
         "source_range": [
-          12750,
-          12807
+          13560,
+          13617
         ]
       },
       "copyDir7z": {
@@ -15787,10 +15810,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 388,
+        "source_lineno": 410,
         "source_range": [
-          13054,
-          13457
+          13864,
+          14267
         ]
       }
     },
@@ -22360,7 +22383,7 @@
         "source_lineno": 73,
         "source_range": [
           2404,
-          2794
+          2790
         ]
       },
       "c2d": {
@@ -22409,8 +22432,8 @@
         "source_filename": "control.js",
         "source_lineno": 95,
         "source_range": [
-          3153,
-          3293
+          3149,
+          3289
         ]
       },
       "lsim": {
@@ -22459,8 +22482,8 @@
         "source_filename": "control.js",
         "source_lineno": 131,
         "source_range": [
-          4472,
-          5788
+          4468,
+          5784
         ]
       },
       "step": {
@@ -22500,8 +22523,8 @@
         "source_filename": "control.js",
         "source_lineno": 187,
         "source_range": [
-          6041,
-          6239
+          6037,
+          6235
         ]
       },
       "tfest": {
@@ -22579,8 +22602,8 @@
         "source_filename": "control.js",
         "source_lineno": 205,
         "source_range": [
-          6768,
-          7640
+          6764,
+          7636
         ]
       }
     },
@@ -23428,10 +23451,10 @@
         ],
         "async": true,
         "source_filename": "presentation.js",
-        "source_lineno": 33,
+        "source_lineno": 62,
         "source_range": [
-          1094,
-          3458
+          2688,
+          5035
         ]
       },
       "editPresentation": {
@@ -23470,10 +23493,10 @@
         ],
         "async": true,
         "source_filename": "presentation.js",
-        "source_lineno": 96,
+        "source_lineno": 125,
         "source_range": [
-          3938,
-          5805
+          5515,
+          7362
         ]
       },
       "updatePresentation": {
@@ -23492,10 +23515,10 @@
           }
         ],
         "source_filename": "presentation.js",
-        "source_lineno": 145,
+        "source_lineno": 174,
         "source_range": [
-          5991,
-          6213
+          7548,
+          8045
         ]
       },
       "createPresentation": {
@@ -23535,10 +23558,10 @@
           }
         ],
         "source_filename": "presentation.js",
-        "source_lineno": 158,
+        "source_lineno": 194,
         "source_range": [
-          6571,
-          12164
+          8403,
+          12651
         ]
       },
       "packPresentation": {
@@ -23559,8 +23582,8 @@
         "source_filename": "presentation.js",
         "source_lineno": 263,
         "source_range": [
-          12349,
-          12902
+          12836,
+          13389
         ]
       },
       "makeStandalonePresentation": {
@@ -23581,8 +23604,30 @@
         "source_filename": "presentation.js",
         "source_lineno": 276,
         "source_range": [
-          13075,
-          14057
+          13562,
+          13923
+        ]
+      },
+      "makeOnlinePresentation": {
+        "name": "makeOnlinePresentation",
+        "kind": "function",
+        "description": "Restores a standalone-cleaned presentation back to the normal server-backed form.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "String"
+              ]
+            },
+            "description": "Path to the presentation directory.",
+            "name": "file_path"
+          }
+        ],
+        "source_filename": "presentation.js",
+        "source_lineno": 289,
+        "source_range": [
+          14095,
+          14632
         ]
       },
       "presentationToPdf": {
@@ -23612,10 +23657,10 @@
         ],
         "async": true,
         "source_filename": "presentation.js",
-        "source_lineno": 307,
+        "source_lineno": 306,
         "source_range": [
-          14295,
-          15897
+          14869,
+          16471
         ]
       }
     },
@@ -27814,10 +27859,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 702,
+        "source_lineno": 720,
         "source_range": [
-          22487,
-          22860
+          23268,
+          23641
         ]
       },
       "show": {
@@ -27837,10 +27882,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 721,
+        "source_lineno": 739,
         "source_range": [
-          23049,
-          23172
+          23830,
+          23953
         ]
       },
       "hide": {
@@ -27860,10 +27905,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 730,
+        "source_lineno": 748,
         "source_range": [
-          23360,
-          23483
+          24141,
+          24264
         ]
       },
       "focus": {
@@ -27883,10 +27928,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 739,
+        "source_lineno": 757,
         "source_range": [
-          23608,
-          23733
+          24389,
+          24514
         ]
       },
       "minimize": {
@@ -27906,10 +27951,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 748,
+        "source_lineno": 766,
         "source_range": [
-          23928,
-          24059
+          24709,
+          24840
         ]
       },
       "center": {
@@ -27929,10 +27974,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 757,
+        "source_lineno": 775,
         "source_range": [
-          24257,
-          24384
+          25038,
+          25165
         ]
       },
       "moveTop": {
@@ -27952,10 +27997,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 766,
+        "source_lineno": 784,
         "source_range": [
-          24613,
-          24742
+          25394,
+          25523
         ]
       },
       "setSize": {
@@ -27994,10 +28039,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 777,
+        "source_lineno": 795,
         "source_range": [
-          25000,
-          25157
+          25781,
+          25938
         ]
       },
       "setPos": {
@@ -28036,10 +28081,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 788,
+        "source_lineno": 806,
         "source_range": [
-          25433,
-          25580
+          26214,
+          26361
         ]
       },
       "setResizable": {
@@ -28069,10 +28114,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 798,
+        "source_lineno": 816,
         "source_range": [
-          25893,
-          26044
+          26674,
+          26825
         ]
       },
       "setMovable": {
@@ -28102,10 +28147,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 808,
+        "source_lineno": 826,
         "source_range": [
-          26351,
-          26498
+          27132,
+          27279
         ]
       },
       "setAspectRatio": {
@@ -28135,10 +28180,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 818,
+        "source_lineno": 836,
         "source_range": [
-          26812,
-          26981
+          27593,
+          27762
         ]
       },
       "setOpacity": {
@@ -28168,10 +28213,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 828,
+        "source_lineno": 846,
         "source_range": [
-          27319,
-          27470
+          28100,
+          28251
         ]
       },
       "setFullscreen": {
@@ -28201,10 +28246,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 838,
+        "source_lineno": 856,
         "source_range": [
-          27732,
-          27885
+          28513,
+          28666
         ]
       },
       "setTitle": {
@@ -28234,10 +28279,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 848,
+        "source_lineno": 866,
         "source_range": [
-          28086,
-          28229
+          28867,
+          29010
         ]
       },
       "printToPdf": {
@@ -28267,10 +28312,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 858,
+        "source_lineno": 876,
         "source_range": [
-          28387,
-          28538
+          29168,
+          29319
         ]
       },
       "getSize": {
@@ -28290,10 +28335,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 867,
+        "source_lineno": 885,
         "source_range": [
-          28682,
-          28811
+          29463,
+          29592
         ]
       },
       "getPos": {
@@ -28313,10 +28358,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 876,
+        "source_lineno": 894,
         "source_range": [
-          28955,
-          29082
+          29736,
+          29863
         ]
       },
       "close": {
@@ -28336,10 +28381,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 885,
+        "source_lineno": 903,
         "source_range": [
-          29200,
-          29326
+          29981,
+          30107
         ]
       },
       "openDevTools": {
@@ -28359,10 +28404,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 894,
+        "source_lineno": 912,
         "source_range": [
-          29512,
-          29651
+          30293,
+          30432
         ]
       },
       "getMediaSourceId": {
@@ -28383,10 +28428,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 903,
+        "source_lineno": 921,
         "source_range": [
-          29804,
-          29951
+          30585,
+          30732
         ]
       },
       "startVideoRecording": {
@@ -28417,10 +28462,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 913,
+        "source_lineno": 931,
         "source_range": [
-          30119,
-          30329
+          30900,
+          31110
         ]
       },
       "addScript": {
@@ -28439,10 +28484,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 922,
+        "source_lineno": 940,
         "source_range": [
-          30448,
-          30628
+          31229,
+          31795
         ]
       },
       "addLinkStylesheet": {
@@ -28461,10 +28506,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 932,
+        "source_lineno": 957,
         "source_range": [
-          30762,
-          30981
+          31928,
+          32147
         ]
       },
       "addUI": {
@@ -28473,10 +28518,10 @@
         "description": "Loads the UI script.",
         "params": [],
         "source_filename": "windows.js",
-        "source_lineno": 942,
+        "source_lineno": 967,
         "source_range": [
-          31030,
-          31134
+          32196,
+          32300
         ]
       }
     },
@@ -28488,10 +28533,10 @@
         "params": [],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 814,
+        "source_lineno": 896,
         "source_range": [
-          25183,
-          25357
+          27861,
+          28035
         ]
       },
       "focus": {
@@ -28501,10 +28546,10 @@
         "params": [],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 825,
+        "source_lineno": 907,
         "source_range": [
-          25429,
-          25573
+          28107,
+          28251
         ]
       },
       "setSize": {
@@ -28543,10 +28588,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 836,
+        "source_lineno": 918,
         "source_range": [
-          25821,
-          25995
+          28499,
+          28673
         ]
       },
       "setPos": {
@@ -28585,10 +28630,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 847,
+        "source_lineno": 929,
         "source_range": [
-          26263,
-          26427
+          28941,
+          29105
         ]
       },
       "setTitle": {
@@ -28618,10 +28663,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 857,
+        "source_lineno": 939,
         "source_range": [
-          26628,
-          26788
+          29306,
+          29466
         ]
       },
       "getSize": {
@@ -28641,10 +28686,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 866,
+        "source_lineno": 948,
         "source_range": [
-          26924,
-          27072
+          29602,
+          29750
         ]
       },
       "getPos": {
@@ -28664,10 +28709,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 875,
+        "source_lineno": 957,
         "source_range": [
-          27208,
-          27354
+          29886,
+          30032
         ]
       },
       "getMediaSourceId": {
@@ -28687,10 +28732,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 884,
+        "source_lineno": 966,
         "source_range": [
-          27468,
-          27634
+          30146,
+          30312
         ]
       },
       "startVideoRecording": {
@@ -28721,10 +28766,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 894,
+        "source_lineno": 976,
         "source_range": [
-          27801,
-          27981
+          30479,
+          30659
         ]
       },
       "close": {
@@ -28744,10 +28789,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 903,
+        "source_lineno": 985,
         "source_range": [
-          28091,
-          28235
+          30769,
+          30913
         ]
       },
       "hideMenu": {
@@ -28756,10 +28801,10 @@
         "description": "Hides figure menu.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 911,
+        "source_lineno": 993,
         "source_range": [
-          28282,
-          28483
+          30960,
+          31161
         ]
       },
       "showMenu": {
@@ -28768,10 +28813,10 @@
         "description": "Shows figure menu.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 921,
+        "source_lineno": 1003,
         "source_range": [
-          28530,
-          28725
+          31208,
+          31403
         ]
       }
     },
@@ -28792,10 +28837,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1153,
+        "source_lineno": 1235,
         "source_range": [
-          35642,
-          35791
+          38320,
+          38469
         ]
       },
       "xlabel": {
@@ -28814,10 +28859,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1164,
+        "source_lineno": 1246,
         "source_range": [
-          35917,
-          36060
+          38595,
+          38738
         ]
       },
       "ylabel": {
@@ -28836,10 +28881,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1175,
+        "source_lineno": 1257,
         "source_range": [
-          36184,
-          36327
+          38862,
+          39005
         ]
       },
       "zlabel": {
@@ -28858,10 +28903,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1186,
+        "source_lineno": 1268,
         "source_range": [
-          36451,
-          36594
+          39129,
+          39272
         ]
       },
       "title": {
@@ -28880,10 +28925,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1197,
+        "source_lineno": 1279,
         "source_range": [
-          36703,
-          36844
+          39381,
+          39522
         ]
       },
       "xlim": {
@@ -28902,10 +28947,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1208,
+        "source_lineno": 1290,
         "source_range": [
-          36965,
-          37129
+          39643,
+          39807
         ]
       },
       "ylim": {
@@ -28924,10 +28969,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1220,
+        "source_lineno": 1302,
         "source_range": [
-          37250,
-          37414
+          39928,
+          40092
         ]
       },
       "zlim": {
@@ -28946,10 +28991,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1232,
+        "source_lineno": 1314,
         "source_range": [
-          37535,
-          37699
+          40213,
+          40377
         ]
       },
       "view": {
@@ -28977,10 +29022,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1245,
+        "source_lineno": 1327,
         "source_range": [
-          37889,
-          38056
+          40567,
+          40734
         ]
       },
       "zoom": {
@@ -28999,10 +29044,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1256,
+        "source_lineno": 1338,
         "source_range": [
-          38166,
-          38307
+          40844,
+          40985
         ]
       },
       "axis": {
@@ -29021,10 +29066,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1267,
+        "source_lineno": 1349,
         "source_range": [
-          38486,
-          38631
+          41164,
+          41309
         ]
       },
       "fromJSON": {
@@ -29043,10 +29088,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1278,
+        "source_lineno": 1360,
         "source_range": [
-          38734,
-          38863
+          41412,
+          41541
         ]
       },
       "print": {
@@ -29075,10 +29120,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 1290,
+        "source_lineno": 1372,
         "source_range": [
-          39083,
-          39446
+          41761,
+          42124
         ]
       },
       "update": {
@@ -29106,10 +29151,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1310,
+        "source_lineno": 1392,
         "source_range": [
-          39681,
-          39767
+          42359,
+          42445
         ]
       },
       "updateById": {
@@ -29129,10 +29174,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1318,
+        "source_lineno": 1400,
         "source_range": [
-          39937,
-          40021
+          42615,
+          42699
         ]
       },
       "remove": {
@@ -29141,10 +29186,10 @@
         "description": "Removes the plot from the figure, cleaning up any resources associated with it.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 1325,
+        "source_lineno": 1407,
         "source_range": [
-          40129,
-          40227
+          42807,
+          42905
         ]
       }
     },

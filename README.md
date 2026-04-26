@@ -1,6 +1,6 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
-**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/w) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
 <p align="center">
   <img src="https://pr-dc.com/img/github/JSLAB.svg?v1" width="150">
@@ -18,7 +18,7 @@ The program was developed to fulfill the need for performing calculations in a p
 
 ## Try it online
 
-Use JSLAB directly in your browser: [https://pr-dc.com/jslab/w](https://pr-dc.com/jslab/w)
+Use JSLAB directly in your browser: [https://pr-dc.com/jslab/web/](https://pr-dc.com/jslab/web/)
 
 ## Why Choose JSLAB?
 
