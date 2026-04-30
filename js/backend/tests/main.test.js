@@ -252,6 +252,13 @@ tests.add('handleMessages requests taskbar attention after top-level script comp
   assert.equal(attention_requests, 1);
 }, { tags: ['unit', 'backend', 'main'] });
 
+tests.add('presentation editor thumbnail context menu includes go-to-code action', function(assert) {
+  var source = fs.readFileSync(path.join(__dirname, '..', 'main.js'), 'utf8');
+
+  assert.ok(source.includes("case 'show-presentation-editor-slide-context-menu':"));
+  assert.ok(source.includes("'go-to-code', { source: 'thumbnail', index: data.index }"));
+}, { tags: ['unit', 'backend', 'main'] });
+
 tests.add('requestScriptFinishedAttention flashes main window only when app is unfocused on Windows', function(assert) {
   var PRDC_JSLAB_MAIN = loadMainClass();
   var main = Object.create(PRDC_JSLAB_MAIN.prototype);

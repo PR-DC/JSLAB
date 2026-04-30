@@ -277,6 +277,33 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR_CODE_TAB {
     return this.code_editor.getValue();
   }
 
+  setSlide(index) {
+    var source;
+    var slides;
+    var slide;
+    var offset;
+    var pos;
+    if(this.key != 'html') {
+      return;
+    }
+    source = this.getValue();
+    slides = collectSlides(source);
+    index = Number(index);
+    if(!Number.isFinite(index) || index < 0 || index >= slides.length) {
+      return;
+    }
+    slide = slides[index];
+    offset = source.indexOf('>', slide.start);
+    if(offset < 0 || offset >= slide.end) {
+      offset = slide.start;
+    } else {
+      offset += 1;
+    }
+    pos = this.code_editor.posFromIndex(offset);
+    this.code_editor.setCursor(pos);
+    this.code_editor.scrollIntoView({ line: pos.line, ch: pos.ch }, 80);
+  }
+
   save() {
     var code = this.getValue();
     this.editor.bridge.writeWorkspaceTextSync(this.file_path, code);
@@ -453,6 +480,7 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
     var obj = this;
     var menu = document.createElement('div');
     var actions = [
+      { action: 'go-to-code', label: currentString(321, 'Go To Code') },
       { action: 'insert-after', label: currentString(537, 'Insert Slide After') },
       { action: 'duplicate', label: currentString(538, 'Duplicate Slide') },
       { action: 'move-up', label: 'Move Slide Up' },
@@ -513,7 +541,10 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
     if(typeof index != 'number') {
       return;
     }
-    if(action == 'insert-after') {
+    if(action == 'go-to-code') {
+      this.html_editor.show();
+      this.html_editor.setSlide(index);
+    } else if(action == 'insert-after') {
       this.insertSlideAfter(index);
     } else if(action == 'duplicate') {
       this.duplicateSlide(index);

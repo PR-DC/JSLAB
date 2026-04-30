@@ -176,12 +176,45 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
   
   /**
    * Save code
+   * @param {Number} timeout_ms
    */
-  save() {
+  async save(timeout_ms = 10000) {
+    var code = this.code_editor.getValue();
     if(this.tab.classList.contains("changed")) {
+      await this.writeFileWithTimeout(this.file_path, code, timeout_ms);
       this.tab.classList.remove("changed");
-      fs.writeFileSync(this.file_path, this.code_editor.getValue())
     }
+    this.code = code;
+  }
+
+  /**
+   * Writes a file without blocking the renderer indefinitely.
+   * @param {String} file_path
+   * @param {String} code
+   * @param {Number} timeout_ms
+   * @returns {Promise<void>}
+   */
+  writeFileWithTimeout(file_path, code, timeout_ms) {
+    return new Promise(function(resolve, reject) {
+      var settled = false;
+      var timer = setTimeout(function() {
+        if(settled) return;
+        settled = true;
+        reject(new Error('Save timed out: ' + file_path));
+      }, timeout_ms);
+
+      fs.promises.writeFile(file_path, code).then(function() {
+        if(settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve();
+      }).catch(function(err) {
+        if(settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
   }
 
   /**
@@ -313,7 +346,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
         return;
       }
       if(e.ctrlKey && e.key.toLowerCase() === "s" && !e.shiftKey) {
-        obj.saveCode();
+        obj.saveCode().catch(function(err) {
+          console.error(err);
+        });
       } else if(e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "f") {
         var selected_text = '';
         if(obj.active_tab &&
@@ -347,7 +382,11 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
         obj.setActiveThumbnail(obj.current_slide);
       }
     });
-    $("#tab-save").click(function() { obj.saveCode(); });
+    $("#tab-save").click(function() {
+      obj.saveCode().catch(function(err) {
+        console.error(err);
+      });
+    });
     $("#close-dialog-save").click(function() { obj.closeDialogButton(2); });
     $("#close-dialog-discard").click(function() { obj.closeDialogButton(1); });
     $("#close-dialog-cancel").click(function() { obj.closeDialogButton(0); });
@@ -453,7 +492,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
           break;
         case "go-to-code":
           obj.html_editor.show();
-          obj.html_editor.setSlide(obj.current_slide);
+          obj.html_editor.setSlide(obj.getActionSlideIndex(data));
           break;
         case "go-to-slide":
           obj.webview.send('data', { show: obj.html_editor.getSlide() });
@@ -669,6 +708,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     var html_changed = this.isTabChanged(this.html_editor);
     var js_changed = this.isTabChanged(this.js_editor);
     var css_changed = this.isTabChanged(this.css_editor);
+    var previous_html_data;
+    var html_data;
     var render_indexes = [];
     if(!html_changed && !js_changed && !css_changed) {
       return;
@@ -678,9 +719,19 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       target_slide = 0;
     }
 
-    this.html_editor.save();
-    this.js_editor.save();
-    this.css_editor.save();
+    if(html_changed) {
+      previous_html_data = this.getSlideSourceData(this.html_editor.code || '');
+      html_data = this.getSlideSourceData();
+    }
+    if(html_changed || css_changed) {
+      this.cancelThumbnailRenderWork();
+    }
+
+    await Promise.all([
+      this.html_editor.save(),
+      this.js_editor.save(),
+      this.css_editor.save()
+    ]);
 
     if(js_changed) {
       this.reloadViews(target_slide);
@@ -688,24 +739,37 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     }
 
     if(html_changed) {
-      var data = this.getSlideSourceData();
+      var data = html_data || this.getSlideSourceData();
       target_slide = Math.max(0, Math.min(target_slide, Math.max(0, data.blocks.length - 1)));
       if(data.blocks.length != this.total_slides) {
         this.updateSlidesCount(data.blocks.length);
-        await this.syncAllSlidesToViews(target_slide);
+        this.cancelThumbnailRenderWork();
         render_indexes = this.getThumbnailRange(0);
+        await this.syncAllSlidesToMainView(target_slide, data);
+        this.syncAllSlidesToThumbnailViews(target_slide, data)
+          .then(() => this.requestThumbnailRender(render_indexes))
+          .catch((err) => console.warn('thumbnail sync:', err));
       } else {
-        await this.syncCurrentSlideToViews(target_slide);
-        render_indexes = [target_slide];
+        var changed_slide_indexes = this.getChangedSlideIndexes(previous_html_data, data);
+        if(changed_slide_indexes.length) {
+          render_indexes = changed_slide_indexes;
+          await this.syncSlidesToMainView(changed_slide_indexes, target_slide, data);
+          this.syncSlidesToThumbnailViews(changed_slide_indexes, target_slide, data)
+            .then(() => this.requestThumbnailRender(render_indexes))
+            .catch((err) => console.warn('thumbnail sync:', err));
+        }
       }
     }
     if(css_changed) {
-      await this.applyCssToViews();
+      await this.applyCssToMainView();
       if(!render_indexes.length) {
         render_indexes = [target_slide];
       }
+      this.applyCssToThumbnailViews()
+        .then(() => this.requestThumbnailRender(render_indexes))
+        .catch((err) => console.warn('thumbnail css sync:', err));
     }
-    if(render_indexes.length) {
+    if(render_indexes.length && !html_changed && !css_changed) {
       this.requestThumbnailRender(render_indexes);
     }
   }
@@ -1085,8 +1149,25 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
           if(token != this.thumb_render_token) {
             return;
           }
+          console.warn('thumbnail:', err);
+          try {
+            var fallback_image = await this.captureThumbnailFallback(slide_index,
+              token, worker);
+            if(token != this.thumb_render_token) {
+              return;
+            }
+            if(fallback_image) {
+              this.setThumbnailImage(slide_index, fallback_image.toDataURL());
+              continue;
+            }
+          } catch(fallback_err) {
+            if(token != this.thumb_render_token) {
+              return;
+            }
+            console.warn('thumbnail fallback:', fallback_err);
+          }
           this.setThumbnailLoading(slide_index, false);
-          this.scheduleThumbnailRender();
+          this.thumb_dirty_indexes.delete(slide_index);
         }
       }
     }));
@@ -1158,6 +1239,36 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Captures the thumbnail webview even when readiness checks fail.
+   * @param {Number} index
+   * @param {Number} token
+   * @param {Object} worker
+   * @returns {Promise<Electron.NativeImage|undefined>}
+   */
+  async captureThumbnailFallback(index, token, worker) {
+    try {
+      var prepared = await this.prepareThumbnailCapture(index, worker);
+      if(prepared && typeof prepared.current_slide == 'number') {
+        worker.current_slide = prepared.current_slide;
+      }
+    } catch(err) {}
+    if(token != this.thumb_render_token) {
+      throw new Error('Thumbnail capture canceled.');
+    }
+    try {
+      await this.waitForThumbnailStability(worker);
+    } catch(err) {}
+    if(token != this.thumb_render_token) {
+      throw new Error('Thumbnail capture canceled.');
+    }
+    var image = await worker.view.capturePage();
+    if(typeof image.isEmpty == 'function' && image.isEmpty()) {
+      return undefined;
+    }
+    return image;
+  }
+
+  /**
    * Waits for the hidden thumbnail webview to settle before another capture.
    * @returns {Promise<void>}
    */
@@ -1200,9 +1311,57 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       if(typeof presentation == 'undefined') {
         throw new Error('Presentation runtime is not ready.');
       }
-      if(typeof presentation.prepareSlideForCapture == 'function') {
-        return await presentation.prepareSlideForCapture(${index});
+      window.__JSLAB_PRESENTATION_THUMBNAIL_MODE__ = true;
+      if(!window.__JSLAB_PRESENTATION_THUMBNAIL_CONSOLE_PATCHED__) {
+        window.__JSLAB_PRESENTATION_THUMBNAIL_CONSOLE_PATCHED__ = true;
+        var original_error = console.error.bind(console);
+        var original_warn = console.warn.bind(console);
+        var suppress = function(args) {
+          var label = args && args.length ? String(args[0] || '') : '';
+          return label == 'img-pdf:' ||
+            label == 'plot-json:' ||
+            label == 'scene-3d-json:';
+        };
+        console.error = function() {
+          if(suppress(arguments)) return;
+          original_error.apply(console, arguments);
+        };
+        console.warn = function() {
+          if(suppress(arguments)) return;
+          original_warn.apply(console, arguments);
+        };
       }
+      var withTimeout = function(promise, timeout_ms) {
+        return new Promise(function(resolve) {
+          var done = false;
+          var timer = setTimeout(function() {
+            if(done) return;
+            done = true;
+            resolve(false);
+          }, timeout_ms);
+          Promise.resolve(promise).then(function(value) {
+            if(done) return;
+            done = true;
+            clearTimeout(timer);
+            resolve(value);
+          }).catch(function() {
+            if(done) return;
+            done = true;
+            clearTimeout(timer);
+            resolve(false);
+          });
+        });
+      };
+      var settleFailedAsyncElements = function(slide) {
+        if(!slide || typeof slide.querySelectorAll != 'function') return;
+        slide.querySelectorAll('img-pdf, plot-json, scene-3d-json').forEach(function(el) {
+          if(el._render_promise) return;
+          if(!el._finished_loading) {
+            el._render_failed = true;
+            el._finished_loading = true;
+          }
+        });
+      };
       if(typeof presentation.setSlide == 'function') {
         presentation.setSlide(${index});
       } else if(typeof presentation.showSlide == 'function') {
@@ -1213,7 +1372,16 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       if(presentation.slides && presentation.slides[${index}] &&
           typeof presentation._lazyRender == 'function') {
         try {
-          await presentation._lazyRender(presentation.slides[${index}]);
+          await withTimeout(presentation._lazyRender(presentation.slides[${index}]), 1500);
+        } catch(err) {}
+      }
+      if(presentation.slides && presentation.slides[${index}]) {
+        settleFailedAsyncElements(presentation.slides[${index}]);
+      }
+      if(presentation.slides && presentation.slides[${index}] &&
+          typeof presentation._waitForSlideAssets == 'function') {
+        try {
+          await withTimeout(presentation._waitForSlideAssets(presentation.slides[${index}]), 1500);
         } catch(err) {}
       }
       await new Promise(resolve => {
@@ -1381,10 +1549,13 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
 
   /**
    * Collects slide blocks from the HTML editor.
+   * @param {String} [source]
    * @returns {Object}
    */
-  getSlideSourceData() {
-    var source = this.html_editor.code_editor.getValue();
+  getSlideSourceData(source) {
+    source = arguments.length ?
+      String(source) :
+      this.html_editor.code_editor.getValue();
     var ranges = [];
     var re = /<\s*slide\b[^>]*>[\s\S]*?<\/\s*slide\s*>/gi;
     var match;
@@ -1406,6 +1577,26 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       separator: separator,
       eol: eol
     };
+  }
+
+  /**
+   * Returns slide indexes whose source changed between two editor snapshots.
+   * @param {Object} previous_data
+   * @param {Object} data
+   * @returns {Number[]}
+   */
+  getChangedSlideIndexes(previous_data, data) {
+    if(!previous_data || !data ||
+        previous_data.blocks.length != data.blocks.length) {
+      return [];
+    }
+    var indexes = [];
+    for(var i = 0; i < data.blocks.length; i++) {
+      if(previous_data.blocks[i] != data.blocks[i]) {
+        indexes.push(i);
+      }
+    }
+    return indexes;
   }
 
   /**
@@ -1442,6 +1633,32 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Syncs the full slide list to the main preview webview.
+   * @param {Number} active_index
+   * @param {Object} data
+   * @returns {Promise<void>}
+   */
+  async syncAllSlidesToMainView(active_index, data = this.getSlideSourceData()) {
+    var slides_html = this.getSlidesHtml(data);
+    await this.syncAllSlidesToView(this.webview, slides_html, active_index);
+  }
+
+  /**
+   * Syncs the full slide list to the thumbnail worker webviews.
+   * @param {Number} active_index
+   * @param {Object} data
+   * @returns {Promise<void>}
+   */
+  async syncAllSlidesToThumbnailViews(active_index, data = this.getSlideSourceData()) {
+    var slides_html = this.getSlidesHtml(data);
+    await Promise.all(this.getThumbnailViews().map((view) =>
+      this.syncAllSlidesToView(view, slides_html, active_index)));
+    this.thumb_workers.forEach(function(worker) {
+      worker.current_slide = active_index;
+    });
+  }
+
+  /**
    * Replaces one slide in a view without reloading the page.
    * @param {Electron.WebviewTag} view
    * @param {Number} index
@@ -1454,21 +1671,104 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Replaces changed slides in a view without reloading the page.
+   * @param {Electron.WebviewTag} view
+   * @param {Number[]} indexes
+   * @param {Object} data
+   * @param {Number} active_index
+   * @returns {Promise<void>}
+   */
+  async syncSlidesToView(view, indexes, data, active_index) {
+    var slide_map = {};
+    indexes.forEach(function(index) {
+      slide_map[index] = data.blocks[index];
+    });
+    await view.executeJavaScript('(function() {' +
+      'var slide_map = ' + JSON.stringify(slide_map) + ';' +
+      'Object.keys(slide_map).map(function(key) {' +
+      'return Number(key);' +
+      '}).sort(function(a, b) {' +
+      'return a - b;' +
+      '}).forEach(function(index) {' +
+      'presentation.replaceSlide(index, slide_map[index]);' +
+      '});' +
+      'presentation.setSlide(' + JSON.stringify(active_index) + ');' +
+      'return presentation.current_slide;' +
+      '})();');
+  }
+
+  /**
    * Syncs the full slide list to the loaded preview and thumbnail views.
    * @param {Number} active_index
    * @returns {Promise<void>}
    */
   async syncAllSlidesToViews(active_index) {
     var data = this.getSlideSourceData();
-    var slides_html = this.getSlidesHtml(data);
-    await Promise.all([
-      this.syncAllSlidesToView(this.webview, slides_html, active_index),
-      ...this.getThumbnailViews().map((view) =>
-        this.syncAllSlidesToView(view, slides_html, active_index))
-    ]);
+    await this.syncAllSlidesToMainView(active_index, data);
+    await this.syncAllSlidesToThumbnailViews(active_index, data);
+  }
+
+  /**
+   * Syncs selected slides to the loaded preview and thumbnail views.
+   * @param {Number[]} indexes
+   * @param {Number} active_index
+   * @param {Object} data
+   * @returns {Promise<void>}
+   */
+  normalizeSyncSlideIndexes(indexes, active_index, data = this.getSlideSourceData()) {
+    indexes = this.normalizeSlideIndexes(indexes, data.blocks.length);
+    if(!indexes.length) {
+      return { indexes: [], active_index: active_index, data: data };
+    }
+    active_index = Math.max(0, Math.min(active_index, Math.max(0, data.blocks.length - 1)));
+    return { indexes: indexes, active_index: active_index, data: data };
+  }
+
+  /**
+   * Syncs selected slides to the main preview webview.
+   * @param {Number[]} indexes
+   * @param {Number} active_index
+   * @param {Object} data
+   * @returns {Promise<void>}
+   */
+  async syncSlidesToMainView(indexes, active_index, data = this.getSlideSourceData()) {
+    var sync = this.normalizeSyncSlideIndexes(indexes, active_index, data);
+    if(!sync.indexes.length) {
+      return;
+    }
+    await this.syncSlidesToView(this.webview, sync.indexes, sync.data,
+      sync.active_index);
+  }
+
+  /**
+   * Syncs selected slides to the thumbnail worker webviews.
+   * @param {Number[]} indexes
+   * @param {Number} active_index
+   * @param {Object} data
+   * @returns {Promise<void>}
+   */
+  async syncSlidesToThumbnailViews(indexes, active_index, data = this.getSlideSourceData()) {
+    var sync = this.normalizeSyncSlideIndexes(indexes, active_index, data);
+    if(!sync.indexes.length) {
+      return;
+    }
+    await Promise.all(this.getThumbnailViews().map((view) =>
+      this.syncSlidesToView(view, sync.indexes, sync.data, sync.active_index)));
     this.thumb_workers.forEach(function(worker) {
-      worker.current_slide = active_index;
+      worker.current_slide = sync.active_index;
     });
+  }
+
+  /**
+   * Syncs selected slides to the loaded preview and thumbnail views.
+   * @param {Number[]} indexes
+   * @param {Number} active_index
+   * @param {Object} data
+   * @returns {Promise<void>}
+   */
+  async syncSlidesToViews(indexes, active_index, data = this.getSlideSourceData()) {
+    await this.syncSlidesToMainView(indexes, active_index, data);
+    await this.syncSlidesToThumbnailViews(indexes, active_index, data);
   }
 
   /**
@@ -1477,18 +1777,31 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * @returns {Promise<void>}
    */
   async syncCurrentSlideToViews(index) {
-    var data = this.getSlideSourceData();
-    if(index < 0 || index >= data.blocks.length) {
-      return;
+    await this.syncSlidesToViews([index], index);
+  }
+
+  /**
+   * Returns a normalized slide index list.
+   * @param {Number|Number[]} indexes
+   * @param {Number} slide_count
+   * @returns {Number[]}
+   */
+  normalizeSlideIndexes(indexes, slide_count = this.total_slides) {
+    if(!Array.isArray(indexes)) {
+      indexes = [indexes];
     }
-    await Promise.all([
-      this.syncSlideToView(this.webview, index, data.blocks[index]),
-      ...this.getThumbnailViews().map((view) =>
-        this.syncSlideToView(view, index, data.blocks[index]))
-    ]);
-    this.thumb_workers.forEach(function(worker) {
-      worker.current_slide = index;
+    var out = [];
+    var seen = new Set();
+    indexes.forEach((index) => {
+      index = Number(index);
+      if(!Number.isFinite(index) || index < 0 || index >= slide_count ||
+          seen.has(index)) {
+        return;
+      }
+      seen.add(index);
+      out.push(index);
     });
+    return out;
   }
 
   /**
@@ -1505,16 +1818,31 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Applies editor CSS to the main preview webview.
+   * @returns {Promise<void>}
+   */
+  async applyCssToMainView() {
+    var css_text = this.css_editor.code_editor.getValue();
+    await this.applyCssToView(this.webview, css_text);
+  }
+
+  /**
+   * Applies editor CSS to thumbnail worker webviews.
+   * @returns {Promise<void>}
+   */
+  async applyCssToThumbnailViews() {
+    var css_text = this.css_editor.code_editor.getValue();
+    await Promise.all(this.getThumbnailViews().map((view) =>
+      this.applyCssToView(view, css_text)));
+  }
+
+  /**
    * Applies editor CSS to both loaded views.
    * @returns {Promise<void>}
    */
   async applyCssToViews() {
-    var css_text = this.css_editor.code_editor.getValue();
-    await Promise.all([
-      this.applyCssToView(this.webview, css_text),
-      ...this.getThumbnailViews().map((view) =>
-        this.applyCssToView(view, css_text))
-    ]);
+    await this.applyCssToMainView();
+    await this.applyCssToThumbnailViews();
   }
 
   /**

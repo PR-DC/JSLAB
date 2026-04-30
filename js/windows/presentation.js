@@ -18,6 +18,18 @@ var is_embedded_web = !!window.__JSLAB_PRESENTATION_EMBEDDED__;
 var has_hash_sync = window.location.protocol != 'file:' && !is_embedded_web;
 var embedded_resource_map = window.__JSLAB_PRESENTATION_RESOURCE_MAP__ || null;
 var embedded_resource_base = window.__JSLAB_PRESENTATION_BASE_URL__ || '';
+var is_thumbnail_renderer = typeof navigator != 'undefined' &&
+  /presentation-editor-thumbnail/i.test(navigator.userAgent || '');
+
+function isPresentationThumbnailMode() {
+  return is_thumbnail_renderer || !!window.__JSLAB_PRESENTATION_THUMBNAIL_MODE__;
+}
+
+function logPresentationRenderError(label, err) {
+  if(isPresentationThumbnailMode()) return;
+  console.error(label, err);
+}
+
 var auto_global_modules = Object.freeze({
   THREE: './res/three.js-r162/build/three.module.js',
   OrbitControls: './res/three.js-r162/examples/jsm/controls/OrbitControls.js',
@@ -1181,7 +1193,7 @@ class PRDC_JSLAB_PRESENTATION {
     }
 
     slide.querySelectorAll('img').forEach((img) => {
-      if(img.complete && img.naturalWidth !== 0) {
+      if(img.complete) {
         return;
       }
       tasks.push(new Promise((resolve) => {
@@ -1196,7 +1208,8 @@ class PRDC_JSLAB_PRESENTATION {
     });
 
     slide.querySelectorAll('video').forEach((video) => {
-      if(video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      if(video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA ||
+          video.error) {
         return;
       }
       tasks.push(new Promise((resolve) => {
@@ -1229,19 +1242,20 @@ class PRDC_JSLAB_PRESENTATION {
     }
 
     for(var el of slide.querySelectorAll('img-pdf, plot-json, scene-3d-json')) {
-      if(el._render_promise || !el._finished_loading) {
+      if(el._render_promise || (!el._finished_loading && !el._render_failed)) {
         return false;
       }
     }
 
     for(var img of slide.querySelectorAll('img')) {
-      if(!img.complete || img.naturalWidth === 0) {
+      if(!img.complete) {
         return false;
       }
     }
 
     for(var video of slide.querySelectorAll('video')) {
-      if(video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      if(video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA &&
+          !video.error) {
         return false;
       }
     }
@@ -1891,6 +1905,9 @@ class ImagePDF extends HTMLElement {
     try {
       await this._render_promise;
     } finally {
+      if(!this._finished_loading) {
+        this._finished_loading = true;
+      }
       this._render_promise = null;
     }
     return this._finished_loading;
@@ -1934,7 +1951,8 @@ class ImagePDF extends HTMLElement {
       await page.render({ canvasContext: this._context, viewport: vps }).promise;
       this._finished_loading = true;
     } catch(err){
-      console.error('img-pdf:', err);
+      this._render_failed = true;
+      logPresentationRenderError('img-pdf:', err);
     }
   }
 }
@@ -1983,6 +2001,9 @@ class PlotJSON extends HTMLElement {
     try {
       await this._render_promise;
     } finally {
+      if(!this._finished_loading) {
+        this._finished_loading = true;
+      }
       this._render_promise = null;
     }
     return this._finished_loading;
@@ -2016,7 +2037,8 @@ class PlotJSON extends HTMLElement {
       await Plotly.newPlot(this._cont, this.data);
       this._finished_loading = true;
     } catch(err){
-      console.error('plot-json:', err);
+      this._render_failed = true;
+      logPresentationRenderError('plot-json:', err);
     }
   }
 }
@@ -2066,6 +2088,9 @@ class Scene3dJSON extends HTMLElement {
     try {
       await this._render_promise;
     } finally {
+      if(!this._finished_loading) {
+        this._finished_loading = true;
+      }
       this._render_promise = null;
     }
     return this._finished_loading;
@@ -2110,7 +2135,7 @@ class Scene3dJSON extends HTMLElement {
           height: h + 'px'
         });
         this._finished_loading = true;
-        console.error('scene-3d-json:', language.currentString(363));
+        logPresentationRenderError('scene-3d-json:', language.currentString(363));
         return;
       }
 
@@ -2137,7 +2162,8 @@ class Scene3dJSON extends HTMLElement {
       this.renderer.render(this.scene, this.camera);
       this._finished_loading = true;
     } catch(err) {
-      console.error('scene-3d-json:', err);
+      this._render_failed = true;
+      logPresentationRenderError('scene-3d-json:', err);
     }
   }
 }

@@ -301,7 +301,10 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('prepareSlideForCapture'));
   assert.ok(presentation_source.includes('_ensureSlideMath(slide)'));
   assert.ok(presentation_source.includes('_typesetMath(root)'));
-  assert.ok(presentation_source.includes("var has_hash_sync = window.location.protocol != 'file:';"));
+  assert.ok(presentation_source.includes('_render_failed = true'));
+  assert.ok(presentation_source.includes('video.error'));
+  assert.ok(presentation_source.includes('logPresentationRenderError'));
+  assert.ok(presentation_source.includes("var has_hash_sync = window.location.protocol != 'file:' && !is_embedded_web;"));
   assert.ok(presentation_source.includes('_getOpenModeError()'));
   assert.ok(presentation_source.includes('_showOpenModeError('));
   assert.ok(presentation_source.includes("this.config.presentation_mode == 'online'"));
@@ -315,16 +318,24 @@ tests.add('presentation and editor window scripts retain expected runtime marker
 
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB'));
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR'));
+  assert.ok(editor_source.includes('writeFileWithTimeout'));
+  assert.ok(editor_source.includes('fs.promises.writeFile'));
   assert.ok(editor_source.includes('insertSlideAfter'));
   assert.ok(editor_source.includes('duplicateSlide'));
   assert.ok(editor_source.includes('moveSlide'));
+  assert.ok(editor_source.includes('getChangedSlideIndexes'));
+  assert.ok(editor_source.includes('syncSlidesToMainView(changed_slide_indexes'));
+  assert.ok(editor_source.includes('syncSlidesToThumbnailViews(changed_slide_indexes'));
   assert.ok(editor_source.includes('syncAllSlidesToViews'));
   assert.ok(editor_source.includes('syncCurrentSlideToViews'));
   assert.ok(editor_source.includes('requestThumbnailRender'));
   assert.ok(editor_source.includes('request-close'));
   assert.ok(editor_source.includes('closeDialogButton'));
+  assert.ok(editor_source.includes('obj.html_editor.setSlide(obj.getActionSlideIndex(data));'));
   assert.ok(editor_source.includes('renderSlideThumbnails'));
   assert.ok(editor_source.includes('capturePage()'));
+  assert.ok(editor_source.includes('captureThumbnailFallback'));
+  assert.ok(editor_source.includes('__JSLAB_PRESENTATION_THUMBNAIL_MODE__'));
   assert.ok(editor_source.includes("document.getElementById('thumbnail-preview')"));
   assert.ok(editor_source.includes('thumb_worker_count = 2'));
   assert.ok(editor_source.includes('initThumbnailWorkers()'));

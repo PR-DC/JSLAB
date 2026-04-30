@@ -746,6 +746,13 @@ class PRDC_JSLAB_MAIN {
           if(sub_win) {
             Menu.buildFromTemplate([
               {
+                label: obj.backend_language.currentString(321),
+                click: function() {
+                  sub_win.webContents.send('PresentationEditorWindow',
+                    'go-to-code', { source: 'thumbnail', index: data.index });
+                }
+              },
+              {
                 label: obj.backend_language.currentString(537),
                 click: function() {
                   sub_win.webContents.send('PresentationEditorWindow',
