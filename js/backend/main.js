@@ -139,6 +139,16 @@ class PRDC_JSLAB_MAIN {
               p.pageURL.endsWith('/presentation-editor.html')
           }),
           new MenuItem({
+            label: obj.backend_language.currentString(387),
+            click: function() {
+              win.webContents.send('PresentationEditorWindow', 'delete-slide',
+                { source: 'code' });
+            },
+            visible: p.formControlType == 'text-area' &&
+              p.titleText == 'html' &&
+              p.pageURL.endsWith('/presentation-editor.html')
+          }),
+          new MenuItem({
             role: 'selectAll',
             label: obj.backend_language.currentString(323),
             visible: p.editFlags.canSelectAll
@@ -395,6 +405,14 @@ class PRDC_JSLAB_MAIN {
                   click: function() {
                     sub_win.webContents.send('PresentationEditorWindow',
                       'duplicate-slide', { source: 'preview' });
+                  },
+                  visible: true
+                }),
+                new MenuItem({
+                  label: obj.backend_language.currentString(387),
+                  click: function() {
+                    sub_win.webContents.send('PresentationEditorWindow',
+                      'delete-slide', { source: 'preview' });
                   },
                   visible: true
                 })
@@ -764,6 +782,13 @@ class PRDC_JSLAB_MAIN {
                 click: function() {
                   sub_win.webContents.send('PresentationEditorWindow',
                     'duplicate-slide', { source: 'thumbnail', index: data.index });
+                }
+              },
+              {
+                label: obj.backend_language.currentString(387),
+                click: function() {
+                  sub_win.webContents.send('PresentationEditorWindow',
+                    'delete-slide', { source: 'thumbnail', index: data.index });
                 }
               }
             ]).popup({

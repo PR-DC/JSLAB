@@ -188,6 +188,10 @@ slide.active {
   display: block;
 }
 
+slide notes {
+  display: none !important;
+}
+
 #slide-controls {
   position: fixed;
   top: 10px;

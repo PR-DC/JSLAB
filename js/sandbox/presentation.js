@@ -347,15 +347,28 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    * @param {HTMLElement} slide - HTML element of slide.
    */
   async _waitForSlide(win, slide) {
-    var img_pdfs = Array.from(slide.querySelectorAll('img-pdf'));
-    var plot_jsons = Array.from(slide.querySelectorAll('plot-json'));
-    var scene_3d_jsons = Array.from(slide.querySelectorAll('scene-3d-json'));
+    var is_in_notes = function(el) {
+      if(!el || typeof el.closest !== 'function') return false;
+      var notes = el.closest('notes');
+      return !!(notes && notes.closest('slide'));
+    };
+    var img_pdfs = Array.from(slide.querySelectorAll('img-pdf')).filter(function(el) {
+      return !is_in_notes(el);
+    });
+    var plot_jsons = Array.from(slide.querySelectorAll('plot-json')).filter(function(el) {
+      return !is_in_notes(el);
+    });
+    var scene_3d_jsons = Array.from(slide.querySelectorAll('scene-3d-json')).filter(function(el) {
+      return !is_in_notes(el);
+    });
     for(var e of [...img_pdfs, ...plot_jsons]) {
       while(!e._finished_loading) {
         await this.jsl.inter.waitMSeconds(1);
       }
     }
-    var videos = Array.from(slide.querySelectorAll('video'));
+    var videos = Array.from(slide.querySelectorAll('video')).filter(function(el) {
+      return !is_in_notes(el);
+    });
     for(var v of videos) {
       await this._waitForVideo(v);
     }
@@ -403,7 +416,11 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   async _replaceCanvases(win, slide) {
     var plot_divs = Array.from(slide.querySelectorAll('.js-plotly-plot'))
-                         .filter(div => div.querySelector('canvas'));
+                         .filter(div => {
+                           var notes = div.closest('notes');
+                           return div.querySelector('canvas') &&
+                             !(notes && notes.closest('slide'));
+                         });
     for(var plot_div of plot_divs) {
       var data_url;
       try {

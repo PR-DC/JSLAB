@@ -13,7 +13,10 @@ if(has_node) {
 }
 
 var is_iframe = window.parent != window;
-var is_lazy = new URLSearchParams(window.location.search).has('lazy');
+var url_search_params = new URLSearchParams(window.location.search);
+var explicit_lazy = url_search_params.has('lazy');
+var is_lazy = !url_search_params.has('eager');
+var allow_lazy_preload = !explicit_lazy || url_search_params.has('preload');
 var is_embedded_web = !!window.__JSLAB_PRESENTATION_EMBEDDED__;
 var has_hash_sync = window.location.protocol != 'file:' && !is_embedded_web;
 var embedded_resource_map = window.__JSLAB_PRESENTATION_RESOURCE_MAP__ || null;
@@ -94,6 +97,7 @@ class PRDC_JSLAB_PRESENTATION {
     this.config = %presentation_config%;
     this.slides_cont = document.getElementById('slides-cont');
     this._normalizeLayoutHelpers(this.slides_cont);
+    this._prepareSlideNotes(this.slides_cont);
     this.slides = document.querySelectorAll('slide');
     this.current_slide = -1;
     this.total_slides = this.slides.length;
@@ -344,12 +348,7 @@ class PRDC_JSLAB_PRESENTATION {
     this._ensureSlideMath(active);
     
     this._updateHash(index);
-    if(has_node) {
-      ipcRenderer.sendToHost('data', { slide: index });
-    }
-    if(is_iframe) {
-      window.parent.postMessage({ slide: index }, '*');
-    }
+    this._emitSlideChange(index);
     this._lazyRender(this.slides[index]);
     this._scheduleNextSlidePreload();
   }
@@ -417,12 +416,7 @@ class PRDC_JSLAB_PRESENTATION {
     this._ensureSlideMath(incoming);
     
     this._updateHash(index);
-    if(has_node) {
-      ipcRenderer.sendToHost('data', { slide: index });
-    }
-    if(is_iframe) {
-      window.parent.postMessage({ slide: index }, '*');
-    }
+    this._emitSlideChange(index);
     this._lazyRender(this.slides[index]);
     this._scheduleNextSlidePreload();
   }
@@ -469,6 +463,7 @@ class PRDC_JSLAB_PRESENTATION {
    * Refreshes cached slide references after editor-side DOM updates.
    */
   _refreshSlides() {
+    this._prepareSlideNotes(this.slides_cont);
     this.slides = document.querySelectorAll('slide');
     this.total_slides = this.slides.length;
     this._updateSlideNav();
@@ -480,6 +475,8 @@ class PRDC_JSLAB_PRESENTATION {
    * @returns {Boolean}
    */
   _shouldRenderElementNow(el) {
+    if(this._isInsideSlideNotes(el)) return false;
+    if(!is_lazy) return true;
     var slide = el ? el.closest('slide') : undefined;
     return !slide || slide.classList.contains('active');
   }
@@ -837,6 +834,35 @@ class PRDC_JSLAB_PRESENTATION {
   }
 
   /**
+   * Resolves a promise with a fallback when it takes too long.
+   * @param {Promise} promise
+   * @param {Number} timeout_ms
+   * @param {*} fallback
+   * @returns {Promise<*>}
+   */
+  _withTimeout(promise, timeout_ms, fallback = false) {
+    return new Promise(function(resolve) {
+      var done = false;
+      var timer = setTimeout(function() {
+        if(done) return;
+        done = true;
+        resolve(fallback);
+      }, timeout_ms);
+      Promise.resolve(promise).then(function(value) {
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(value);
+      }).catch(function() {
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve(fallback);
+      });
+    });
+  }
+
+  /**
    * Preloads a slide in the background so navigation can be instant later.
    * @param {Number} index
    * @param {Number} token
@@ -849,15 +875,15 @@ class PRDC_JSLAB_PRESENTATION {
     if(slide._preload_promise) return slide._preload_promise;
     slide._preload_promise = (async() => {
       this._primeSlideAssets(slide);
-      await this._lazyRender(slide);
-      await this._waitForSlideAssets(slide);
+      await this._withTimeout(this._lazyRender(slide), 6000, false);
+      await this._withTimeout(this._waitForSlideAssets(slide), 3000, false);
       await new Promise(resolve => {
         requestAnimationFrame(function() {
           requestAnimationFrame(resolve);
         });
       });
-      slide._preloaded = true;
-      return true;
+      slide._preloaded = this._isSlideReadyForCapture(slide);
+      return slide._preloaded;
     })().catch(function() {
       return false;
     }).finally(() => {
@@ -932,7 +958,7 @@ class PRDC_JSLAB_PRESENTATION {
    * Schedules background preload of the remaining slide deck while the current slide is shown.
    */
   _scheduleNextSlidePreload() {
-    if(is_lazy) {
+    if(is_lazy && !allow_lazy_preload) {
       return;
     }
     this._next_slide_preload_token += 1;
@@ -960,6 +986,78 @@ class PRDC_JSLAB_PRESENTATION {
   }
 
   /**
+   * Hides slide notes in audience-facing presentation output.
+   * @param {HTMLElement} root
+   */
+  _prepareSlideNotes(root) {
+    if(!root || typeof root.querySelectorAll !== 'function') return;
+    root.querySelectorAll('slide notes').forEach(el => {
+      el.hidden = true;
+      el.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  /**
+   * Returns whether an element lives inside a slide <notes> block.
+   * @param {HTMLElement} el
+   * @returns {Boolean}
+   */
+  _isInsideSlideNotes(el) {
+    if(!el || typeof el.closest !== 'function') return false;
+    var notes = el.closest('notes');
+    return !!(notes && notes.closest('slide'));
+  }
+
+  /**
+   * Returns the notes element for a slide.
+   * @param {Number} index
+   * @returns {HTMLElement|null}
+   */
+  _getSlideNotesElement(index = this.current_slide) {
+    var slide = this.slides && this.slides[index];
+    return slide && typeof slide.querySelector == 'function' ?
+      slide.querySelector('notes') : null;
+  }
+
+  /**
+   * Returns speaker notes HTML for the requested slide.
+   * @param {Number} index
+   * @returns {String}
+   */
+  getSlideNotes(index = this.current_slide) {
+    var notes = this._getSlideNotesElement(index);
+    return notes ? notes.innerHTML : '';
+  }
+
+  /**
+   * Returns speaker notes text for the requested slide.
+   * @param {Number} index
+   * @returns {String}
+   */
+  getSlideNotesText(index = this.current_slide) {
+    var notes = this._getSlideNotesElement(index);
+    return notes ? notes.textContent.trim() : '';
+  }
+
+  /**
+   * Emits the active slide state to the host window.
+   * @param {Number} index
+   */
+  _emitSlideChange(index) {
+    var payload = {
+      slide: index,
+      notes: this.getSlideNotes(index),
+      notes_text: this.getSlideNotesText(index)
+    };
+    if(has_node) {
+      ipcRenderer.sendToHost('data', payload);
+    }
+    if(is_iframe) {
+      window.parent.postMessage(payload, '*');
+    }
+  }
+
+  /**
    * Parses slide HTML into a slide element.
    * @param {String} slide_html
    * @returns {HTMLElement|null}
@@ -968,6 +1066,7 @@ class PRDC_JSLAB_PRESENTATION {
     var wrap = document.createElement('div');
     wrap.innerHTML = String(slide_html).trim();
     this._normalizeLayoutHelpers(wrap);
+    this._prepareSlideNotes(wrap);
     return wrap.querySelector('slide');
   }
 
@@ -1166,6 +1265,7 @@ class PRDC_JSLAB_PRESENTATION {
     if(!slide) return;
     var tasks = [];
     slide.querySelectorAll('img-pdf, plot-json, scene-3d-json').forEach(el => {
+      if(this._isInsideSlideNotes(el)) return;
       if(typeof el._render !== 'function') return;
       el._lazyRendered = true;
       if(el._render_promise) {
@@ -1193,6 +1293,9 @@ class PRDC_JSLAB_PRESENTATION {
     }
 
     slide.querySelectorAll('img').forEach((img) => {
+      if(this._isInsideSlideNotes(img)) {
+        return;
+      }
       if(img.complete) {
         return;
       }
@@ -1208,6 +1311,9 @@ class PRDC_JSLAB_PRESENTATION {
     });
 
     slide.querySelectorAll('video').forEach((video) => {
+      if(this._isInsideSlideNotes(video)) {
+        return;
+      }
       if(video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA ||
           video.error) {
         return;
@@ -1242,18 +1348,27 @@ class PRDC_JSLAB_PRESENTATION {
     }
 
     for(var el of slide.querySelectorAll('img-pdf, plot-json, scene-3d-json')) {
+      if(this._isInsideSlideNotes(el)) {
+        continue;
+      }
       if(el._render_promise || (!el._finished_loading && !el._render_failed)) {
         return false;
       }
     }
 
     for(var img of slide.querySelectorAll('img')) {
+      if(this._isInsideSlideNotes(img)) {
+        continue;
+      }
       if(!img.complete) {
         return false;
       }
     }
 
     for(var video of slide.querySelectorAll('video')) {
+      if(this._isInsideSlideNotes(video)) {
+        continue;
+      }
       if(video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA &&
           !video.error) {
         return false;
@@ -1273,8 +1388,12 @@ class PRDC_JSLAB_PRESENTATION {
     if(!slide) return false;
     var start = Date.now();
     while(true) {
-      await this._lazyRender(slide);
-      await this._waitForSlideAssets(slide);
+      var remaining = Math.max(50, timeout_ms - (Date.now() - start));
+      await this._withTimeout(this._lazyRender(slide),
+        Math.min(remaining, 2500), false);
+      remaining = Math.max(50, timeout_ms - (Date.now() - start));
+      await this._withTimeout(this._waitForSlideAssets(slide),
+        Math.min(remaining, 1500), false);
       await new Promise(resolve => {
         requestAnimationFrame(function() {
           requestAnimationFrame(resolve);
@@ -1293,9 +1412,10 @@ class PRDC_JSLAB_PRESENTATION {
   /**
    * Prepares a slide for thumbnail capture.
    * @param {Number} index
+   * @param {Number} timeout_ms
    * @returns {Promise<number>}
    */
-  async prepareSlideForCapture(index) {
+  async prepareSlideForCapture(index, timeout_ms = 8000) {
     if(index < 0 || index >= this.slides.length) {
       return { current_slide: this.current_slide, ready: false };
     }
@@ -1303,7 +1423,7 @@ class PRDC_JSLAB_PRESENTATION {
       this.setSlide(index);
     }
     var slide = this.slides[index];
-    var ready = await this.waitForSlideReadyForCapture(slide, 8000);
+    var ready = await this.waitForSlideReadyForCapture(slide, timeout_ms);
     return { current_slide: this.current_slide, ready: ready };
   }
   

@@ -275,6 +275,8 @@ tests.add('presentation and editor window scripts retain expected runtime marker
     path.join(__dirname, '..', '..', '..', 'css', 'presentation-editor.css'),
     'utf8'
   );
+  var presentation_html = readHtmlFile('presentation.html');
+  var presentation_editor_html = readHtmlFile('presentation-editor.html');
 
   assert.ok(presentation_source.includes('class PRDC_JSLAB_PRESENTATION'));
   assert.ok(presentation_source.includes("customElements.define('img-pdf'"));
@@ -297,7 +299,12 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('_loadScriptOnce('));
   assert.ok(presentation_source.includes('_scheduleNextSlidePreload()'));
   assert.ok(presentation_source.includes('_preloadSlide(index'));
+  assert.ok(presentation_source.includes('explicit_lazy'));
+  assert.ok(presentation_source.includes("var is_lazy = !url_search_params.has('eager');"));
+  assert.ok(presentation_source.includes('allow_lazy_preload'));
+  assert.ok(presentation_source.includes('_withTimeout(promise'));
   assert.ok(presentation_source.includes('_shouldRenderElementNow(el)'));
+  assert.ok(presentation_source.includes('if(!is_lazy) return true;'));
   assert.ok(presentation_source.includes('prepareSlideForCapture'));
   assert.ok(presentation_source.includes('_ensureSlideMath(slide)'));
   assert.ok(presentation_source.includes('_typesetMath(root)'));
@@ -308,13 +315,18 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('_getOpenModeError()'));
   assert.ok(presentation_source.includes('_showOpenModeError('));
   assert.ok(presentation_source.includes("this.config.presentation_mode == 'online'"));
+  assert.ok(presentation_source.includes('_prepareSlideNotes'));
+  assert.ok(presentation_source.includes('_isInsideSlideNotes'));
+  assert.ok(presentation_source.includes('getSlideNotes(index'));
   assert.ok(presentation_source.includes('replaceSlide(index, slide_html)'));
   assert.ok(presentation_source.includes('replaceSlides(slides_html, active_index)'));
   assert.ok(presentation_source.includes("'contextmenu'"));
   assert.ok(presentation_css.includes('.presentation-line {'));
   assert.ok(presentation_css.includes(".presentation-line::after"));
+  assert.ok(presentation_css.includes('slide notes'));
   assert.ok(presentation_css.includes('#presentation-open-error'));
   assert.ok(presentation_source.includes('_normalizeLayoutHelpers'));
+  assert.ok(presentation_html.includes('<notes></notes>'));
 
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB'));
   assert.ok(editor_source.includes('class PRDC_JSLAB_PRESENTATION_EDITOR'));
@@ -322,12 +334,25 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(editor_source.includes('fs.promises.writeFile'));
   assert.ok(editor_source.includes('insertSlideAfter'));
   assert.ok(editor_source.includes('duplicateSlide'));
+  assert.ok(editor_source.includes('deleteSlide'));
   assert.ok(editor_source.includes('moveSlide'));
   assert.ok(editor_source.includes('getChangedSlideIndexes'));
+  assert.ok(editor_source.includes('thumbnail_cache'));
+  assert.ok(editor_source.includes('applyCachedThumbnailImages'));
+  assert.ok(editor_source.includes('captureActiveThumbnailFromMainPreview'));
+  assert.ok(editor_source.includes('render_indexes = this.getThumbnailRange(0);'));
+  assert.ok(editor_source.includes('this.pending_thumb_render_indexes = render_indexes;'));
   assert.ok(editor_source.includes('syncSlidesToMainView(changed_slide_indexes'));
   assert.ok(editor_source.includes('syncSlidesToThumbnailViews(changed_slide_indexes'));
   assert.ok(editor_source.includes('syncAllSlidesToViews'));
   assert.ok(editor_source.includes('syncCurrentSlideToViews'));
+  assert.ok(editor_source.includes('updateSlideHighlight'));
+  assert.ok(editor_source.includes('CodeMirror-presentation-slide-line'));
+  assert.ok(editor_source.includes("this.addUrlParams(url, ['lazy', 'preload'])"));
+  assert.ok(editor_source.includes('prepareSlideForCapture(${index}, 15000)'));
+  assert.ok(editor_source.includes('getSlideNotesHtml'));
+  assert.ok(editor_source.includes('updateSlideNotes'));
+  assert.ok(editor_source.includes('slide_notes_body'));
   assert.ok(editor_source.includes('requestThumbnailRender'));
   assert.ok(editor_source.includes('request-close'));
   assert.ok(editor_source.includes('closeDialogButton'));
@@ -337,6 +362,7 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(editor_source.includes('captureThumbnailFallback'));
   assert.ok(editor_source.includes('__JSLAB_PRESENTATION_THUMBNAIL_MODE__'));
   assert.ok(editor_source.includes("document.getElementById('thumbnail-preview')"));
+  assert.ok(editor_source.includes('removeThumbnail'));
   assert.ok(editor_source.includes('thumb_worker_count = 2'));
   assert.ok(editor_source.includes('initThumbnailWorkers()'));
   assert.ok(editor_source.includes('getReadyThumbnailWorkers()'));
@@ -345,6 +371,12 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(editor_source.includes("slide_thumbnails.addEventListener('contextmenu'"));
   assert.ok(editor_source.includes("--slide-thumbnail-drop-y"));
   assert.ok(presentation_editor_css.includes('#slide-thumbnails::before'));
+  assert.ok(presentation_editor_css.includes('#slide-notes'));
+  assert.ok(presentation_editor_css.includes('border: 1px dashed #d7d7d7;'));
+  assert.ok(presentation_editor_css.includes('#slide-notes::-webkit-scrollbar-thumb'));
+  assert.ok(presentation_editor_css.includes('.CodeMirror-presentation-slide-line'));
+  assert.ok(presentation_editor_html.includes('id="slide-notes"'));
+  assert.ok(presentation_editor_html.includes('<str sid="554"></str>'));
   assert.ok(editor_source.includes('var presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR();'));
 }, { tags: ['unit', 'windows', 'sandbox'] });
 

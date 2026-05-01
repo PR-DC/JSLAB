@@ -268,3 +268,11 @@
 .CodeMirror-search-close-btn:hover {
   opacity: 1;
 }
+
+.cm-s-notepadpp .CodeMirror-presentation-slide-line {
+  background: #f7f7ff;
+}
+
+.cm-s-notepadpp .CodeMirror-activeline-background {
+  background: #e8e8ff;
+}

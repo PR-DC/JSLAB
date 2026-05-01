@@ -28,6 +28,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
   constructor(editor, name, file) {
     var obj = this;
     this.editor = editor;
+    this.name = name;
     
     this.tab = this.editor.tabs.addTab({
       title: name,
@@ -97,6 +98,46 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
           if(pos >= ranges[i].start && pos <= ranges[i].end) return i;
         return -1;
       }
+
+      this.slide_highlight_lines = [];
+      this.slide_highlight_key = '';
+
+      this.clearSlideHighlight = function() {
+        obj.slide_highlight_lines.forEach(function(line) {
+          obj.code_editor.removeLineClass(line, 'background', 'CodeMirror-presentation-slide-line');
+        });
+        obj.slide_highlight_lines = [];
+        obj.slide_highlight_key = '';
+      }
+
+      this.updateSlideHighlight = function() {
+        var txt = obj.code_editor.getValue();
+        var ranges = collectSlideRanges(txt);
+        var pos = obj.code_editor.indexFromPos(obj.code_editor.getCursor());
+        var index = cursorSlideIndex(pos, ranges);
+        if(index < 0) {
+          obj.clearSlideHighlight();
+          return;
+        }
+
+        var r = ranges[index];
+        var start = obj.code_editor.posFromIndex(r.start);
+        var end = obj.code_editor.posFromIndex(r.end);
+        var key = index + ':' + r.start + ':' + r.end + ':' + start.line + ':' + end.line;
+        if(obj.slide_highlight_key == key) return;
+
+        obj.code_editor.operation(function() {
+          obj.clearSlideHighlight();
+          for(var line = start.line; line <= end.line; line++) {
+            var handle = obj.code_editor.getLineHandle(line);
+            if(handle) {
+              obj.code_editor.addLineClass(handle, 'background', 'CodeMirror-presentation-slide-line');
+              obj.slide_highlight_lines.push(handle);
+            }
+          }
+        });
+        obj.slide_highlight_key = key;
+      }
       
       this.getSlide = function() {
         var pos = obj.code_editor.indexFromPos(obj.code_editor.getCursor());
@@ -113,8 +154,15 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
           var pos = obj.code_editor.posFromIndex(offset);
           obj.code_editor.setCursor(pos);
           obj.code_editor.scrollIntoView({ line: pos.line, ch: pos.ch }, 80)
+          obj.updateSlideHighlight();
         }
       }
+      this.code_editor.on("cursorActivity", function() {
+        obj.updateSlideHighlight();
+      });
+      this.code_editor.on("change", function() {
+        obj.updateSlideHighlight();
+      });
       this.foldSlides = function() {
         var cursor = obj.code_editor.getSearchCursor(/<\s*slide\b[^>]*>/ig, CodeMirror.Pos(0, 0));
         obj.code_editor.operation(() => {
@@ -161,6 +209,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
    */ 
   codeChanged() {
     this.tab.classList.add("changed");
+    if(this.name == 'html' && this.editor && typeof this.editor.updateSlideNotes == 'function') {
+      this.editor.updateSlideNotes();
+    }
   }
   
   /**
@@ -172,6 +223,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
     $(this.code_editor.display.wrapper).show();
     this.code_editor.focus();
     this.code_editor.refresh();
+    if(typeof this.updateSlideHighlight == 'function') this.updateSlideHighlight();
   }
   
   /**
@@ -259,6 +311,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.preview_panel = document.getElementById('preview-panel');
     this.preview_stage = document.getElementById('preview-stage');
     this.presentation_title = document.getElementById('presentation-title');
+    this.slide_notes = document.getElementById('slide-notes');
+    this.slide_notes_body = document.getElementById('slide-notes-body');
     this.slide_controls = document.getElementById('slide-controls');
     this.slide_thumbnails = document.getElementById('slide-thumbnails');
     this.close_dialog_cont = document.getElementById('close-dialog-cont');
@@ -287,6 +341,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.thumb_render_in_flight = false;
     this.thumb_rerun_requested = false;
     this.thumb_dirty_indexes = new Set();
+    this.thumbnail_cache = new Map();
+    this.thumbnail_cache_limit = 400;
     this.full_thumb_refresh_on_ready = true;
     this.pending_thumb_render_indexes = undefined;
     this.pending_thumb_slide_after_reload = undefined;
@@ -374,12 +430,14 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
           obj.current_slide = target_slide;
           document.getElementById('set-slide').value = target_slide + 1;
           obj.setActiveThumbnail(target_slide);
+          obj.updateSlideNotes(target_slide);
           obj.webview.send('data', { show: target_slide });
         }
       } else if(e.args[0].slide !== undefined) {
         obj.current_slide = e.args[0].slide;
         document.getElementById('set-slide').value = obj.current_slide + 1;
         obj.setActiveThumbnail(obj.current_slide);
+        obj.updateSlideNotes(obj.current_slide);
       }
     });
     $("#tab-save").click(function() {
@@ -502,6 +560,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
           break;
         case "duplicate-slide":
           obj.duplicateSlide(obj.getActionSlideIndex(data));
+          break;
+        case "delete-slide":
+          obj.deleteSlide(obj.getActionSlideIndex(data));
           break;
       }
     });
@@ -692,13 +753,35 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       view.style.height = thumb_height;
     });
     this.resetThumbnails(true);
-    this.webview.src = url+'?lazy';
+    this.webview.src = this.addUrlParams(url, ['lazy', 'preload']);
+    var thumbnail_url = this.addUrlParams(url, ['lazy']);
     this.getThumbnailViews().forEach(function(view) {
-      view.src = url + '?lazy';
+      view.src = thumbnail_url;
     });
+    this.updateSlideNotes(this.current_slide);
     
     // Slide scale
     this.scaleSlide();
+  }
+
+  /**
+   * Adds query parameters without assuming a URL scheme.
+   * @param {String} url
+   * @param {String[]} params
+   * @returns {String}
+   */
+  addUrlParams(url, params) {
+    url = String(url || '');
+    var hash = '';
+    var hash_index = url.indexOf('#');
+    if(hash_index > -1) {
+      hash = url.slice(hash_index);
+      url = url.slice(0, hash_index);
+    }
+    var separator = url.includes('?') ? '&' : '?';
+    return url + separator + params.map(function(param) {
+      return encodeURIComponent(param);
+    }).join('&') + hash;
   }
   
   /**
@@ -723,7 +806,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       previous_html_data = this.getSlideSourceData(this.html_editor.code || '');
       html_data = this.getSlideSourceData();
     }
-    if(html_changed || css_changed) {
+    if(html_changed || js_changed || css_changed) {
       this.cancelThumbnailRenderWork();
     }
 
@@ -762,12 +845,13 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     }
     if(css_changed) {
       await this.applyCssToMainView();
-      if(!render_indexes.length) {
-        render_indexes = [target_slide];
-      }
+      render_indexes = this.getThumbnailRange(0);
       this.applyCssToThumbnailViews()
         .then(() => this.requestThumbnailRender(render_indexes))
         .catch((err) => console.warn('thumbnail css sync:', err));
+    }
+    if(html_changed) {
+      this.updateSlideNotes(this.current_slide);
     }
     if(render_indexes.length && !html_changed && !css_changed) {
       this.requestThumbnailRender(render_indexes);
@@ -965,6 +1049,74 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Returns a compact hash for thumbnail source signatures.
+   * @param {String} value
+   * @returns {String}
+   */
+  hashThumbnailSource(value) {
+    value = String(value || '');
+    var hash = 2166136261;
+    for(var i = 0; i < value.length; i++) {
+      hash ^= value.charCodeAt(i);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) +
+        (hash << 8) + (hash << 24);
+    }
+    return String(hash >>> 0);
+  }
+
+  /**
+   * Returns cache signature for the rendered thumbnail.
+   * @param {Number} index
+   * @param {Object} data
+   * @returns {String}
+   */
+  getThumbnailSignature(index, data = this.getSlideSourceData()) {
+    var block = data.blocks[index] || '';
+    return [
+      this.presentation_config ? this.presentation_config.slide_width : '',
+      this.presentation_config ? this.presentation_config.slide_height : '',
+      this.hashThumbnailSource(block),
+      this.hashThumbnailSource(this.css_editor.code_editor.getValue()),
+      this.hashThumbnailSource(this.js_editor.code_editor.getValue())
+    ].join(':');
+  }
+
+  /**
+   * Stores a thumbnail image in the signature cache.
+   * @param {Number} index
+   * @param {String} data_url
+   */
+  cacheThumbnailImage(index, data_url) {
+    if(!data_url) {
+      return;
+    }
+    this.thumbnail_cache.set(this.getThumbnailSignature(index), data_url);
+    while(this.thumbnail_cache.size > this.thumbnail_cache_limit) {
+      var first_key = this.thumbnail_cache.keys().next().value;
+      this.thumbnail_cache.delete(first_key);
+    }
+  }
+
+  /**
+   * Applies cached thumbnails and returns indexes still requiring render.
+   * @param {Number[]} indexes
+   * @returns {Number[]}
+   */
+  applyCachedThumbnailImages(indexes) {
+    var data = this.getSlideSourceData();
+    var remaining = [];
+    indexes.forEach((index) => {
+      var cached = this.thumbnail_cache.get(this.getThumbnailSignature(index, data));
+      if(cached) {
+        this.setThumbnailImage(index, cached, false);
+      } else {
+        remaining.push(index);
+      }
+    });
+    return remaining;
+  }
+
+  /**
    * Requests full thumbnail rendering.
    */
   requestAllThumbnailRender() {
@@ -978,6 +1130,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    */
   requestThumbnailRender(indexes) {
     indexes = this.normalizeThumbnailIndexes(indexes);
+    if(!indexes.length) {
+      return;
+    }
+    indexes = this.applyCachedThumbnailImages(indexes);
     if(!indexes.length) {
       return;
     }
@@ -1098,7 +1254,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * Runs thumbnail rendering for dirty items in UI-priority order.
    */
   async runThumbnailRenderLoop() {
-    if(!this.getReadyThumbnailWorkers().length) {
+    if(!this.getReadyThumbnailWorkers().length &&
+        !this.thumb_dirty_indexes.has(this.current_slide)) {
       return;
     }
     if(this.thumb_render_in_flight) {
@@ -1127,6 +1284,17 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * @param {Number[]} indexes
    */
   async renderSlideThumbnails(token, indexes) {
+    indexes = this.applyCachedThumbnailImages(indexes);
+    if(!indexes.length) {
+      return;
+    }
+    if(indexes.includes(this.current_slide) &&
+        await this.captureActiveThumbnailFromMainPreview(this.current_slide, token)) {
+      indexes = indexes.filter((index) => index != this.current_slide);
+      if(!indexes.length) {
+        return;
+      }
+    }
     var workers = this.getReadyThumbnailWorkers();
     if(!workers.length) {
       return;
@@ -1239,6 +1407,100 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Captures the active slide from the visible main preview when possible.
+   * @param {Number} index
+   * @param {Number} token
+   * @returns {Promise<Boolean>}
+   */
+  async captureActiveThumbnailFromMainPreview(index, token) {
+    if(index != this.current_slide) {
+      return false;
+    }
+    try {
+      await this.prepareMainPreviewThumbnailCapture(index);
+      if(token != this.thumb_render_token) {
+        throw new Error('Thumbnail capture canceled.');
+      }
+      await this.waitForMainPreviewStability();
+      if(token != this.thumb_render_token) {
+        throw new Error('Thumbnail capture canceled.');
+      }
+      var image = await this.webview.capturePage();
+      if(typeof image.isEmpty == 'function' && image.isEmpty()) {
+        return false;
+      }
+      this.setThumbnailImage(index, image.toDataURL());
+      return true;
+    } catch(err) {
+      if(token == this.thumb_render_token) {
+        console.warn('main preview thumbnail:', err);
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Prepares the currently visible main preview slide for capture.
+   * @param {Number} index
+   * @returns {Promise<Object>}
+   */
+  async prepareMainPreviewThumbnailCapture(index) {
+    return await this.webview.executeJavaScript(`(async function() {
+      if(typeof presentation == 'undefined') {
+        return { current_slide: -1, ready: false };
+      }
+      if(presentation.current_slide != ${index}) {
+        return { current_slide: presentation.current_slide, ready: false };
+      }
+      var withTimeout = function(promise, timeout_ms) {
+        return new Promise(function(resolve) {
+          var done = false;
+          var timer = setTimeout(function() {
+            if(done) return;
+            done = true;
+            resolve(false);
+          }, timeout_ms);
+          Promise.resolve(promise).then(function(value) {
+            if(done) return;
+            done = true;
+            clearTimeout(timer);
+            resolve(value);
+          }).catch(function() {
+            if(done) return;
+            done = true;
+            clearTimeout(timer);
+            resolve(false);
+          });
+        });
+      };
+      var settleFailedAsyncElements = function(slide) {
+        if(!slide || typeof slide.querySelectorAll != 'function') return;
+        slide.querySelectorAll('img-pdf, plot-json, scene-3d-json').forEach(function(el) {
+          if(el._render_promise) return;
+          if(!el._finished_loading) {
+            el._render_failed = true;
+            el._finished_loading = true;
+          }
+        });
+      };
+      var slide = presentation.slides && presentation.slides[${index}];
+      if(slide && typeof presentation._lazyRender == 'function') {
+        await withTimeout(presentation._lazyRender(slide), 1500);
+      }
+      settleFailedAsyncElements(slide);
+      if(slide && typeof presentation._waitForSlideAssets == 'function') {
+        await withTimeout(presentation._waitForSlideAssets(slide), 1500);
+      }
+      await new Promise(resolve => {
+        requestAnimationFrame(function() {
+          requestAnimationFrame(resolve);
+        });
+      });
+      return { current_slide: presentation.current_slide, ready: true };
+    })();`);
+  }
+
+  /**
    * Captures the thumbnail webview even when readiness checks fail.
    * @param {Number} index
    * @param {Number} token
@@ -1275,6 +1537,19 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   async waitForThumbnailStability(worker) {
     await new Promise(resolve => setTimeout(resolve, 80));
     await worker.view.executeJavaScript(`new Promise(resolve => {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(resolve);
+      });
+    });`);
+  }
+
+  /**
+   * Waits briefly for the main preview to settle before capture.
+   * @returns {Promise<void>}
+   */
+  async waitForMainPreviewStability() {
+    await new Promise(resolve => setTimeout(resolve, 80));
+    await this.webview.executeJavaScript(`new Promise(resolve => {
       requestAnimationFrame(function() {
         requestAnimationFrame(resolve);
       });
@@ -1362,6 +1637,15 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
           }
         });
       };
+      if(typeof presentation.prepareSlideForCapture == 'function') {
+        var prepared = await withTimeout(
+          presentation.prepareSlideForCapture(${index}, 15000),
+          16000
+        );
+        if(prepared && typeof prepared.current_slide == 'number') {
+          return prepared;
+        }
+      }
       if(typeof presentation.setSlide == 'function') {
         presentation.setSlide(${index});
       } else if(typeof presentation.showSlide == 'function') {
@@ -1389,9 +1673,14 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
           requestAnimationFrame(resolve);
         });
       });
+      var ready = true;
+      if(presentation.slides && presentation.slides[${index}] &&
+          typeof presentation._isSlideReadyForCapture == 'function') {
+        ready = presentation._isSlideReadyForCapture(presentation.slides[${index}]);
+      }
       return {
         current_slide: presentation.current_slide,
-        ready: true
+        ready: ready
       };
     })();`);
   }
@@ -1401,7 +1690,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * @param {Number} index
    * @param {String} data_url
    */
-  setThumbnailImage(index, data_url) {
+  setThumbnailImage(index, data_url, update_cache = true) {
     var item = this.getThumbnailItem(index);
     if(!item) {
       return;
@@ -1412,6 +1701,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     }
     item.classList.remove('loading');
     this.thumb_dirty_indexes.delete(index);
+    if(update_cache) {
+      this.cacheThumbnailImage(index, data_url);
+    }
   }
 
   /**
@@ -1453,6 +1745,19 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     item.remove();
     var before = this.slide_thumbnails.children[to_index] || null;
     this.slide_thumbnails.insertBefore(item, before);
+    this.renumberThumbnails();
+  }
+
+  /**
+   * Removes a thumbnail item.
+   * @param {Number} index
+   */
+  removeThumbnail(index) {
+    var item = this.getThumbnailItem(index);
+    if(!item) {
+      return;
+    }
+    item.remove();
     this.renumberThumbnails();
   }
 
@@ -1612,12 +1917,82 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Returns speaker notes HTML for a slide block.
+   * @param {Number} index
+   * @param {Object} data
+   * @returns {String}
+   */
+  getSlideNotesHtml(index = this.current_slide, data = this.getSlideSourceData()) {
+    index = Number(index);
+    if(!Number.isFinite(index) || index < 0 || index >= data.blocks.length) {
+      return '';
+    }
+    var match = /<\s*notes\b[^>]*>([\s\S]*?)<\/\s*notes\s*>/i.exec(data.blocks[index]);
+    return match ? match[1].trim() : '';
+  }
+
+  /**
+   * Returns whether a slide block contains a notes element.
+   * @param {Number} index
+   * @param {Object} data
+   * @returns {Boolean}
+   */
+  hasSlideNotes(index = this.current_slide, data = this.getSlideSourceData()) {
+    index = Number(index);
+    return Number.isFinite(index) &&
+      index >= 0 &&
+      index < data.blocks.length &&
+      /<\s*notes\b[^>]*>[\s\S]*?<\/\s*notes\s*>/i.test(data.blocks[index]);
+  }
+
+  /**
+   * Removes executable content from notes before showing them in the editor UI.
+   * @param {String} notes_html
+   * @returns {String}
+   */
+  sanitizeSlideNotesHtml(notes_html) {
+    var doc = document.implementation.createHTMLDocument('');
+    var template = doc.createElement('template');
+    var container = doc.createElement('div');
+    template.innerHTML = String(notes_html || '');
+    container.appendChild(template.content.cloneNode(true));
+    doc.body.appendChild(container);
+    doc.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach(function(node) {
+      node.remove();
+    });
+    doc.querySelectorAll('*').forEach(function(node) {
+      Array.from(node.attributes).forEach(function(attr) {
+        var name = attr.name.toLowerCase();
+        var value = String(attr.value || '').trim();
+        if(name.indexOf('on') == 0 || name == 'srcdoc' || /^javascript:/i.test(value)) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    });
+    return container.innerHTML;
+  }
+
+  /**
+   * Updates the editor notes panel for the active slide.
+   * @param {Number} index
+   */
+  updateSlideNotes(index = this.current_slide) {
+    if(!this.slide_notes || !this.slide_notes_body) {
+      return;
+    }
+    var notes_html = this.getSlideNotesHtml(index);
+    this.slide_notes_body.innerHTML = this.sanitizeSlideNotesHtml(notes_html);
+    this.slide_notes.classList.toggle('empty', !this.hasSlideNotes(index));
+    this.scaleSlide();
+  }
+
+  /**
    * Creates a new blank slide block.
    * @param {Object} data
    * @returns {String}
    */
   createSlideBlock(data) {
-    return '<slide>' + data.eol + '</slide>';
+    return '<slide>' + data.eol + '  <notes></notes>' + data.eol + '</slide>';
   }
 
   /**
@@ -1850,12 +2225,14 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * @param {Number} target_slide
    */
   reloadViews(target_slide) {
+    var render_indexes = this.getThumbnailRange(0);
     this.pending_slide_after_reload = target_slide;
     this.pending_thumb_slide_after_reload = target_slide;
-    this.pending_thumb_render_indexes = [target_slide];
+    this.pending_thumb_render_indexes = render_indexes;
     this.thumb_ready = false;
     this.thumb_render_token += 1;
     this.full_thumb_refresh_on_ready = false;
+    this.markThumbnailDirty(render_indexes);
     this.thumb_workers.forEach(function(worker) {
       worker.ready = false;
       worker.current_slide = undefined;
@@ -1889,6 +2266,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     document.getElementById('set-slide').value = this.current_slide + 1;
     this.setActiveThumbnail(this.current_slide);
     this.html_editor.setSlide(this.current_slide);
+    this.updateSlideNotes(this.current_slide);
   }
 
   /**
@@ -1929,6 +2307,34 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Deletes the slide at the supplied index.
+   * @param {Number} index
+   */
+  async deleteSlide(index) {
+    this.cancelThumbnailRenderWork();
+    var data = this.getSlideSourceData();
+    if(index < 0 || index >= data.blocks.length) {
+      return;
+    }
+
+    if(data.blocks.length == 1) {
+      data.blocks[0] = this.createSlideBlock(data);
+      this.applySlideBlocks(data, data.blocks, 0);
+      this.markThumbnailDirty([0], true);
+      await this.syncAllSlidesToViews(0);
+      this.scheduleThumbnailRender(true);
+      return;
+    }
+
+    data.blocks.splice(index, 1);
+    var active_index = Math.max(0, Math.min(index, data.blocks.length - 1));
+    this.applySlideBlocks(data, data.blocks, active_index);
+    this.removeThumbnail(index);
+    this.setActiveThumbnail(this.current_slide);
+    await this.syncAllSlidesToViews(this.current_slide);
+  }
+
+  /**
    * Moves a slide to a new position.
    * @param {Number} from_index
    * @param {Number} target_index
@@ -1960,13 +2366,11 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * Scale slide
    */
   scaleSlide() {
-    if(!this.presentation_config || !this.preview_panel) {
+    if(!this.presentation_config || !this.preview_stage) {
       return;
     }
-    const width = this.preview_panel.clientWidth - 20;
-    const reserved_height = this.presentation_title.offsetHeight +
-      this.slide_controls.offsetHeight + 30;
-    const height = this.preview_panel.clientHeight - reserved_height;
+    const width = this.preview_stage.clientWidth - 20;
+    const height = this.preview_stage.clientHeight - 20;
     if(width <= 0 || height <= 0) {
       return;
     }
@@ -1974,6 +2378,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       height / this.presentation_config.slide_height);
     this.webview_wrap.style.width = `${this.presentation_config.slide_width * scale}px`;
     this.webview_wrap.style.height = `${this.presentation_config.slide_height * scale}px`;
+    if(this.slide_notes) {
+      this.slide_notes.style.width = this.webview_wrap.style.width;
+    }
   }
 
   /**
