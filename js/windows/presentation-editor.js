@@ -209,7 +209,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
    */ 
   codeChanged() {
     this.tab.classList.add("changed");
-    if(this.name == 'html' && this.editor && typeof this.editor.updateSlideNotes == 'function') {
+    if(this.name == 'html' &&
+        this.editor &&
+        !this.editor.updating_slide_notes_from_input &&
+        typeof this.editor.updateSlideNotes == 'function') {
       this.editor.updateSlideNotes();
     }
   }
@@ -332,6 +335,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       document.getElementById('editor-more-popup'));
     this.current_slide = 0;
     this.total_slides = 0;
+    this.updating_slide_notes_from_input = false;
     this.pending_slide_after_reload = undefined;
     this.thumb_worker_count = 2;
     this.thumb_workers = [];
@@ -351,6 +355,11 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.drop_slide_after = false;
     this.close_requested = false;
     this.initThumbnailWorkers();
+    if(this.slide_notes_body) {
+      this.slide_notes_body.addEventListener('input', function() {
+        obj.updateSlideNotesFromInput();
+      });
+    }
 
     this.columns = new PRDC_PANEL('presentation-editor-columns', 'vertical', document.body, [document.getElementById('left-panel'), document.getElementById('right-panel')], [60, 40], function() {
       obj.scaleSlide();
@@ -1876,6 +1885,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       source: source,
       prefix: ranges.length ? source.slice(0, ranges[0].start) : source,
       suffix: ranges.length ? source.slice(ranges[ranges.length - 1].end) : '',
+      ranges: ranges,
       blocks: ranges.map(function(range) {
         return source.slice(range.start, range.end);
       }),
@@ -1928,7 +1938,28 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       return '';
     }
     var match = /<\s*notes\b[^>]*>([\s\S]*?)<\/\s*notes\s*>/i.exec(data.blocks[index]);
-    return match ? match[1].trim() : '';
+    return match ? match[1] : '';
+  }
+
+  /**
+   * Decodes notes HTML to plain editable text.
+   * @param {String} notes_html
+   * @returns {String}
+   */
+  decodeSlideNotesHtml(notes_html) {
+    var template = document.createElement('template');
+    template.innerHTML = String(notes_html || '');
+    return template.content.textContent || '';
+  }
+
+  /**
+   * Returns speaker notes text for a slide block.
+   * @param {Number} index
+   * @param {Object} data
+   * @returns {String}
+   */
+  getSlideNotesText(index = this.current_slide, data = this.getSlideSourceData()) {
+    return this.decodeSlideNotesHtml(this.getSlideNotesHtml(index, data));
   }
 
   /**
@@ -1973,6 +2004,83 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 
   /**
+   * Escapes textarea text before storing it inside <notes>.
+   * @param {String} notes_text
+   * @returns {String}
+   */
+  escapeSlideNotesText(notes_text) {
+    return String(notes_text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * Updates or creates the <notes> element inside one slide block.
+   * @param {String} block
+   * @param {String} notes_text
+   * @param {String} eol
+   * @returns {String}
+   */
+  setSlideBlockNotesText(block, notes_text, eol) {
+    var notes_html = this.escapeSlideNotesText(notes_text)
+      .replace(/\r\n|\r|\n/g, eol);
+    var notes_re = /(<\s*notes\b[^>]*>)([\s\S]*?)(<\/\s*notes\s*>)/i;
+    if(notes_re.test(block)) {
+      return block.replace(notes_re, '$1' + notes_html + '$3');
+    }
+    var close_match = /<\/\s*slide\s*>/i.exec(block);
+    if(!close_match) {
+      return block;
+    }
+    var before = block.slice(0, close_match.index);
+    if(!/(\r\n|\r|\n)$/.test(before)) {
+      before += eol;
+    }
+    return before + '  <notes>' + notes_html + '</notes>' + eol +
+      block.slice(close_match.index);
+  }
+
+  /**
+   * Stores notes text in the HTML editor for a slide.
+   * @param {Number} index
+   * @param {String} notes_text
+   * @returns {Boolean}
+   */
+  setSlideNotesText(index = this.current_slide, notes_text = '') {
+    var data = this.getSlideSourceData();
+    index = Number(index);
+    if(!Number.isFinite(index) || index < 0 || index >= data.blocks.length) {
+      return false;
+    }
+    var next_block = this.setSlideBlockNotesText(data.blocks[index], notes_text,
+      data.eol);
+    if(next_block == data.blocks[index]) {
+      return false;
+    }
+    var range = data.ranges[index];
+    var code_editor = this.html_editor.code_editor;
+    this.updating_slide_notes_from_input = true;
+    try {
+      code_editor.replaceRange(next_block, code_editor.posFromIndex(range.start),
+        code_editor.posFromIndex(range.end));
+    } finally {
+      this.updating_slide_notes_from_input = false;
+    }
+    return true;
+  }
+
+  /**
+   * Handles notes textarea input for the active slide.
+   */
+  updateSlideNotesFromInput() {
+    if(!this.slide_notes_body) {
+      return;
+    }
+    this.setSlideNotesText(this.current_slide, this.slide_notes_body.value);
+  }
+
+  /**
    * Updates the editor notes panel for the active slide.
    * @param {Number} index
    */
@@ -1980,9 +2088,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     if(!this.slide_notes || !this.slide_notes_body) {
       return;
     }
-    var notes_html = this.getSlideNotesHtml(index);
-    this.slide_notes_body.innerHTML = this.sanitizeSlideNotesHtml(notes_html);
-    this.slide_notes.classList.toggle('empty', !this.hasSlideNotes(index));
+    this.slide_notes_body.dataset.slideIndex = String(index);
+    this.slide_notes_body.value = this.getSlideNotesText(index);
+    this.slide_notes.classList.remove('empty');
     this.scaleSlide();
   }
 

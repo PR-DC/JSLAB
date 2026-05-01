@@ -413,6 +413,7 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
     this.close_requested = false;
     this.force_close = false;
     this.preview_timer = undefined;
+    this.updating_slide_notes_from_input = false;
 
     this.preview = document.getElementById('preview');
     this.slide_thumbnails = document.getElementById('slide-thumbnails');
@@ -445,6 +446,12 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
     this.js_editor = new PRDC_JSLAB_WEB_PRESENTATION_EDITOR_CODE_TAB(this, 'js', 'js');
     this.css_editor = new PRDC_JSLAB_WEB_PRESENTATION_EDITOR_CODE_TAB(this, 'css', 'css');
     this.html_editor.show();
+
+    if(this.slide_notes_body) {
+      this.slide_notes_body.addEventListener('input', function() {
+        obj.updateSlideNotesFromInput();
+      });
+    }
 
     document.getElementById('first-slide').addEventListener('click', function() {
       obj.setSlide(0);
@@ -543,6 +550,10 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
 
   onTabCodeChanged(tab) {
     if(tab && tab.key == 'html') {
+      if(this.updating_slide_notes_from_input) {
+        this.slide_entries = collectSlides(this.getCurrentCode('html'));
+        return;
+      }
       this.refreshSlides();
     }
     this.schedulePreviewRefresh();
@@ -752,7 +763,17 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
       return '';
     }
     match = /<\s*notes\b[^>]*>([\s\S]*?)<\/\s*notes\s*>/i.exec(entry.full);
-    return match ? match[1].trim() : '';
+    return match ? match[1] : '';
+  }
+
+  decodeSlideNotesHtml(notes_html) {
+    var template = document.createElement('template');
+    template.innerHTML = String(notes_html || '');
+    return template.content.textContent || '';
+  }
+
+  getSlideNotesText(index = this.current_slide) {
+    return this.decodeSlideNotesHtml(this.getSlideNotesHtml(index));
   }
 
   hasSlideNotes(index = this.current_slide) {
@@ -783,14 +804,73 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
     return container.innerHTML;
   }
 
+  escapeSlideNotesText(notes_text) {
+    return String(notes_text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  setSlideBlockNotesText(block, notes_text, eol) {
+    var notes_html = this.escapeSlideNotesText(notes_text)
+      .replace(/\r\n|\r|\n/g, eol);
+    var notes_re = /(<\s*notes\b[^>]*>)([\s\S]*?)(<\/\s*notes\s*>)/i;
+    if(notes_re.test(block)) {
+      return block.replace(notes_re, '$1' + notes_html + '$3');
+    }
+    var close_match = /<\/\s*slide\s*>/i.exec(block);
+    if(!close_match) {
+      return block;
+    }
+    var before = block.slice(0, close_match.index);
+    if(!/(\r\n|\r|\n)$/.test(before)) {
+      before += eol;
+    }
+    return before + '  <notes>' + notes_html + '</notes>' + eol +
+      block.slice(close_match.index);
+  }
+
+  setSlideNotesText(index = this.current_slide, notes_text = '') {
+    var source = this.getCurrentCode('html');
+    var slides = collectSlides(source);
+    var eol = source.includes('\r\n') ? '\r\n' : '\n';
+    index = Number(index);
+    if(!Number.isFinite(index) || index < 0 || index >= slides.length) {
+      return false;
+    }
+    var next_block = this.setSlideBlockNotesText(slides[index].full,
+      notes_text, eol);
+    if(next_block == slides[index].full) {
+      return false;
+    }
+    this.updating_slide_notes_from_input = true;
+    try {
+      this.html_editor.code_editor.replaceRange(next_block,
+        this.html_editor.code_editor.posFromIndex(slides[index].start),
+        this.html_editor.code_editor.posFromIndex(slides[index].end));
+    } finally {
+      this.updating_slide_notes_from_input = false;
+    }
+    this.slide_entries = collectSlides(this.getCurrentCode('html'));
+    return true;
+  }
+
+  updateSlideNotesFromInput() {
+    if(!this.slide_notes_body) {
+      return;
+    }
+    this.setSlideNotesText(this.current_slide, this.slide_notes_body.value);
+  }
+
   updateSlideNotes(index = this.current_slide) {
     var notes_html;
     if(!this.slide_notes || !this.slide_notes_body) {
       return;
     }
     notes_html = this.getSlideNotesHtml(index);
-    this.slide_notes_body.innerHTML = this.sanitizeSlideNotesHtml(notes_html);
-    this.slide_notes.classList.toggle('empty', !this.hasSlideNotes(index));
+    this.slide_notes_body.dataset.slideIndex = String(index);
+    this.slide_notes_body.value = this.decodeSlideNotesHtml(notes_html);
+    this.slide_notes.classList.remove('empty');
   }
 
   _renderSlideThumbnail(thumb, slide_index, render_token) {

@@ -351,6 +351,10 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(editor_source.includes("this.addUrlParams(url, ['lazy', 'preload'])"));
   assert.ok(editor_source.includes('prepareSlideForCapture(${index}, 15000)'));
   assert.ok(editor_source.includes('getSlideNotesHtml'));
+  assert.ok(editor_source.includes('getSlideNotesText'));
+  assert.ok(editor_source.includes('setSlideNotesText'));
+  assert.ok(editor_source.includes('updateSlideNotesFromInput'));
+  assert.ok(editor_source.includes('escapeSlideNotesText'));
   assert.ok(editor_source.includes('updateSlideNotes'));
   assert.ok(editor_source.includes('slide_notes_body'));
   assert.ok(editor_source.includes('requestThumbnailRender'));
@@ -374,8 +378,13 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_editor_css.includes('#slide-notes'));
   assert.ok(presentation_editor_css.includes('border: 1px dashed #d7d7d7;'));
   assert.ok(presentation_editor_css.includes('#slide-notes::-webkit-scrollbar-thumb'));
+  assert.ok(presentation_editor_css.includes('#slide-notes-body::-webkit-scrollbar-thumb'));
+  assert.ok(presentation_editor_css.includes('resize: none;'));
+  assert.ok(presentation_editor_css.includes('top: 54px;'));
   assert.ok(presentation_editor_css.includes('.CodeMirror-presentation-slide-line'));
+  assert.ok(presentation_editor_html.includes('id="tab-save" src="../img/tab-save.svg" title-str="50" alt="Save"'));
   assert.ok(presentation_editor_html.includes('id="slide-notes"'));
+  assert.ok(presentation_editor_html.includes('<textarea id="slide-notes-body"'));
   assert.ok(presentation_editor_html.includes('<str sid="554"></str>'));
   assert.ok(editor_source.includes('var presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR();'));
 }, { tags: ['unit', 'windows', 'sandbox'] });

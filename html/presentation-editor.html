@@ -33,9 +33,9 @@
                   <webview id="preview" useragent="presentation-editor-preview" nodeintegration webpreferences="backgroundThrottling=no, contextIsolation=no"></webview>
                 </div>
               </div>
-              <div id="slide-notes" class="empty">
-                <div id="slide-notes-label"><str sid="554"></str></div>
-                <div id="slide-notes-body"></div>
+              <div id="slide-notes">
+                <label id="slide-notes-label" for="slide-notes-body"><str sid="554"></str></label>
+                <textarea id="slide-notes-body" spellcheck="false"></textarea>
               </div>
               <div id="slide-controls">
                 <div id="first-slide" class="button" title-str="315">|⏴</div>
@@ -59,7 +59,7 @@
           <div id="right-panel-cont">
             <div class="tabs" style="--tab-content-margin: 9px">
               <div class="tabs-content"></div>
-              <img id="tab-save" src="../img/tab-save.svg" />
+              <img id="tab-save" src="../img/tab-save.svg" title-str="50" alt="Save" />
               <img id="editor-more-icon" src="../img/more.svg" />
               <div class="tabs-bottom-bar"></div>
             </div>

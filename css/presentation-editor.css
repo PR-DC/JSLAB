@@ -198,13 +198,16 @@ lang {
 }
 
 #slide-notes {
+  display: flex;
+  flex-direction: column;
   flex: 0 0 auto;
   align-self: center;
   max-width: 100%;
   max-height: 130px;
+  min-height: 92px;
   margin-top: 10px;
   padding: 8px 10px;
-  overflow: auto;
+  overflow: hidden;
   box-sizing: border-box;
   border: 1px dashed #d7d7d7;
   border-radius: 4px;
@@ -214,11 +217,8 @@ lang {
   line-height: 18px;
 }
 
-#slide-notes.empty {
-  display: none;
-}
-
 #slide-notes-label {
+  flex: 0 0 auto;
   margin-bottom: 4px;
   color: #999;
   font-size: 11px;
@@ -227,8 +227,21 @@ lang {
 }
 
 #slide-notes-body {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  flex: 1 1 auto;
+  display: block;
+  width: 100%;
+  min-height: 54px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  overflow: auto;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
 }
 
 #thumbnail-preview-host {
@@ -473,7 +486,7 @@ lang {
   display: block;
   border-radius: 5px;
   width: 245px;
-  top: 77px;
+  top: 54px;
   right: 10px;
   background: #ffffff;
   border: 1px solid #f7df1e;
@@ -649,12 +662,20 @@ lang {
 #slide-notes::-webkit-scrollbar-track-piece,
 #slide-notes::-webkit-scrollbar-thumb,
 #slide-notes::-webkit-scrollbar-corner,
-#slide-notes::-webkit-resizer {
+#slide-notes::-webkit-resizer,
+#slide-notes-body::-webkit-scrollbar,
+#slide-notes-body::-webkit-scrollbar-button,
+#slide-notes-body::-webkit-scrollbar-track,
+#slide-notes-body::-webkit-scrollbar-track-piece,
+#slide-notes-body::-webkit-scrollbar-thumb,
+#slide-notes-body::-webkit-scrollbar-corner,
+#slide-notes-body::-webkit-resizer {
   background: transparent;
 }
 
 .panel::-webkit-scrollbar,
-#slide-notes::-webkit-scrollbar {
+#slide-notes::-webkit-scrollbar,
+#slide-notes-body::-webkit-scrollbar {
   width:  12px;
   height: 12px;
   -webkit-border-radius: 5px;
@@ -662,13 +683,15 @@ lang {
 }
 
 .panel::-webkit-scrollbar-track-piece,
-#slide-notes::-webkit-scrollbar-track-piece {
+#slide-notes::-webkit-scrollbar-track-piece,
+#slide-notes-body::-webkit-scrollbar-track-piece {
   -webkit-border-radius: 5px;
   border-radius: 5px;
 }
 
 .panel::-webkit-scrollbar-thumb,
-#slide-notes::-webkit-scrollbar-thumb {
+#slide-notes::-webkit-scrollbar-thumb,
+#slide-notes-body::-webkit-scrollbar-thumb {
   background: #ddd;
   border-radius: 5px;
   background-clip: content-box;
@@ -676,7 +699,8 @@ lang {
 }
 
 .panel::-webkit-scrollbar-button,
-#slide-notes::-webkit-scrollbar-button {
+#slide-notes::-webkit-scrollbar-button,
+#slide-notes-body::-webkit-scrollbar-button {
   width:0;
   height:0;
 }
