@@ -470,6 +470,26 @@ Code references and function details are also accessible directly within `JSLAB`
 
 Documentation is also available at: [https://pr-dc.com/jslab/doc/](https://pr-dc.com/jslab/doc/)
 
+## Citation
+
+If you use `JSLAB` in research that leads to a publication, please cite the following conference paper:
+
+Petrasinovic M., Raicevic N., Petrovic M., Grbovic A.: *JSLAB: An Open-Source JavaScript Environment for Scientific Computing and Visualization*, 4th EAI International Conference on Automation and Control in Theory and Practice (ARTEP 2026), Sromowce Ni&#380;ne, Poland, 13-15 May 2026.
+
+In BibTeX format:
+
+```bibtex
+@inproceedings{petrasinovic2026jslab,
+  author = {Petrasinovic, M. and Raicevic, N. and Petrovic, M. and Grbovic, A.},
+  title = {{JSLAB}: An Open-Source JavaScript Environment for Scientific Computing and Visualization},
+  booktitle = {4th EAI International Conference on Automation and Control in Theory and Practice (ARTEP 2026)},
+  address = {Sromowce Ni{\v z}ne, Poland},
+  year = {2026},
+  month = may,
+  note = {13--15 May 2026}
+}
+```
+
 ## Build from Source
 
 <details>
