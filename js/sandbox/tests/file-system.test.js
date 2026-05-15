@@ -247,6 +247,42 @@ tests.add('chooseFile returns empty array and reports when user cancels', functi
   assert.ok(harness.errors.length > 0);
 }, { tags: ['unit', 'file-system'] });
 
+tests.add('chooseFile prefers synchronous dialog when both APIs are available', function(assert) {
+  var async_calls = 0;
+  var harness = createFsHarness({
+    env: {
+      showOpenDialog: function() {
+        async_calls += 1;
+        return Promise.resolve({ canceled: false, filePaths: ['async.log'] });
+      },
+      showOpenDialogSync: function() {
+        return ['sync.log'];
+      }
+    }
+  });
+
+  var out = harness.file_system.chooseFile({ title: 'Pick a file' });
+  assert.deepEqual(out, ['sync.log']);
+  assert.equal(async_calls, 0);
+}, { tags: ['unit', 'file-system'] });
+
+tests.add('chooseFile normalizes async Electron dialog results', async function(assert) {
+  var harness = createFsHarness({
+    env: {
+      showOpenDialog: function() {
+        return Promise.resolve({
+          canceled: false,
+          filePaths: ['C:/tmp/a.log', 'C:/tmp/b.log']
+        });
+      },
+      showOpenDialogSync: undefined
+    }
+  });
+
+  var out = await harness.file_system.chooseFile({ title: 'Pick a file' });
+  assert.deepEqual(out, ['C:/tmp/a.log', 'C:/tmp/b.log']);
+}, { tags: ['unit', 'file-system', 'async'] });
+
 tests.add('chooseFolder merges directory property and returns selected path list', function(assert) {
   var harness = createFsHarness({
     env: {

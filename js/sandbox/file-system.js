@@ -147,6 +147,28 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
           : acc.concat(file);
       }, []);
   }
+
+  /**
+   * Normalizes open dialog return values across Electron sync/async APIs.
+   * @param {*} result Return value from an open dialog call.
+   * @param {string} caller Name of the caller for error reporting.
+   * @returns {*} File path list/string, or an empty array when canceled.
+   */
+  _normalizeOpenDialogResult(result, caller) {
+    if(result === undefined || result === false || result === null) {
+      this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(126));
+      return [];
+    }
+    if(result && typeof result == 'object' && !Array.isArray(result) &&
+        Object.prototype.hasOwnProperty.call(result, 'filePaths')) {
+      if(result.canceled) {
+        this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(126));
+        return [];
+      }
+      return result.filePaths;
+    }
+    return result;
+  }
   
   /**
    * Opens a dialog for the user to choose a file, synchronously.
@@ -154,23 +176,23 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    * @returns {string|string[]} The selected file path(s) or an empty array if canceled.
    */
   chooseFile(options) {
-    var file_path = typeof this.jsl.inter.env.showOpenDialog == 'function'
-      ? this.jsl.inter.env.showOpenDialog(options)
-      : this.jsl.inter.env.showOpenDialogSync(options);
+    var file_path;
+    if(typeof this.jsl.inter.env.showOpenDialogSync == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialogSync(options);
+    }
+    if(file_path === false && typeof this.jsl.inter.env.showOpenDialog == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialog(options);
+    } else if(typeof file_path === 'undefined' &&
+        typeof this.jsl.inter.env.showOpenDialogSync != 'function' &&
+        typeof this.jsl.inter.env.showOpenDialog == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialog(options);
+    }
     if(file_path && typeof file_path.then == 'function') {
       return file_path.then((out) => {
-        if(out === undefined || out === false) {
-          this.jsl.inter.env.error('@chooseFile: '+this.jsl.inter.lang.string(126));
-          return [];
-        }
-        return out;
+        return this._normalizeOpenDialogResult(out, '@chooseFile');
       });
     }
-    if(file_path === undefined) {
-      this.jsl.inter.env.error('@chooseFile: '+this.jsl.inter.lang.string(126));
-      return [];
-    }
-    return file_path;
+    return this._normalizeOpenDialogResult(file_path, '@chooseFile');
   }
   
   /**
@@ -183,23 +205,23 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
       properties: ['openDirectory'],
       ...options_in
     };
-    var file_path = typeof this.jsl.inter.env.showOpenDialog == 'function'
-      ? this.jsl.inter.env.showOpenDialog(options)
-      : this.jsl.inter.env.showOpenDialogSync(options);
+    var file_path;
+    if(typeof this.jsl.inter.env.showOpenDialogSync == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialogSync(options);
+    }
+    if(file_path === false && typeof this.jsl.inter.env.showOpenDialog == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialog(options);
+    } else if(typeof file_path === 'undefined' &&
+        typeof this.jsl.inter.env.showOpenDialogSync != 'function' &&
+        typeof this.jsl.inter.env.showOpenDialog == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialog(options);
+    }
     if(file_path && typeof file_path.then == 'function') {
       return file_path.then((out) => {
-        if(out === undefined || out === false) {
-          this.jsl.inter.env.error('@chooseFolder: '+this.jsl.inter.lang.string(126));
-          return [];
-        }
-        return out;
+        return this._normalizeOpenDialogResult(out, '@chooseFolder');
       });
     }
-    if(file_path === undefined) {
-      this.jsl.inter.env.error('@chooseFolder: '+this.jsl.inter.lang.string(126));
-      return [];
-    }
-    return file_path;
+    return this._normalizeOpenDialogResult(file_path, '@chooseFolder');
   }
   
   /**
