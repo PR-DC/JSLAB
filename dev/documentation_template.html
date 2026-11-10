@@ -709,7 +709,8 @@ In order to download necessary tools, clone the repository, and install dependen
 <ul>
     <li><strong>Node.js:</strong> Ensure that Node.js is installed on your system. You can download it from the official website: <a href="https://nodejs.org/">https://nodejs.org/</a></li>
     <li><strong>npm:</strong> npm is typically installed alongside Node.js.</li>
-    <li><strong>node-gyp:</strong> node-gyp is installed alongside with application but it requires additional tools and libraries depending on your operating system. Follow the instructions for your specific OS from: <a href="https://github.com/nodejs/node-gyp">https://github.com/nodejs/node-gyp</a></li>
+    <li><strong>Emscripten:</strong> Install the SDK to compile the shared numerical and geometry backend. See the WebAssembly backend section for setup instructions.</li>
+    <li><strong>node-gyp:</strong> Included for compiling user extensions and third-party native dependencies. Required platform tools are described at <a href="https://github.com/nodejs/node-gyp">https://github.com/nodejs/node-gyp</a>.</li>
     <li><strong>Git:</strong> Suggested for cloning the repository. Download it from the official website: <a href="https://git-scm.com/">https://git-scm.com/</a></li>
 </ul>
 
@@ -1241,6 +1242,14 @@ disp(await om_link.sendExpression("simulate(BouncingBall)"));
 await om_link.close();
 </pre>
         `},
+      'cli': {
+        'title': 'Command-line interface',
+        'data': $JSLAB_CLI_DATA$
+      },
+      'wasm': {
+        'title': 'WebAssembly backend',
+        'data': $JSLAB_WASM_DATA$
+      },
       'mcp': {
         'title': 'MCP server',
         'data': $JSLAB_MCP_DATA$

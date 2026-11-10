@@ -7,7 +7,7 @@
 
 const { PRDC_JSLAB_EVAL } = require('./jslab-eval');
 const { PRDC_JSLAB_OVERRIDE } = require('./jslab-override');
-const { CORE_INTERNAL_MODULE_NAMES } = require('./internal-protected-modules');
+const { CORE_INTERNAL_MODULE_NAMES } = require('./jslab-internal-protected-modules');
 
 function getEnvironmentModule() {
   if(typeof globalThis !== 'undefined' && globalThis.__JSLAB_RUNTIME__ == 'web') {
@@ -64,6 +64,8 @@ class PRDC_JSLAB_LIB {
     
     this.env = new PRDC_JSLAB_ENV(this);
     this.context = this.env.context;
+    // Publish the runtime once, before submodules and workspace snapshots are created.
+    this.context.jsl = this;
     this.internal_jsl_identifier = '__jsl_internal__';
     try {
       Object.defineProperty(this.context, this.internal_jsl_identifier, {
@@ -641,6 +643,10 @@ class PRDC_JSLAB_LIB {
       importScripts(internal_app_path + '/lib/sympy-0.26.2/pyodide.js');
 
       const { PRDC_JSLAB_LIB } = require(internal_app_path + '/js/sandbox/jslab');
+      const { initializeWasm } = require(internal_app_path + '/js/sandbox/jslab-wasm-loader');
+      await initializeWasm(
+        require(internal_app_path + '/lib/native-wasm/native_module.js'),
+        require(internal_app_path + '/lib/native-wasm/alpha_shape_3d.js'));
 
       // Global variables
       var jsl = new PRDC_JSLAB_LIB(internal_app_path, internal_packed);
@@ -1040,7 +1046,7 @@ class PRDC_JSLAB_LIB {
    * Lists all subprocesses.
    */
   listSubprocesses() {
-    return this.env.native_module.listSubprocesses(this.env.process_pid);
+    return this.inter.env.listSubprocesses(this.inter.env.process_pid);
   }
   
   /**

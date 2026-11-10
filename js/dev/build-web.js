@@ -605,7 +605,7 @@ async function buildWeb() {
   ensureDirectory(html_root);
   copyFile(path.join(app_root, 'css', 'main.css'), path.join(css_root, 'main.css'));
   copyFile(path.join(app_root, 'css', 'terminal.css'), path.join(css_root, 'terminal.css'));
-  copyFile(path.join(app_root, 'web', 'css', 'web.css'), path.join(css_root, 'web.css'));
+  copyFile(path.join(app_root, 'css', 'web.css'), path.join(css_root, 'web.css'));
   [
     'basic.css',
     'figure.css',
@@ -665,6 +665,9 @@ async function buildWeb() {
   copyFile(path.join(app_root, 'js', 'code', 'dialog-search.js'), path.join(js_code_root, 'dialog-search.js'));
   copyFile(path.join(app_root, 'js', 'code', 'custom-javascript-hint.js'), path.join(js_code_root, 'custom-javascript-hint.js'));
   var native_wasm_info = readNativeWasmInfo();
+  if(!native_wasm_info.native_module.available || !native_wasm_info.alpha_shape_3d.available) {
+    throw new Error('Required WebAssembly bundles are missing. Run npm run build-native-wasm before building the web application.');
+  }
   if(native_wasm_info.native_module.available || native_wasm_info.alpha_shape_3d.available) {
     copyFolder(native_wasm_root, path.join(dist_root, 'lib', 'native-wasm'));
   }
@@ -726,11 +729,15 @@ async function buildWeb() {
     'utf8'
   );
 
-  var html_template = fs.readFileSync(path.join(app_root, 'web', 'html', 'web.html'), 'utf8');
+  var html_template = fs.readFileSync(path.join(app_root, 'html', 'web.html'), 'utf8');
   var package_json = JSON.parse(fs.readFileSync(path.join(app_root, 'package.json'), 'utf8'));
   var docs_index = JSON.parse(fs.readFileSync(path.join(app_root, 'docs', 'documentation.json'), 'utf8'));
   var documentation_html = sanitizeDocumentationHtml(fs.readFileSync(path.join(app_root, 'docs', 'documentation.html'), 'utf8'));
-  var sandbox_frame_source = fs.readFileSync(path.join(js_root, 'sandbox-frame.js'), 'utf8');
+  var sandbox_frame_source = [
+    fs.readFileSync(path.join(native_wasm_root, 'native_module.js'), 'utf8'),
+    fs.readFileSync(path.join(native_wasm_root, 'alpha_shape_3d.js'), 'utf8'),
+    fs.readFileSync(path.join(js_root, 'sandbox-frame.js'), 'utf8')
+  ].join('\n');
   Object.keys(shared_main_fragments).forEach(function(placeholder) {
     html_template = html_template.replace(placeholder, shared_main_fragments[placeholder]);
   });

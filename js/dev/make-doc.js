@@ -95,6 +95,8 @@ async function processDoc(module) {
   markdown_template = markdown_template.replaceAll('$JSLAB_APP_VERSION$', 'v' + app_version);
   markdown_template = markdown_template.replaceAll('$JSLAB_PUBLISH_YEAR$', year);
   var mcp_section = getMarkdownSection(markdown_template, 'MCP server');
+  var wasm_section = getMarkdownSection(markdown_template, 'WebAssembly backend');
+  var cli_section = getMarkdownSection(markdown_template, 'Command-line interface');
   fs.writeFileSync('docs/documentation.md',
     markdown_template.replaceAll('$JSLAB_CODE_DATA$', function() { return renderMarkdownReference(jslab_doc); }));
   
@@ -102,6 +104,8 @@ async function processDoc(module) {
   console.log(' Making documentation.html');
   var html_template = fs.readFileSync('dev/documentation_template.html', 'utf8');
   html_template = html_template.replaceAll('$JSLAB_MCP_DATA$', function() { return JSON.stringify(renderHtml(mcp_section)); });
+  html_template = html_template.replaceAll('$JSLAB_WASM_DATA$', function() { return JSON.stringify(renderHtml(wasm_section)); });
+  html_template = html_template.replaceAll('$JSLAB_CLI_DATA$', function() { return JSON.stringify(renderHtml(cli_section)); });
   html_template = html_template.replaceAll('$JSLAB_CODE_DATA$', JSON.stringify(jslab_doc_flat, null, 2));
   html_template = html_template.replaceAll('$JSLAB_APP_VERSION$', '"v'+app_version+'"');
   html_template = html_template.replaceAll('$JSLAB_PUBLISH_YEAR$', '"'+year+'"');
@@ -111,6 +115,8 @@ async function processDoc(module) {
   console.log(' Making documentation.tex');
   var latex_template = fs.readFileSync('dev/documentation_template.tex', 'utf8');
   latex_template = latex_template.replaceAll('$JSLAB_MCP_DATA$', function() { return renderLatex(mcp_section); });
+  latex_template = latex_template.replaceAll('$JSLAB_WASM_DATA$', function() { return renderLatex(wasm_section); });
+  latex_template = latex_template.replaceAll('$JSLAB_CLI_DATA$', function() { return renderLatex(cli_section); });
   latex_template = latex_template.replaceAll('$JSLAB_APP_VERSION$', 'v'+app_version+'');
   latex_template = latex_template.replaceAll('$JSLAB_PUBLISH_YEAR$', year);
   

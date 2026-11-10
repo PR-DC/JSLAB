@@ -86,8 +86,12 @@ class PRDC_JSLAB_PARALLEL {
     }
 
     const worker_script = `
+      (async function() {
       ${this.jsl.getWorkerInit()}
       ${this.workerFunction(context, setup_function_str)}
+      })().catch(function(err) {
+        self.postMessage({ type: 'error', error: String(err && err.stack || err) });
+      });
     `;
     
     if(this.jsl.inter.config.DEBUG_PARALLEL_WORKER_SETUP_FUN) {

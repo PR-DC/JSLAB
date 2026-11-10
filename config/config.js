@@ -113,7 +113,6 @@ class PRDC_APP_CONFIG {
 
     this.SOURCE_CODE_BOOK_FILES = [
       'package.json',
-      'binding.gyp',
       'config',
       'cpp',
       'css',
@@ -154,7 +153,6 @@ class PRDC_APP_CONFIG {
       'three.js-r162',
       'Cesium-1.124',
     ];
-    this.COMPILE_LIBS = [];
     
     // Language 
     this.langs = ["en", "rs", "rsc"];

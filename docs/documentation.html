@@ -709,7 +709,8 @@ In order to download necessary tools, clone the repository, and install dependen
 <ul>
     <li><strong>Node.js:</strong> Ensure that Node.js is installed on your system. You can download it from the official website: <a href="https://nodejs.org/">https://nodejs.org/</a></li>
     <li><strong>npm:</strong> npm is typically installed alongside Node.js.</li>
-    <li><strong>node-gyp:</strong> node-gyp is installed alongside with application but it requires additional tools and libraries depending on your operating system. Follow the instructions for your specific OS from: <a href="https://github.com/nodejs/node-gyp">https://github.com/nodejs/node-gyp</a></li>
+    <li><strong>Emscripten:</strong> Install the SDK to compile the shared numerical and geometry backend. See the WebAssembly backend section for setup instructions.</li>
+    <li><strong>node-gyp:</strong> Included for compiling user extensions and third-party native dependencies. Required platform tools are described at <a href="https://github.com/nodejs/node-gyp">https://github.com/nodejs/node-gyp</a>.</li>
     <li><strong>Git:</strong> Suggested for cloning the repository. Download it from the official website: <a href="https://git-scm.com/">https://git-scm.com/</a></li>
 </ul>
 
@@ -1241,6 +1242,14 @@ disp(await om_link.sendExpression("simulate(BouncingBall)"));
 await om_link.close();
 </pre>
         `},
+      'cli': {
+        'title': 'Command-line interface',
+        'data': "<h2>Command-line interface</h2>\n<p>JSLAB provides a Windows terminal interface for interactive calculations and automated .jsl scripts. It starts a dedicated Electron session with the main and editor windows hidden and uses the same persistent workspace, evaluator, scientific modules and WebAssembly backend as the desktop application. Each CLI process owns its session; it does not attach to or change an existing desktop workspace.</p>\n<h3>Start the CLI</h3>\n<p>The Windows installer registers the installation directory in PATH: system-wide for an all-users installation, or in the user PATH for a per-user installation. Open a new PowerShell or Command Prompt window and run:</p>\n<pre><code class=\"language-powershell\">jslab\n</code></pre>\n<p>Packaged applications include the CLI runtime; a separate Node.js installation is not required. Portable and unpacked applications include jslab.cmd beside the executable. Run that launcher directly or add its directory to PATH. From a source checkout with dependencies and WASM bundles prepared, run:</p>\n<pre><code class=\"language-powershell\">npm run cli\nnpm run cli -- -e &quot;6 * 7&quot;\n</code></pre>\n<p>To register the source checkout's jslab command through npm, use npm link --ignore-scripts. The source CLI requires Node.js and the checkout's installed Electron dependency. The Windows launcher is generated during packaging; PATH registration is handled directly by the NSIS installer without a PowerShell helper.</p>\n<h3>Interactive commands</h3>\n<p>Running jslab opens the REPL. Running jslab script.jsl in a terminal executes that script first, then opens the same REPL with the script's variables, working directory and figures preserved. Script errors are reported and the REPL remains available for inspection. Use --batch to execute a script and exit. The --json and -e options and redirected standard input also run without a REPL.</p>\n<p>Enter JavaScript and JSLAB functions at the jslab&gt; prompt. Variables remain available until the workspace is cleared or the CLI exits. Unfinished blocks, expressions, comments and template literals continue at the ... prompt. Top-level await is supported.</p>\n<table>\n<thead>\n<tr>\n<th>Command</th>\n<th>Action</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>.help</td>\n<td>Show terminal commands.</td>\n</tr>\n<tr>\n<td>.exit or .quit</td>\n<td>Close the session and exit.</td>\n</tr>\n<tr>\n<td>.clear</td>\n<td>Clear the workspace.</td>\n</tr>\n<tr>\n<td>.workspace</td>\n<td>List workspace variables.</td>\n</tr>\n<tr>\n<td>.load path</td>\n<td>Run a .jsl script in the current workspace. Quote paths containing spaces.</td>\n</tr>\n<tr>\n<td>.cd directory</td>\n<td>Change the working directory.</td>\n</tr>\n<tr>\n<td>.pwd</td>\n<td>Show the working directory.</td>\n</tr>\n</tbody>\n</table>\n<p>Ctrl+C clears unfinished input or interrupts a running operation. Use checkStop; checkpoints in long CPU loops for cooperative interruption. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.</p>\n<p>History is stored in JSLAB/cli-history.json under APPDATA on Windows. Use --no-history to disable storage or --history-file to choose another path. Closing the CLI stops its owned runtime; the runtime also exits if the CLI process disappears. Temporary session profiles are removed on normal exit.</p>\n<h3>Plots and figure windows</h3>\n<p>CLI plots use real interactive JSLAB figure windows with the normal plotting controls. The main and editor windows stay hidden. Enter plotting commands in the REPL or include them in the startup script:</p>\n<pre><code class=\"language-javascript\">plot([0, 1, 2], [0, 1, 4]);\nxlabel('Time');\nylabel('Value');\ntitle('CLI plot');\n</code></pre>\n<p>After a startup script finishes, its figures stay open while the REPL is active. You can update plots, open more figures or close a figure without leaving the prompt. Exiting the CLI closes its owned figure windows.</p>\n<p>Batch execution closes the runtime and its figures when the script finishes. Export figures before exit when using --batch, --json, -e or redirected input:</p>\n<pre><code class=\"language-javascript\">plot([0, 1, 2], [0, 1, 4]);\nawait printFigure('result.png');\n</code></pre>\n<h3>Scripts and pipelines</h3>\n<pre><code class=\"language-powershell\">jslab -e &quot;trapz([0, 1, 2])&quot;\njslab .\\analysis.jsl -- &quot;input data.csv&quot; --verbose\njslab --batch .\\analysis.jsl\njslab --cwd C:\\data .\\analysis.jsl\njslab --json -e &quot;roots([1, 0, -1])&quot;\nGet-Content -Raw .\\analysis.jsl | jslab -\njslab --timeout 30 .\\analysis.jsl\n</code></pre>\n<p>Arguments after -- are available as the workspace array argv. The initial working directory is the invoking terminal's directory unless --cwd is supplied. Script paths are resolved from the invoking directory. A script runs in the current workspace directory; its location does not automatically change that directory. The .load and .cd terminal commands resolve relative paths from the current workspace directory.</p>\n<p>A positional argument is a .jsl script path. Use -e or --eval to evaluate code and exit. PowerShell accepts single or double quotes for the code argument; Command Prompt uses double quotes for arguments containing spaces.</p>\n<p>Without code or a script argument, redirected standard input is executed as one script. The explicit - argument also reads standard input. Standard input is used for program source in this mode, rather than interactive data entry.</p>\n<h3>Options and exit codes</h3>\n<table>\n<thead>\n<tr>\n<th>Option</th>\n<th>Meaning</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>-e or --eval code</td>\n<td>Evaluate code and exit.</td>\n</tr>\n<tr>\n<td>--batch</td>\n<td>Run a script and exit without opening the REPL.</td>\n</tr>\n<tr>\n<td>--cwd directory</td>\n<td>Set the initial working directory.</td>\n</tr>\n<tr>\n<td>--timeout seconds</td>\n<td>Limit each operation; default is unlimited.</td>\n</tr>\n<tr>\n<td>--json</td>\n<td>Emit a structured batch result with success, value preview, output and errors.</td>\n</tr>\n<tr>\n<td>--no-history</td>\n<td>Disable interactive history.</td>\n</tr>\n<tr>\n<td>--history-file path</td>\n<td>Choose the interactive history file.</td>\n</tr>\n<tr>\n<td>-v or --version</td>\n<td>Print the version without starting Electron.</td>\n</tr>\n<tr>\n<td>-h or --help</td>\n<td>Print usage without starting Electron.</td>\n</tr>\n</tbody>\n</table>\n<p>Batch exit codes are 0 for success, 1 for evaluation or runtime failure, 2 for invalid invocation, 124 for timeout and 130 for terminal interruption. Interactive evaluation and startup-script errors are reported and the prompt remains available. A normal REPL exit returns 0. JSON mode implies batch execution and emits the result on stdout; command-line validation errors go to stderr.</p>\n<p>The CLI uses the local automation execution path. Code and scripts are limited to 512000 characters, captured output to 200 entries and 64000 characters, and returned value previews are bounded. Truncation is reported. Use file exports for large results. Captured output is displayed when an operation completes. Figures and explicitly requested graphical tools can open windows; the CLI still requires a working Electron graphical environment. It runs with the user's file, process and device permissions.</p>\n"
+      },
+      'wasm': {
+        'title': 'WebAssembly backend',
+        'data': "<h2>WebAssembly backend</h2>\n<p>Desktop and browser JSLAB use the same compiled C++ numerical and AlphaShape implementations through WebAssembly. The numerical backend provides roots, trapz and cumtrapz. The geometry backend provides shape construction, alpha selection, boundary facets, triangulation, point classification, nearest-neighbor queries and mesh simplification.</p>\n<p>There are no application-owned Node-API computational addons or JavaScript numerical fallback implementations. Required compiled bundles must be present before the workspace starts. Missing or incompatible bundles produce a startup error.</p>\n<h3>Build the compiled modules</h3>\n<p>Install Node.js, npm, Git and an activated Emscripten SDK before installing JSLAB from source. Emscripten 7.0.0 was used to validate this backend. The build script checks EMSDK, then bin/emsdk inside the repository, and also accepts EMCC and EMXX overrides.</p>\n<p>For a repository-local SDK:</p>\n<pre><code class=\"language-sh\">git clone https://github.com/emscripten-core/emsdk.git bin/emsdk\npython bin/emsdk/emsdk.py install 7.0.0\npython bin/emsdk/emsdk.py activate 7.0.0\nnpm install\n</code></pre>\n<p>The installation script extracts the bundled C++ libraries and builds both WASM modules. To rebuild them after changing C++ code:</p>\n<pre><code class=\"language-sh\">npm run build-native-wasm\n</code></pre>\n<p>Generated bundles and their manifest are written to lib/native-wasm. They are generated build artifacts, excluded from Git and included in packaged applications. End users of packaged releases do not need Emscripten. Build, packaging and web-distribution scripts compile these modules before preparing their output.</p>\n<h3>Runtime organization</h3>\n<ul>\n<li>cpp/native-module-core.h and cpp/alpha-shape-3d-core.h contain the computational implementations.</li>\n<li>cpp/native-module-wasm.cpp and cpp/alpha-shape-3d-wasm.cpp expose the compiled operations.</li>\n<li>js/sandbox/jslab-wasm-loader.js initializes one pair of modules per sandbox or worker.</li>\n<li>js/sandbox/jslab-wasm-native.js validates numeric inputs and owns temporary WASM buffers.</li>\n<li>js/sandbox/jslab-wasm-alpha-shape.js owns shape instances and routes file exports through the host environment.</li>\n<li>Desktop and browser environments provide host services. Subprocess enumeration stays in the desktop environment.</li>\n</ul>\n<p>The public numerical and geometry function names remain unchanged. The workspace starts only after both compiled modules have initialized. Early desktop IPC messages are replayed after initialization, and parallel workers initialize their own compiled modules before accepting tasks.</p>\n<h3>Resource ownership and numerical behavior</h3>\n<p>Temporary numerical buffers are freed even when a calculation fails. Geometry helpers release their shape objects in finally blocks. Code that directly creates a low-level AlphaShape instance must call dispose() or delete() when finished; finalization is only a backup.</p>\n<p>Geometry errors are reported as JavaScript errors. Coplanar input is rejected for three-dimensional shape construction. OFF exports use the environment file API so desktop files and browser storage follow their normal host behavior.</p>\n<p>The build enables WASM SIMD. CGAL uses conservative interval arithmetic under round-to-nearest with an exact arithmetic backend that does not require the desktop GMP/MPFR DLLs. Numerical result and geometry regression tests run against the compiled modules.</p>\n<p>WASM and native speed depend on input size, binding overhead and the algorithm. Integration benchmarks can benefit from bulk array transfer; geometry may be slower than an optimized native build. Treat development timings as workload-specific measurements.</p>\n<h3>Native dependencies and extension support</h3>\n<p>Serial, USB and terminal dependencies may still use third-party native addons. The compile module and its local node-gyp dependency remain available for users building their own extensions. Replacing the application computational backend does not remove those capabilities.</p>\n"
+      },
       'mcp': {
         'title': 'MCP server',
         'data': "<h2>MCP server</h2>\n<p>The JSLAB Model Context Protocol (MCP) server lets AI agents execute code in a running desktop session, inspect workspace variables, analyze scripts, read function documentation and export figures. Calculations and plots appear in the same JSLAB session used by the user. The workspace persists between calls.</p>\n<h3>Start a shared session</h3>\n<p>Install the project dependencies using the normal JSLAB installation procedure. The MCP adapter requires Node.js 18 or later, separately from the Node.js runtime included in Electron.</p>\n<p>From the repository root, start JSLAB with agent access enabled:</p>\n<pre><code class=\"language-powershell\">npm start -- --mcp\n</code></pre>\n<p>For an installed desktop application, pass <code>--mcp</code> to its executable. Agent access is disabled when this argument is absent. The browser version does not support this desktop bridge.</p>\n<p>JSLAB creates a session descriptor named <code>jslab-mcp-&lt;pid&gt;.json</code> in the operating system temporary directory. The descriptor contains a random authentication token and the port of a bridge listening exclusively on <code>127.0.0.1</code>. JSLAB removes its descriptor during normal shutdown. Treat the descriptor as a local credential and do not commit or share it.</p>\n<h3>Connect an agent</h3>\n<p>Configure the MCP client to launch the adapter directly with Node.js. Use absolute paths, including an absolute path to <code>node.exe</code> if Node.js is absent from the client's PATH. For a repository at <code>C:\\github\\JSLAB</code>, a client using the common <code>mcpServers</code> JSON format can use:</p>\n<pre><code class=\"language-json\">{\n  &quot;mcpServers&quot;: {\n    &quot;jslab&quot;: {\n      &quot;command&quot;: &quot;node&quot;,\n      &quot;args&quot;: [&quot;C:\\\\github\\\\JSLAB\\\\js\\\\mcp\\\\server.js&quot;]\n    }\n  }\n}\n</code></pre>\n<p>The adapter uses MCP over stdio. Its stdout is reserved for protocol messages; diagnostics go to stderr. Launch <code>node js/mcp/server.js</code> directly from clients, since npm startup messages can interfere with stdio. <code>npm run mcp</code> is provided for terminal use.</p>\n<p>The adapter automatically selects a session when exactly one live shared session exists. If several sessions exist, inspect <code>list_sessions</code>, then configure the adapter with an explicit process ID:</p>\n<pre><code class=\"language-json\">&quot;args&quot;: [&quot;C:\\\\github\\\\JSLAB\\\\js\\\\mcp\\\\server.js&quot;, &quot;--pid&quot;, &quot;12345&quot;]\n</code></pre>\n<p>Alternatively, use <code>--session-file</code> followed by the descriptor's absolute path. These selection options are mutually exclusive. An explicit selection also keeps the adapter attached to the intended session. For a packaged installation, the adapter is in the application's <code>resources/app/js/mcp/server.js</code>; its dependencies must remain alongside the application files.</p>\n<h3>Available tools</h3>\n<table>\n<thead>\n<tr>\n<th>Tool</th>\n<th>Purpose</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>list_sessions</code></td>\n<td>List live shared desktop sessions without exposing credentials.</td>\n</tr>\n<tr>\n<td><code>get_session_status</code></td>\n<td>Read the session PID, application version, readiness, busy state and active execution ID.</td>\n</tr>\n<tr>\n<td><code>get_runtime_info</code></td>\n<td>Read runtime versions, platform, working directory and configured module names.</td>\n</tr>\n<tr>\n<td><code>evaluate_code</code></td>\n<td>Execute JavaScript in the persistent JSLAB workspace.</td>\n</tr>\n<tr>\n<td><code>run_file</code></td>\n<td>Execute an absolute <code>.jsl</code> file path.</td>\n</tr>\n<tr>\n<td><code>run_test_file</code></td>\n<td>Execute a <code>.jsl</code> test script that throws or asserts on failure.</td>\n</tr>\n<tr>\n<td><code>check_code</code></td>\n<td>Run ESLint syntax checks and selected correctness rules without executing the file.</td>\n</tr>\n<tr>\n<td><code>list_workspace</code></td>\n<td>List up to 1000 user variables with their JavaScript types and class names.</td>\n</tr>\n<tr>\n<td><code>read_variable</code></td>\n<td>Read a bounded value preview without invoking accessor variables or custom inspection.</td>\n</tr>\n<tr>\n<td><code>list_figures</code></td>\n<td>List open figure IDs and the active figure.</td>\n</tr>\n<tr>\n<td><code>export_figure</code></td>\n<td>Export an existing figure using an absolute output path.</td>\n</tr>\n<tr>\n<td><code>get_help</code></td>\n<td>Read function documentation by name, <code>lib.function</code>, or category.</td>\n</tr>\n<tr>\n<td><code>get_execution</code></td>\n<td>Poll an execution or retrieve its completed result.</td>\n</tr>\n<tr>\n<td><code>interrupt_execution</code></td>\n<td>Request cooperative interruption of the current execution.</td>\n</tr>\n</tbody>\n</table>\n<p><code>evaluate_code</code>, <code>run_file</code> and <code>run_test_file</code> accept an optional absolute <code>cwd</code>. It changes the shared working directory and remains in effect after the call. A script's location does not automatically become its working directory. Script execution uses JSLAB's evaluator, including its code rewriting, workspace persistence and source error handling. Input scripts and code are limited to 512000 bytes or characters respectively.</p>\n<p><code>check_code</code> returns <code>value.diagnostics</code> with ESLint severity and source positions. A successful analysis operation may contain error diagnostics: inspect the returned diagnostic list. At most 200 diagnostics are returned, with <code>diagnostics_truncated</code> indicating omitted entries. It checks standard JavaScript module syntax and selected rules; it does not validate every JSLAB function or run the code.</p>\n<p><code>run_test_file</code> runs assertion-based <code>.jsl</code> scripts. It reports execution success or failure and captured output; it does not discover test suites or calculate individual assertion counts. For example:</p>\n<pre><code class=\"language-javascript\">var values = [1, 2, 3];\nif(values.reduce((a, b) =&gt; a + b, 0) !== 6) {\n  throw new Error('Unexpected sum');\n}\nconsole.log('Sum test passed');\n</code></pre>\n<p>Figure export supports PNG, SVG, PDF, JPEG, WebP, HTML and JSON. PNG, JPEG and WebP files up to 4 MiB are also returned as MCP image content. The destination directory must already exist. Export overwrites the destination file using JSLAB's normal export behavior.</p>\n<h3>Execution results and interruption</h3>\n<p>Sandbox operations receive an <code>execution_id</code>. The adapter waits up to 10 seconds by default. Set <code>wait_ms</code> between 0 and 10000 to return sooner. A typical completed response has this structure:</p>\n<pre><code class=\"language-json\">{\n  &quot;execution_id&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,\n  &quot;status&quot;: &quot;completed&quot;,\n  &quot;started_at&quot;: 0,\n  &quot;duration_ms&quot;: 12,\n  &quot;result&quot;: {\n    &quot;success&quot;: true,\n    &quot;value&quot;: { &quot;preview&quot;: &quot;6&quot;, &quot;cwd&quot;: &quot;C:\\\\work\\\\&quot; },\n    &quot;output&quot;: [],\n    &quot;output_truncated&quot;: false,\n    &quot;error&quot;: null\n  }\n}\n</code></pre>\n<p>A response with <code>status: &quot;running&quot;</code> means execution continues. Call <code>get_execution</code> with its ID before submitting more work. The session retains its most recent 20 execution records. Resetting the sandbox fails an active execution; restarting the application discards execution records.</p>\n<p>Only one sandbox operation runs at a time. Overlapping agent operations and GUI code submissions receive a busy response. Session status, execution polling and interruption remain available while code runs. A lost connection or a client timeout does not cancel execution: inspect status before retrying a command with side effects.</p>\n<p>Interruption uses JSLAB's existing cooperative stop mechanism. Acknowledgement means the stop was requested, not that execution has finished. Poll until completion. Blocking native calls and uncooperative operations may require the user's existing sandbox reset control. Reset discards the workspace; it is not exposed as an agent tool.</p>\n<p>For long CPU loops, include the existing <code>checkStop</code> checkpoint so the desktop can request interruption:</p>\n<pre><code class=\"language-javascript\">while(working) {\n  checkStop;\n  // Perform the next bounded calculation step.\n}\n</code></pre>\n<p>Results contain bounded textual previews rather than a lossless serialization of arbitrary objects. Output captures JSLAB display, warning and error methods, including the JSLAB console. Capture ends when the requested operation completes; detached asynchronous work can continue afterward. Output is limited to 200 messages and 64000 characters, and previews to 16000 characters. Inspect selected variables or save large results to files when needed.</p>\n<h3>Agent guidance and access</h3>\n<p>The server exposes <code>jslab://agent-guide</code> from <a href=\"../AGENTS.md\">AGENTS.md</a> and <code>jslab://mcp-guide</code> from this documentation section. Agents should start with session status, consult <code>get_help</code> for unfamiliar functions, execute small steps, and inspect output and figures before continuing.</p>\n<p>Enabling access authorizes code execution with the desktop user's existing JSLAB permissions, including file, process, network and device access. The loopback bridge authenticates each request and rejects browser-origin requests. MCP is an interface to the existing runtime, not an additional execution sandbox. Close the shared session and restart without <code>--mcp</code> to disable access.</p>\n<p>If no session is found, check that JSLAB was started with <code>--mcp</code> under the same user and temporary-directory environment as the adapter. If multiple sessions are found, select one explicitly. If a selected session has exited, restart JSLAB and update its PID or descriptor path. Stale descriptors from crashes are ignored during automatic discovery.</p>\n"
@@ -1303,8 +1312,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 28,
       "source_range": [
-        740,
-        748
+        747,
+        755
       ]
     },
     "clear": {
@@ -1346,8 +1355,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 996,
       "source_range": [
-        30443,
-        30575
+        30450,
+        30582
       ]
     },
     "version": {
@@ -1519,8 +1528,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 206,
       "source_range": [
-        6828,
-        7505
+        6835,
+        7512
       ]
     },
     "jslFileName": {
@@ -1541,8 +1550,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 229,
       "source_range": [
-        7649,
-        7705
+        7656,
+        7712
       ]
     },
     "clearStorage": {
@@ -1553,8 +1562,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 236,
       "source_range": [
-        7771,
-        7839
+        7778,
+        7846
       ]
     },
     "savePath": {
@@ -1575,8 +1584,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 244,
       "source_range": [
-        7969,
-        8216
+        7976,
+        8223
       ]
     },
     "removePath": {
@@ -1597,8 +1606,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 257,
       "source_range": [
-        8371,
-        8631
+        8378,
+        8638
       ]
     },
     "addpath": {
@@ -1631,8 +1640,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 556,
       "source_range": [
-        17969,
-        18981
+        17976,
+        18988
       ]
     },
     "rmpath": {
@@ -1665,8 +1674,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 596,
       "source_range": [
-        19237,
-        20250
+        19244,
+        20257
       ]
     },
     "path": {
@@ -1699,8 +1708,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 636,
       "source_range": [
-        20488,
-        21172
+        20495,
+        21179
       ]
     },
     "ls": {
@@ -1732,8 +1741,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 667,
       "source_range": [
-        21389,
-        21683
+        21396,
+        21690
       ]
     },
     "dir": {
@@ -1765,8 +1774,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 686,
       "source_range": [
-        21899,
-        22939
+        21906,
+        22946
       ]
     },
     "isfile": {
@@ -1796,8 +1805,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 731,
       "source_range": [
-        23122,
-        23202
+        23129,
+        23209
       ]
     },
     "isfolder": {
@@ -1827,8 +1836,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 741,
       "source_range": [
-        23396,
-        23483
+        23403,
+        23490
       ]
     },
     "exist": {
@@ -1869,8 +1878,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 753,
       "source_range": [
-        23848,
-        24813
+        23855,
+        24820
       ]
     },
     "which": {
@@ -1902,8 +1911,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 787,
       "source_range": [
-        25063,
-        25955
+        25070,
+        25962
       ]
     },
     "who": {
@@ -1935,8 +1944,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 821,
       "source_range": [
-        26160,
-        26797
+        26167,
+        26804
       ]
     },
     "whos": {
@@ -1968,8 +1977,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 850,
       "source_range": [
-        27045,
-        27720
+        27052,
+        27727
       ]
     },
     "cd": {
@@ -1990,8 +1999,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 911,
       "source_range": [
-        28523,
-        28678
+        28530,
+        28685
       ]
     },
     "workspace": {
@@ -2012,8 +2021,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 954,
       "source_range": [
-        29578,
-        29633
+        29585,
+        29640
       ]
     },
     "updateWorkspace": {
@@ -2024,8 +2033,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 961,
       "source_range": [
-        29717,
-        29849
+        29724,
+        29856
       ]
     },
     "updateFileBrowser": {
@@ -2036,8 +2045,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 970,
       "source_range": [
-        29938,
-        30074
+        29945,
+        30081
       ]
     },
     "diary": {
@@ -2070,8 +2079,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1010,
       "source_range": [
-        30939,
-        32276
+        30946,
+        32283
       ]
     },
     "error": {
@@ -2092,8 +2101,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1056,
       "source_range": [
-        32385,
-        32503
+        32392,
+        32510
       ]
     },
     "disp": {
@@ -2114,8 +2123,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1066,
       "source_range": [
-        32607,
-        32745
+        32614,
+        32752
       ]
     },
     "dispMonospaced": {
@@ -2136,8 +2145,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1077,
       "source_range": [
-        32870,
-        33028
+        32877,
+        33035
       ]
     },
     "warn": {
@@ -2158,8 +2167,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1088,
       "source_range": [
-        33142,
-        33258
+        33149,
+        33265
       ]
     },
     "checkStopLoop": {
@@ -2170,8 +2179,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1182,
       "source_range": [
-        36457,
-        36613
+        36464,
+        36620
       ]
     },
     "edit": {
@@ -2193,8 +2202,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1193,
       "source_range": [
-        36820,
-        36870
+        36827,
+        36877
       ]
     },
     "getExamples": {
@@ -2215,8 +2224,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1201,
       "source_range": [
-        37047,
-        37312
+        37054,
+        37319
       ]
     },
     "openExample": {
@@ -2237,8 +2246,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1212,
       "source_range": [
-        37460,
-        37642
+        37467,
+        37649
       ]
     },
     "openExamplesFolder": {
@@ -2249,8 +2258,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1222,
       "source_range": [
-        37707,
-        37804
+        37714,
+        37811
       ]
     },
     "goToExamplesFolder": {
@@ -2261,8 +2270,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1229,
       "source_range": [
-        37869,
-        37958
+        37876,
+        37965
       ]
     },
     "showMessageBox": {
@@ -2293,8 +2302,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1238,
       "source_range": [
-        38206,
-        38292
+        38213,
+        38299
       ]
     },
     "saveObject": {
@@ -2336,8 +2345,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1248,
       "source_range": [
-        38524,
-        38633
+        38531,
+        38641
       ]
     },
     "loadObject": {
@@ -2380,8 +2389,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1258,
       "source_range": [
-        38868,
-        39164
+        38876,
+        39173
       ]
     },
     "loadClass": {
@@ -2422,8 +2431,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1272,
       "source_range": [
-        39407,
-        39851
+        39416,
+        39861
       ]
     },
     "save": {
@@ -2454,8 +2463,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1294,
       "source_range": [
-        40114,
-        41242
+        40124,
+        41253
       ]
     },
     "load": {
@@ -2478,8 +2487,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1329,
       "source_range": [
-        41553,
-        43239
+        41564,
+        43252
       ]
     },
     "getCompletions": {
@@ -2510,8 +2519,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1384,
       "source_range": [
-        43508,
-        47497
+        43521,
+        47510
       ]
     },
     "getObjectByProp": {
@@ -2561,8 +2570,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1499,
       "source_range": [
-        47853,
-        48032
+        47866,
+        48045
       ]
     },
     "getObjectsByProp": {
@@ -2611,8 +2620,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1511,
       "source_range": [
-        48405,
-        48568
+        48418,
+        48581
       ]
     },
     "strcmp": {
@@ -2652,8 +2661,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1522,
       "source_range": [
-        48776,
-        48850
+        48789,
+        48863
       ]
     },
     "compareVersions": {
@@ -2693,8 +2702,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1532,
       "source_range": [
-        49081,
-        49496
+        49094,
+        49509
       ]
     },
     "checkForUpdate": {
@@ -2716,8 +2725,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1553,
       "source_range": [
-        49638,
-        51112
+        49651,
+        51125
       ]
     },
     "unrequire": {
@@ -2738,8 +2747,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1593,
       "source_range": [
-        51247,
-        51572
+        51260,
+        51585
       ]
     },
     "resetApp": {
@@ -2750,8 +2759,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1607,
       "source_range": [
-        51612,
-        51665
+        51625,
+        51678
       ]
     },
     "resetSandbox": {
@@ -2762,8 +2771,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1614,
       "source_range": [
-        51746,
-        51807
+        51759,
+        51820
       ]
     },
     "openDevTools": {
@@ -2783,8 +2792,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1622,
       "source_range": [
-        51933,
-        52001
+        51946,
+        52014
       ]
     },
     "installModule": {
@@ -2816,8 +2825,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1631,
       "source_range": [
-        52219,
-        54452
+        52232,
+        54465
       ]
     },
     "addForCleanup": {
@@ -2847,8 +2856,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1701,
       "source_range": [
-        54686,
-        54753
+        54699,
+        54766
       ]
     }
   },
@@ -23409,7 +23418,7 @@ await om_link.close();
       "source_lineno": 1048,
       "source_range": [
         36329,
-        36879
+        36941
       ]
     },
     "writeOff": {
@@ -23446,10 +23455,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 1074,
+      "source_lineno": 1077,
       "source_range": [
-        37132,
-        37292
+        37194,
+        37396
       ]
     },
     "readOff": {
@@ -23478,10 +23487,10 @@ await om_link.close();
         }
       ],
       "source_filename": "geometry.js",
-      "source_lineno": 1086,
+      "source_lineno": 1092,
       "source_range": [
-        37631,
-        39093
+        37735,
+        39197
       ]
     }
   },
@@ -43538,7 +43547,7 @@ await om_link.close();
       "source_lineno": 81,
       "source_range": [
         2585,
-        3401
+        3559
       ]
     },
     "assignTasksToWorkers": {
@@ -43547,10 +43556,10 @@ await om_link.close();
       "description": "Assigns tasks from the queue to available workers.",
       "params": [],
       "source_filename": "parallel.js",
-      "source_lineno": 113,
+      "source_lineno": 117,
       "source_range": [
-        3478,
-        4717
+        3636,
+        4875
       ]
     },
     "run": {
@@ -43620,10 +43629,10 @@ await om_link.close();
         }
       ],
       "source_filename": "parallel.js",
-      "source_lineno": 166,
+      "source_lineno": 170,
       "source_range": [
-        5257,
-        6087
+        5415,
+        6245
       ]
     },
     "parfor": {
@@ -43725,10 +43734,10 @@ await om_link.close();
       ],
       "async": true,
       "source_filename": "parallel.js",
-      "source_lineno": 206,
+      "source_lineno": 210,
       "source_range": [
-        6955,
-        9191
+        7113,
+        9349
       ]
     },
     "terminate": {
@@ -43737,10 +43746,10 @@ await om_link.close();
       "description": "Terminates all workers and resets the worker pool.",
       "params": [],
       "source_filename": "parallel.js",
-      "source_lineno": 278,
+      "source_lineno": 282,
       "source_range": [
-        9268,
-        9454
+        9426,
+        9612
       ]
     }
   },

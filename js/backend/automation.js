@@ -136,6 +136,11 @@ class PRDC_JSLAB_AUTOMATION {
    * @returns {Object} Status or execution record.
    */
   dispatch(method, args = {}) {
+    if(method === 'close_cli_session' && this.main.cli_mode) {
+      var main = this.main;
+      setTimeout(function() { main.closeCLI(); }, 50);
+      return { closing: true };
+    }
     if(method === 'get_session_status') {
       return { pid: process.pid, ready: this.ready, busy: this.busy,
         execution_id: this.active_id, version: this.main.automation_version };

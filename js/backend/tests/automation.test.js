@@ -35,6 +35,17 @@ function createBridge() {
   return { bridge: bridge, main: main, sent: sent };
 }
 
+tests.add('only CLI runtimes accept terminal shutdown requests', async function(assert) {
+  var harness = createBridge();
+  assert.throws(function() { harness.bridge.dispatch('close_cli_session'); }, /Unknown automation/);
+  harness.main.cli_mode = true;
+  var closed = false;
+  harness.main.closeCLI = function() { closed = true; };
+  assert.equal(harness.bridge.dispatch('close_cli_session').closing, true);
+  await new Promise(function(resolve) { setTimeout(resolve, 75); });
+  assert.equal(closed, true);
+}, { tags: ['unit', 'cli', 'automation'] });
+
 tests.add('automation serializes jobs, ignores stale replies and interrupts cooperatively', function(assert) {
   var harness = createBridge();
   var bridge = harness.bridge;

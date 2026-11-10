@@ -8,8 +8,8 @@
         "source_filename": "basic.js",
         "source_lineno": 28,
         "source_range": [
-          740,
-          748
+          747,
+          755
         ]
       },
       "clear": {
@@ -51,8 +51,8 @@
         "source_filename": "basic.js",
         "source_lineno": 996,
         "source_range": [
-          30443,
-          30575
+          30450,
+          30582
         ]
       },
       "version": {
@@ -224,8 +224,8 @@
         "source_filename": "basic.js",
         "source_lineno": 206,
         "source_range": [
-          6828,
-          7505
+          6835,
+          7512
         ]
       },
       "jslFileName": {
@@ -246,8 +246,8 @@
         "source_filename": "basic.js",
         "source_lineno": 229,
         "source_range": [
-          7649,
-          7705
+          7656,
+          7712
         ]
       },
       "clearStorage": {
@@ -258,8 +258,8 @@
         "source_filename": "basic.js",
         "source_lineno": 236,
         "source_range": [
-          7771,
-          7839
+          7778,
+          7846
         ]
       },
       "savePath": {
@@ -280,8 +280,8 @@
         "source_filename": "basic.js",
         "source_lineno": 244,
         "source_range": [
-          7969,
-          8216
+          7976,
+          8223
         ]
       },
       "removePath": {
@@ -302,8 +302,8 @@
         "source_filename": "basic.js",
         "source_lineno": 257,
         "source_range": [
-          8371,
-          8631
+          8378,
+          8638
         ]
       },
       "addpath": {
@@ -336,8 +336,8 @@
         "source_filename": "basic.js",
         "source_lineno": 556,
         "source_range": [
-          17969,
-          18981
+          17976,
+          18988
         ]
       },
       "rmpath": {
@@ -370,8 +370,8 @@
         "source_filename": "basic.js",
         "source_lineno": 596,
         "source_range": [
-          19237,
-          20250
+          19244,
+          20257
         ]
       },
       "path": {
@@ -404,8 +404,8 @@
         "source_filename": "basic.js",
         "source_lineno": 636,
         "source_range": [
-          20488,
-          21172
+          20495,
+          21179
         ]
       },
       "ls": {
@@ -437,8 +437,8 @@
         "source_filename": "basic.js",
         "source_lineno": 667,
         "source_range": [
-          21389,
-          21683
+          21396,
+          21690
         ]
       },
       "dir": {
@@ -470,8 +470,8 @@
         "source_filename": "basic.js",
         "source_lineno": 686,
         "source_range": [
-          21899,
-          22939
+          21906,
+          22946
         ]
       },
       "isfile": {
@@ -501,8 +501,8 @@
         "source_filename": "basic.js",
         "source_lineno": 731,
         "source_range": [
-          23122,
-          23202
+          23129,
+          23209
         ]
       },
       "isfolder": {
@@ -532,8 +532,8 @@
         "source_filename": "basic.js",
         "source_lineno": 741,
         "source_range": [
-          23396,
-          23483
+          23403,
+          23490
         ]
       },
       "exist": {
@@ -574,8 +574,8 @@
         "source_filename": "basic.js",
         "source_lineno": 753,
         "source_range": [
-          23848,
-          24813
+          23855,
+          24820
         ]
       },
       "which": {
@@ -607,8 +607,8 @@
         "source_filename": "basic.js",
         "source_lineno": 787,
         "source_range": [
-          25063,
-          25955
+          25070,
+          25962
         ]
       },
       "who": {
@@ -640,8 +640,8 @@
         "source_filename": "basic.js",
         "source_lineno": 821,
         "source_range": [
-          26160,
-          26797
+          26167,
+          26804
         ]
       },
       "whos": {
@@ -673,8 +673,8 @@
         "source_filename": "basic.js",
         "source_lineno": 850,
         "source_range": [
-          27045,
-          27720
+          27052,
+          27727
         ]
       },
       "cd": {
@@ -695,8 +695,8 @@
         "source_filename": "basic.js",
         "source_lineno": 911,
         "source_range": [
-          28523,
-          28678
+          28530,
+          28685
         ]
       },
       "workspace": {
@@ -717,8 +717,8 @@
         "source_filename": "basic.js",
         "source_lineno": 954,
         "source_range": [
-          29578,
-          29633
+          29585,
+          29640
         ]
       },
       "updateWorkspace": {
@@ -729,8 +729,8 @@
         "source_filename": "basic.js",
         "source_lineno": 961,
         "source_range": [
-          29717,
-          29849
+          29724,
+          29856
         ]
       },
       "updateFileBrowser": {
@@ -741,8 +741,8 @@
         "source_filename": "basic.js",
         "source_lineno": 970,
         "source_range": [
-          29938,
-          30074
+          29945,
+          30081
         ]
       },
       "diary": {
@@ -775,8 +775,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1010,
         "source_range": [
-          30939,
-          32276
+          30946,
+          32283
         ]
       },
       "error": {
@@ -797,8 +797,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1056,
         "source_range": [
-          32385,
-          32503
+          32392,
+          32510
         ]
       },
       "disp": {
@@ -819,8 +819,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1066,
         "source_range": [
-          32607,
-          32745
+          32614,
+          32752
         ]
       },
       "dispMonospaced": {
@@ -841,8 +841,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1077,
         "source_range": [
-          32870,
-          33028
+          32877,
+          33035
         ]
       },
       "warn": {
@@ -863,8 +863,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1088,
         "source_range": [
-          33142,
-          33258
+          33149,
+          33265
         ]
       },
       "checkStopLoop": {
@@ -875,8 +875,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1182,
         "source_range": [
-          36457,
-          36613
+          36464,
+          36620
         ]
       },
       "edit": {
@@ -898,8 +898,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1193,
         "source_range": [
-          36820,
-          36870
+          36827,
+          36877
         ]
       },
       "getExamples": {
@@ -920,8 +920,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1201,
         "source_range": [
-          37047,
-          37312
+          37054,
+          37319
         ]
       },
       "openExample": {
@@ -942,8 +942,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1212,
         "source_range": [
-          37460,
-          37642
+          37467,
+          37649
         ]
       },
       "openExamplesFolder": {
@@ -954,8 +954,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1222,
         "source_range": [
-          37707,
-          37804
+          37714,
+          37811
         ]
       },
       "goToExamplesFolder": {
@@ -966,8 +966,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1229,
         "source_range": [
-          37869,
-          37958
+          37876,
+          37965
         ]
       },
       "showMessageBox": {
@@ -998,8 +998,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1238,
         "source_range": [
-          38206,
-          38292
+          38213,
+          38299
         ]
       },
       "saveObject": {
@@ -1041,8 +1041,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1248,
         "source_range": [
-          38524,
-          38633
+          38531,
+          38641
         ]
       },
       "loadObject": {
@@ -1085,8 +1085,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1258,
         "source_range": [
-          38868,
-          39164
+          38876,
+          39173
         ]
       },
       "loadClass": {
@@ -1127,8 +1127,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1272,
         "source_range": [
-          39407,
-          39851
+          39416,
+          39861
         ]
       },
       "save": {
@@ -1159,8 +1159,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1294,
         "source_range": [
-          40114,
-          41242
+          40124,
+          41253
         ]
       },
       "load": {
@@ -1183,8 +1183,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1329,
         "source_range": [
-          41553,
-          43239
+          41564,
+          43252
         ]
       },
       "getCompletions": {
@@ -1215,8 +1215,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1384,
         "source_range": [
-          43508,
-          47497
+          43521,
+          47510
         ]
       },
       "getObjectByProp": {
@@ -1266,8 +1266,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1499,
         "source_range": [
-          47853,
-          48032
+          47866,
+          48045
         ]
       },
       "getObjectsByProp": {
@@ -1316,8 +1316,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1511,
         "source_range": [
-          48405,
-          48568
+          48418,
+          48581
         ]
       },
       "strcmp": {
@@ -1357,8 +1357,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1522,
         "source_range": [
-          48776,
-          48850
+          48789,
+          48863
         ]
       },
       "compareVersions": {
@@ -1398,8 +1398,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1532,
         "source_range": [
-          49081,
-          49496
+          49094,
+          49509
         ]
       },
       "checkForUpdate": {
@@ -1421,8 +1421,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1553,
         "source_range": [
-          49638,
-          51112
+          49651,
+          51125
         ]
       },
       "unrequire": {
@@ -1443,8 +1443,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1593,
         "source_range": [
-          51247,
-          51572
+          51260,
+          51585
         ]
       },
       "resetApp": {
@@ -1455,8 +1455,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1607,
         "source_range": [
-          51612,
-          51665
+          51625,
+          51678
         ]
       },
       "resetSandbox": {
@@ -1467,8 +1467,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1614,
         "source_range": [
-          51746,
-          51807
+          51759,
+          51820
         ]
       },
       "openDevTools": {
@@ -1488,8 +1488,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1622,
         "source_range": [
-          51933,
-          52001
+          51946,
+          52014
         ]
       },
       "installModule": {
@@ -1521,8 +1521,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1631,
         "source_range": [
-          52219,
-          54452
+          52232,
+          54465
         ]
       },
       "addForCleanup": {
@@ -1552,8 +1552,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1701,
         "source_range": [
-          54686,
-          54753
+          54699,
+          54766
         ]
       }
     },
@@ -22114,7 +22114,7 @@
         "source_lineno": 1048,
         "source_range": [
           36329,
-          36879
+          36941
         ]
       },
       "writeOff": {
@@ -22151,10 +22151,10 @@
           }
         ],
         "source_filename": "geometry.js",
-        "source_lineno": 1074,
+        "source_lineno": 1077,
         "source_range": [
-          37132,
-          37292
+          37194,
+          37396
         ]
       },
       "readOff": {
@@ -22183,10 +22183,10 @@
           }
         ],
         "source_filename": "geometry.js",
-        "source_lineno": 1086,
+        "source_lineno": 1092,
         "source_range": [
-          37631,
-          39093
+          37735,
+          39197
         ]
       }
     },
@@ -42245,7 +42245,7 @@
         "source_lineno": 81,
         "source_range": [
           2585,
-          3401
+          3559
         ]
       },
       "assignTasksToWorkers": {
@@ -42254,10 +42254,10 @@
         "description": "Assigns tasks from the queue to available workers.",
         "params": [],
         "source_filename": "parallel.js",
-        "source_lineno": 113,
+        "source_lineno": 117,
         "source_range": [
-          3478,
-          4717
+          3636,
+          4875
         ]
       },
       "run": {
@@ -42327,10 +42327,10 @@
           }
         ],
         "source_filename": "parallel.js",
-        "source_lineno": 166,
+        "source_lineno": 170,
         "source_range": [
-          5257,
-          6087
+          5415,
+          6245
         ]
       },
       "parfor": {
@@ -42432,10 +42432,10 @@
         ],
         "async": true,
         "source_filename": "parallel.js",
-        "source_lineno": 206,
+        "source_lineno": 210,
         "source_range": [
-          6955,
-          9191
+          7113,
+          9349
         ]
       },
       "terminate": {
@@ -42444,10 +42444,10 @@
         "description": "Terminates all workers and resets the worker pool.",
         "params": [],
         "source_filename": "parallel.js",
-        "source_lineno": 278,
+        "source_lineno": 282,
         "source_range": [
-          9268,
-          9454
+          9426,
+          9612
         ]
       }
     },

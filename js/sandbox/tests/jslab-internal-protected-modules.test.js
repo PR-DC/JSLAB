@@ -8,7 +8,7 @@
 const {
   CORE_INTERNAL_MODULE_NAMES,
   CHECKER_PROTECTED_SLOT_NAMES
-} = require('../internal-protected-modules');
+} = require('../jslab-internal-protected-modules');
 const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 

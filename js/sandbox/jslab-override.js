@@ -5,10 +5,11 @@
  * info@pr-dc.com
  */
 
-var {
-  getWebSubmoduleConstructor,
-  getWebUnavailableSubmodule
-} = require('./jslab-web-submodules');
+var getWebSubmoduleConstructor;
+var getWebUnavailableSubmodule;
+if(typeof globalThis != 'undefined' && globalThis.__JSLAB_RUNTIME__ == 'web') {
+  ({ getWebSubmoduleConstructor, getWebUnavailableSubmodule } = require('./jslab-web-submodules'));
+}
  
 /**
  * Class for JSLAB override submodule.
@@ -120,7 +121,7 @@ class PRDC_JSLAB_OVERRIDE {
     Object.getOwnPropertyNames(submodules).forEach(function(submodule) {
       obj.jsl[submodule] = submodules[submodule]; // Assign submodules
       Object.getOwnPropertyNames(submodules[submodule]).forEach(function(prop) {
-        if(!['jsl'].includes(prop) || !prop.startsWith('_')) {
+        if(!['jsl'].includes(prop) && !prop.startsWith('_')) {
           if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
             obj.jsl._console.log('Shadowing property: ' + prop + ' with submodule ' + submodule);
           } else if(cfg.DEBUG_NEW_FUN) {
@@ -131,7 +132,7 @@ class PRDC_JSLAB_OVERRIDE {
       });
       
       Object.getOwnPropertyNames(Object.getPrototypeOf(submodules[submodule])).forEach(function(prop) {
-        if(!['constructor'].includes(prop)) {
+        if(!['constructor'].includes(prop) && !prop.startsWith('_')) {
           if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
             obj.jsl._console.log('Shadowing function: ' + prop + ' with submodule ' + submodule);
           } else if(cfg.DEBUG_NEW_FUN) {
@@ -145,7 +146,7 @@ class PRDC_JSLAB_OVERRIDE {
     // Execute override submodule
     this.execute();
     Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(function(prop) {
-      if(!['constructor', 'execute'].includes(prop)) {
+      if(!['constructor', 'execute'].includes(prop) && !prop.startsWith('_')) {
         if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
           obj.jsl._console.log('Shadowing function: ' + prop + ' with submodule override');
         } else if(cfg.DEBUG_NEW_FUN) {

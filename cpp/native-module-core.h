@@ -53,6 +53,7 @@ inline bool roots(const std::vector<double>& coefficients_in,
   }
 
   solver = EigenSolver<MatrixXd>(companion_matrix);
+  if(solver.info() != Eigen::Success) return false;
   roots_values = solver.eigenvalues();
 
   result->real.resize(degree);

@@ -1,3 +1,10 @@
+/**
+ * @file JSLAB internal module protection definitions
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
 "use strict";
 
 /**

@@ -38,9 +38,6 @@ function createTimeHarness(millis_value = 1700000000000) {
     }
   };
 
-  // tic getter executes with jsl.context as this, so attach jsl for method access.
-  jsl.context.jsl = jsl;
-
   var time = new PRDC_JSLAB_LIB_TIME(jsl);
   return { time, jsl, format_calls };
 }
@@ -61,6 +58,17 @@ tests.add('toc and tocms return non-negative elapsed durations', function(assert
 
   assert.ok(elapsed_s >= 0);
   assert.ok(elapsed_ms >= 0);
+}, { tags: ['unit', 'time'] });
+
+tests.add('tic retains its runtime when global jsl is replaced', function(assert) {
+  var harness = createTimeHarness();
+  for(const global_jsl of [undefined, null, { context: {} }]) {
+    harness.jsl.context.jsl = global_jsl;
+    var start = harness.jsl.context.tic;
+    assert.equal(harness.jsl.context.last_tic, start);
+    assert.ok(harness.time.toc() >= 0);
+    assert.ok(harness.time.tocms() >= 0);
+  }
 }, { tags: ['unit', 'time'] });
 
 tests.add('timezone-aware date/time formatting delegates expected format strings', function(assert) {

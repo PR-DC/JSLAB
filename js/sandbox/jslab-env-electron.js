@@ -10,10 +10,14 @@ const IS_WORKER_CONTEXT = !!(RUNTIME_SCOPE && RUNTIME_SCOPE.is_worker);
 
 if(!IS_WORKER_CONTEXT) {
   var { ipcRenderer, shell } = require('electron');
+  var { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('./jslab-automation');
 }
 
 const { PRDC_JSLAB_FREECAD_LINK } = require('./freecad-link');
 const { PRDC_JSLAB_OPENMODELICA_LINK } = require('./om-link');
+const { createNativeModule } = require('./jslab-wasm-native');
+const { createAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
+const { getWasmModules } = require('./jslab-wasm-loader');
 
 const fs = require("fs");
 const os = require('os');
@@ -52,9 +56,9 @@ class PRDC_JSLAB_ENV {
     this.jsl = jsl;
     this.runtime_scope = RUNTIME_SCOPE;
     this.is_worker = IS_WORKER_CONTEXT;
+    this._automation = this.is_worker ? null : new PRDC_JSLAB_SANDBOX_AUTOMATION(this.jsl);
     const internal_app_path = this.jsl.app_path;
-    const { NativeModule } = require(internal_app_path + '/build/Release/native_module');
-    const { AlphaShape3D } = require(internal_app_path + '/build/Release/alpha_shape_3d');
+    const wasm = getWasmModules();
 
     if(!this.is_worker) {
       this.context = this.runtime_scope;
@@ -87,8 +91,8 @@ class PRDC_JSLAB_ENV {
       this.Cesium = {};
       this.egm96 = {};
     }
-    this.native_module = new NativeModule();
-    this.AlphaShape3D = AlphaShape3D;
+    this.native_module = createNativeModule(wasm.native);
+    this.AlphaShape3D = createAlphaShape3DClass(wasm.alpha, this);
     this.bin7zip = bin7zip;
     this.seedRandom = seedrandom;
     this.extractFull = extractFull;
@@ -120,9 +124,7 @@ class PRDC_JSLAB_ENV {
       ipcRenderer.on("SandboxWindow", function(event, action, data) {
         switch(action) {
           case "automation-request": {
-            const { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('./automation');
-            var automation = new PRDC_JSLAB_SANDBOX_AUTOMATION(obj.jsl);
-            automation.execute(data.method, data.args).then(function(result) {
+            obj._automation.execute(data.method, data.args).then(function(result) {
               ipcRenderer.send('JSLAB_AUTOMATION_RESULT', { id: data.id, result: result });
             }).catch(function(err) {
               ipcRenderer.send('JSLAB_AUTOMATION_RESULT', { id: data.id,
@@ -1101,6 +1103,26 @@ class PRDC_JSLAB_ENV {
         file_path: file_path
       });
     }
+  }
+
+  /**
+   * Lists direct child processes through the host operating system.
+   * @param {number} [pid=this.process_pid] Parent process ID.
+   * @returns {Array<number>} Child process IDs.
+   */
+  listSubprocesses(pid = this.process_pid) {
+    if(!Number.isInteger(pid) || pid < 1) throw new TypeError('A positive process ID is required.');
+    if(process.platform === 'win32') {
+      var command = 'Get-CimInstance Win32_Process -Filter "ParentProcessId = ' + pid +
+        '" | Where-Object { $_.ProcessId -ne $PID } | ForEach-Object { $_.ProcessId }';
+      return cp.execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command],
+        { encoding: 'utf8', windowsHide: true }).trim().split(/\s+/).map(Number).filter(function(value) {
+          return Number.isInteger(value) && value > 0;
+        });
+    }
+    return cp.execFileSync('ps', ['-eo', 'pid=,ppid='], { encoding: 'utf8' })
+      .trim().split('\n').map(function(line) { return line.trim().split(/\s+/).map(Number); })
+      .filter(function(row) { return row[1] === pid; }).map(function(row) { return row[0]; });
   }
 
   /**

@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_WORKSPACE_SERIALIZER } = require('./workspace-serializer');
+const { PRDC_JSLAB_WORKSPACE_SERIALIZER } = require('./jslab-workspace-serializer');
  
 /**
  * Class for JSLAB basic submodule.
@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_BASIC {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    this.workspace_serializer = new PRDC_JSLAB_WORKSPACE_SERIALIZER(this.jsl);
+    this._workspace_serializer = new PRDC_JSLAB_WORKSPACE_SERIALIZER(this.jsl);
     
     /**
      * Stores the result of the last evaluated expression.
@@ -33,7 +33,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'clear', { configurable: true, get: this._clear });
+    Object.defineProperty(this.jsl.context, 'clear', { configurable: true, get: this._clear.bind(this) });
 
     /**
      * Clears the console screen.
@@ -41,7 +41,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'clc', { configurable: true, get: this._clc });
+    Object.defineProperty(this.jsl.context, 'clc', { configurable: true, get: this._clc.bind(this) });
 
     /**
      * Clears the console screen. Alias for `clc`.
@@ -49,7 +49,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'cls', { configurable: true, get: this._clc });
+    Object.defineProperty(this.jsl.context, 'cls', { configurable: true, get: this._clc.bind(this) });
 
     /**
      * Plays the system beep sound.
@@ -65,7 +65,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind member
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'version', { configurable: true, get: this._version });
+    Object.defineProperty(this.jsl.context, 'version', { configurable: true, get: this._version.bind(this) });
 
     /**
      * Returns the platform on which JSLAB is running.
@@ -73,7 +73,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind member
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'platform', { configurable: true, get: this._platform });
+    Object.defineProperty(this.jsl.context, 'platform', { configurable: true, get: this._platform.bind(this) });
 
     /**
      * Returns the file name of the current JSLAB script.
@@ -81,7 +81,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind member
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'jsl_file_name', { configurable: true, get: this.jslFileName });
+    Object.defineProperty(this.jsl.context, 'jsl_file_name', { configurable: true, get: this.jslFileName.bind(this) });
 
     /**
      * Provides information about the current environment.
@@ -89,7 +89,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'info', { configurable: true, get: this._info });
+    Object.defineProperty(this.jsl.context, 'info', { configurable: true, get: this._info.bind(this) });
 
     /**
      * Accesses or modifies the user settings for JSLAB.
@@ -97,7 +97,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'settings', { configurable: true, get: this._settings });
+    Object.defineProperty(this.jsl.context, 'settings', { configurable: true, get: this._settings.bind(this) });
 
     /**
      * Provides help information for JSLAB commands.
@@ -105,7 +105,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'cmd_help', { configurable: true, get: this._cmd_help });
+    Object.defineProperty(this.jsl.context, 'cmd_help', { configurable: true, get: this._cmd_help.bind(this) });
 
     /**
      * Accesses the code editor interface within JSLAB.
@@ -113,7 +113,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'editor', { configurable: true, get: this._editor });
+    Object.defineProperty(this.jsl.context, 'editor', { configurable: true, get: this._editor.bind(this) });
 
     /**
      * Returns the current working directory.
@@ -121,7 +121,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind member
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'pwd', { configurable: true, get: this._pwd });
+    Object.defineProperty(this.jsl.context, 'pwd', { configurable: true, get: this._pwd.bind(this) });
 
     /**
      * Sets a breakpoint in the code for debugging.
@@ -129,7 +129,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'breakpoint', { configurable: true, get: this._breakpoint });
+    Object.defineProperty(this.jsl.context, 'breakpoint', { configurable: true, get: this._breakpoint.bind(this) });
 
     /**
      * Returns the current debug flag status.
@@ -137,7 +137,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind member
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'debug_flag', { configurable: true, get: this._debug_flag });
+    Object.defineProperty(this.jsl.context, 'debug_flag', { configurable: true, get: this._debug_flag.bind(this) });
 
     /**
      * Enables or disables debug mode.
@@ -145,7 +145,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind member
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'debug', { configurable: true, get: this._debug });
+    Object.defineProperty(this.jsl.context, 'debug', { configurable: true, get: this._debug.bind(this) });
 
     /**
      * Pauses the execution of the current script.
@@ -153,7 +153,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'pause', { configurable: true, get: this._pause });
+    Object.defineProperty(this.jsl.context, 'pause', { configurable: true, get: this._pause.bind(this) });
 
     /**
      * Sets a stop point in the script execution.
@@ -161,7 +161,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'stoppoint', { configurable: true, get: this._stoppoint });
+    Object.defineProperty(this.jsl.context, 'stoppoint', { configurable: true, get: this._stoppoint.bind(this) });
 
     /**
      * Sets a log point to record information during execution.
@@ -169,7 +169,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'logpoint', { configurable: true, get: this._logpoint });
+    Object.defineProperty(this.jsl.context, 'logpoint', { configurable: true, get: this._logpoint.bind(this) });
 
     /**
      * Updates specific points in the script during execution.
@@ -177,7 +177,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'updatepoint', { configurable: true, get: this._updatepoint });
+    Object.defineProperty(this.jsl.context, 'updatepoint', { configurable: true, get: this._updatepoint.bind(this) });
 
     /**
      * Checks if the execution should stop based on conditions.
@@ -185,7 +185,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'checkStop', { configurable: true, get: this._checkStop });
+    Object.defineProperty(this.jsl.context, 'checkStop', { configurable: true, get: this._checkStop.bind(this) });
 
     /**
      * Marks the endpoint of a script or process.
@@ -193,7 +193,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
-    Object.defineProperty(this.jsl.context, 'endPoint', { configurable: true, get: this._endPoint });
+    Object.defineProperty(this.jsl.context, 'endPoint', { configurable: true, get: this._endPoint.bind(this) });
   }
 
   /**
@@ -1246,7 +1246,7 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Object} Serialized payload.
    */
   saveObject(value, options = {}) {
-    return this.workspace_serializer.serializeObject(value, options);
+    return this._workspace_serializer.serializeObject(value, options);
   }
 
   /**
@@ -1256,7 +1256,7 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Promise<*>} Restored value.
    */
   async loadObject(payload, options = {}) {
-    var result = await this.workspace_serializer.deserializeObject(payload, options);
+    var result = await this._workspace_serializer.deserializeObject(payload, options);
     if(result.warnings && result.warnings.length) {
       this.jsl.inter.env.warn('@loadObject: ' + result.warnings.join(' '));
     }
@@ -1270,7 +1270,7 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Promise<boolean>} True if class was loaded.
    */
   async loadClass(class_name, class_path) {
-    var loaded = await this.workspace_serializer.loadClass(
+    var loaded = await this._workspace_serializer.loadClass(
       class_name,
       class_path,
       { save_dir: this.jsl.current_path }
@@ -1310,7 +1310,7 @@ class PRDC_JSLAB_LIB_BASIC {
       file_path = this.jsl.inter.env.pathJoin(this.jsl.current_path, file_path);
     }
     
-    var payload = this.workspace_serializer.serializeWorkspace(vars, {
+    var payload = this._workspace_serializer.serializeWorkspace(vars, {
       save_file_path: file_path
     });
     var flag = this.jsl.inter.env.writeFileSync(file_path, JSON.stringify(payload, null, 2));
@@ -1348,8 +1348,8 @@ class PRDC_JSLAB_LIB_BASIC {
         
         var parsed = JSON.parse(raw);
         var deserialize_result;
-        if(this.workspace_serializer.isSerializedPayload(parsed)) {
-          deserialize_result = await this.workspace_serializer.deserializeWorkspace(parsed, {
+        if(this._workspace_serializer.isSerializedPayload(parsed)) {
+          deserialize_result = await this._workspace_serializer.deserializeWorkspace(parsed, {
             save_file_path: file_path
           });
           if(deserialize_result.warnings && deserialize_result.warnings.length) {

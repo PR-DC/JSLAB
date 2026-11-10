@@ -56,7 +56,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - ~~Prevent override of additional functions and variables.~~
 
-- Write additional unit tests.
+- ~~Write additional unit tests.~~
 
 - ~~Add a "Check for Updates" feature.~~
 

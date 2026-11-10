@@ -16,6 +16,7 @@
 #include <list>
 #include <sstream>
 #include <string>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -156,6 +157,9 @@ class AlphaShape3DCore {
       }
 
       delaunay_triangulation = new Dt(indexed_points.begin(), indexed_points.end());
+      if(delaunay_triangulation->dimension() != 3) {
+        throw std::invalid_argument("At least four noncoplanar points are required");
+      }
       triangulation_matrix.resize(
         delaunay_triangulation->number_of_finite_cells() * 4, 3);
 
@@ -204,15 +208,15 @@ class AlphaShape3DCore {
       polygons.reserve(boundary_facets.size());
 
       for(i = 0; i < boundary_facets.size(); i++) {
+        if(alpha_shape->classify(boundary_facets[i].first) != As3::EXTERIOR) {
+          boundary_facets[i] = alpha_shape->mirror_facet(boundary_facets[i]);
+        }
         int32_t indices[3] = {
           static_cast<int32_t>((boundary_facets[i].second + 1) % 4),
           static_cast<int32_t>((boundary_facets[i].second + 2) % 4),
           static_cast<int32_t>((boundary_facets[i].second + 3) % 4)
         };
 
-        if(alpha_shape->classify(boundary_facets[i].first) != As3::EXTERIOR) {
-          boundary_facets[i] = alpha_shape->mirror_facet(boundary_facets[i]);
-        }
         if(boundary_facets[i].second % 2 == 0) {
           std::swap(indices[0], indices[1]);
         }
@@ -304,6 +308,10 @@ class AlphaShape3DCore {
       return triangulation_matrix;
     }
 
+    Matrix getPoints() const {
+      return input_points;
+    }
+
     std::pair<Matrix, Matrix> getNearestNeighbor(const Matrix& query_points) const {
       Matrix indices(query_points.numRows(), 1);
       Matrix distances(query_points.numRows(), 1);
@@ -313,6 +321,9 @@ class AlphaShape3DCore {
       uint32_t i;
 
       PMP::remove_isolated_vertices(surface_mesh_s);
+      if(surface_mesh_s.number_of_vertices() == 0) {
+        throw std::runtime_error("Set alpha to produce a nonempty boundary before querying neighbors");
+      }
 
       for(Mesh::Vertex_index vertex_index : CGAL::vertices(surface_mesh_s)) {
         if(!surface_mesh_s.is_removed(vertex_index)) {
@@ -363,7 +374,7 @@ class AlphaShape3DCore {
 
       for(Mesh::Face_index face_index : surface_mesh_s.faces()) {
         CGAL::Vertex_around_face_circulator<Mesh> vcirc(
-          surface_mesh_s.halfedge(face_index), surface_mesh);
+          surface_mesh_s.halfedge(face_index), surface_mesh_s);
         facets_out(face_index.idx(), 0) = *vcirc++;
         facets_out(face_index.idx(), 1) = *vcirc++;
         facets_out(face_index.idx(), 2) = *vcirc++;
@@ -389,56 +400,36 @@ class AlphaShape3DCore {
       return result;
     }
 
-    std::pair<Matrix, Matrix> removeUnusedPoints(const Matrix& input_points_matrix,
-        const Matrix& boundary_facets) const {
-      Mesh surface_mesh_s;
-      std::vector<CGAL_Polygon> polygons;
-      CGAL_Polygon polygon;
-      std::vector<Point> points_in;
-      Matrix points_out;
-      Matrix facets_out;
-      std::size_t i;
-
-      for(i = 0; i < input_points_matrix.numRows(); i++) {
-        points_in.push_back(Point(
-          input_points_matrix(i, 0),
-          input_points_matrix(i, 1),
-          input_points_matrix(i, 2)
-        ));
-      }
-
-      for(i = 0; i < boundary_facets.numRows(); i++) {
-        polygon.clear();
-        for(uint8_t j = 0; j < 3; j++) {
-          polygon.push_back(boundary_facets(i, j));
+    std::pair<Matrix, Matrix> removeUnusedPoints(const Matrix& points,
+        const Matrix& facets) const {
+      std::vector<bool> used(points.numRows(), false);
+      std::vector<uint32_t> remap(points.numRows(), 0);
+      uint32_t count = 0;
+      for(uint32_t i = 0; i < facets.numRows(); i++) {
+        for(uint32_t j = 0; j < 3; j++) {
+          double index = facets(i, j);
+          if(index < 0 || index >= points.numRows() || std::floor(index) != index) {
+            throw std::invalid_argument("Facet index is out of range");
+          }
+          used[static_cast<uint32_t>(index)] = true;
         }
-        polygons.push_back(polygon);
       }
-
-      PMP::orient_polygon_soup(points_in, polygons);
-      PMP::repair_polygon_soup(points_in, polygons);
-      PMP::polygon_soup_to_polygon_mesh(points_in, polygons, surface_mesh_s);
-      surface_mesh_s.collect_garbage();
-
-      points_out.resize(surface_mesh_s.number_of_vertices(), 3);
-      facets_out.resize(surface_mesh_s.number_of_faces(), 3);
-
-      for(Mesh::Vertex_index vertex_index : surface_mesh_s.vertices()) {
-        Point p = surface_mesh_s.point(vertex_index);
-        points_out(vertex_index.idx(), 0) = p[0];
-        points_out(vertex_index.idx(), 1) = p[1];
-        points_out(vertex_index.idx(), 2) = p[2];
+      for(uint32_t i = 0; i < points.numRows(); i++) {
+        if(used[i]) remap[i] = count++;
       }
-
-      for(Mesh::Face_index face_index : surface_mesh_s.faces()) {
-        CGAL::Vertex_around_face_circulator<Mesh> vcirc(
-          surface_mesh_s.halfedge(face_index), surface_mesh);
-        facets_out(face_index.idx(), 0) = *vcirc++;
-        facets_out(face_index.idx(), 1) = *vcirc++;
-        facets_out(face_index.idx(), 2) = *vcirc++;
+      Matrix output_points(count, 3);
+      Matrix output_facets(facets.numRows(), 3);
+      for(uint32_t i = 0; i < points.numRows(); i++) {
+        if(used[i]) {
+          for(uint32_t j = 0; j < 3; j++) output_points(remap[i], j) = points(i, j);
+        }
       }
-
-      return std::make_pair(points_out, facets_out);
+      for(uint32_t i = 0; i < facets.numRows(); i++) {
+        for(uint32_t j = 0; j < 3; j++) {
+          output_facets(i, j) = remap[static_cast<uint32_t>(facets(i, j))];
+        }
+      }
+      return std::make_pair(output_points, output_facets);
     }
 
     void writeOff(const std::string& filename, const Matrix& points_matrix,
@@ -470,18 +461,18 @@ class AlphaShape3DCore {
 
   private:
     void clearShape() {
-      if(delaunay_triangulation) {
-        delete delaunay_triangulation;
-        delaunay_triangulation = nullptr;
-      }
       if(alpha_shape) {
         delete alpha_shape;
         alpha_shape = nullptr;
       }
+      if(delaunay_triangulation) {
+        delete delaunay_triangulation;
+        delaunay_triangulation = nullptr;
+      }
     }
 
     void ensureShape() const {
-      assert(alpha_shape != nullptr);
+      if(alpha_shape == nullptr) throw std::runtime_error("Shape has not been initialized");
     }
 
     Matrix input_points;

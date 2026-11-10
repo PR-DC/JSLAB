@@ -6,6 +6,9 @@ JavaScript laboratory environment.
 Release v1.0.4, xx.xx.2026.
 
 - Bug fixes and new features.
+- Implemented a Windows command-line interface with a persistent prompt, multiline input, startup scripts, pipelines, JSON output and execution control.
+- Added automatic Windows CLI PATH registration through NSIS, script-to-REPL execution, batch mode and real interactive figure windows for CLI plots.
+- Documented the Electron desktop, browser and command-line versions of JSLAB.
 - Implemented new functions in the geography module. Added the required functionality because the 3D map uses ellipsoid height instead of Mean Sea Level (MSL).
 - Added a class for forking processes with pseudoterminal file descriptors.
 - Implemented tableprint to display data in a plain-text table and optionally export it as a LaTeX table.
@@ -22,6 +25,10 @@ Release v1.0.4, xx.xx.2026.
 - Implemented tests.
 - Implemented an MCP server for AI agents to execute code, inspect the workspace, check and test scripts, read documentation, and export figures.
 - Added Markdown documentation with a dedicated MCP section.
+- Reorganized internal sandbox helpers and restricted workspace exports to public properties and methods.
+- Replaced the application's numerical and AlphaShape Node-API addons with shared WebAssembly backends for desktop and browser.
+- Removed JavaScript numerical fallbacks, completed the AlphaShape WASM API, and added explicit WASM resource cleanup.
+- Moved subprocess enumeration to the desktop environment and updated build and packaging scripts for WASM.
 
 --------------------
 Release v1.0.3, 28.06.2025.

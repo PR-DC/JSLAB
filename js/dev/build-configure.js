@@ -51,31 +51,6 @@ if(config.SIGN_BUILD && missing_sign_env.length === 0) {
 
 fs.writeFileSync('package.json', JSON.stringify(data, null, 2));
 
-// Creating binding.gyp
-console.log('Creating binding.gyp...');
-var binding_data = {targets: []};
-
-// - Native module
-if(fs.existsSync('cpp/binding.gyp')) {
-  var data = JSON.parse(fs.readFileSync('cpp/binding.gyp'));
-  if(!Array.isArray(data)) {
-    data = [data];
-  }
-  for(var i = 0; i < data.length; i++) {
-    binding_data.targets[i] = data[i];
-    binding_data.targets[i].defines = ["NAPI_DISABLE_CPP_EXCEPTIONS"];
-  }
-}
-
-// - Libs binding.gyp
-config.COMPILE_LIBS.forEach(function(lib) {
-  var data = JSON.parse(fs.readFileSync('lib/'+lib+'/binding.gyp'));
-  binding_data.targets.push(data);
-});
-
-// - Save binding.gyp
-fs.writeFileSync('binding.gyp', JSON.stringify(binding_data, null, 2));
-
 // Create bin folder
 if(!fs.existsSync('bin/')) {
   fs.mkdirSync('bin/');

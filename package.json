@@ -3,14 +3,18 @@
   "version": "1.0.4",
   "description": "JavaScript LABoratory environment",
   "main": "js/init.js",
+  "bin": {
+    "jslab": "js/cli/main.js"
+  },
   "repository": "https://github.com/PR-DC/JSLAB",
   "license": "LGPL-3.0-or-later",
   "author": "Milos Petrasinovic <mpetrasinovic@prdc.rs>",
   "homepage": "https://pr-dc.com",
   "scripts": {
-    "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
-    "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron .",
+    "postinstall": "node js/dev/prepare-libs.js && node js/dev/build-configure.js && node js/dev/build-native-wasm.js && node js/dev/make-doc.js && electron .",
     "start": "electron .",
+    "cli": "node js/cli/main.js",
+    "test:cli": "node js/dev/run-cli-tests.js",
     "mcp": "node js/mcp/server.js",
     "inspect": "electron . --inspect=9229 --remote-debugging-port=9222",
     "debug": "electron . --debug-app",
@@ -20,14 +24,14 @@
     "test:gui:web": "node js/dev/run-web-gui-tests.js",
     "test:gui:desktop": "node js/dev/run-desktop-gui-tests.js",
     "auto-test": "electron . --auto-test-app",
-    "build": "node js/dev/build-configure.js && node-gyp rebuild && electron .",
-    "pack": "node js/dev/build-configure.js --action pack && node-gyp rebuild && electron-builder --dir",
-    "dist": "node js/dev/build-configure.js --action dist && node-gyp rebuild && electron-builder --win",
-    "dist-portable": "node js/dev/build-configure.js --action dist-portable && node-gyp rebuild && electron-builder --win portable",
-    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build && node-gyp rebuild && electron-builder --win",
+    "build": "node js/dev/build-configure.js && node js/dev/build-native-wasm.js && electron .",
+    "pack": "node js/dev/build-configure.js --action pack && node js/dev/build-native-wasm.js && electron-builder --dir",
+    "dist": "node js/dev/build-configure.js --action dist && node js/dev/build-native-wasm.js && electron-builder --win",
+    "dist-portable": "node js/dev/build-configure.js --action dist-portable && node js/dev/build-native-wasm.js && electron-builder --win portable",
+    "dist-signed": "node js/dev/build-configure.js --action dist --sign-build && node js/dev/build-native-wasm.js && electron-builder --win",
     "clear-app-data": "node js/dev/clear-app-data.js --confirm",
     "build-native-wasm": "node js/dev/build-native-wasm.js",
-    "dist-web": "node js/dev/build-native-wasm.js --if-available && node js/dev/build-web.js",
+    "dist-web": "node js/dev/build-native-wasm.js && node js/dev/build-web.js",
     "make-doc": "node js/dev/make-doc.js",
     "make-source-code-book": "node js/dev/make-source-code-book.js",
     "make-codebase-source": "node js/dev/make-codebase-source.js",
@@ -39,7 +43,8 @@
     "appId": "com.pr-dc.jslab",
     "productName": "PR-DC JSLAB",
     "copyright": "Copyright 2026 @ PR-DC",
-    "nodeGypRebuild": true,
+    "nodeGypRebuild": false,
+    "afterPack": "js/dev/prepare-cli.js",
     "directories": {
       "buildResources": "build",
       "output": "dist"
@@ -52,10 +57,12 @@
       "!dist-web",
       "!build",
       "!bin",
-      "!binding.gyp",
+      "!config/installer.nsh",
+      "!temp",
       "!js/dev",
       "!js/web/**",
-      "!web/**",
+      "!html/web.html",
+      "!css/web.css",
       "!js/sandbox/jslab-env-web.js",
       "!js/sandbox/jslab-web-submodules.js",
       "!**/tests/**",
@@ -74,14 +81,6 @@
       }
     ],
     "extraResources": [
-      {
-        "from": "./build/Release/",
-        "to": "./app/build/Release/",
-        "filter": [
-          "*.node",
-          "*.dll"
-        ]
-      },
       {
         "from": "./node_modules/npm/",
         "to": "./app/node_modules/npm/"
@@ -115,6 +114,7 @@
       "splashImage": "icons/splash.bmp"
     },
     "nsis": {
+      "include": "config/installer.nsh",
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,

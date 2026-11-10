@@ -121,53 +121,10 @@ class PRDC_JSLAB_WEB_SANDBOX_LANGUAGE {
   }
 }
 
-async function initializeNativeModuleWasm() {
-  var factory = globalThis.PRDC_JSLAB_NATIVE_MODULE_FACTORY;
-
-  if(typeof factory != 'function') {
-    globalThis.__JSLAB_NATIVE_MODULE_WASM_INSTANCE__ = null;
-    return null;
-  }
-
-  try {
-    var module_instance = factory();
-    if(module_instance && typeof module_instance.then == 'function') {
-      module_instance = await module_instance;
-    }
-    globalThis.__JSLAB_NATIVE_MODULE_WASM_INSTANCE__ = module_instance || null;
-    return globalThis.__JSLAB_NATIVE_MODULE_WASM_INSTANCE__;
-  } catch(err) {
-    console.warn('Failed to initialize native_module wasm bundle.', err);
-    globalThis.__JSLAB_NATIVE_MODULE_WASM_INSTANCE__ = null;
-    return null;
-  }
-}
-
-async function initializeAlphaShape3DWasm() {
-  var factory = globalThis.PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY;
-
-  if(typeof factory != 'function') {
-    globalThis.__JSLAB_ALPHA_SHAPE_3D_WASM_INSTANCE__ = null;
-    return null;
-  }
-
-  try {
-    var module_instance = factory();
-    if(module_instance && typeof module_instance.then == 'function') {
-      module_instance = await module_instance;
-    }
-    globalThis.__JSLAB_ALPHA_SHAPE_3D_WASM_INSTANCE__ = module_instance || null;
-    return globalThis.__JSLAB_ALPHA_SHAPE_3D_WASM_INSTANCE__;
-  } catch(err) {
-    console.warn('Failed to initialize alpha_shape_3d wasm bundle.', err);
-    globalThis.__JSLAB_ALPHA_SHAPE_3D_WASM_INSTANCE__ = null;
-    return null;
-  }
-}
-
 async function bootSandbox() {
-  await initializeNativeModuleWasm();
-  await initializeAlphaShape3DWasm();
+  const { initializeWasm } = require('../sandbox/jslab-wasm-loader');
+  await initializeWasm(globalThis.PRDC_JSLAB_NATIVE_MODULE_FACTORY,
+    globalThis.PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY);
   var bridge = getBridge();
   var language = bridge && typeof bridge.getLanguage == 'function'
     ? bridge.getLanguage()

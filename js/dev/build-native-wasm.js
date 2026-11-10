@@ -1,5 +1,5 @@
 /**
- * @file Build wasm versions of supported native addons
+ * @file Builds the shared JSLAB numerical and geometry WebAssembly backend
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
@@ -59,6 +59,7 @@ function getArgValue(flag_name) {
 function getEmsdkRoot() {
   var candidates = [
     process.env.EMSDK,
+    path.join(app_root, 'bin', 'emsdk'),
     'C:\\github\\emsdk'
   ];
   var i;
@@ -147,6 +148,7 @@ function buildNativeModuleWasm() {
   var args = [
     source_file,
     '-O3',
+    '-msimd128',
     '-std=c++17',
     '-I' + path.join(app_root, 'lib', 'eigen-3.4.0'),
     '-s', 'WASM=1',
@@ -155,6 +157,7 @@ function buildNativeModuleWasm() {
     '-s', 'SINGLE_FILE=1',
     '-s', 'WASM_ASYNC_COMPILATION=0',
     '-s', 'EXPORT_NAME=PRDC_JSLAB_NATIVE_MODULE_FACTORY',
+    '-s', 'EXPORTED_RUNTIME_METHODS=["HEAPF64"]',
     '-s', 'EXPORTED_FUNCTIONS=["_malloc","_free","_nm_roots","_nm_cumtrapz","_nm_trapz"]',
     '-o', output_file
   ];
@@ -183,6 +186,7 @@ function buildAlphaShape3DWasm() {
   var args = [
     source_file,
     '-O3',
+    '-msimd128',
     '-std=c++17',
     '-frounding-math',
     '-Wno-deprecated-literal-operator',
@@ -191,7 +195,7 @@ function buildAlphaShape3DWasm() {
     '-DCGAL_NO_GMP=1',
     '-DCGAL_NO_MPFR=1',
     '-DCGAL_NO_CORE=1',
-    '-DCGAL_DISABLE_ROUNDING_MATH_CHECK=1',
+    '-DCGAL_ALWAYS_ROUND_TO_NEAREST=1',
     '-s', 'WASM=1',
     '-s', 'ALLOW_MEMORY_GROWTH=1',
     '-s', 'MODULARIZE=1',
@@ -199,6 +203,8 @@ function buildAlphaShape3DWasm() {
     '-s', 'WASM_ASYNC_COMPILATION=0',
     '-s', 'EXPORT_NAME=PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY',
     '-s', 'DISABLE_EXCEPTION_CATCHING=0',
+    '-s', 'EXPORT_EXCEPTION_HANDLING_HELPERS=1',
+    '-s', 'EXPORTED_RUNTIME_METHODS=["getExceptionMessage","decrementExceptionRefcount"]',
     '-lembind',
     '-o', output_file
   ];

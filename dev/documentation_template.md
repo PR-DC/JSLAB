@@ -261,7 +261,8 @@ In order to download necessary tools, clone the repository, and install dependen
 
 -   **Node.js:** Ensure that Node.js is installed on your system. You can download it from the official website: [https://nodejs.org/](https://nodejs.org/)
 -   **npm:** npm is typically installed alongside Node.js.
--   **node-gyp:** node-gyp is installed alongside with application but it requires additional tools and libraries depending on your operating system. Follow the instructions for your specific OS from: [https://github.com/nodejs/node-gyp](https://github.com/nodejs/node-gyp)
+-   **Emscripten:** Install the SDK to compile the shared numerical and geometry backend. See [WebAssembly backend](#webassembly-backend) for setup instructions.
+-   **node-gyp:** Included for compiling user extensions and third-party native dependencies. Required platform tools are described at [https://github.com/nodejs/node-gyp](https://github.com/nodejs/node-gyp).
 -   **Git:** Suggested for cloning the repository. Download it from the official website: [https://git-scm.com/](https://git-scm.com/)
 
 ### Installation Steps
@@ -682,6 +683,155 @@ Your feedback is invaluable in improving the **JSLAB** application. Whether you 
 -   **Email:** Contact us directly at [info@pr-dc.com](mailto:info@pr-dc.com) or main author at [mpetrasinovic@pr-dc.com](mailto:mpetrasinovic@pr-dc.com).
 
 We encourage active participation and appreciate all forms of feedback that help us enhance the functionality and usability of **JSLAB**.
+
+## Command-line interface
+
+JSLAB provides a Windows terminal interface for interactive calculations and automated .jsl scripts. It starts a dedicated Electron session with the main and editor windows hidden and uses the same persistent workspace, evaluator, scientific modules and WebAssembly backend as the desktop application. Each CLI process owns its session; it does not attach to or change an existing desktop workspace.
+
+### Start the CLI
+
+The Windows installer registers the installation directory in PATH: system-wide for an all-users installation, or in the user PATH for a per-user installation. Open a new PowerShell or Command Prompt window and run:
+
+```powershell
+jslab
+```
+
+Packaged applications include the CLI runtime; a separate Node.js installation is not required. Portable and unpacked applications include jslab.cmd beside the executable. Run that launcher directly or add its directory to PATH. From a source checkout with dependencies and WASM bundles prepared, run:
+
+```powershell
+npm run cli
+npm run cli -- -e "6 * 7"
+```
+
+To register the source checkout's jslab command through npm, use npm link --ignore-scripts. The source CLI requires Node.js and the checkout's installed Electron dependency. The Windows launcher is generated during packaging; PATH registration is handled directly by the NSIS installer without a PowerShell helper.
+
+### Interactive commands
+
+Running jslab opens the REPL. Running jslab script.jsl in a terminal executes that script first, then opens the same REPL with the script's variables, working directory and figures preserved. Script errors are reported and the REPL remains available for inspection. Use --batch to execute a script and exit. The --json and -e options and redirected standard input also run without a REPL.
+
+Enter JavaScript and JSLAB functions at the jslab> prompt. Variables remain available until the workspace is cleared or the CLI exits. Unfinished blocks, expressions, comments and template literals continue at the ... prompt. Top-level await is supported.
+
+| Command | Action |
+| --- | --- |
+| .help | Show terminal commands. |
+| .exit or .quit | Close the session and exit. |
+| .clear | Clear the workspace. |
+| .workspace | List workspace variables. |
+| .load path | Run a .jsl script in the current workspace. Quote paths containing spaces. |
+| .cd directory | Change the working directory. |
+| .pwd | Show the working directory. |
+
+Ctrl+C clears unfinished input or interrupts a running operation. Use checkStop; checkpoints in long CPU loops for cooperative interruption. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
+
+History is stored in JSLAB/cli-history.json under APPDATA on Windows. Use --no-history to disable storage or --history-file to choose another path. Closing the CLI stops its owned runtime; the runtime also exits if the CLI process disappears. Temporary session profiles are removed on normal exit.
+
+### Plots and figure windows
+
+CLI plots use real interactive JSLAB figure windows with the normal plotting controls. The main and editor windows stay hidden. Enter plotting commands in the REPL or include them in the startup script:
+
+```javascript
+plot([0, 1, 2], [0, 1, 4]);
+xlabel('Time');
+ylabel('Value');
+title('CLI plot');
+```
+
+After a startup script finishes, its figures stay open while the REPL is active. You can update plots, open more figures or close a figure without leaving the prompt. Exiting the CLI closes its owned figure windows.
+
+Batch execution closes the runtime and its figures when the script finishes. Export figures before exit when using --batch, --json, -e or redirected input:
+
+```javascript
+plot([0, 1, 2], [0, 1, 4]);
+await printFigure('result.png');
+```
+
+### Scripts and pipelines
+
+```powershell
+jslab -e "trapz([0, 1, 2])"
+jslab .\analysis.jsl -- "input data.csv" --verbose
+jslab --batch .\analysis.jsl
+jslab --cwd C:\data .\analysis.jsl
+jslab --json -e "roots([1, 0, -1])"
+Get-Content -Raw .\analysis.jsl | jslab -
+jslab --timeout 30 .\analysis.jsl
+```
+
+Arguments after -- are available as the workspace array argv. The initial working directory is the invoking terminal's directory unless --cwd is supplied. Script paths are resolved from the invoking directory. A script runs in the current workspace directory; its location does not automatically change that directory. The .load and .cd terminal commands resolve relative paths from the current workspace directory.
+
+A positional argument is a .jsl script path. Use -e or --eval to evaluate code and exit. PowerShell accepts single or double quotes for the code argument; Command Prompt uses double quotes for arguments containing spaces.
+
+Without code or a script argument, redirected standard input is executed as one script. The explicit - argument also reads standard input. Standard input is used for program source in this mode, rather than interactive data entry.
+
+### Options and exit codes
+
+| Option | Meaning |
+| --- | --- |
+| -e or --eval code | Evaluate code and exit. |
+| --batch | Run a script and exit without opening the REPL. |
+| --cwd directory | Set the initial working directory. |
+| --timeout seconds | Limit each operation; default is unlimited. |
+| --json | Emit a structured batch result with success, value preview, output and errors. |
+| --no-history | Disable interactive history. |
+| --history-file path | Choose the interactive history file. |
+| -v or --version | Print the version without starting Electron. |
+| -h or --help | Print usage without starting Electron. |
+
+Batch exit codes are 0 for success, 1 for evaluation or runtime failure, 2 for invalid invocation, 124 for timeout and 130 for terminal interruption. Interactive evaluation and startup-script errors are reported and the prompt remains available. A normal REPL exit returns 0. JSON mode implies batch execution and emits the result on stdout; command-line validation errors go to stderr.
+
+The CLI uses the local automation execution path. Code and scripts are limited to 512000 characters, captured output to 200 entries and 64000 characters, and returned value previews are bounded. Truncation is reported. Use file exports for large results. Captured output is displayed when an operation completes. Figures and explicitly requested graphical tools can open windows; the CLI still requires a working Electron graphical environment. It runs with the user's file, process and device permissions.
+
+## WebAssembly backend
+
+Desktop and browser JSLAB use the same compiled C++ numerical and AlphaShape implementations through WebAssembly. The numerical backend provides roots, trapz and cumtrapz. The geometry backend provides shape construction, alpha selection, boundary facets, triangulation, point classification, nearest-neighbor queries and mesh simplification.
+
+There are no application-owned Node-API computational addons or JavaScript numerical fallback implementations. Required compiled bundles must be present before the workspace starts. Missing or incompatible bundles produce a startup error.
+
+### Build the compiled modules
+
+Install Node.js, npm, Git and an activated Emscripten SDK before installing JSLAB from source. Emscripten 7.0.0 was used to validate this backend. The build script checks EMSDK, then bin/emsdk inside the repository, and also accepts EMCC and EMXX overrides.
+
+For a repository-local SDK:
+
+```sh
+git clone https://github.com/emscripten-core/emsdk.git bin/emsdk
+python bin/emsdk/emsdk.py install 7.0.0
+python bin/emsdk/emsdk.py activate 7.0.0
+npm install
+```
+
+The installation script extracts the bundled C++ libraries and builds both WASM modules. To rebuild them after changing C++ code:
+
+```sh
+npm run build-native-wasm
+```
+
+Generated bundles and their manifest are written to lib/native-wasm. They are generated build artifacts, excluded from Git and included in packaged applications. End users of packaged releases do not need Emscripten. Build, packaging and web-distribution scripts compile these modules before preparing their output.
+
+### Runtime organization
+
+- cpp/native-module-core.h and cpp/alpha-shape-3d-core.h contain the computational implementations.
+- cpp/native-module-wasm.cpp and cpp/alpha-shape-3d-wasm.cpp expose the compiled operations.
+- js/sandbox/jslab-wasm-loader.js initializes one pair of modules per sandbox or worker.
+- js/sandbox/jslab-wasm-native.js validates numeric inputs and owns temporary WASM buffers.
+- js/sandbox/jslab-wasm-alpha-shape.js owns shape instances and routes file exports through the host environment.
+- Desktop and browser environments provide host services. Subprocess enumeration stays in the desktop environment.
+
+The public numerical and geometry function names remain unchanged. The workspace starts only after both compiled modules have initialized. Early desktop IPC messages are replayed after initialization, and parallel workers initialize their own compiled modules before accepting tasks.
+
+### Resource ownership and numerical behavior
+
+Temporary numerical buffers are freed even when a calculation fails. Geometry helpers release their shape objects in finally blocks. Code that directly creates a low-level AlphaShape instance must call dispose() or delete() when finished; finalization is only a backup.
+
+Geometry errors are reported as JavaScript errors. Coplanar input is rejected for three-dimensional shape construction. OFF exports use the environment file API so desktop files and browser storage follow their normal host behavior.
+
+The build enables WASM SIMD. CGAL uses conservative interval arithmetic under round-to-nearest with an exact arithmetic backend that does not require the desktop GMP/MPFR DLLs. Numerical result and geometry regression tests run against the compiled modules.
+
+WASM and native speed depend on input size, binding overhead and the algorithm. Integration benchmarks can benefit from bulk array transfer; geometry may be slower than an optimized native build. Treat development timings as workload-specific measurements.
+
+### Native dependencies and extension support
+
+Serial, USB and terminal dependencies may still use third-party native addons. The compile module and its local node-gyp dependency remain available for users building their own extensions. Replacing the application computational backend does not remove those capabilities.
 
 ## MCP server
 

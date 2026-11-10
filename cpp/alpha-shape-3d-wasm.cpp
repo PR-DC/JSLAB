@@ -82,7 +82,68 @@ class AlphaShape3D {
     return result;
   }
 
+  val getPoints() {
+    return matrixToJs(core.getPoints());
+  }
+
+  val checkInShape(val points) {
+    Matrix result = core.checkInShape(matrixFromJsPointArray(points,
+      "Array expected", "Each point should have exactly 3 coordinates"));
+    val output = val::array();
+    for(uint32_t i = 0; i < result.numRows(); i++) {
+      output.call<void>("push", result(i, 0) != 0);
+    }
+    return output;
+  }
+
+  val getTriangulation() {
+    return matrixToJs(core.getTriangulation());
+  }
+
+  val getNearestNeighbor(val points) {
+    auto result = core.getNearestNeighbor(matrixFromJsPointArray(points,
+      "Array expected", "Each point should have exactly 3 coordinates"));
+    val output = val::object();
+    val indices = val::array();
+    val distances = val::array();
+    for(uint32_t i = 0; i < result.first.numRows(); i++) {
+      indices.call<void>("push", result.first(i, 0));
+      distances.call<void>("push", result.second(i, 0));
+    }
+    output.set("indices", indices);
+    output.set("distances", distances);
+    return output;
+  }
+
+  val getSimplifiedShape(double ratio) {
+    return meshToJs(core.getSimplifiedShape(ratio));
+  }
+
+  val removeUnusedPoints(val points, val facets) {
+    return meshToJs(core.removeUnusedPoints(
+      matrixFromJsPointArray(points, "Array expected", "Three coordinates required"),
+      matrixFromJsPointArray(facets, "Array expected", "Three indices required")));
+  }
+
  private:
+  val matrixToJs(const Matrix& matrix) {
+    val output = val::array();
+    for(uint32_t i = 0; i < matrix.numRows(); i++) {
+      val row = val::array();
+      for(uint32_t j = 0; j < matrix.numCols(); j++) {
+        row.call<void>("push", matrix(i, j));
+      }
+      output.call<void>("push", row);
+    }
+    return output;
+  }
+
+  val meshToJs(const std::pair<Matrix, Matrix>& mesh) {
+    val output = val::object();
+    output.set("points", matrixToJs(mesh.first));
+    output.set("facets", matrixToJs(mesh.second));
+    return output;
+  }
   std::size_t getArrayLength(val value, const char *error_message) {
     val length_value;
 
@@ -134,7 +195,13 @@ EMSCRIPTEN_BINDINGS(alpha_shape_3d_module) {
     .function("getCriticalAlpha", &AlphaShape3D::getCriticalAlpha)
     .function("getSurfaceArea", &AlphaShape3D::getSurfaceArea)
     .function("getVolume", &AlphaShape3D::getVolume)
-    .function("getBoundaryFacets", &AlphaShape3D::getBoundaryFacets);
+    .function("getBoundaryFacets", &AlphaShape3D::getBoundaryFacets)
+    .function("getPoints", &AlphaShape3D::getPoints)
+    .function("checkInShape", &AlphaShape3D::checkInShape)
+    .function("getTriangulation", &AlphaShape3D::getTriangulation)
+    .function("getNearestNeighbor", &AlphaShape3D::getNearestNeighbor)
+    .function("getSimplifiedShape", &AlphaShape3D::getSimplifiedShape)
+    .function("removeUnusedPoints", &AlphaShape3D::removeUnusedPoints);
 }
 
 }  // namespace alpha_shape_3d_wasm_ns

@@ -34,7 +34,10 @@ async function main() {
   console.log('[prepare-libs.js] Execution done in ' + ((performance.now() - t) / 1000).toFixed(3) + ' s');
 }
 
-main();
+main().catch(function(err) {
+  console.error(err && err.stack ? err.stack : err);
+  process.exitCode = 1;
+});
 
 // Function to extract .7z with progress
 async function extractWithProgress(lib, archive, dest) {
@@ -45,6 +48,7 @@ async function extractWithProgress(lib, archive, dest) {
     });
 
     extractor.on('progress', (progress) => {
+      if(!process.stdout.isTTY) return;
       const percent = progress.percent.toFixed(0);
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
@@ -52,8 +56,10 @@ async function extractWithProgress(lib, archive, dest) {
     });
 
     extractor.on('end', () => {
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
+      if(process.stdout.isTTY) {
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+      }
       console.log(`Extraction of ${lib} complete.`);
       resolve();
     });

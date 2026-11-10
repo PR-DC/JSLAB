@@ -36,7 +36,7 @@ class PRDC_JSLAB_LIB_TIME {
      * @kind function
      * @memberof PRDC_JSLAB_LIB_TIME
      */
-    Object.defineProperty(this.jsl.context, 'tic', {configurable: true, get: this._tic });
+    Object.defineProperty(this.jsl.context, 'tic', {configurable: true, get: this._tic.bind(this) });
   }
   
   /**

@@ -1047,22 +1047,25 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    */
   boundary3D(points, shrink = 0.5) {
     var shp = new this.jsl.inter.env.AlphaShape3D(); 
-    shp.newShape(points);
+    try {
+      shp.newShape(points);
     
-    var Acrit = shp.getCriticalAlpha('one-region');
-    var spec = shp.getAlphaSpectrum();
+      var Acrit = shp.getCriticalAlpha('one-region');
+      var spec = shp.getAlphaSpectrum();
     
-    var idx = spec.indexOf(Acrit);
-    var subspec = spec.slice(idx);
+      var idx = spec.indexOf(Acrit);
+      var subspec = spec.slice(idx);
     
-    var idx = Math.max(Math.ceil((1 - shrink) * subspec.length) - 1, 0);
-    var alphaval = subspec[idx];
+      var idx = Math.max(Math.ceil((1 - shrink) * subspec.length) - 1, 0);
+      var alphaval = subspec[idx];
 
-    shp.setAlpha(alphaval);
-    var V = shp.getVolume();
-    var bf = shp.getBoundaryFacets();
-    shp = null;
-    return [bf, V];
+      shp.setAlpha(alphaval);
+      var V = shp.getVolume();
+      var bf = shp.getBoundaryFacets();
+      return [bf, V];
+    } finally {
+      shp.dispose();
+    }
   }
         
   /**
@@ -1073,8 +1076,11 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    */
   writeOff(filename, vertices, faces) {
     var shp = new this.jsl.inter.env.AlphaShape3D(); 
-    shp.writeOff(filename, vertices, faces);
-    shp = null;
+    try {
+      shp.writeOff(filename, vertices, faces);
+    } finally {
+      shp.dispose();
+    }
   }
 
   /**

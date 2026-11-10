@@ -50,12 +50,44 @@ function createBasicDiaryHarness(current_path = path.join('C:', 'work', 'jslab')
     }
   };
 
-  // Getter-based command aliases execute with context as receiver.
-  jsl.context.jsl = jsl;
-
   var basic = new PRDC_JSLAB_LIB_BASIC(jsl);
   return { basic, jsl, diary_calls, error_calls };
 }
+
+tests.add('command getters retain their runtime when global jsl is replaced', function(assert) {
+  var harness = createBasicDiaryHarness();
+  var jsl = harness.jsl;
+  var calls = [];
+  jsl.jsl_file_name = 'getter-test.jsl';
+  Object.assign(jsl.inter.env, {
+    version: 'test-version', platform: 'test-platform', debug: true
+  });
+  var values = {
+    pwd: jsl.current_path, jsl_file_name: 'getter-test.jsl',
+    version: 'test-version', platform: 'test-platform', debug_flag: true
+  };
+  for(const global_jsl of [undefined, null, { context: {} }]) {
+    jsl.context.jsl = global_jsl;
+    for(const name of Object.keys(values)) {
+      assert.equal(jsl.context[name], values[name]);
+    }
+  }
+
+  jsl.clear = function() { calls.push('clear'); };
+  jsl.inter.env.clc = function() { calls.push('clc'); };
+  jsl.inter.env.setWorkspace = function() { calls.push('workspace'); };
+  jsl.inter.env.checkStopLoop = function() { return false; };
+  jsl.onStopLoop = function() { calls.push('stop'); };
+  jsl.stop_loop = false;
+  void jsl.context.clear;
+  void jsl.context.clc;
+  void jsl.context.cls;
+  void jsl.context.checkStop;
+  void jsl.context.updatepoint;
+  assert.deepEqual(calls, ['clear', 'clc', 'clc', 'workspace', 'stop', 'workspace', 'stop']);
+  assert.equal(jsl.no_ans, true);
+  assert.equal(jsl.ignore_output, true);
+}, { tags: ['unit', 'basic'] });
 
 tests.add('diary without args toggles logging through environment bridge', function(assert) {
   var harness = createBasicDiaryHarness();

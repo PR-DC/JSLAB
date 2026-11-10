@@ -1,5 +1,5 @@
 /**
- * @file JSLAB workspace serializer
+ * @file JSLAB internal workspace serializer
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com

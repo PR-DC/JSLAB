@@ -11,27 +11,54 @@ const vm = require('vm');
 const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function loadEnvClass(runtime_scope) {
+function loadEnvClass(runtime_scope, records = {}) {
   var source = fs.readFileSync(path.join(__dirname, '..', 'jslab-env-electron.js'), 'utf8');
   var context = {
     module: { exports: {} },
     exports: null,
     self: runtime_scope,
     globalThis: runtime_scope,
-    process: { pid: 321 },
+    process: records.real_process ? process : { pid: 321 },
     console: console,
+    SpeechSynthesisUtterance: class {},
+    speechSynthesis: { getVoices: function() { return []; } },
+    navigator: { hardwareConcurrency: 1, onLine: true },
+    Cesium: {},
     require: function(module_path) {
+      if(records.block_loads) throw new Error('Unexpected runtime module load: ' + module_path);
+      if(module_path === './jslab-wasm-native') {
+        return { createNativeModule: function() { return { wasm: true }; } };
+      }
+      if(module_path === './jslab-wasm-alpha-shape') {
+        return { createAlphaShape3DClass: function() { return class {}; } };
+      }
+      if(module_path === './jslab-wasm-loader') {
+        return { getWasmModules: function() { return { native: {}, alpha: {} }; } };
+      }
       if(module_path === './freecad-link') {
         return { PRDC_JSLAB_FREECAD_LINK: class { constructor(jsl) { this.jsl = jsl; } } };
       }
       if(module_path === './om-link') {
         return { PRDC_JSLAB_OPENMODELICA_LINK: class { constructor(jsl) { this.jsl = jsl; } } };
       }
+      if(module_path === './jslab-automation') {
+        records.automation_loads = (records.automation_loads || 0) + 1;
+        return { PRDC_JSLAB_SANDBOX_AUTOMATION: class {
+          constructor(jsl) {
+            this.jsl = jsl;
+            records.automation_instances = (records.automation_instances || 0) + 1;
+          }
+          async execute(method, args) {
+            records.requests.push({ method: method, args: args });
+            return { success: true };
+          }
+        } };
+      }
       if(module_path === 'fs') return require('fs');
       if(module_path === 'os') return require('os');
       if(module_path === 'net') return {};
       if(module_path === 'dgram') return {};
-      if(module_path === 'child_process') return {};
+      if(module_path === 'child_process') return records.real_process ? require('child_process') : {};
       if(module_path === 'path') return require('path');
       if(module_path === 'tcp-port-used') return {};
       if(module_path === 'path-equal') return { pathEqual: function(a, b) { return a === b; } };
@@ -54,15 +81,14 @@ function loadEnvClass(runtime_scope) {
         return {
           ipcRenderer: {
             sendSync: function() { return null; },
-            on: function() {}
+            on: function(channel, callback) {
+              if(records.handlers) records.handlers[channel] = callback;
+            },
+            send: function(channel, data) {
+              if(records.replies) records.replies.push({ channel: channel, data: data });
+            }
           }
         };
-      }
-      if(module_path.endsWith('/build/Release/native_module')) {
-        return { NativeModule: class {} };
-      }
-      if(module_path.endsWith('/build/Release/alpha_shape_3d')) {
-        return { AlphaShape3D: class {} };
       }
       throw new Error('Unexpected require path: ' + module_path);
     }
@@ -104,6 +130,7 @@ tests.add('constructor initializes worker-side fields and shared context links',
   var env = new EnvClass(jsl);
 
   assert.equal(env.is_worker, true);
+  assert.equal(env._automation, null);
   assert.equal(env.version, '9.9.9');
   assert.equal(env.platform, 'linux');
   assert.equal(env.process_pid, 321);
@@ -126,6 +153,46 @@ tests.add('bound environment output methods capture automation messages', functi
   assert.deepEqual(records.map(function(entry) { return entry.type; }), ['disp', 'warn', 'error']);
   assert.equal(records[2].values[0], 'failure');
 }, { tags: ['unit', 'jslab-env-electron', 'automation'] });
+
+tests.add('desktop automation loads before runtime overrides and reuses its private instance', async function(assert) {
+  var records = { handlers: {}, requests: [], replies: [] };
+  var runtime_scope = { addEventListener: function() {},
+    setImmediate: setImmediate, clearImmediate: clearImmediate };
+  var EnvClass = loadEnvClass(runtime_scope, records);
+  assert.equal(records.automation_loads, 1);
+  var env = new EnvClass({ app_path: '/app', inter: {} });
+  assert.ok(env._automation);
+  assert.equal(records.automation_instances, 1);
+  assert.equal(env.exports.includes('_automation'), false);
+  records.block_loads = true;
+  records.handlers.SandboxWindow({}, 'automation-request', {
+    id: 'first', method: 'list_workspace', args: {}
+  });
+  records.handlers.SandboxWindow({}, 'automation-request', {
+    id: 'second', method: 'get_help', args: { name: 'plot' }
+  });
+  await Promise.resolve();
+  assert.equal(records.automation_instances, 1);
+  assert.equal(records.requests.length, 2);
+  assert.equal(records.replies[0].data.id, 'first');
+  assert.equal(records.replies[1].data.result.success, true);
+}, { tags: ['unit', 'jslab-env-electron', 'automation'] });
+
+tests.add('desktop environment lists a live child through the host operating system', function(assert) {
+  var cp = require('child_process');
+  var child = cp.spawn(process.execPath, ['-e', 'setInterval(function() {}, 1000)'], {
+    windowsHide: true, stdio: 'ignore'
+  });
+  try {
+    var EnvClass = loadEnvClass({ is_worker: true }, { real_process: true });
+    var children = EnvClass.prototype.listSubprocesses.call({ process_pid: process.pid });
+    assert.ok(children.includes(child.pid));
+    assert.ok(children.every(function(pid) { return Number.isInteger(pid) && pid > 0 && pid !== process.pid; }));
+    assert.throws(function() { EnvClass.prototype.listSubprocesses.call({}, -1); }, /positive process ID/);
+  } finally {
+    child.kill();
+  }
+}, { tags: ['unit', 'jslab-env-electron'] });
 
 exports.MODULE_TESTS = tests;
 

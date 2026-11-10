@@ -61,8 +61,9 @@ class PRDC_JSLAB_MAIN {
       }
     });
     this.startup_script_paths = this.instance_router.getStartupScriptPaths(process.argv);
+    this.cli_mode = process.argv.includes('--cli-runtime');
     this.automation = null;
-    if(process.argv.includes('--mcp')) {
+    if(process.argv.includes('--mcp') || this.cli_mode) {
       const { PRDC_JSLAB_AUTOMATION } = require('./automation');
       this.automation = new PRDC_JSLAB_AUTOMATION(this);
       this.automation_version = app.getVersion();
@@ -189,7 +190,7 @@ class PRDC_JSLAB_MAIN {
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
     app.whenReady().then(async function() {
-      if(obj.startup_script_paths.length > 0) {
+      if(!obj.cli_mode && obj.startup_script_paths.length > 0) {
         var forwarded = await obj.instance_router.forwardScriptsToLastActive(
           obj.startup_script_paths
         );
@@ -211,6 +212,15 @@ class PRDC_JSLAB_MAIN {
       obj.instance_router.stop();
       if(obj.automation) obj.automation.stop();
     });
+    if(this.cli_mode) {
+      var parent_arg = process.argv.find(function(arg) { return arg.startsWith('--cli-parent-pid='); });
+      var parent_pid = Number(parent_arg && parent_arg.split('=')[1]);
+      if(!Number.isInteger(parent_pid) || parent_pid <= 0) throw new Error('CLI runtime requires an owning process.');
+      this.cli_parent_timer = setInterval(function() {
+        try { process.kill(parent_pid, 0); } catch(err) { obj.closeCLI(); }
+      }, 1000);
+      this.cli_parent_timer.unref();
+    }
 
     // Quit when all windows are closed, except on macOS. There, it's common
     // for applications and their menu bar to stay active until the user quits
@@ -219,6 +229,16 @@ class PRDC_JSLAB_MAIN {
       if(process.platform !== 'darwin') app.quit();
     });
     app.allowRendererProcessReuse = false;
+  }
+
+  /**
+   * Closes the runtime owned by a terminal session.
+   */
+  closeCLI() {
+    if(!this.cli_mode) return;
+    clearInterval(this.cli_parent_timer);
+    if(this.automation) this.automation.stop();
+    app.exit(0);
   }
 
   /**
@@ -235,8 +255,10 @@ class PRDC_JSLAB_MAIN {
     this.createEditorWindow();
 
     // Start inter-instance bridge
-    this.instance_router.start();
-    this.instance_router.markAsLastActive();
+    if(!this.cli_mode) {
+      this.instance_router.start();
+      this.instance_router.markAsLastActive();
+    }
 
     // Set handlers
     this.setHandlers();
@@ -291,11 +313,11 @@ class PRDC_JSLAB_MAIN {
     this.win_main.on("move", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
     this.win_main.on("maximize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
     this.win_main.on("unmaximize", function() { obj.saveWindowBounds(obj.win_main, 'mainWinBounds'); });
-    this.instance_router.trackWindowActivity(this.win_main);
+    if(!this.cli_mode) this.instance_router.trackWindowActivity(this.win_main);
     
     // Show window when ready
     this.win_main.once('ready-to-show', function() {
-      obj.win_main.show();
+      if(!obj.cli_mode) obj.win_main.show();
       if(config.DEBUG) {
         obj.openDevTools(obj.win_main);
       }
@@ -338,7 +360,7 @@ class PRDC_JSLAB_MAIN {
 
     // Hide menu
     this.win_sandbox.setMenu(null);
-    this.instance_router.trackWindowActivity(this.win_sandbox);
+    if(!this.cli_mode) this.instance_router.trackWindowActivity(this.win_sandbox);
 
     // and load the index.html of the app
     this.win_sandbox.loadFile(app_path + '/html/sandbox.html');
@@ -385,7 +407,7 @@ class PRDC_JSLAB_MAIN {
     this.win_sandbox.webContents.on('did-create-window', function(sub_win, details) {
       var wid = details.frameName;
       obj.sandbox_sub_wins[wid] = sub_win;
-      obj.instance_router.trackWindowActivity(sub_win);
+      if(!obj.cli_mode) obj.instance_router.trackWindowActivity(sub_win);
       obj.bindAttentionReset(sub_win);
       
       // Hide menu
@@ -393,14 +415,27 @@ class PRDC_JSLAB_MAIN {
       
       // Show window
       sub_win.once('ready-to-show', function() {
-        sub_win.show();
-        sub_win.focus();
+        if(obj.cli_mode) {
+          sub_win.showInactive();
+        } else {
+          sub_win.show();
+          sub_win.focus();
+        }
         obj.fadeWindowIn(sub_win, 0.1, 10);
 
         if(config.DEBUG) {
           obj.openDevTools(sub_win);
         }
       });
+      if(obj.cli_mode) {
+        sub_win.webContents.on('did-finish-load', function() {
+          if(!sub_win.isDestroyed() && !sub_win.forClose &&
+              sub_win.webContents.getURL().endsWith('/figure.html')) {
+            sub_win.setOpacity(1);
+            sub_win.showInactive();
+          }
+        });
+      }
      
       sub_win.webContents.on('did-attach-webview', (_e, wc) => {
         if(wc.getUserAgent() == 'presentation-editor-preview') {
@@ -472,9 +507,9 @@ class PRDC_JSLAB_MAIN {
       app.relaunch();
     });
     
-    this.win_sandbox.webContents.on('did-finish-load', function() {
+    this._on_sandbox_ready = function() {
       if(obj.automation) obj.automation.ready = true;
-      if(!obj.store.get('shown-getting-started')) {
+      if(!obj.cli_mode && !obj.store.get('shown-getting-started')) {
         obj.store.set('shown-getting-started', 1);
         obj.win_sandbox.webContents.executeJavaScript('openDocumentation("about");');
       }
@@ -482,7 +517,7 @@ class PRDC_JSLAB_MAIN {
         obj.win_main.webContents.executeJavaScript('win_main.onSandboxReset();');
         obj.sandbox_reload_active = false;
       }
-    });
+    };
   }
 
   /**
@@ -534,7 +569,7 @@ class PRDC_JSLAB_MAIN {
     this.win_editor.on("move", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
     this.win_editor.on("maximize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
     this.win_editor.on("unmaximize", function() { obj.saveWindowBounds(obj.win_editor, 'editorWinBounds'); });
-    this.instance_router.trackWindowActivity(this.win_editor);
+    if(!this.cli_mode) this.instance_router.trackWindowActivity(this.win_editor);
 
     // Hide window when ready
     this.win_editor.hide();
@@ -928,12 +963,24 @@ class PRDC_JSLAB_MAIN {
         obj.automation.complete(data);
       }
     });
+    ipcMain.on('JSLAB_SANDBOX_READY', function(e) {
+      if(e.sender === obj.win_sandbox.webContents && obj._on_sandbox_ready) {
+        obj._on_sandbox_ready();
+      }
+    });
+    ipcMain.on('JSLAB_SANDBOX_FAILED', function(e, error) {
+      if(e.sender === obj.win_sandbox.webContents) {
+        if(obj.automation) obj.automation.reset();
+        obj.win_main.send('MainWindow', 'error', error);
+      }
+    });
   }
 
   /**
    * Show editor window
    */
   showEditor() {
+    if(this.cli_mode) return;
     this.win_editor.show();
     this.win_editor.focus();
     this.fadeWindowIn(this.win_editor, 0.1, 10);

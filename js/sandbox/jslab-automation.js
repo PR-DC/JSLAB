@@ -1,5 +1,5 @@
 /**
- * @file JSLAB sandbox automation operations
+ * @file JSLAB internal sandbox automation operations
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const { Linter } = require('eslint');
 
 /**
  * Executes agent requests through the existing JSLAB environment.
@@ -143,7 +144,6 @@ class PRDC_JSLAB_SANDBOX_AUTOMATION {
         if(fs.statSync(source_path).size > 512000) throw new Error('Script is too large for code analysis.');
         var source = fs.readFileSync(source_path, 'utf8');
         if(source.length > 512000) throw new Error('Script is too large for code analysis.');
-        const { Linter } = require('eslint');
         var linter = new Linter();
         var diagnostics = linter.verify(source, { languageOptions: {
           ecmaVersion: 'latest', sourceType: 'module'

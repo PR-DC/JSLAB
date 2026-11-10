@@ -11,7 +11,9 @@ var seedrandom = require('seedrandom');
 var { PolynomialRegression } = require('ml-regression-polynomial');
 var egm96 = require('egm96-universal');
 var { PRDC_JSLAB_WEB_SERIAL_PORT } = require('../web/web-serial-port');
-var { createWebNativeModule, createWebAlphaShape3DClass } = require('./native-module-web');
+var { createNativeModule } = require('./jslab-wasm-native');
+var { createAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
+var { getWasmModules } = require('./jslab-wasm-loader');
 
 class IdentitySourceMapConsumer {
 
@@ -28,6 +30,14 @@ class IdentitySourceMapConsumer {
 }
 
 class PRDC_JSLAB_ENV {
+
+  /**
+   * Returns an empty child-process list for the browser host.
+   * @returns {Array<number>} No operating-system subprocesses.
+   */
+  listSubprocesses() {
+    return [];
+  }
 
   /**
    * @param {Object} jsl
@@ -61,8 +71,9 @@ class PRDC_JSLAB_ENV {
     }
     this.runtime_info = this._getRuntimeInfo();
     this.web = Object.freeze(Object.assign({}, this.runtime_info));
-    this.native_module = createWebNativeModule(this);
-    this.AlphaShape3D = createWebAlphaShape3DClass(this);
+    var wasm = getWasmModules();
+    this.native_module = createNativeModule(wasm.native);
+    this.AlphaShape3D = createAlphaShape3DClass(wasm.alpha, this);
     this.Cesium = this.context.Cesium || {};
     this.egm96 = egm96;
     this.seedRandom = seedrandom;

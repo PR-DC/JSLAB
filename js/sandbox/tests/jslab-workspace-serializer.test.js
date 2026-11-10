@@ -6,10 +6,17 @@
  */
 
 const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_WORKSPACE_SERIALIZER } = require('../jslab-workspace-serializer');
 var tests = new PRDC_JSLAB_TESTS();
 
 function getSerializer() {
-  return jsl.basic.workspace_serializer;
+  if(typeof jsl !== 'undefined') return jsl.inter.basic._workspace_serializer;
+  return new PRDC_JSLAB_WORKSPACE_SERIALIZER({
+    context: globalThis,
+    inter: { format: { isTypedArray: function(value) {
+      return ArrayBuffer.isView(value) && !(value instanceof DataView);
+    } } }
+  });
 }
 
 tests.add('serializeObject creates valid payload format', function(assert) {

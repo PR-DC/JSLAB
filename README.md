@@ -1,6 +1,6 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
-**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [AI agents and MCP](docs/documentation.md#mcp-server) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [AI agents and MCP](docs/documentation.md#mcp-server) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
 <p align="center">
   <img src="https://pr-dc.com/img/github/JSLAB.svg?v1" width="150">
@@ -15,6 +15,37 @@ The **JavaScript Laboratory (JSLAB)** is an open-source environment designed for
 The program was developed to fulfill the need for performing calculations in a programming language that allows for code reuse in later project stages. JavaScript was chosen for its speed, dynamic nature, interpretability, extensive library support, large existing codebase, backing by major software companies, and the ability to create both desktop and mobile applications.
 
 `JSLAB` offers a streamlined, dual-window interface designed to boost productivity and foster innovation. The main window combines a versatile workspace with a sandbox terminal, allowing users to run, test, and iterate on code in real time. The dedicated editor window introduces the **.JSL file format**—a plain text format tailored for `JSLAB` scripts. With advanced linting and intelligent autocompletion, the editor makes it easy to write precise, reusable code with minimal errors.
+
+## Desktop, web and command-line versions
+
+JSLAB is available as an **Electron desktop application**, a **web application** that runs in your browser, and a **Windows command-line interface**. They share the JSLAB runtime and compiled WebAssembly computational backend. The desktop and CLI provide local files, processes and device integrations; browser capabilities depend on browser permissions and APIs.
+
+| Version | Start here |
+| --- | --- |
+| Electron desktop | Download a [desktop release](https://github.com/PR-DC/JSLAB/releases), or run `npm start` from source. |
+| Web | [Open JSLAB in your browser](https://pr-dc.com/jslab/web/), or build with `npm run dist-web`. |
+| Windows CLI | Run `jslab` in PowerShell or Command Prompt after installation. From source, use `npm run cli`. |
+
+## Windows command line
+
+The Windows installer adds the installation directory to PATH for the selected installation scope. Open a new terminal and type:
+
+```powershell
+jslab
+jslab .\analysis.jsl
+jslab .\analysis.jsl -- "input data.csv"
+jslab --batch .\analysis.jsl
+jslab -e "trapz([0, 1, 2])"
+jslab --json -e "roots([1, 0, -1])"
+```
+
+Running `jslab` opens the REPL. Running `jslab script.jsl` in a terminal executes the script and then opens the same REPL with its variables and figures preserved. The prompt supports multiline JavaScript, `await`, history and Ctrl+C interruption. Type `.help` for terminal commands. Arguments after `--` are available as `argv`. Use `--batch`, `--json` or `-e` for execution that exits without a REPL; redirected input also runs in batch mode.
+
+Plots open in real, interactive JSLAB figure windows while the main and editor windows stay hidden. For example, enter `plot([0, 1, 2], [0, 1, 4]);` at the prompt or in your startup script. Figure windows stay available while you work in the REPL and close when the CLI exits. In batch mode, export figures before execution ends.
+
+The packaged CLI includes its runtime and does not require a separate Node.js installation. For a portable or unpacked release, run the generated `jslab.cmd` from its directory or add that directory to PATH. From source, use `npm run cli`, `npm run cli -- -e "6 * 7"`, or `npm link --ignore-scripts` to register the `jslab` command.
+
+See [Command-line interface](docs/documentation.md#command-line-interface) for all options, exit codes and scripting behavior.
 
 ## Try it online
 
@@ -520,9 +551,9 @@ In order to download necessary tools, clone the repository, and install dependen
 
 - **Node.js:** Ensure that Node.js is installed on your system. You can download it from the official website: [https://nodejs.org/](https://nodejs.org/)
 - **npm:** npm is typically installed alongside Node.js.
-- **node-gyp:** node-gyp is installed alongside the application but it requires additional tools and libraries depending on your operating system. Follow the instructions for your specific OS from: [https://github.com/nodejs/node-gyp](https://github.com/nodejs/node-gyp)
+- **Optional native extensions:** node-gyp is included for compiling user extensions. If you use this feature, install its operating-system prerequisites from: [https://github.com/nodejs/node-gyp](https://github.com/nodejs/node-gyp)
 - **Git:** Suggested for cloning the repository. Download it from the official website: [https://git-scm.com/](https://git-scm.com/)
-- **Emscripten:** Required for the full web build (`npm run dist-web`), including wasm builds of supported native modules. Install and activate the Emscripten SDK from: [https://emscripten.org/docs/getting_started/downloads.html](https://emscripten.org/docs/getting_started/downloads.html)
+- **Emscripten:** Required to build the shared desktop and browser computational backend. See the [WebAssembly backend section](docs/documentation.md#webassembly-backend) for repository-local SDK setup. Install and activate the Emscripten SDK from: [https://emscripten.org/docs/getting_started/downloads.html](https://emscripten.org/docs/getting_started/downloads.html)
 
 ### Installation Steps
 

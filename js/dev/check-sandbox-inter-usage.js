@@ -23,7 +23,7 @@ const { PRDC_APP_CONFIG } = require("../../config/config");
 const {
   CORE_INTERNAL_MODULE_NAMES,
   CHECKER_PROTECTED_SLOT_NAMES,
-} = require("../sandbox/internal-protected-modules");
+} = require("../sandbox/jslab-internal-protected-modules");
 
 const DEFAULT_ROOT = "js/sandbox";
 const DEFAULT_REPORT_FILE = "temp/check-sandbox-inter-report.json";

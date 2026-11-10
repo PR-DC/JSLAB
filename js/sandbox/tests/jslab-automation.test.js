@@ -8,7 +8,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('../automation');
+const { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('../jslab-automation');
 const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
