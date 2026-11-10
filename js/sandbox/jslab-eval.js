@@ -54,13 +54,14 @@ class PRDC_JSLAB_EVAL {
   /**
    * Handles code-evaluation errors and keeps UI state consistent.
    * @param {*} err Error object.
+   * @returns {Promise<void>|undefined} Pending source error formatting, if needed.
    */
   onEvalError(err) {
     this.jsl.onEvaluated();
     if(err && err.name == 'JslabError') {
       this.jsl.inter.env.error(err.message, false);
     } else if(err && err.stack) {
-      this.rewriteError(err.stack.toString());
+      return this.rewriteError(err.stack.toString());
     } else {
       this.jsl.inter.env.error('@jslab: ' + String(err), false);
     }
@@ -190,6 +191,7 @@ class PRDC_JSLAB_EVAL {
    * @param {String} code The code block to evaluate.
    * @param {Boolean} [show_output=true] If true, displays the output of the code block.
    * @param {String} [jsl_file_name='jslcmdwindow'] The name of the file context for the code block.
+   * @returns {Promise<Object>} Evaluation success, value or error.
    */
   async evalCodeFromMain(code, show_output = true, jsl_file_name = 'jslcmdwindow') {
     var obj = this;
@@ -218,8 +220,10 @@ class PRDC_JSLAB_EVAL {
         obj.jsl.inter.env.showAns(this.jsl.inter.prettyPrint(data));
       }
       obj.jsl.onEvaluated();
+      return { success: true, value: data };
     } catch(err) {
-      this.onEvalError(err);
+      await this.onEvalError(err);
+      return { success: false, error: err && (err.stack || err.message) || String(err) };
     }
   }
   
@@ -508,8 +512,8 @@ class PRDC_JSLAB_EVAL {
         sourceFileName: "source.js"
       });
     } catch(err) {
-      this.rewriteError(err.stack, true);
-      return false;
+      throw { name: 'JslabError',
+        message: String(err.message) + '\n  ' + this.jsl.current_script };
     }
 
     const checkPattern = (pattern) => {

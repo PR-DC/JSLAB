@@ -466,6 +466,10 @@
 
 <p>Enhance <strong>JSLAB</strong>’s capabilities by integrating native modules from npm, built with C++ and C. Tap into a vast ecosystem of extensions and customize your environment to meet your specific needs, ensuring maximum performance and flexibility.</p>
 
+<h3>🤖 AI Agents and MCP</h3>
+
+<p>Connect AI agents to the live JSLAB workspace through MCP. Agents can run calculations and scripts, inspect variables, check code, run test scripts and review plots while you follow their work in the desktop. See the MCP server section for setup and available tools.</p>
+
 <h3>Join the JSLAB Revolution Today!</h3>
 
 <p>Experience the seamless integration of powerful scientific computing and the flexibility of JavaScript. Whether you're developing complex algorithms, analyzing vast datasets, or creating innovative applications, <strong>JSLAB</strong> empowers you to achieve more.</p>
@@ -1237,6 +1241,10 @@ disp(await om_link.sendExpression("simulate(BouncingBall)"));
 await om_link.close();
 </pre>
         `},
+      'mcp': {
+        'title': 'MCP server',
+        'data': "<h2>MCP server</h2>\n<p>The JSLAB Model Context Protocol (MCP) server lets AI agents execute code in a running desktop session, inspect workspace variables, analyze scripts, read function documentation and export figures. Calculations and plots appear in the same JSLAB session used by the user. The workspace persists between calls.</p>\n<h3>Start a shared session</h3>\n<p>Install the project dependencies using the normal JSLAB installation procedure. The MCP adapter requires Node.js 18 or later, separately from the Node.js runtime included in Electron.</p>\n<p>From the repository root, start JSLAB with agent access enabled:</p>\n<pre><code class=\"language-powershell\">npm start -- --mcp\n</code></pre>\n<p>For an installed desktop application, pass <code>--mcp</code> to its executable. Agent access is disabled when this argument is absent. The browser version does not support this desktop bridge.</p>\n<p>JSLAB creates a session descriptor named <code>jslab-mcp-&lt;pid&gt;.json</code> in the operating system temporary directory. The descriptor contains a random authentication token and the port of a bridge listening exclusively on <code>127.0.0.1</code>. JSLAB removes its descriptor during normal shutdown. Treat the descriptor as a local credential and do not commit or share it.</p>\n<h3>Connect an agent</h3>\n<p>Configure the MCP client to launch the adapter directly with Node.js. Use absolute paths, including an absolute path to <code>node.exe</code> if Node.js is absent from the client's PATH. For a repository at <code>C:\\github\\JSLAB</code>, a client using the common <code>mcpServers</code> JSON format can use:</p>\n<pre><code class=\"language-json\">{\n  &quot;mcpServers&quot;: {\n    &quot;jslab&quot;: {\n      &quot;command&quot;: &quot;node&quot;,\n      &quot;args&quot;: [&quot;C:\\\\github\\\\JSLAB\\\\js\\\\mcp\\\\server.js&quot;]\n    }\n  }\n}\n</code></pre>\n<p>The adapter uses MCP over stdio. Its stdout is reserved for protocol messages; diagnostics go to stderr. Launch <code>node js/mcp/server.js</code> directly from clients, since npm startup messages can interfere with stdio. <code>npm run mcp</code> is provided for terminal use.</p>\n<p>The adapter automatically selects a session when exactly one live shared session exists. If several sessions exist, inspect <code>list_sessions</code>, then configure the adapter with an explicit process ID:</p>\n<pre><code class=\"language-json\">&quot;args&quot;: [&quot;C:\\\\github\\\\JSLAB\\\\js\\\\mcp\\\\server.js&quot;, &quot;--pid&quot;, &quot;12345&quot;]\n</code></pre>\n<p>Alternatively, use <code>--session-file</code> followed by the descriptor's absolute path. These selection options are mutually exclusive. An explicit selection also keeps the adapter attached to the intended session. For a packaged installation, the adapter is in the application's <code>resources/app/js/mcp/server.js</code>; its dependencies must remain alongside the application files.</p>\n<h3>Available tools</h3>\n<table>\n<thead>\n<tr>\n<th>Tool</th>\n<th>Purpose</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><code>list_sessions</code></td>\n<td>List live shared desktop sessions without exposing credentials.</td>\n</tr>\n<tr>\n<td><code>get_session_status</code></td>\n<td>Read the session PID, application version, readiness, busy state and active execution ID.</td>\n</tr>\n<tr>\n<td><code>get_runtime_info</code></td>\n<td>Read runtime versions, platform, working directory and configured module names.</td>\n</tr>\n<tr>\n<td><code>evaluate_code</code></td>\n<td>Execute JavaScript in the persistent JSLAB workspace.</td>\n</tr>\n<tr>\n<td><code>run_file</code></td>\n<td>Execute an absolute <code>.jsl</code> file path.</td>\n</tr>\n<tr>\n<td><code>run_test_file</code></td>\n<td>Execute a <code>.jsl</code> test script that throws or asserts on failure.</td>\n</tr>\n<tr>\n<td><code>check_code</code></td>\n<td>Run ESLint syntax checks and selected correctness rules without executing the file.</td>\n</tr>\n<tr>\n<td><code>list_workspace</code></td>\n<td>List up to 1000 user variables with their JavaScript types and class names.</td>\n</tr>\n<tr>\n<td><code>read_variable</code></td>\n<td>Read a bounded value preview without invoking accessor variables or custom inspection.</td>\n</tr>\n<tr>\n<td><code>list_figures</code></td>\n<td>List open figure IDs and the active figure.</td>\n</tr>\n<tr>\n<td><code>export_figure</code></td>\n<td>Export an existing figure using an absolute output path.</td>\n</tr>\n<tr>\n<td><code>get_help</code></td>\n<td>Read function documentation by name, <code>lib.function</code>, or category.</td>\n</tr>\n<tr>\n<td><code>get_execution</code></td>\n<td>Poll an execution or retrieve its completed result.</td>\n</tr>\n<tr>\n<td><code>interrupt_execution</code></td>\n<td>Request cooperative interruption of the current execution.</td>\n</tr>\n</tbody>\n</table>\n<p><code>evaluate_code</code>, <code>run_file</code> and <code>run_test_file</code> accept an optional absolute <code>cwd</code>. It changes the shared working directory and remains in effect after the call. A script's location does not automatically become its working directory. Script execution uses JSLAB's evaluator, including its code rewriting, workspace persistence and source error handling. Input scripts and code are limited to 512000 bytes or characters respectively.</p>\n<p><code>check_code</code> returns <code>value.diagnostics</code> with ESLint severity and source positions. A successful analysis operation may contain error diagnostics: inspect the returned diagnostic list. At most 200 diagnostics are returned, with <code>diagnostics_truncated</code> indicating omitted entries. It checks standard JavaScript module syntax and selected rules; it does not validate every JSLAB function or run the code.</p>\n<p><code>run_test_file</code> runs assertion-based <code>.jsl</code> scripts. It reports execution success or failure and captured output; it does not discover test suites or calculate individual assertion counts. For example:</p>\n<pre><code class=\"language-javascript\">var values = [1, 2, 3];\nif(values.reduce((a, b) =&gt; a + b, 0) !== 6) {\n  throw new Error('Unexpected sum');\n}\nconsole.log('Sum test passed');\n</code></pre>\n<p>Figure export supports PNG, SVG, PDF, JPEG, WebP, HTML and JSON. PNG, JPEG and WebP files up to 4 MiB are also returned as MCP image content. The destination directory must already exist. Export overwrites the destination file using JSLAB's normal export behavior.</p>\n<h3>Execution results and interruption</h3>\n<p>Sandbox operations receive an <code>execution_id</code>. The adapter waits up to 10 seconds by default. Set <code>wait_ms</code> between 0 and 10000 to return sooner. A typical completed response has this structure:</p>\n<pre><code class=\"language-json\">{\n  &quot;execution_id&quot;: &quot;550e8400-e29b-41d4-a716-446655440000&quot;,\n  &quot;status&quot;: &quot;completed&quot;,\n  &quot;started_at&quot;: 0,\n  &quot;duration_ms&quot;: 12,\n  &quot;result&quot;: {\n    &quot;success&quot;: true,\n    &quot;value&quot;: { &quot;preview&quot;: &quot;6&quot;, &quot;cwd&quot;: &quot;C:\\\\work\\\\&quot; },\n    &quot;output&quot;: [],\n    &quot;output_truncated&quot;: false,\n    &quot;error&quot;: null\n  }\n}\n</code></pre>\n<p>A response with <code>status: &quot;running&quot;</code> means execution continues. Call <code>get_execution</code> with its ID before submitting more work. The session retains its most recent 20 execution records. Resetting the sandbox fails an active execution; restarting the application discards execution records.</p>\n<p>Only one sandbox operation runs at a time. Overlapping agent operations and GUI code submissions receive a busy response. Session status, execution polling and interruption remain available while code runs. A lost connection or a client timeout does not cancel execution: inspect status before retrying a command with side effects.</p>\n<p>Interruption uses JSLAB's existing cooperative stop mechanism. Acknowledgement means the stop was requested, not that execution has finished. Poll until completion. Blocking native calls and uncooperative operations may require the user's existing sandbox reset control. Reset discards the workspace; it is not exposed as an agent tool.</p>\n<p>For long CPU loops, include the existing <code>checkStop</code> checkpoint so the desktop can request interruption:</p>\n<pre><code class=\"language-javascript\">while(working) {\n  checkStop;\n  // Perform the next bounded calculation step.\n}\n</code></pre>\n<p>Results contain bounded textual previews rather than a lossless serialization of arbitrary objects. Output captures JSLAB display, warning and error methods, including the JSLAB console. Capture ends when the requested operation completes; detached asynchronous work can continue afterward. Output is limited to 200 messages and 64000 characters, and previews to 16000 characters. Inspect selected variables or save large results to files when needed.</p>\n<h3>Agent guidance and access</h3>\n<p>The server exposes <code>jslab://agent-guide</code> from <a href=\"../AGENTS.md\">AGENTS.md</a> and <code>jslab://mcp-guide</code> from this documentation section. Agents should start with session status, consult <code>get_help</code> for unfamiliar functions, execute small steps, and inspect output and figures before continuing.</p>\n<p>Enabling access authorizes code execution with the desktop user's existing JSLAB permissions, including file, process, network and device access. The loopback bridge authenticates each request and rejects browser-origin requests. MCP is an interface to the existing runtime, not an additional execution sandbox. Close the shared session and restart without <code>--mcp</code> to disable access.</p>\n<p>If no session is found, check that JSLAB was started with <code>--mcp</code> under the same user and temporary-directory environment as the adapter. If multiple sessions are found, select one explicitly. If a selected session has exited, restart JSLAB and update its PID or descriptor path. Stale descriptors from crashes are ignored during automatic discovery.</p>\n"
+      },
       'contibuting': {
         'title': 'Contributing',
         'data': `
@@ -1279,7 +1287,7 @@ await om_link.close();
 <p>Your feedback is invaluable in improving the <strong>JSLAB</strong> application. Whether you encounter bugs, have feature requests, or need assistance, please reach out through the following channels:</p>
 <ul>
     <li><strong>GitHub Issues:</strong> Report bugs or suggest features by opening an issue in the GitHub repository.</li>
-    <li><strong>Discourse:</strong> Write a New Topic at \url{<a href="https://discourse.jsl.pr-dc.com/">https://discourse.jsl.pr-dc.com/</a>
+    <li><strong>Discourse:</strong> Write a New Topic at <a href="https://discourse.jsl.pr-dc.com/">https://discourse.jsl.pr-dc.com/</a></li>
     <li><strong>Email:</strong> Contact us directly at <a href="mailto:info@pr-dc.com">info@pr-dc.com</a> or main author at <a href="mailto:mpetrasinovic@pr-dc.com">mpetrasinovic@pr-dc.com</a>.</li>
 </ul>
 <p>We encourage active participation and appreciate all forms of feedback that help us enhance the functionality and usability of <strong>JSLAB</strong>.</p>
@@ -1338,8 +1346,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 996,
       "source_range": [
-        30223,
-        30355
+        30443,
+        30575
       ]
     },
     "version": {
@@ -1511,8 +1519,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 206,
       "source_range": [
-        6608,
-        7285
+        6828,
+        7505
       ]
     },
     "jslFileName": {
@@ -1533,8 +1541,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 229,
       "source_range": [
-        7429,
-        7485
+        7649,
+        7705
       ]
     },
     "clearStorage": {
@@ -1545,8 +1553,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 236,
       "source_range": [
-        7551,
-        7619
+        7771,
+        7839
       ]
     },
     "savePath": {
@@ -1567,8 +1575,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 244,
       "source_range": [
-        7749,
-        7996
+        7969,
+        8216
       ]
     },
     "removePath": {
@@ -1589,8 +1597,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 257,
       "source_range": [
-        8151,
-        8411
+        8371,
+        8631
       ]
     },
     "addpath": {
@@ -1623,8 +1631,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 556,
       "source_range": [
-        17749,
-        18761
+        17969,
+        18981
       ]
     },
     "rmpath": {
@@ -1657,8 +1665,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 596,
       "source_range": [
-        19017,
-        20030
+        19237,
+        20250
       ]
     },
     "path": {
@@ -1691,8 +1699,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 636,
       "source_range": [
-        20268,
-        20952
+        20488,
+        21172
       ]
     },
     "ls": {
@@ -1724,8 +1732,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 667,
       "source_range": [
-        21169,
-        21463
+        21389,
+        21683
       ]
     },
     "dir": {
@@ -1757,8 +1765,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 686,
       "source_range": [
-        21679,
-        22719
+        21899,
+        22939
       ]
     },
     "isfile": {
@@ -1788,8 +1796,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 731,
       "source_range": [
-        22902,
-        22982
+        23122,
+        23202
       ]
     },
     "isfolder": {
@@ -1819,8 +1827,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 741,
       "source_range": [
-        23176,
-        23263
+        23396,
+        23483
       ]
     },
     "exist": {
@@ -1861,8 +1869,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 753,
       "source_range": [
-        23628,
-        24593
+        23848,
+        24813
       ]
     },
     "which": {
@@ -1894,8 +1902,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 787,
       "source_range": [
-        24843,
-        25735
+        25063,
+        25955
       ]
     },
     "who": {
@@ -1927,8 +1935,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 821,
       "source_range": [
-        25940,
-        26577
+        26160,
+        26797
       ]
     },
     "whos": {
@@ -1960,8 +1968,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 850,
       "source_range": [
-        26825,
-        27500
+        27045,
+        27720
       ]
     },
     "cd": {
@@ -1982,8 +1990,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 911,
       "source_range": [
-        28303,
-        28458
+        28523,
+        28678
       ]
     },
     "workspace": {
@@ -2004,8 +2012,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 954,
       "source_range": [
-        29358,
-        29413
+        29578,
+        29633
       ]
     },
     "updateWorkspace": {
@@ -2016,8 +2024,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 961,
       "source_range": [
-        29497,
-        29629
+        29717,
+        29849
       ]
     },
     "updateFileBrowser": {
@@ -2028,8 +2036,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 970,
       "source_range": [
-        29718,
-        29854
+        29938,
+        30074
       ]
     },
     "diary": {
@@ -2062,8 +2070,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1010,
       "source_range": [
-        30719,
-        32056
+        30939,
+        32276
       ]
     },
     "error": {
@@ -2084,8 +2092,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1056,
       "source_range": [
-        32165,
-        32283
+        32385,
+        32503
       ]
     },
     "disp": {
@@ -2106,8 +2114,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1066,
       "source_range": [
-        32387,
-        32525
+        32607,
+        32745
       ]
     },
     "dispMonospaced": {
@@ -2128,8 +2136,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1077,
       "source_range": [
-        32650,
-        32808
+        32870,
+        33028
       ]
     },
     "warn": {
@@ -2150,8 +2158,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1088,
       "source_range": [
-        32922,
-        33038
+        33142,
+        33258
       ]
     },
     "checkStopLoop": {
@@ -2162,8 +2170,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1182,
       "source_range": [
-        36237,
-        36393
+        36457,
+        36613
       ]
     },
     "edit": {
@@ -2185,8 +2193,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1193,
       "source_range": [
-        36600,
-        36650
+        36820,
+        36870
       ]
     },
     "getExamples": {
@@ -2207,8 +2215,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1201,
       "source_range": [
-        36827,
-        37092
+        37047,
+        37312
       ]
     },
     "openExample": {
@@ -2229,8 +2237,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1212,
       "source_range": [
-        37240,
-        37422
+        37460,
+        37642
       ]
     },
     "openExamplesFolder": {
@@ -2241,8 +2249,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1222,
       "source_range": [
-        37487,
-        37584
+        37707,
+        37804
       ]
     },
     "goToExamplesFolder": {
@@ -2253,8 +2261,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1229,
       "source_range": [
-        37649,
-        37738
+        37869,
+        37958
       ]
     },
     "showMessageBox": {
@@ -2285,8 +2293,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1238,
       "source_range": [
-        37986,
-        38072
+        38206,
+        38292
       ]
     },
     "saveObject": {
@@ -2328,8 +2336,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1248,
       "source_range": [
-        38304,
-        38413
+        38524,
+        38633
       ]
     },
     "loadObject": {
@@ -2372,8 +2380,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1258,
       "source_range": [
-        38648,
-        38944
+        38868,
+        39164
       ]
     },
     "loadClass": {
@@ -2414,8 +2422,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1272,
       "source_range": [
-        39187,
-        39631
+        39407,
+        39851
       ]
     },
     "save": {
@@ -2446,8 +2454,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1294,
       "source_range": [
-        39894,
-        41022
+        40114,
+        41242
       ]
     },
     "load": {
@@ -2470,8 +2478,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1329,
       "source_range": [
-        41333,
-        43019
+        41553,
+        43239
       ]
     },
     "getCompletions": {
@@ -2502,8 +2510,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1384,
       "source_range": [
-        43288,
-        47277
+        43508,
+        47497
       ]
     },
     "getObjectByProp": {
@@ -2553,8 +2561,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1499,
       "source_range": [
-        47633,
-        47812
+        47853,
+        48032
       ]
     },
     "getObjectsByProp": {
@@ -2603,8 +2611,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1511,
       "source_range": [
-        48185,
-        48348
+        48405,
+        48568
       ]
     },
     "strcmp": {
@@ -2644,8 +2652,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1522,
       "source_range": [
-        48556,
-        48630
+        48776,
+        48850
       ]
     },
     "compareVersions": {
@@ -2685,8 +2693,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1532,
       "source_range": [
-        48861,
-        49276
+        49081,
+        49496
       ]
     },
     "checkForUpdate": {
@@ -2708,8 +2716,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1553,
       "source_range": [
-        49418,
-        50892
+        49638,
+        51112
       ]
     },
     "unrequire": {
@@ -2730,8 +2738,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1593,
       "source_range": [
-        51027,
-        51352
+        51247,
+        51572
       ]
     },
     "resetApp": {
@@ -2742,8 +2750,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1607,
       "source_range": [
-        51392,
-        51445
+        51612,
+        51665
       ]
     },
     "resetSandbox": {
@@ -2754,8 +2762,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1614,
       "source_range": [
-        51526,
-        51587
+        51746,
+        51807
       ]
     },
     "openDevTools": {
@@ -2775,8 +2783,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1622,
       "source_range": [
-        51713,
-        51781
+        51933,
+        52001
       ]
     },
     "installModule": {
@@ -2808,8 +2816,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1631,
       "source_range": [
-        51999,
-        54232
+        52219,
+        54452
       ]
     },
     "addForCleanup": {
@@ -2839,8 +2847,8 @@ await om_link.close();
       "source_filename": "basic.js",
       "source_lineno": 1701,
       "source_range": [
-        54466,
-        54533
+        54686,
+        54753
       ]
     }
   },
@@ -8740,8 +8748,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 56,
       "source_range": [
-        1622,
-        1801
+        1633,
+        1812
       ]
     },
     "tocms": {
@@ -8773,8 +8781,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 70,
       "source_range": [
-        2145,
-        2289
+        2156,
+        2300
       ]
     },
     "getTimestamp": {
@@ -8795,8 +8803,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 81,
       "source_range": [
-        2448,
-        2552
+        2459,
+        2563
       ]
     },
     "getTime": {
@@ -8817,8 +8825,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 89,
       "source_range": [
-        2710,
-        2819
+        2721,
+        2830
       ]
     },
     "getFullTime": {
@@ -8839,8 +8847,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 97,
       "source_range": [
-        2999,
-        3116
+        3010,
+        3127
       ]
     },
     "getDate": {
@@ -8861,8 +8869,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 105,
       "source_range": [
-        3277,
-        3389
+        3288,
+        3400
       ]
     },
     "getDateTime": {
@@ -8883,8 +8891,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 113,
       "source_range": [
-        3577,
-        3702
+        3588,
+        3713
       ]
     },
     "getDateTimeFull": {
@@ -8905,8 +8913,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 121,
       "source_range": [
-        3912,
-        4045
+        3923,
+        4056
       ]
     },
     "getDateTimeStr": {
@@ -8927,8 +8935,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 129,
       "source_range": [
-        4273,
-        4396
+        4284,
+        4407
       ]
     },
     "setTimezone": {
@@ -8949,8 +8957,8 @@ await om_link.close();
       "source_filename": "time.js",
       "source_lineno": 137,
       "source_range": [
-        4721,
-        4768
+        4732,
+        4779
       ]
     }
   },
@@ -16540,7 +16548,7 @@ await om_link.close();
       "source_lineno": 142,
       "source_range": [
         4560,
-        4897
+        4890
       ]
     },
     "chooseFile": {
@@ -16570,10 +16578,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 156,
+      "source_lineno": 178,
       "source_range": [
-        5144,
-        5828
+        5982,
+        6823
       ]
     },
     "chooseFolder": {
@@ -16603,10 +16611,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 181,
+      "source_lineno": 203,
       "source_range": [
-        6079,
-        6860
+        7073,
+        8007
       ]
     },
     "getDefaultPath": {
@@ -16635,10 +16643,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 210,
+      "source_lineno": 232,
       "source_range": [
-        7086,
-        7166
+        8232,
+        8312
       ]
     },
     "openFolder": {
@@ -16657,10 +16665,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 218,
+      "source_lineno": 240,
       "source_range": [
-        7300,
-        7373
+        8446,
+        8519
       ]
     },
     "makeDirectory": {
@@ -16689,10 +16697,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 228,
+      "source_lineno": 250,
       "source_range": [
-        7771,
-        7859
+        8917,
+        9005
       ]
     },
     "mkdir": {
@@ -16721,10 +16729,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 238,
+      "source_lineno": 260,
       "source_range": [
-        8284,
-        8364
+        9430,
+        9510
       ]
     },
     "openDir": {
@@ -16743,10 +16751,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 246,
+      "source_lineno": 268,
       "source_range": [
-        8530,
-        8597
+        9676,
+        9743
       ]
     },
     "showFolder": {
@@ -16765,10 +16773,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 254,
+      "source_lineno": 276,
       "source_range": [
-        8755,
-        8828
+        9901,
+        9974
       ]
     },
     "showDir": {
@@ -16787,10 +16795,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 262,
+      "source_lineno": 284,
       "source_range": [
-        8989,
-        9056
+        10135,
+        10202
       ]
     },
     "openProgramFolder": {
@@ -16799,10 +16807,10 @@ await om_link.close();
       "description": "Opens the program's root folder in the system's file manager.",
       "params": [],
       "source_filename": "file-system.js",
-      "source_lineno": 269,
+      "source_lineno": 291,
       "source_range": [
-        9144,
-        9249
+        10290,
+        10395
       ]
     },
     "showFileInFolder": {
@@ -16821,10 +16829,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 277,
+      "source_lineno": 299,
       "source_range": [
-        9409,
-        9494
+        10555,
+        10640
       ]
     },
     "showFileInDir": {
@@ -16843,10 +16851,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 285,
+      "source_lineno": 307,
       "source_range": [
-        9686,
-        9765
+        10832,
+        10911
       ]
     },
     "readcsv": {
@@ -16885,10 +16893,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 295,
+      "source_lineno": 317,
       "source_range": [
-        10085,
-        11149
+        11231,
+        12295
       ]
     },
     "checkFile": {
@@ -16907,10 +16915,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 327,
+      "source_lineno": 349,
       "source_range": [
-        11275,
-        11345
+        12421,
+        12491
       ]
     },
     "existFile": {
@@ -16929,10 +16937,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 335,
+      "source_lineno": 357,
       "source_range": [
-        11470,
-        11526
+        12616,
+        12672
       ]
     },
     "checkDirectory": {
@@ -16951,10 +16959,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 343,
+      "source_lineno": 365,
       "source_range": [
-        11666,
-        11756
+        12812,
+        12902
       ]
     },
     "existDirectory": {
@@ -16973,10 +16981,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 351,
+      "source_lineno": 373,
       "source_range": [
-        11896,
-        11972
+        13042,
+        13118
       ]
     },
     "copyDir": {
@@ -17004,10 +17012,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 360,
+      "source_lineno": 382,
       "source_range": [
-        12193,
-        13128
+        13339,
+        14274
       ]
     },
     "copyFolder": {
@@ -17035,10 +17043,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 392,
+      "source_lineno": 414,
       "source_range": [
-        13328,
-        13393
+        14474,
+        14539
       ]
     },
     "cp": {
@@ -17066,10 +17074,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 401,
+      "source_lineno": 423,
       "source_range": [
-        13600,
-        13657
+        14746,
+        14803
       ]
     },
     "copyDir7z": {
@@ -17097,10 +17105,10 @@ await om_link.close();
         }
       ],
       "source_filename": "file-system.js",
-      "source_lineno": 410,
+      "source_lineno": 432,
       "source_range": [
-        13904,
-        14307
+        15050,
+        15453
       ]
     }
   },

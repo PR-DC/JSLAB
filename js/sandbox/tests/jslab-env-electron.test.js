@@ -109,8 +109,23 @@ tests.add('constructor initializes worker-side fields and shared context links',
   assert.equal(env.process_pid, 321);
   assert.ok(runtime_scope.freecad_link);
   assert.ok(runtime_scope.om_link);
-  assert.deepEqual(env.exports, ['debug', 'version', 'platform']);
+  assert.deepEqual(env.exports, ['debug', 'version', 'platform', 'buildShareLink']);
 }, { tags: ['unit', 'jslab-env-electron'] });
+
+tests.add('bound environment output methods capture automation messages', function(assert) {
+  var EnvClass = loadEnvClass({ is_worker: true });
+  var records = [];
+  var env = { is_worker: true };
+  var display = EnvClass.prototype.disp.bind(env);
+  var warning = EnvClass.prototype.warn.bind(env);
+  var error = EnvClass.prototype.error.bind(env);
+  env._automation_output = function(type, values) { records.push({ type: type, values: values }); };
+  display('display');
+  warning('warning');
+  error('failure', false);
+  assert.deepEqual(records.map(function(entry) { return entry.type; }), ['disp', 'warn', 'error']);
+  assert.equal(records[2].values[0], 'failure');
+}, { tags: ['unit', 'jslab-env-electron', 'automation'] });
 
 exports.MODULE_TESTS = tests;
 

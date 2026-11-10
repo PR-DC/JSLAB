@@ -11,6 +11,7 @@
     "preinstall": "npm install rimraf & npm install node-7z & npm install 7zip-bin & node js/dev/prepare-libs.js & npm install -g node-gyp",
     "postinstall": "node js/dev/build-configure.js & node-gyp rebuild & node js/dev/make-doc.js & electron .",
     "start": "electron .",
+    "mcp": "node js/mcp/server.js",
     "inspect": "electron . --inspect=9229 --remote-debugging-port=9222",
     "debug": "electron . --debug-app",
     "test": "electron . --test-app",
@@ -134,12 +135,14 @@
   },
   "devDependencies": {
     "electron": "30.0.2",
-    "electron-builder": "24.13.3"
+    "electron-builder": "24.13.3",
+    "markdown-it": "15.0.3"
   },
   "dependencies": {
     "@babel/parser": "7.27.5",
     "@babel/plugin-syntax-top-level-await": "7.14.5",
     "@lydell/node-pty": "1.1.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "7zip-bin": "^5.2.0",
     "big-json-viewer": "0.1.7",
     "bytenode": "1.5.7",
@@ -171,6 +174,7 @@
     "svg-to-pdfkit": "0.1.8",
     "tcp-port-used": "1.0.2",
     "usb": "2.15.0",
-    "zeromq": "6.0.0-beta.20"
+    "zeromq": "6.0.0-beta.20",
+    "zod": "3.25.76"
   }
 }

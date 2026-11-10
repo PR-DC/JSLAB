@@ -51,8 +51,8 @@
         "source_filename": "basic.js",
         "source_lineno": 996,
         "source_range": [
-          30223,
-          30355
+          30443,
+          30575
         ]
       },
       "version": {
@@ -224,8 +224,8 @@
         "source_filename": "basic.js",
         "source_lineno": 206,
         "source_range": [
-          6608,
-          7285
+          6828,
+          7505
         ]
       },
       "jslFileName": {
@@ -246,8 +246,8 @@
         "source_filename": "basic.js",
         "source_lineno": 229,
         "source_range": [
-          7429,
-          7485
+          7649,
+          7705
         ]
       },
       "clearStorage": {
@@ -258,8 +258,8 @@
         "source_filename": "basic.js",
         "source_lineno": 236,
         "source_range": [
-          7551,
-          7619
+          7771,
+          7839
         ]
       },
       "savePath": {
@@ -280,8 +280,8 @@
         "source_filename": "basic.js",
         "source_lineno": 244,
         "source_range": [
-          7749,
-          7996
+          7969,
+          8216
         ]
       },
       "removePath": {
@@ -302,8 +302,8 @@
         "source_filename": "basic.js",
         "source_lineno": 257,
         "source_range": [
-          8151,
-          8411
+          8371,
+          8631
         ]
       },
       "addpath": {
@@ -336,8 +336,8 @@
         "source_filename": "basic.js",
         "source_lineno": 556,
         "source_range": [
-          17749,
-          18761
+          17969,
+          18981
         ]
       },
       "rmpath": {
@@ -370,8 +370,8 @@
         "source_filename": "basic.js",
         "source_lineno": 596,
         "source_range": [
-          19017,
-          20030
+          19237,
+          20250
         ]
       },
       "path": {
@@ -404,8 +404,8 @@
         "source_filename": "basic.js",
         "source_lineno": 636,
         "source_range": [
-          20268,
-          20952
+          20488,
+          21172
         ]
       },
       "ls": {
@@ -437,8 +437,8 @@
         "source_filename": "basic.js",
         "source_lineno": 667,
         "source_range": [
-          21169,
-          21463
+          21389,
+          21683
         ]
       },
       "dir": {
@@ -470,8 +470,8 @@
         "source_filename": "basic.js",
         "source_lineno": 686,
         "source_range": [
-          21679,
-          22719
+          21899,
+          22939
         ]
       },
       "isfile": {
@@ -501,8 +501,8 @@
         "source_filename": "basic.js",
         "source_lineno": 731,
         "source_range": [
-          22902,
-          22982
+          23122,
+          23202
         ]
       },
       "isfolder": {
@@ -532,8 +532,8 @@
         "source_filename": "basic.js",
         "source_lineno": 741,
         "source_range": [
-          23176,
-          23263
+          23396,
+          23483
         ]
       },
       "exist": {
@@ -574,8 +574,8 @@
         "source_filename": "basic.js",
         "source_lineno": 753,
         "source_range": [
-          23628,
-          24593
+          23848,
+          24813
         ]
       },
       "which": {
@@ -607,8 +607,8 @@
         "source_filename": "basic.js",
         "source_lineno": 787,
         "source_range": [
-          24843,
-          25735
+          25063,
+          25955
         ]
       },
       "who": {
@@ -640,8 +640,8 @@
         "source_filename": "basic.js",
         "source_lineno": 821,
         "source_range": [
-          25940,
-          26577
+          26160,
+          26797
         ]
       },
       "whos": {
@@ -673,8 +673,8 @@
         "source_filename": "basic.js",
         "source_lineno": 850,
         "source_range": [
-          26825,
-          27500
+          27045,
+          27720
         ]
       },
       "cd": {
@@ -695,8 +695,8 @@
         "source_filename": "basic.js",
         "source_lineno": 911,
         "source_range": [
-          28303,
-          28458
+          28523,
+          28678
         ]
       },
       "workspace": {
@@ -717,8 +717,8 @@
         "source_filename": "basic.js",
         "source_lineno": 954,
         "source_range": [
-          29358,
-          29413
+          29578,
+          29633
         ]
       },
       "updateWorkspace": {
@@ -729,8 +729,8 @@
         "source_filename": "basic.js",
         "source_lineno": 961,
         "source_range": [
-          29497,
-          29629
+          29717,
+          29849
         ]
       },
       "updateFileBrowser": {
@@ -741,8 +741,8 @@
         "source_filename": "basic.js",
         "source_lineno": 970,
         "source_range": [
-          29718,
-          29854
+          29938,
+          30074
         ]
       },
       "diary": {
@@ -775,8 +775,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1010,
         "source_range": [
-          30719,
-          32056
+          30939,
+          32276
         ]
       },
       "error": {
@@ -797,8 +797,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1056,
         "source_range": [
-          32165,
-          32283
+          32385,
+          32503
         ]
       },
       "disp": {
@@ -819,8 +819,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1066,
         "source_range": [
-          32387,
-          32525
+          32607,
+          32745
         ]
       },
       "dispMonospaced": {
@@ -841,8 +841,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1077,
         "source_range": [
-          32650,
-          32808
+          32870,
+          33028
         ]
       },
       "warn": {
@@ -863,8 +863,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1088,
         "source_range": [
-          32922,
-          33038
+          33142,
+          33258
         ]
       },
       "checkStopLoop": {
@@ -875,8 +875,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1182,
         "source_range": [
-          36237,
-          36393
+          36457,
+          36613
         ]
       },
       "edit": {
@@ -898,8 +898,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1193,
         "source_range": [
-          36600,
-          36650
+          36820,
+          36870
         ]
       },
       "getExamples": {
@@ -920,8 +920,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1201,
         "source_range": [
-          36827,
-          37092
+          37047,
+          37312
         ]
       },
       "openExample": {
@@ -942,8 +942,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1212,
         "source_range": [
-          37240,
-          37422
+          37460,
+          37642
         ]
       },
       "openExamplesFolder": {
@@ -954,8 +954,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1222,
         "source_range": [
-          37487,
-          37584
+          37707,
+          37804
         ]
       },
       "goToExamplesFolder": {
@@ -966,8 +966,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1229,
         "source_range": [
-          37649,
-          37738
+          37869,
+          37958
         ]
       },
       "showMessageBox": {
@@ -998,8 +998,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1238,
         "source_range": [
-          37986,
-          38072
+          38206,
+          38292
         ]
       },
       "saveObject": {
@@ -1041,8 +1041,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1248,
         "source_range": [
-          38304,
-          38413
+          38524,
+          38633
         ]
       },
       "loadObject": {
@@ -1085,8 +1085,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1258,
         "source_range": [
-          38648,
-          38944
+          38868,
+          39164
         ]
       },
       "loadClass": {
@@ -1127,8 +1127,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1272,
         "source_range": [
-          39187,
-          39631
+          39407,
+          39851
         ]
       },
       "save": {
@@ -1159,8 +1159,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1294,
         "source_range": [
-          39894,
-          41022
+          40114,
+          41242
         ]
       },
       "load": {
@@ -1183,8 +1183,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1329,
         "source_range": [
-          41333,
-          43019
+          41553,
+          43239
         ]
       },
       "getCompletions": {
@@ -1215,8 +1215,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1384,
         "source_range": [
-          43288,
-          47277
+          43508,
+          47497
         ]
       },
       "getObjectByProp": {
@@ -1266,8 +1266,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1499,
         "source_range": [
-          47633,
-          47812
+          47853,
+          48032
         ]
       },
       "getObjectsByProp": {
@@ -1316,8 +1316,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1511,
         "source_range": [
-          48185,
-          48348
+          48405,
+          48568
         ]
       },
       "strcmp": {
@@ -1357,8 +1357,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1522,
         "source_range": [
-          48556,
-          48630
+          48776,
+          48850
         ]
       },
       "compareVersions": {
@@ -1398,8 +1398,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1532,
         "source_range": [
-          48861,
-          49276
+          49081,
+          49496
         ]
       },
       "checkForUpdate": {
@@ -1421,8 +1421,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1553,
         "source_range": [
-          49418,
-          50892
+          49638,
+          51112
         ]
       },
       "unrequire": {
@@ -1443,8 +1443,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1593,
         "source_range": [
-          51027,
-          51352
+          51247,
+          51572
         ]
       },
       "resetApp": {
@@ -1455,8 +1455,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1607,
         "source_range": [
-          51392,
-          51445
+          51612,
+          51665
         ]
       },
       "resetSandbox": {
@@ -1467,8 +1467,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1614,
         "source_range": [
-          51526,
-          51587
+          51746,
+          51807
         ]
       },
       "openDevTools": {
@@ -1488,8 +1488,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1622,
         "source_range": [
-          51713,
-          51781
+          51933,
+          52001
         ]
       },
       "installModule": {
@@ -1521,8 +1521,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1631,
         "source_range": [
-          51999,
-          54232
+          52219,
+          54452
         ]
       },
       "addForCleanup": {
@@ -1552,8 +1552,8 @@
         "source_filename": "basic.js",
         "source_lineno": 1701,
         "source_range": [
-          54466,
-          54533
+          54686,
+          54753
         ]
       }
     },
@@ -7453,8 +7453,8 @@
         "source_filename": "time.js",
         "source_lineno": 56,
         "source_range": [
-          1622,
-          1801
+          1633,
+          1812
         ]
       },
       "tocms": {
@@ -7486,8 +7486,8 @@
         "source_filename": "time.js",
         "source_lineno": 70,
         "source_range": [
-          2145,
-          2289
+          2156,
+          2300
         ]
       },
       "getTimestamp": {
@@ -7508,8 +7508,8 @@
         "source_filename": "time.js",
         "source_lineno": 81,
         "source_range": [
-          2448,
-          2552
+          2459,
+          2563
         ]
       },
       "getTime": {
@@ -7530,8 +7530,8 @@
         "source_filename": "time.js",
         "source_lineno": 89,
         "source_range": [
-          2710,
-          2819
+          2721,
+          2830
         ]
       },
       "getFullTime": {
@@ -7552,8 +7552,8 @@
         "source_filename": "time.js",
         "source_lineno": 97,
         "source_range": [
-          2999,
-          3116
+          3010,
+          3127
         ]
       },
       "getDate": {
@@ -7574,8 +7574,8 @@
         "source_filename": "time.js",
         "source_lineno": 105,
         "source_range": [
-          3277,
-          3389
+          3288,
+          3400
         ]
       },
       "getDateTime": {
@@ -7596,8 +7596,8 @@
         "source_filename": "time.js",
         "source_lineno": 113,
         "source_range": [
-          3577,
-          3702
+          3588,
+          3713
         ]
       },
       "getDateTimeFull": {
@@ -7618,8 +7618,8 @@
         "source_filename": "time.js",
         "source_lineno": 121,
         "source_range": [
-          3912,
-          4045
+          3923,
+          4056
         ]
       },
       "getDateTimeStr": {
@@ -7640,8 +7640,8 @@
         "source_filename": "time.js",
         "source_lineno": 129,
         "source_range": [
-          4273,
-          4396
+          4284,
+          4407
         ]
       },
       "setTimezone": {
@@ -7662,8 +7662,8 @@
         "source_filename": "time.js",
         "source_lineno": 137,
         "source_range": [
-          4721,
-          4768
+          4732,
+          4779
         ]
       }
     },
@@ -15253,7 +15253,7 @@
         "source_lineno": 142,
         "source_range": [
           4560,
-          4897
+          4890
         ]
       },
       "chooseFile": {
@@ -15283,10 +15283,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 156,
+        "source_lineno": 178,
         "source_range": [
-          5144,
-          5828
+          5982,
+          6823
         ]
       },
       "chooseFolder": {
@@ -15316,10 +15316,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 181,
+        "source_lineno": 203,
         "source_range": [
-          6079,
-          6860
+          7073,
+          8007
         ]
       },
       "getDefaultPath": {
@@ -15348,10 +15348,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 210,
+        "source_lineno": 232,
         "source_range": [
-          7086,
-          7166
+          8232,
+          8312
         ]
       },
       "openFolder": {
@@ -15370,10 +15370,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 218,
+        "source_lineno": 240,
         "source_range": [
-          7300,
-          7373
+          8446,
+          8519
         ]
       },
       "makeDirectory": {
@@ -15402,10 +15402,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 228,
+        "source_lineno": 250,
         "source_range": [
-          7771,
-          7859
+          8917,
+          9005
         ]
       },
       "mkdir": {
@@ -15434,10 +15434,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 238,
+        "source_lineno": 260,
         "source_range": [
-          8284,
-          8364
+          9430,
+          9510
         ]
       },
       "openDir": {
@@ -15456,10 +15456,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 246,
+        "source_lineno": 268,
         "source_range": [
-          8530,
-          8597
+          9676,
+          9743
         ]
       },
       "showFolder": {
@@ -15478,10 +15478,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 254,
+        "source_lineno": 276,
         "source_range": [
-          8755,
-          8828
+          9901,
+          9974
         ]
       },
       "showDir": {
@@ -15500,10 +15500,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 262,
+        "source_lineno": 284,
         "source_range": [
-          8989,
-          9056
+          10135,
+          10202
         ]
       },
       "openProgramFolder": {
@@ -15512,10 +15512,10 @@
         "description": "Opens the program's root folder in the system's file manager.",
         "params": [],
         "source_filename": "file-system.js",
-        "source_lineno": 269,
+        "source_lineno": 291,
         "source_range": [
-          9144,
-          9249
+          10290,
+          10395
         ]
       },
       "showFileInFolder": {
@@ -15534,10 +15534,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 277,
+        "source_lineno": 299,
         "source_range": [
-          9409,
-          9494
+          10555,
+          10640
         ]
       },
       "showFileInDir": {
@@ -15556,10 +15556,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 285,
+        "source_lineno": 307,
         "source_range": [
-          9686,
-          9765
+          10832,
+          10911
         ]
       },
       "readcsv": {
@@ -15598,10 +15598,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 295,
+        "source_lineno": 317,
         "source_range": [
-          10085,
-          11149
+          11231,
+          12295
         ]
       },
       "checkFile": {
@@ -15620,10 +15620,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 327,
+        "source_lineno": 349,
         "source_range": [
-          11275,
-          11345
+          12421,
+          12491
         ]
       },
       "existFile": {
@@ -15642,10 +15642,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 335,
+        "source_lineno": 357,
         "source_range": [
-          11470,
-          11526
+          12616,
+          12672
         ]
       },
       "checkDirectory": {
@@ -15664,10 +15664,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 343,
+        "source_lineno": 365,
         "source_range": [
-          11666,
-          11756
+          12812,
+          12902
         ]
       },
       "existDirectory": {
@@ -15686,10 +15686,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 351,
+        "source_lineno": 373,
         "source_range": [
-          11896,
-          11972
+          13042,
+          13118
         ]
       },
       "copyDir": {
@@ -15717,10 +15717,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 360,
+        "source_lineno": 382,
         "source_range": [
-          12193,
-          13128
+          13339,
+          14274
         ]
       },
       "copyFolder": {
@@ -15748,10 +15748,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 392,
+        "source_lineno": 414,
         "source_range": [
-          13328,
-          13393
+          14474,
+          14539
         ]
       },
       "cp": {
@@ -15779,10 +15779,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 401,
+        "source_lineno": 423,
         "source_range": [
-          13600,
-          13657
+          14746,
+          14803
         ]
       },
       "copyDir7z": {
@@ -15810,10 +15810,10 @@
           }
         ],
         "source_filename": "file-system.js",
-        "source_lineno": 410,
+        "source_lineno": 432,
         "source_range": [
-          13904,
-          14307
+          15050,
+          15453
         ]
       }
     },

@@ -1,6 +1,6 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
-**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [AI agents and MCP](docs/documentation.md#mcp-server) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
 <p align="center">
   <img src="https://pr-dc.com/img/github/JSLAB.svg?v1" width="150">
@@ -20,7 +20,25 @@ The program was developed to fulfill the need for performing calculations in a p
 
 Use JSLAB directly in your browser: [https://pr-dc.com/jslab/web/](https://pr-dc.com/jslab/web/)
 
+## AI agents and MCP
+
+JSLAB includes a local Model Context Protocol (MCP) server for AI agents. Agents can execute `.jsl` scripts and JavaScript in the desktop workspace, inspect variables, check code, run assertion-based test scripts, read function documentation and export figures.
+
+Start the desktop with agent access enabled:
+
+```powershell
+npm start -- --mcp
+```
+
+Configure your MCP client to launch `node` with the absolute path to `js/mcp/server.js`. Node.js 18 or later is required for the adapter. Access is disabled by default and code runs with the desktop user's existing permissions.
+
+See the [MCP setup and tool guide](docs/documentation.md#mcp-server) for client configuration, session selection and execution control. [AGENTS.md](AGENTS.md) provides guidance for agents using JSLAB and working on this repository.
+
 ## Why Choose JSLAB?
+
+### 🤖 AI Agents and MCP
+
+Connect AI agents to the live JSLAB workspace through MCP. Agents can run calculations and scripts, inspect variables, check code, run test scripts and review plots while you follow their work in the desktop. See the [MCP server section](docs/documentation.md#mcp-server) for setup and available tools.
 
 ### 🌟 Backed by Leading Investments
 JavaScript is supported by major industry investments, ensuring continuous innovation and robust development. Our commitment to excellence makes `JSLAB` a trusted choice for professionals and organizations worldwide.

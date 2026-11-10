@@ -20,6 +20,8 @@ Release v1.0.4, xx.xx.2026.
 - Implemented table support.
 - Reworked internal assignment and calling.
 - Implemented tests.
+- Implemented an MCP server for AI agents to execute code, inspect the workspace, check and test scripts, read documentation, and export figures.
+- Added Markdown documentation with a dedicated MCP section.
 
 --------------------
 Release v1.0.3, 28.06.2025.

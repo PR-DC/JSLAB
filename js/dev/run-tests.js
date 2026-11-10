@@ -12,7 +12,7 @@ const cp = require('child_process');
 
 const app_root = path.resolve(__dirname, '..', '..');
 const suite_runner = path.join(app_root, 'js', 'dev', 'run-test-suite.js');
-const supported_suites = ['backend', 'main', 'editor', 'shared', 'code'];
+const supported_suites = ['backend', 'main', 'editor', 'shared', 'code', 'dev'];
 
 function getArgValue(name, fallback) {
   var prefix = '--' + name + '=';

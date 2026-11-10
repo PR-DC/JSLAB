@@ -119,6 +119,17 @@ class PRDC_JSLAB_ENV {
     if(!this.is_worker) {
       ipcRenderer.on("SandboxWindow", function(event, action, data) {
         switch(action) {
+          case "automation-request": {
+            const { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('./automation');
+            var automation = new PRDC_JSLAB_SANDBOX_AUTOMATION(obj.jsl);
+            automation.execute(data.method, data.args).then(function(result) {
+              ipcRenderer.send('JSLAB_AUTOMATION_RESULT', { id: data.id, result: result });
+            }).catch(function(err) {
+              ipcRenderer.send('JSLAB_AUTOMATION_RESULT', { id: data.id,
+                result: { success: false, error: String(err) } });
+            });
+            break;
+          }
           case "eval-code":
             obj.jsl.inter.eval.evalCodeFromMain(...data);
             break;
@@ -944,6 +955,7 @@ class PRDC_JSLAB_ENV {
    * @param {...any} args - The messages to send for display in the main window.
    */
   disp(...args) {
+    if(this._automation_output) this._automation_output('disp', args);
     if(!this.is_worker) {
       var obj = this;
       args.forEach(function(msg) {
@@ -967,6 +979,7 @@ class PRDC_JSLAB_ENV {
    * @param {...any} args - The messages to send for display in the main window with monospaced font.
    */
   dispMonospaced(...args) {
+    if(this._automation_output) this._automation_output('dispMonospaced', args);
     if(!this.is_worker) {
       var obj = this;
       args.forEach(function(msg) {
@@ -980,6 +993,7 @@ class PRDC_JSLAB_ENV {
    * @param {string} expr The expression to be displayed.
    */
   dispLatex(expr) {
+    if(this._automation_output) this._automation_output('dispLatex', [expr]);
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "disp-latex", expr);
     }
@@ -1029,6 +1043,7 @@ class PRDC_JSLAB_ENV {
    * @param {string} msg The error message to be displayed.
    */
   error(msg, throw_flag = true) {
+    if(this._automation_output) this._automation_output('error', [msg]);
     if(!this.is_worker) {
       this.jsl.stop_loop = true;
       this.jsl.onStopLoop(false);
@@ -1048,6 +1063,7 @@ class PRDC_JSLAB_ENV {
    * @param {string} msg The internal error message.
    */
   errorInternal(msg) {
+    if(this._automation_output) this._automation_output('errorInternal', [msg]);
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "internal-error", msg);
     }
@@ -1058,6 +1074,7 @@ class PRDC_JSLAB_ENV {
    * @param {string} msg The warning message.
    */
   warn(msg) {
+    if(this._automation_output) this._automation_output('warn', [msg]);
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "warn", msg);
     }

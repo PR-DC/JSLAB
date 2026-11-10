@@ -296,4 +296,35 @@ tests.add('requestScriptFinishedAttention flashes main window only when app is u
   }
 }, { tags: ['unit', 'backend', 'main'] });
 
+tests.add('automation blocks overlapping GUI commands and accepts replies only from the sandbox', function(assert) {
+  var state = {};
+  var MainClass = loadMainClass(undefined, state);
+  var handlers = {};
+  state.electron.ipcMain.handle = function() {};
+  state.electron.ipcMain.on = function(channel, callback) { handlers[channel] = callback; };
+  var forwarded = [];
+  var main = Object.create(MainClass.prototype);
+  main.win_sandbox = { webContents: {}, send: function(...args) { forwarded.push(args); } };
+  main.win_main = { isDestroyed: function() { return false; }, send: function() {} };
+  main.win_editor = { send: function() {} };
+  main.pty = {};
+  main.sandbox_sub_wins = {};
+  var replies = [];
+  main.automation = { busy: true, active_id: 'agent', complete: function(data) { replies.push(data); } };
+  main.handleMessages();
+  handlers.SandboxWindow({}, 'eval-code', ['1']);
+  assert.equal(forwarded.length, 0);
+  handlers.MainWindow({ sender: main.win_sandbox.webContents }, 'code-evaluated', {});
+  assert.equal(main.automation.busy, true);
+  handlers.JSLAB_AUTOMATION_RESULT({ sender: {} }, { id: 'agent' });
+  assert.equal(replies.length, 0);
+  handlers.JSLAB_AUTOMATION_RESULT({ sender: main.win_sandbox.webContents }, { id: 'agent' });
+  assert.equal(replies.length, 1);
+  main.automation.active_id = null;
+  main.automation.busy = false;
+  handlers.SandboxWindow({}, 'eval-code', ['2']);
+  assert.equal(forwarded.length, 1);
+  assert.equal(main.automation.busy, true);
+}, { tags: ['unit', 'backend', 'automation'] });
+
 exports.MODULE_TESTS = tests;

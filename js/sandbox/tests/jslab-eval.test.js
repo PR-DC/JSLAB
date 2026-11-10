@@ -266,4 +266,28 @@ tests.add('runScript reports invalid line ranges and returns false', async funct
   assert.ok(harness.env_errors.length > 0);
 }, { tags: ['unit', 'eval'] });
 
+tests.add('evalCodeFromMain returns structured values and failures for automation', async function(assert) {
+  var harness = createEvalHarness();
+  harness.eval_module.evalString = async function() { return 42; };
+  harness.jsl.no_ans = false;
+  var result = await harness.eval_module.evalCodeFromMain('42', false);
+  assert.equal(result.success, true);
+  assert.equal(result.value, 42);
+  assert.equal(harness.jsl.context.ans, 42);
+  harness.eval_module.evalString = async function() { throw new Error('agent test failure'); };
+  result = await harness.eval_module.evalCodeFromMain('throw Error()', false);
+  assert.equal(result.success, false);
+  assert.ok(result.error.includes('agent test failure'));
+}, { tags: ['unit', 'eval', 'automation'] });
+
+tests.add('evalCodeFromMain reports syntax errors before returning a failed result', async function(assert) {
+  var harness = createEvalHarness();
+  var result = await harness.eval_module.evalCodeFromMain('var = ;', false, 'agent-test.jsl');
+  assert.equal(result.success, false);
+  assert.ok(result.error.includes('Unexpected token'));
+  assert.ok(harness.env_errors.some(function(message) {
+    return message.includes('agent-test.jsl');
+  }));
+}, { tags: ['unit', 'eval', 'automation'] });
+
 exports.MODULE_TESTS = tests;

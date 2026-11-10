@@ -3,6 +3,7 @@
 % ----------------------------------------
 \documentclass[12pt,a4paper]{article}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{geometry}
 \usepackage{listings}
 \usepackage{fancyhdr}
@@ -325,6 +326,10 @@ Design intuitive and visually appealing graphical user interfaces using native H
 \item \textbf{Extend with Native Modules via NPM and C++/C}
 
 Enhance \textbf{JSLAB}’s capabilities by integrating native modules from npm, built with C++ and C. Tap into a vast ecosystem of extensions and customize your environment to meet your specific needs, ensuring maximum performance and flexibility.
+
+\item \textbf{AI Agents and MCP}
+
+Connect AI agents to the live JSLAB workspace through MCP. Agents can run calculations and scripts, inspect variables, check code, run test scripts and review plots while you follow their work in the desktop. See the MCP server section for setup and available tools.
 
 \item \textbf{Join the JSLAB Revolution Today!}
 
@@ -1054,6 +1059,141 @@ Your feedback is invaluable in improving the \textbf{JSLAB} application. Whether
 \end{itemize}
 
 We encourage active participation and appreciate all forms of feedback that help us enhance the functionality and usability of \textbf{JSLAB}.
+
+% --------------------
+
+\section{MCP server}
+
+The JSLAB Model Context Protocol (MCP) server lets AI agents execute code in a running desktop session, inspect workspace variables, analyze scripts, read function documentation and export figures. Calculations and plots appear in the same JSLAB session used by the user. The workspace persists between calls.
+
+
+\subsection{Start a shared session}
+
+Install the project dependencies using the normal JSLAB installation procedure. The MCP adapter requires Node.js 18 or later, separately from the Node.js runtime included in Electron.
+
+From the repository root, start JSLAB with agent access enabled:
+
+\begin{lstlisting}[style=JavaScriptStyle,language={}]
+npm start -- --mcp
+\end{lstlisting}
+
+For an installed desktop application, pass \texttt{--mcp} to its executable. Agent access is disabled when this argument is absent. The browser version does not support this desktop bridge.
+
+JSLAB creates a session descriptor named \texttt{jslab-mcp-<pid>.json} in the operating system temporary directory. The descriptor contains a random authentication token and the port of a bridge listening exclusively on \texttt{127.0.0.1}. JSLAB removes its descriptor during normal shutdown. Treat the descriptor as a local credential and do not commit or share it.
+
+
+\subsection{Connect an agent}
+
+Configure the MCP client to launch the adapter directly with Node.js. Use absolute paths, including an absolute path to \texttt{node.exe} if Node.js is absent from the client's PATH. For a repository at \texttt{C:\textbackslash{}github\textbackslash{}JSLAB}, a client using the common \texttt{mcpServers} JSON format can use:
+
+\begin{lstlisting}[style=JavaScriptStyle,language={}]
+{
+  "mcpServers": {
+    "jslab": {
+      "command": "node",
+      "args": ["C:\\github\\JSLAB\\js\\mcp\\server.js"]
+    }
+  }
+}
+\end{lstlisting}
+
+The adapter uses MCP over stdio. Its stdout is reserved for protocol messages; diagnostics go to stderr. Launch \texttt{node js/mcp/server.js} directly from clients, since npm startup messages can interfere with stdio. \texttt{npm run mcp} is provided for terminal use.
+
+The adapter automatically selects a session when exactly one live shared session exists. If several sessions exist, inspect \texttt{list\_sessions}, then configure the adapter with an explicit process ID:
+
+\begin{lstlisting}[style=JavaScriptStyle,language={}]
+"args": ["C:\\github\\JSLAB\\js\\mcp\\server.js", "--pid", "12345"]
+\end{lstlisting}
+
+Alternatively, use \texttt{--session-file} followed by the descriptor's absolute path. These selection options are mutually exclusive. An explicit selection also keeps the adapter attached to the intended session. For a packaged installation, the adapter is in the application's \texttt{resources/app/js/mcp/server.js}; its dependencies must remain alongside the application files.
+
+
+\subsection{Available tools}
+
+\begin{longtable}{p{0.30\linewidth}p{0.62\linewidth}}
+\hline
+Tool & Purpose \\
+\hline
+\texttt{list\_sessions} & List live shared desktop sessions without exposing credentials. \\
+\texttt{get\_session\_status} & Read the session PID, application version, readiness, busy state and active execution ID. \\
+\texttt{get\_runtime\_info} & Read runtime versions, platform, working directory and configured module names. \\
+\texttt{evaluate\_code} & Execute JavaScript in the persistent JSLAB workspace. \\
+\texttt{run\_file} & Execute an absolute \texttt{.jsl} file path. \\
+\texttt{run\_test\_file} & Execute a \texttt{.jsl} test script that throws or asserts on failure. \\
+\texttt{check\_code} & Run ESLint syntax checks and selected correctness rules without executing the file. \\
+\texttt{list\_workspace} & List up to 1000 user variables with their JavaScript types and class names. \\
+\texttt{read\_variable} & Read a bounded value preview without invoking accessor variables or custom inspection. \\
+\texttt{list\_figures} & List open figure IDs and the active figure. \\
+\texttt{export\_figure} & Export an existing figure using an absolute output path. \\
+\texttt{get\_help} & Read function documentation by name, \texttt{lib.function}, or category. \\
+\texttt{get\_execution} & Poll an execution or retrieve its completed result. \\
+\texttt{interrupt\_execution} & Request cooperative interruption of the current execution. \\
+\hline
+\end{longtable}
+\texttt{evaluate\_code}, \texttt{run\_file} and \texttt{run\_test\_file} accept an optional absolute \texttt{cwd}. It changes the shared working directory and remains in effect after the call. A script's location does not automatically become its working directory. Script execution uses JSLAB's evaluator, including its code rewriting, workspace persistence and source error handling. Input scripts and code are limited to 512000 bytes or characters respectively.
+
+\texttt{check\_code} returns \texttt{value.diagnostics} with ESLint severity and source positions. A successful analysis operation may contain error diagnostics: inspect the returned diagnostic list. At most 200 diagnostics are returned, with \texttt{diagnostics\_truncated} indicating omitted entries. It checks standard JavaScript module syntax and selected rules; it does not validate every JSLAB function or run the code.
+
+\texttt{run\_test\_file} runs assertion-based \texttt{.jsl} scripts. It reports execution success or failure and captured output; it does not discover test suites or calculate individual assertion counts. For example:
+
+\begin{lstlisting}[style=JavaScriptStyle,language={}]
+var values = [1, 2, 3];
+if(values.reduce((a, b) => a + b, 0) !== 6) {
+  throw new Error('Unexpected sum');
+}
+console.log('Sum test passed');
+\end{lstlisting}
+
+Figure export supports PNG, SVG, PDF, JPEG, WebP, HTML and JSON. PNG, JPEG and WebP files up to 4 MiB are also returned as MCP image content. The destination directory must already exist. Export overwrites the destination file using JSLAB's normal export behavior.
+
+
+\subsection{Execution results and interruption}
+
+Sandbox operations receive an \texttt{execution\_id}. The adapter waits up to 10 seconds by default. Set \texttt{wait\_ms} between 0 and 10000 to return sooner. A typical completed response has this structure:
+
+\begin{lstlisting}[style=JavaScriptStyle,language={}]
+{
+  "execution_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "completed",
+  "started_at": 0,
+  "duration_ms": 12,
+  "result": {
+    "success": true,
+    "value": { "preview": "6", "cwd": "C:\\work\\" },
+    "output": [],
+    "output_truncated": false,
+    "error": null
+  }
+}
+\end{lstlisting}
+
+A response with \texttt{status: "running"} means execution continues. Call \texttt{get\_execution} with its ID before submitting more work. The session retains its most recent 20 execution records. Resetting the sandbox fails an active execution; restarting the application discards execution records.
+
+Only one sandbox operation runs at a time. Overlapping agent operations and GUI code submissions receive a busy response. Session status, execution polling and interruption remain available while code runs. A lost connection or a client timeout does not cancel execution: inspect status before retrying a command with side effects.
+
+Interruption uses JSLAB's existing cooperative stop mechanism. Acknowledgement means the stop was requested, not that execution has finished. Poll until completion. Blocking native calls and uncooperative operations may require the user's existing sandbox reset control. Reset discards the workspace; it is not exposed as an agent tool.
+
+For long CPU loops, include the existing \texttt{checkStop} checkpoint so the desktop can request interruption:
+
+\begin{lstlisting}[style=JavaScriptStyle,language={}]
+while(working) {
+  checkStop;
+  // Perform the next bounded calculation step.
+}
+\end{lstlisting}
+
+Results contain bounded textual previews rather than a lossless serialization of arbitrary objects. Output captures JSLAB display, warning and error methods, including the JSLAB console. Capture ends when the requested operation completes; detached asynchronous work can continue afterward. Output is limited to 200 messages and 64000 characters, and previews to 16000 characters. Inspect selected variables or save large results to files when needed.
+
+
+\subsection{Agent guidance and access}
+
+The server exposes \texttt{jslab://agent-guide} from \href{../AGENTS.md}{AGENTS.md} and \texttt{jslab://mcp-guide} from this documentation section. Agents should start with session status, consult \texttt{get\_help} for unfamiliar functions, execute small steps, and inspect output and figures before continuing.
+
+Enabling access authorizes code execution with the desktop user's existing JSLAB permissions, including file, process, network and device access. The loopback bridge authenticates each request and rejects browser-origin requests. MCP is an interface to the existing runtime, not an additional execution sandbox. Close the shared session and restart without \texttt{--mcp} to disable access.
+
+If no session is found, check that JSLAB was started with \texttt{--mcp} under the same user and temporary-directory environment as the adapter. If multiple sessions are found, select one explicitly. If a selected session has exited, restart JSLAB and update its PID or descriptor path. Stale descriptors from crashes are ignored during automatic discovery.
+
+
 
 % --------------------
 \section{Code references}

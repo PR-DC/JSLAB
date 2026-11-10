@@ -61,6 +61,12 @@ class PRDC_JSLAB_MAIN {
       }
     });
     this.startup_script_paths = this.instance_router.getStartupScriptPaths(process.argv);
+    this.automation = null;
+    if(process.argv.includes('--mcp')) {
+      const { PRDC_JSLAB_AUTOMATION } = require('./automation');
+      this.automation = new PRDC_JSLAB_AUTOMATION(this);
+      this.automation_version = app.getVersion();
+    }
     
     this.app_icon = app_path + '/icons/icon.ico'; // png to ico https://icoconvert.com/
     this.is_app_quitting = false;
@@ -203,6 +209,7 @@ class PRDC_JSLAB_MAIN {
 
     app.on('before-quit', function() {
       obj.instance_router.stop();
+      if(obj.automation) obj.automation.stop();
     });
 
     // Quit when all windows are closed, except on macOS. There, it's common
@@ -236,6 +243,11 @@ class PRDC_JSLAB_MAIN {
     
     // Handle IPC messages
     this.handleMessages();
+    if(this.automation && !this.automation.server) {
+      this.automation.start().catch(function(err) {
+        console.error('[automation] ' + err.message);
+      });
+    }
   }
 
   /**
@@ -330,6 +342,17 @@ class PRDC_JSLAB_MAIN {
 
     // and load the index.html of the app
     this.win_sandbox.loadFile(app_path + '/html/sandbox.html');
+    if(this.automation) {
+      this.win_sandbox.webContents.on('console-message', function(event, level, message) {
+        obj.automation.captureConsole(level, message);
+      });
+      this.win_sandbox.webContents.on('did-start-loading', function() {
+        obj.automation.reset();
+      });
+      this.win_sandbox.webContents.on('destroyed', function() {
+        obj.automation.reset();
+      });
+    }
     
     if(config.DEBUG) {
       // Show dev tools
@@ -443,12 +466,14 @@ class PRDC_JSLAB_MAIN {
     });
     
     this.win_sandbox.webContents.on('render-process-gone', function(event, details) {
+      if(obj.automation) obj.automation.reset();
       obj.app_logger.logMessage(config.DEBUG_RENDER_GONE_ERROR, config.LOG_RENDER_GONE_ERROR, config.LOG_CODES['render-gone-error'], 'Render gone error', 'Sandbox window render gone error:' + JSON.stringify(event) + ' ' + JSON.stringify(details));
       app.exit();
       app.relaunch();
     });
     
     this.win_sandbox.webContents.on('did-finish-load', function() {
+      if(obj.automation) obj.automation.ready = true;
       if(!obj.store.get('shown-getting-started')) {
         obj.store.set('shown-getting-started', 1);
         obj.win_sandbox.webContents.executeJavaScript('openDocumentation("about");');
@@ -667,6 +692,7 @@ class PRDC_JSLAB_MAIN {
           app.relaunch();
           break;
         case 'reset-sandbox':
+          if(obj.automation) obj.automation.reset();
           obj.sandbox_reload_active = true;
           obj.win_sandbox.destroy();
           Object.keys(obj.sandbox_sub_wins).forEach(function(wid) {
@@ -847,6 +873,13 @@ class PRDC_JSLAB_MAIN {
     
     // For MainWindow
     ipcMain.on('MainWindow', function(e, action, data) {
+      if(obj.automation && e.sender === obj.win_sandbox.webContents) {
+        if(action === 'code-evaluating') obj.automation.busy = true;
+        if(action === 'code-evaluated' && obj.automation.active_id) return;
+        if(action === 'code-evaluated' && !obj.automation.active_id) {
+          obj.automation.busy = false;
+        }
+      }
       if(!obj.win_main.isDestroyed()) {
         switch(action) {
           default:
@@ -873,6 +906,14 @@ class PRDC_JSLAB_MAIN {
     
     // For SandboxWindow
     ipcMain.on('SandboxWindow', function(e, action, data) {
+      if(obj.automation && (action === 'eval-code' || action === 'run-last-script')) {
+        if(obj.automation.busy || obj.automation.active_id) {
+          obj.win_main.send('MainWindow', 'code-evaluating');
+          obj.win_main.send('MainWindow', 'warn', 'JSLAB is busy. Wait for the active execution to finish.');
+          return;
+        }
+        obj.automation.busy = true;
+      }
       if(action == 'stop-loop') {
         obj.stop_loop_in = data;
       }
@@ -880,6 +921,11 @@ class PRDC_JSLAB_MAIN {
         default:
           obj.win_sandbox.send('SandboxWindow', action, data);
           break;
+      }
+    });
+    ipcMain.on('JSLAB_AUTOMATION_RESULT', function(e, data) {
+      if(obj.automation && e.sender === obj.win_sandbox.webContents) {
+        obj.automation.complete(data);
       }
     });
   }

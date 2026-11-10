@@ -10,6 +10,8 @@ const jsdoc = require('jsdoc-api');
 const fs = require('fs');
 const cp = require("child_process");
 const rimraf = require('rimraf');
+const { getMarkdownSection, renderHtml, renderLatex,
+  renderMarkdownReference } = require('./documentation');
 
 require('../shared/init-config.js');
 
@@ -86,10 +88,20 @@ async function processDoc(module) {
   // Make JSON documentation
   console.log(' Making documentation.json');
   fs.writeFileSync('docs/documentation.json', JSON.stringify(jslab_doc, null, 2));
+
+  // Make Markdown documentation
+  console.log(' Making documentation.md');
+  var markdown_template = fs.readFileSync('dev/documentation_template.md', 'utf8');
+  markdown_template = markdown_template.replaceAll('$JSLAB_APP_VERSION$', 'v' + app_version);
+  markdown_template = markdown_template.replaceAll('$JSLAB_PUBLISH_YEAR$', year);
+  var mcp_section = getMarkdownSection(markdown_template, 'MCP server');
+  fs.writeFileSync('docs/documentation.md',
+    markdown_template.replaceAll('$JSLAB_CODE_DATA$', function() { return renderMarkdownReference(jslab_doc); }));
   
   // Make HTML documentation
   console.log(' Making documentation.html');
   var html_template = fs.readFileSync('dev/documentation_template.html', 'utf8');
+  html_template = html_template.replaceAll('$JSLAB_MCP_DATA$', function() { return JSON.stringify(renderHtml(mcp_section)); });
   html_template = html_template.replaceAll('$JSLAB_CODE_DATA$', JSON.stringify(jslab_doc_flat, null, 2));
   html_template = html_template.replaceAll('$JSLAB_APP_VERSION$', '"v'+app_version+'"');
   html_template = html_template.replaceAll('$JSLAB_PUBLISH_YEAR$', '"'+year+'"');
@@ -98,6 +110,7 @@ async function processDoc(module) {
   // Make tex
   console.log(' Making documentation.tex');
   var latex_template = fs.readFileSync('dev/documentation_template.tex', 'utf8');
+  latex_template = latex_template.replaceAll('$JSLAB_MCP_DATA$', function() { return renderLatex(mcp_section); });
   latex_template = latex_template.replaceAll('$JSLAB_APP_VERSION$', 'v'+app_version+'');
   latex_template = latex_template.replaceAll('$JSLAB_PUBLISH_YEAR$', year);
   
@@ -236,7 +249,8 @@ async function processDoc(module) {
   for(var i = 0; i < config.DOC_LATEX_RERUNS_NUMBER; i++) {
     console.log(' Run ' + (i+1) + '/' + config.DOC_LATEX_RERUNS_NUMBER);
     try {
-      cp.execSync('cd ' + dir + ' & pdflatex documentation.tex --interaction=nonstopmode', { cwd: dir });
+      cp.execFileSync('pdflatex', ['-interaction=nonstopmode', '-halt-on-error', 'documentation.tex'],
+        { cwd: dir, windowsHide: true, timeout: 120000 });
     } catch(e) {
       if(!fs.existsSync(dir + 'documentation.pdf') || (e.output && 
           e.output.toString().trim().split('\n').pop().toLowerCase().includes('fatal'))) {
