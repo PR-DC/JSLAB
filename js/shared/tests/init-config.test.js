@@ -8,11 +8,11 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { PRDC_JSLAB_TESTS } = require('./tester');
+const { PRDC_JSLAB_TESTS } = require('../tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 function runInitConfig(args) {
-  var source = fs.readFileSync(path.join(__dirname, 'init-config.js'), 'utf8');
+  var source = fs.readFileSync(path.join(__dirname, '..', 'init-config.js'), 'utf8');
   var logs = [];
 
   class TEST_APP_CONFIG {

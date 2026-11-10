@@ -374,6 +374,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.tabs_cont = document.querySelector(".tabs");
     this.tabs = new PRDC_TABS();
     this.tabs.init(this.tabs_cont);
+    this.tabs_cont.addEventListener('tabNew', function(event) { event.preventDefault(); });
 
     // On tab change
     this.tabs_cont.addEventListener("activeTabChange", function({ detail }) {

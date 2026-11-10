@@ -603,6 +603,15 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    */
   async _handleGlobalShortcut(event) {
     var key = String(event.key || '').toLowerCase();
+    if(key == 'escape' && [this.workspace_context_menu, this.file_browser_context_menu,
+      this.file_browser_import_menu].some(menu => menu && menu.style.display != 'none')) {
+      this._hideWorkspaceContextMenu();
+      this._hideFileBrowserContextMenu();
+      this._hideFileBrowserImportMenu();
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
     var command_input_focused = this._isCommandInputFocused();
 
     if(command_input_focused && this._isCommandWindowShortcutEvent(event)) {

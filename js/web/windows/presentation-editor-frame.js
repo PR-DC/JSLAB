@@ -435,6 +435,7 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
     this.tabs_cont = document.querySelector('.tabs');
     this.tabs = new PRDC_TABS();
     this.tabs.init(this.tabs_cont);
+    this.tabs_cont.addEventListener('tabNew', function(event) { event.preventDefault(); });
     this.tabs_cont.addEventListener('activeTabChange', function(event) {
       obj.active_tab = event.detail.tabEl;
       if(obj.active_tab && obj.active_tab.tab_obj) {

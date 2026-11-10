@@ -10,7 +10,9 @@ var path = require('path');
 var esbuild = require('esbuild');
 
 var app_root = path.resolve(__dirname, '..', '..');
-var dist_root = path.join(app_root, 'dist-web');
+var gui_test_build = process.argv.includes('--gui-test-build');
+var gui_handler_coverage = gui_test_build ? require('./gui-test-coverage') : null;
+var dist_root = path.join(app_root, gui_test_build ? 'temp/gui-web-build' : 'dist-web');
 var old_dist_root = path.join(app_root, 'web-dist');
 var js_root = path.join(dist_root, 'js');
 var js_code_root = path.join(js_root, 'code');
@@ -21,6 +23,17 @@ var font_root = path.join(dist_root, 'font');
 var html_root = path.join(dist_root, 'html');
 var img_root = path.join(dist_root, 'img');
 var native_wasm_root = path.join(app_root, 'lib', 'native-wasm');
+
+/**
+ * Limits optional GUI instrumentation to application interaction code.
+ * @param {string} filename Source filename.
+ * @returns {boolean}
+ */
+function isGuiSource(filename) {
+  var relative = path.relative(app_root, filename).replace(/\\/g, '/');
+  return /^(js\/(web|main|editor|code|windows)\/.*\.js|lib\/PRDC_(TABS|PANEL|POPUP)\/.*\.js)$/.test(relative) &&
+    !relative.includes('/shims/') && !relative.endsWith('presentation.js');
+}
 
 function injectScriptsBeforeBodyClose(html, scripts) {
   if(!Array.isArray(scripts) || !scripts.length) {
@@ -479,7 +492,11 @@ function emptyDirectory(dir_path) {
  */
 function copyFile(from_path, to_path) {
   fs.mkdirSync(path.dirname(to_path), { recursive: true });
-  fs.copyFileSync(from_path, to_path);
+  if(gui_test_build && isGuiSource(from_path)) {
+    fs.writeFileSync(to_path, gui_handler_coverage.instrument(fs.readFileSync(from_path, 'utf8'), from_path));
+  } else {
+    fs.copyFileSync(from_path, to_path);
+  }
 }
 
 /**
@@ -546,7 +563,7 @@ function readNativeWasmInfo() {
  */
 async function buildWeb() {
   emptyDirectory(dist_root);
-  fs.rmSync(old_dist_root, { recursive: true, force: true });
+  if(!gui_test_build) fs.rmSync(old_dist_root, { recursive: true, force: true });
   ensureDirectory(dist_root);
   ensureDirectory(js_root);
   ensureDirectory(js_code_root);
@@ -561,6 +578,15 @@ async function buildWeb() {
       'node:util': path.join(app_root, 'js', 'web', 'shims', 'util.js')
     },
     bundle: true,
+    plugins: gui_test_build ? [{
+      name: 'jslab-gui-handler-coverage',
+      setup(build) {
+        build.onLoad({ filter: /\.js$/ }, function(args) {
+          if(!isGuiSource(args.path)) return;
+          return { contents: gui_handler_coverage.instrument(fs.readFileSync(args.path, 'utf8'), args.path), loader: 'js' };
+        });
+      }
+    }] : [],
     entryPoints: {
       'init-web': 'js/web/init-web.js',
       'sandbox-frame': 'js/web/init-sandbox-frame.js',
@@ -789,6 +815,7 @@ async function buildWeb() {
   fs.writeFileSync(path.join(dist_root, 'index.html'), html, 'utf8');
 
   console.log('Built JSLAB web scaffold to ' + dist_root);
+  if(gui_test_build) gui_handler_coverage.writeReport(path.join(app_root, 'temp/gui-handler-inventory-web.json'));
 }
 
 buildWeb().catch(function(err) {

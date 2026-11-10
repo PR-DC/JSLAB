@@ -47,6 +47,10 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     // Tabs
     this.tabs_cont = document.querySelector(".tabs");
     this.tabs.init(this.tabs_cont);
+    this.tabs_cont.addEventListener('tabNew', function(event) {
+      event.preventDefault();
+      obj.createScript();
+    });
     
     // On tab add
     this.tabs_cont.addEventListener("tabAdd", function({ detail }) {

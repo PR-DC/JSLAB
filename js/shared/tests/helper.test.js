@@ -8,12 +8,12 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { PRDC_JSLAB_TESTS } = require('./tester');
+const { PRDC_JSLAB_TESTS } = require('../tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 function runHelperInContext(options) {
   options = options || {};
-  var source = fs.readFileSync(path.join(__dirname, 'helper.js'), 'utf8');
+  var source = fs.readFileSync(path.join(__dirname, '..', 'helper.js'), 'utf8');
   var document_handlers = {};
 
   var context = {

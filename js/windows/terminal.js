@@ -87,8 +87,8 @@ class PRDC_JSLAB_TERMINAL {
     this.last_tic = this.message_buffer.last_tic;
     this.N_messages = this.message_buffer.N_messages;
 
-    for(var dialog of this.dialogs) {
-      dialog.addEventListener('input', function(e) {
+    for(const dialog of this.dialogs) {
+      dialog.addEventListener('keydown', function(e) {
         if(e.key == 'Escape') {
           // ESC
           obj.closeDialog(dialog);

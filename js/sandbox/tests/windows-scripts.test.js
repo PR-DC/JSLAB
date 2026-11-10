@@ -381,7 +381,10 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_editor_css.includes('#slide-notes-body::-webkit-scrollbar-thumb'));
   assert.ok(presentation_editor_css.includes('resize: none;'));
   assert.ok(presentation_editor_css.includes('top: 54px;'));
-  assert.ok(presentation_editor_css.includes('.CodeMirror-presentation-slide-line'));
+  var presentation_code_css = fs.readFileSync(path.join(__dirname, '..', '..', '..',
+    'css', 'codemirror-presentation-editor-custom.css'), 'utf8');
+  assert.ok(presentation_code_css.includes('.CodeMirror-presentation-slide-line'));
+  assert.ok(presentation_editor_html.includes('codemirror-presentation-editor-custom.css'));
   assert.ok(presentation_editor_html.includes('id="tab-save" src="../img/tab-save.svg" title-str="50" alt="Save"'));
   assert.ok(presentation_editor_html.includes('id="slide-notes"'));
   assert.ok(presentation_editor_html.includes('<textarea id="slide-notes-body"'));

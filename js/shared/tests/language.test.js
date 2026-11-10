@@ -7,14 +7,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PRDC_JSLAB_TESTS } = require('./tester');
+const { PRDC_JSLAB_TESTS } = require('../tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 var test_appdata = path.join(process.cwd(), 'temp', 'test-appdata-shared-language');
 fs.mkdirSync(path.join(test_appdata, 'electron-store-nodejs', 'Config'), { recursive: true });
 process.env.APPDATA = test_appdata;
 
-const { PRDC_JSLAB_LANGUAGE } = require('./language');
+const { PRDC_JSLAB_LANGUAGE } = require('../language');
 
 function createLanguageHarness() {
   var logs = [];

@@ -8,12 +8,12 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { PRDC_JSLAB_TESTS } = require('../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 function runCodeMirrorModule(file_name, options) {
   options = options || {};
-  var source = fs.readFileSync(path.join(__dirname, file_name), 'utf8');
+  var source = fs.readFileSync(path.join(__dirname, '..', file_name), 'utf8');
   var records = {
     helpers: [],
     options: [],
@@ -113,7 +113,7 @@ tests.add('custom-javascript-hint registers javascript helper and requests compl
 }, { tags: ['unit', 'code', 'codemirror'] });
 
 tests.add('custom-javascript-hint falls back to web bridge completions', async function(assert) {
-  var source = fs.readFileSync(path.join(__dirname, 'custom-javascript-hint.js'), 'utf8');
+  var source = fs.readFileSync(path.join(__dirname, '..', 'custom-javascript-hint.js'), 'utf8');
   var records = {
     helpers: [],
     bridge_calls: []
@@ -226,7 +226,7 @@ tests.add('all code scripts parse as valid JavaScript modules', function(assert)
   ];
 
   files.forEach(function(file_name) {
-    var source = fs.readFileSync(path.join(__dirname, file_name), 'utf8');
+    var source = fs.readFileSync(path.join(__dirname, '..', file_name), 'utf8');
     try {
       new vm.Script(source, { filename: file_name });
     } catch(err) {

@@ -5,8 +5,8 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_CODE_DOC_HOVER } = require('./doc-hover');
-const { PRDC_JSLAB_TESTS } = require('../shared/tester');
+const { PRDC_JSLAB_CODE_DOC_HOVER } = require('../doc-hover');
+const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('_extractIdentifierFromLine returns identifier and parent around dot access', function(assert) {

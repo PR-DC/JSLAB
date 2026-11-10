@@ -5,8 +5,8 @@
  * info@pr-dc.com
  */
 
-const { PRDC_TERMINAL_BUFFER } = require('./terminal-buffer');
-const { PRDC_JSLAB_TESTS } = require('./tester');
+const { PRDC_TERMINAL_BUFFER } = require('../terminal-buffer');
+const { PRDC_JSLAB_TESTS } = require('../tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('getEffectiveDomLimit enforces minimum and hard cap', function(assert) {

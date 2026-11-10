@@ -598,6 +598,10 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
       this.tabs_cont = document.querySelector('.tabs');
 
       this.tabs.init(this.tabs_cont);
+      this.tabs_cont.addEventListener('tabNew', function(event) {
+        event.preventDefault();
+        obj.createUntitledScript();
+      });
 
       this.tabs_cont.addEventListener('tabAdd', function(event) {
         document.getElementById('close-dialog-cont').style.display = 'none';

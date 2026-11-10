@@ -7,8 +7,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PRDC_JSLAB_TESTER } = require('./tester');
-const { PRDC_JSLAB_TESTS } = require('./tester');
+const { PRDC_JSLAB_TESTER } = require('../tester');
+const { PRDC_JSLAB_TESTS } = require('../tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 function makeFixture(prefix, files) {
