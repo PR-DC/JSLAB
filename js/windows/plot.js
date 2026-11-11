@@ -21,6 +21,73 @@ class PRDC_JSLAB_PLOT {
     this.update_queue = new Map();
     this.frame_requested = false;
   }
+
+  /**
+   * Loads fonts referenced by a Plotly layout before Plotly measures text.
+   * @param {Object} layout - Full or flattened Plotly layout update.
+   * @returns {Promise<void>}
+   */
+  async _loadLayoutFonts(layout) {
+    if(!document.fonts || typeof document.fonts.load != 'function' ||
+        !layout || typeof layout != 'object') {
+      return;
+    }
+
+    var full_layout = this.plot_cont && this.plot_cont._fullLayout
+      ? this.plot_cont._fullLayout
+      : {};
+    var font_specs = [];
+
+    var addFont = function(font, fallback) {
+      font = font && typeof font == 'object' ? font : {};
+      fallback = fallback && typeof fallback == 'object' ? fallback : {};
+      var family = font.family || fallback.family;
+      var size = Number(font.size || fallback.size || 12);
+      if(typeof family == 'string' && family.trim().length) {
+        font_specs.push(size + 'px ' + family);
+      }
+    };
+
+    var layout_font = layout.font && typeof layout.font == 'object'
+      ? layout.font
+      : {};
+    if(layout.hasOwnProperty('font.family')) {
+      layout_font = Object.assign({}, layout_font, {
+        family: layout['font.family']
+      });
+    }
+    if(layout.hasOwnProperty('font.size')) {
+      layout_font = Object.assign({}, layout_font, {
+        size: layout['font.size']
+      });
+    }
+    addFont(layout_font, full_layout.font);
+
+    var legend = layout.legend && typeof layout.legend == 'object'
+      ? layout.legend
+      : {};
+    var legend_font = legend.font && typeof legend.font == 'object'
+      ? legend.font
+      : {};
+    if(layout.hasOwnProperty('legend.font.family')) {
+      legend_font = Object.assign({}, legend_font, {
+        family: layout['legend.font.family']
+      });
+    }
+    if(layout.hasOwnProperty('legend.font.size')) {
+      legend_font = Object.assign({}, legend_font, {
+        size: layout['legend.font.size']
+      });
+    }
+    var current_legend_font = full_layout.legend && full_layout.legend.font;
+    addFont(legend_font, current_legend_font || layout_font || full_layout.font);
+
+    await Promise.all(Array.from(new Set(font_specs)).map(function(font_spec) {
+      return document.fonts.load(font_spec).catch(function() {
+        // Plotly will use the browser fallback for an unavailable font.
+      });
+    }));
+  }
   
   /**
    * Set a new plot container to the figure content.
@@ -39,6 +106,7 @@ class PRDC_JSLAB_PLOT {
    * @param {Object} config - Additional configuration settings for the plot.
    */
   async newPlot(plot_in, traces, layout, config) {
+    await this._loadLayoutFonts(layout);
     await Plotly.newPlot(this.plot_cont, traces, layout, config);
   }
 
@@ -141,8 +209,9 @@ class PRDC_JSLAB_PLOT {
    * Updates the layout of the existing plot.
    * @param {Object} layout - Layout configuration to apply to the plot.
    */
-  relayout(layout) {
-    Plotly.relayout(this.plot_cont, layout);
+  async relayout(layout) {
+    await this._loadLayoutFonts(layout);
+    await Plotly.relayout(this.plot_cont, layout);
   }
 
   /**
@@ -195,6 +264,7 @@ class PRDC_JSLAB_PLOT {
    * @param {Array} data Data for the plot.
    */
   async fromJSON(data) {
+    await this._loadLayoutFonts(data && data.layout ? data.layout : {});
     await Plotly.newPlot(this.plot_cont, data);
   }
 }

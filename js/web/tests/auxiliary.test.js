@@ -23,6 +23,63 @@ webTest(tests, 'web figure frame initializes Plotly and its menu toggles', async
   t.app.window_manager.close('gui-figure');
 });
 
+webTest(tests, 'Plotly legend fits Latin Modern text at different font sizes', async function() {
+  var t = GUI;
+  var opened = t.app.openManagedWindow('gui-figure-font', 'figure.html');
+  await opened.ready;
+  var w = opened.win.iframe.contentWindow;
+  var doc = w.document;
+  w.plot.setCont();
+  var cont = w.plot.plot_cont;
+  cont.style.cssText = 'width:720px;height:420px';
+  var label = 'Aerodynamic moment coefficient WMWMWM';
+  var sizes = [12, 18, 28, 40];
+
+  await w.plot.newPlot({}, [
+    { x: [0, 1], y: [0, 1], name: label, mode: 'lines' },
+    { x: [0, 1], y: [1, 0], name: 'Reference response', mode: 'lines' }
+  ], {
+    width: 720,
+    height: 420,
+    showlegend: true,
+    font: { family: 'LatinModern', size: sizes[0] },
+    legend: {
+      font: { family: 'LatinModern', size: sizes[0] },
+      borderwidth: 1,
+      borderpad: 4
+    }
+  }, { staticPlot: true });
+
+  if(doc.fonts && doc.fonts.ready) {
+    await doc.fonts.ready;
+  }
+
+  for(var size of sizes) {
+    await w.plot.relayout({
+      'font.family': 'LatinModern',
+      'font.size': size,
+      'legend.font.family': 'LatinModern',
+      'legend.font.size': size
+    });
+    await new Promise(resolve => w.requestAnimationFrame(() =>
+      w.requestAnimationFrame(resolve)));
+    var background = cont.querySelector('g.legend rect.bg');
+    var texts = Array.from(cont.querySelectorAll('g.legend text.legendtext'));
+    t.ok(background && texts.length, 'legend geometry exists at ' + size + 'px');
+    var backgroundBox = background.getBBox();
+    var textRight = Math.max(...texts.map(text => {
+      var box = text.getBBox();
+      return box.x + box.width;
+    }));
+    var backgroundRight = backgroundBox.x + backgroundBox.width;
+    t.ok(textRight <= backgroundRight + 0.5,
+      'Latin Modern legend text is cropped at ' + size + 'px: text right ' +
+      textRight + ', background right ' + backgroundRight);
+  }
+
+  t.app.window_manager.close('gui-figure-font');
+});
+
 webTest(tests, 'web serial terminal dialogs, settings, toggles and generated UI tabs work', async function() {
   var t = GUI, opened = t.app.openManagedWindow('gui-serial', 'serial_terminal.html'); await opened.ready;
   var w = opened.win.iframe.contentWindow, doc = w.document;

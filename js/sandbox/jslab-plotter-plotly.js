@@ -125,7 +125,7 @@ class PRDC_JSLAB_PLOTTER {
    * Updates the layout for the plot associated with the specified figure identifier.
    * @param {number} fid - The identifier for the figure whose layout is to be updated.
    */
-  updatePlotLayout(fid) {
+  async updatePlotLayout(fid) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
       this.jsl.inter.env.error('@plotter/updatePlotLayout: '+this.jsl.inter.lang.string(172));
       return;
@@ -485,7 +485,7 @@ class PRDC_JSLAB_PLOTTER {
       }
     }
     
-    context_plot.relayout(layout);
+    await context_plot.relayout(layout);
     context_plot.resize();
     
     if(plot.lim_update) {
@@ -539,7 +539,7 @@ class PRDC_JSLAB_PLOTTER {
           layout2['yaxis.range'] = plot.ylim_val;
         }
       }
-      context_plot.relayout(layout2);
+      await context_plot.relayout(layout2);
       context_plot.resize();
     }
     
@@ -602,7 +602,7 @@ class PRDC_JSLAB_PLOTTER {
       layout3['scene.camera.eye'] = eye;
       layout3['scene.camera.up'] = up;
       
-      context_plot.relayout(layout3);
+      await context_plot.relayout(layout3);
       context_plot.resize();
     }
   }

@@ -1427,7 +1427,7 @@ class PRDC_JSLAB_PLOT {
     } else {
       await this.#jsl.inter.plotter.plot(this.fid);
       this.plot_ready = true;
-      this.#jsl.inter.plotter.updatePlotLayout(this.fid);
+      await this.#jsl.inter.plotter.updatePlotLayout(this.fid);
       this._readyResolve(true);
     }
   }

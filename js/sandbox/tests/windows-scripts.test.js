@@ -167,6 +167,61 @@ tests.add('plot script creates global plot and batches restyle updates', functio
   assert.equal(records.restyle[1].props['marker.color'][0], 'red');
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
+tests.add('plot script loads layout fonts before Plotly measures legends', async function(assert) {
+  var source = readWindowScript('plot.js');
+  var events = [];
+  var release_font;
+  var first_font = new Promise(function(resolve) {
+    release_font = resolve;
+  });
+  var font_calls = 0;
+  var figure_content = { appendChild: function() {} };
+  var context = {
+    document: {
+      fonts: {
+        load: function(spec) {
+          events.push('font:' + spec);
+          font_calls += 1;
+          return font_calls == 1 ? first_font : Promise.resolve();
+        }
+      },
+      getElementById: function() { return figure_content; },
+      createElement: function() { return { data: [] }; }
+    },
+    Plotly: {
+      newPlot: async function() { events.push('newPlot'); },
+      relayout: async function() { events.push('relayout'); },
+      restyle: function() {},
+      Plots: { resize: function() {}, graphJson: function() {} }
+    }
+  };
+  context.globalThis = context;
+  vm.runInNewContext(source, context, { filename: 'plot.js' });
+  context.plot.setCont();
+
+  var pending_plot = context.plot.newPlot({}, [], {
+    font: { family: 'LatinModern', size: 18 },
+    legend: { font: { family: 'LatinModern', size: 18 } }
+  }, {});
+  await Promise.resolve();
+  assert.equal(events.includes('newPlot'), false);
+  assert.equal(events.filter(function(event) {
+    return event == 'font:18px LatinModern';
+  }).length, 1);
+  release_font();
+  await pending_plot;
+  assert.equal(events.at(-1), 'newPlot');
+
+  await context.plot.relayout({
+    'font.family': 'LatinModern',
+    'font.size': 40,
+    'legend.font.family': 'LatinModern',
+    'legend.font.size': 40
+  });
+  assert.equal(events.includes('font:40px LatinModern'), true);
+  assert.equal(events.at(-1), 'relayout');
+}, { tags: ['unit', 'windows', 'sandbox', 'plotter'] });
+
 tests.add('terminal script initializes terminal and updates UI state toggles', function(assert) {
   var source = readWindowScript('terminal.js');
   var els = {};
