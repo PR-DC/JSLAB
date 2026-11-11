@@ -1331,7 +1331,7 @@
         "source_lineno": 1399,
         "source_range": [
           45007,
-          50003
+          50162
         ]
       },
       "keys": {
@@ -1340,10 +1340,10 @@
         "description": "Returns enumerable own property names, matching the DevTools helper.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1527,
+        "source_lineno": 1530,
         "source_range": [
-          50092,
-          50152
+          50251,
+          50311
         ]
       },
       "values": {
@@ -1352,10 +1352,10 @@
         "description": "Returns enumerable own property values, matching the DevTools helper.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1532,
+        "source_lineno": 1535,
         "source_range": [
-          50238,
-          50302
+          50397,
+          50461
         ]
       },
       "copy": {
@@ -1365,10 +1365,10 @@
         "params": [],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1537,
+        "source_lineno": 1540,
         "source_range": [
-          50383,
-          50652
+          50542,
+          50811
         ]
       },
       "inspect": {
@@ -1377,10 +1377,10 @@
         "description": "Displays a value as an expandable console object.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1546,
+        "source_lineno": 1549,
         "source_range": [
-          50718,
-          50992
+          50877,
+          51151
         ]
       },
       "queryObjects": {
@@ -1389,10 +1389,10 @@
         "description": "Finds reachable workspace objects constructed by the supplied class.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1556,
+        "source_lineno": 1559,
         "source_range": [
-          51077,
-          52029
+          51236,
+          52188
         ]
       },
       "getEventListeners": {
@@ -1401,10 +1401,10 @@
         "description": "Returns listeners installed through monitorEvents().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1578,
+        "source_lineno": 1581,
         "source_range": [
-          52098,
-          52419
+          52257,
+          52578
         ]
       },
       "monitorEvents": {
@@ -1413,10 +1413,10 @@
         "description": "Logs selected EventTarget events until unmonitorEvents() is called.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1588,
+        "source_lineno": 1591,
         "source_range": [
-          52503,
-          53570
+          52662,
+          53729
         ]
       },
       "unmonitorEvents": {
@@ -1425,10 +1425,10 @@
         "description": "Stops event logging installed by monitorEvents().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1610,
+        "source_lineno": 1613,
         "source_range": [
-          53636,
-          54172
+          53795,
+          54331
         ]
       },
       "dirxml": {
@@ -1437,10 +1437,10 @@
         "description": "Displays XML/HTML markup when available.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1624,
+        "source_lineno": 1627,
         "source_range": [
-          54229,
-          54332
+          54388,
+          54491
         ]
       },
       "monitor": {
@@ -1449,10 +1449,10 @@
         "description": "Logs calls to a function referenced directly by a workspace variable.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1629,
+        "source_lineno": 1632,
         "source_range": [
-          54418,
-          54489
+          54577,
+          54648
         ]
       },
       "unmonitor": {
@@ -1461,10 +1461,10 @@
         "description": "Stops call logging installed by monitor().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1634,
+        "source_lineno": 1637,
         "source_range": [
-          54548,
-          54617
+          54707,
+          54776
         ]
       },
       "debugFunction": {
@@ -1473,10 +1473,10 @@
         "description": "Breaks when a workspace function is called; `debug` remains JSLAB's debug flag.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1639,
+        "source_lineno": 1642,
         "source_range": [
-          54713,
-          54789
+          54872,
+          54948
         ]
       },
       "undebug": {
@@ -1485,10 +1485,10 @@
         "description": "Removes a breakpoint wrapper installed by debugFunction().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1644,
+        "source_lineno": 1647,
         "source_range": [
-          54864,
-          54931
+          55023,
+          55090
         ]
       },
       "getObjectByProp": {
@@ -1536,10 +1536,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1855,
+        "source_lineno": 1930,
         "source_range": [
-          64378,
-          64557
+          68876,
+          69055
         ]
       },
       "getObjectsByProp": {
@@ -1586,10 +1586,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1867,
+        "source_lineno": 1942,
         "source_range": [
-          64930,
-          65093
+          69428,
+          69591
         ]
       },
       "strcmp": {
@@ -1627,10 +1627,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1878,
+        "source_lineno": 1953,
         "source_range": [
-          65301,
-          65375
+          69799,
+          69873
         ]
       },
       "compareVersions": {
@@ -1668,10 +1668,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1888,
+        "source_lineno": 1963,
         "source_range": [
-          65606,
-          66021
+          70104,
+          70519
         ]
       },
       "checkForUpdate": {
@@ -1691,10 +1691,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1909,
+        "source_lineno": 1984,
         "source_range": [
-          66163,
-          67637
+          70661,
+          72135
         ]
       },
       "unrequire": {
@@ -1713,10 +1713,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1949,
+        "source_lineno": 2024,
         "source_range": [
-          67772,
-          68097
+          72270,
+          72595
         ]
       },
       "resetApp": {
@@ -1725,10 +1725,10 @@
         "description": "Resets app.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1963,
+        "source_lineno": 2038,
         "source_range": [
-          68137,
-          68190
+          72635,
+          72688
         ]
       },
       "resetSandbox": {
@@ -1737,10 +1737,10 @@
         "description": "Resets the sandbox environment to its initial state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1970,
+        "source_lineno": 2045,
         "source_range": [
-          68271,
-          68332
+          72769,
+          72830
         ]
       },
       "openDevTools": {
@@ -1758,10 +1758,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1978,
+        "source_lineno": 2053,
         "source_range": [
-          68458,
-          68526
+          72956,
+          73024
         ]
       },
       "installModule": {
@@ -1791,10 +1791,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1987,
+        "source_lineno": 2062,
         "source_range": [
-          68744,
-          70977
+          73242,
+          75475
         ]
       },
       "addForCleanup": {
@@ -1822,10 +1822,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2057,
+        "source_lineno": 2132,
         "source_range": [
-          71211,
-          71278
+          75709,
+          75776
         ]
       }
     },
