@@ -36,15 +36,17 @@ function createAlphaShape3DClass(wasm, env) {
    */
   function validateRows(rows, indices = false, point_count = 0) {
     if(!Array.isArray(rows)) throw new TypeError('An array of three-coordinate rows is required.');
-    rows.forEach(function(row) {
+    for(var i = 0; i < rows.length; i++) {
+      var row = rows[i];
       if(!Array.isArray(row) || row.length !== 3) throw new TypeError('Each row must have exactly three coordinates.');
-      row.forEach(function(value) {
+      for(var j = 0; j < 3; j++) {
+        var value = row[j];
         if(typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError('Coordinates must be finite numbers.');
         if(indices && (!Number.isInteger(value) || value < 0 || value >= point_count)) {
           throw new RangeError('Facet indices must reference existing points.');
         }
-      });
-    });
+      }
+    }
   }
 
   /**

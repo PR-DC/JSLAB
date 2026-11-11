@@ -415,6 +415,7 @@ class PRDC_JSLAB_MAIN {
       
       // Show window
       sub_win.once('ready-to-show', function() {
+        if(sub_win.isDestroyed() || sub_win.forClose) return;
         if(obj.cli_mode) {
           sub_win.showInactive();
         } else {
@@ -492,10 +493,13 @@ class PRDC_JSLAB_MAIN {
           return;
         }
         e.preventDefault();
-        obj.win_sandbox.webContents.executeJavaScript('jsl.windows._closedWindow('+wid+');');
+        obj.win_sandbox.webContents.send('SandboxWindow', 'window-closed', wid);
         sub_win.hide();
         sub_win.forClose = true;
         sub_win.presentation_editor_close_ready = false;
+        setTimeout(function() {
+          obj._destroyClosedSandboxWindow(wid, sub_win);
+        }, 500);
       });
       
     });
@@ -518,6 +522,19 @@ class PRDC_JSLAB_MAIN {
         obj.sandbox_reload_active = false;
       }
     };
+  }
+
+  /**
+   * Releases a closed sandbox window even while a script is still running.
+   * Delayed cleanup must not remove a replacement window using the same ID.
+   * @private
+   * @param {string|number} wid Window identifier.
+   * @param {BrowserWindow} win Window scheduled for destruction.
+   */
+  _destroyClosedSandboxWindow(wid, win) {
+    if(!win.forClose) return;
+    if(!win.isDestroyed()) win.destroy();
+    if(this.sandbox_sub_wins[wid] === win) delete this.sandbox_sub_wins[wid];
   }
 
   /**
@@ -887,8 +904,7 @@ class PRDC_JSLAB_MAIN {
             var win = obj.sandbox_sub_wins[wid];
             if(win.forClose) {
               setTimeout(function() {
-                win.destroy();
-                delete obj.sandbox_sub_wins[wid];
+                obj._destroyClosedSandboxWindow(wid, win);
               }, 500);
             }
           });

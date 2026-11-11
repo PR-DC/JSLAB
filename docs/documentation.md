@@ -6718,6 +6718,23 @@ Finds the nearest points in points2 for each point in points1.
 
 **Returns:** `Array.<number>` Array of indices for nearest points.
 
+##### `minDisksDistance3D(O1, n1, r1, O2, n2, r2)`
+
+Finds the minimum Euclidean distance between two filled disks in 3D.
+Overlapping disks have zero distance. Normals need not have unit length.
+Throws for invalid inputs or if the error bound cannot be met.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `O1` | `Array.<number>` | First center. |
+| `n1` | `Array.<number>` | First nonzero normal. |
+| `r1` | `number` | First nonnegative radius. |
+| `O2` | `Array.<number>` | Second center. |
+| `n2` | `Array.<number>` | Second nonzero normal. |
+| `r2` | `number` | Second nonnegative radius. |
+
+**Returns:** `Object` Distance bounds and closest points.
+
 ##### `pointLineDistance(P, A, i)`
 
 Returns the shortest distance from point P to the line defined by (A, i)and the closest point (P1) on that line.

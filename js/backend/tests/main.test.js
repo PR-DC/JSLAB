@@ -327,4 +327,22 @@ tests.add('automation blocks overlapping GUI commands and accepts replies only f
   assert.equal(main.automation.busy, true);
 }, { tags: ['unit', 'backend', 'automation'] });
 
+tests.add('closed sandbox windows are released once without deleting replacements', function(assert) {
+  const MainClass = loadMainClass();
+  const main = Object.create(MainClass.prototype);
+  let destroyed = false;
+  let calls = 0;
+  const old_window = { forClose: true, isDestroyed: () => destroyed,
+    destroy: () => { destroyed = true; calls++; } };
+  const replacement = {};
+  main.sandbox_sub_wins = { 1: replacement };
+  main._destroyClosedSandboxWindow(1, old_window);
+  main._destroyClosedSandboxWindow(1, old_window);
+  assert.equal(calls, 1);
+  assert.equal(main.sandbox_sub_wins[1], replacement);
+  main.sandbox_sub_wins[2] = old_window;
+  main._destroyClosedSandboxWindow(2, old_window);
+  assert.equal(main.sandbox_sub_wins[2], undefined);
+}, { tags: ['unit', 'backend', 'windows'] });
+
 exports.MODULE_TESTS = tests;

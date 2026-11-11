@@ -29,12 +29,12 @@ function createFiguresHarness() {
   return { figures, jsl, file_reads };
 }
 
-tests.add('constructor loads figure templates and initializes default state', function(assert) {
+tests.add('constructor records lazy figure template paths and initializes default state', function(assert) {
   var harness = createFiguresHarness();
-  assert.equal(harness.file_reads.length, 3);
-  assert.ok(harness.file_reads[0].endsWith('/html/html_figure.html'));
-  assert.ok(harness.file_reads[1].endsWith('/html/i_html_figure.html'));
-  assert.ok(harness.file_reads[2].endsWith('/html/io_html_figure.html'));
+  assert.equal(harness.file_reads.length, 0);
+  assert.ok(harness.figures._html_figure_path.endsWith('/html/html_figure.html'));
+  assert.ok(harness.figures._i_html_figure_path.endsWith('/html/i_html_figure.html'));
+  assert.ok(harness.figures._io_html_figure_path.endsWith('/html/io_html_figure.html'));
   assert.equal(harness.figures.active_figure, -1);
   assert.deepEqual(harness.figures.open_figures, {});
 }, { tags: ['unit', 'figures'] });
@@ -61,6 +61,19 @@ tests.add('figure getters and active/close bookkeeping operate on stored entries
   harness.figures._closedFigure('2');
   assert.equal(harness.figures.active_figure, '1');
   assert.equal(harness.figures.getFigure('2'), false);
+}, { tags: ['unit', 'figures'] });
+
+tests.add('closing all figures returns a promise for every pending close', async function(assert) {
+  const { figures } = createFiguresHarness();
+  let release;
+  let closed = false;
+  figures.open_figures = { 1: { close: () => new Promise(resolve => { release = resolve; }) } };
+  const pending = figures.close('all').then(() => { closed = true; });
+  await Promise.resolve();
+  assert.equal(closed, false);
+  release(true);
+  await pending;
+  assert.equal(closed, true);
 }, { tags: ['unit', 'figures'] });
 
 exports.MODULE_TESTS = tests;

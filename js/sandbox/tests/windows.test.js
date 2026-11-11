@@ -189,4 +189,58 @@ tests.add('openCanvas returns false immediately when stop loop is active', async
   assert.equal(wait_calls, 0);
 }, { tags: ['unit', 'windows', 'async'] });
 
+tests.add('a ready window closes through the environment window API', async function(assert) {
+  const calls = [];
+  const jsl = { promiseOrStoped: promise => promise, inter: { env: {
+    pathIsAbsolute: () => true,
+    checkFile: () => true,
+    openWindow: () => [{ document: {} }, Promise.resolve()],
+    closeWindow: wid => { calls.push(wid); return true; }
+  } } };
+  const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
+  jsl.inter.windows = windows;
+  const wid = windows.openWindow('/test.html');
+  const win = windows.open_windows[wid];
+  win._onReady = () => win._readyResolve(true);
+  assert.equal(await win.close(), true);
+  assert.deepEqual(calls, [wid]);
+}, { tags: ['unit', 'windows'] });
+
+tests.add('a loading window closes without waiting for document readiness', async function(assert) {
+  const calls = [];
+  const jsl = { promiseOrStoped: promise => promise, inter: { env: {
+    pathIsAbsolute: () => true,
+    checkFile: () => true,
+    openWindow: () => [{ document: {} }, new Promise(() => {})],
+    closeWindow: wid => { calls.push(wid); return true; }
+  } } };
+  const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
+  jsl.inter.windows = windows;
+  const wid = windows.openWindow('/loading.html');
+  const result = await Promise.race([
+    windows.open_windows[wid].close(),
+    new Promise(resolve => setTimeout(() => resolve('blocked'), 100))
+  ]);
+  assert.equal(result, true);
+  assert.deepEqual(calls, [wid]);
+}, { tags: ['unit', 'windows'] });
+
+tests.add('window readiness survives the internal module view wrapping registry instances', async function(assert) {
+  const jsl = { inter: { env: { pathIsAbsolute: () => true, checkFile: () => true,
+    openWindow: () => [{ document: {} }, Promise.resolve()] } } };
+  const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
+  const views = new Map();
+  jsl.inter.windows = new Proxy(windows, { get(target, key) {
+    if(key !== 'open_windows') return target[key];
+    return new Proxy(target.open_windows, { get(registry, id) {
+      if(!registry[id]) return undefined;
+      if(!views.has(registry[id])) views.set(registry[id], new Proxy(registry[id], {}));
+      return views.get(registry[id]);
+    } });
+  } });
+  const wid = windows.openWindow('/figure.html'); const win = windows.open_windows[wid];
+  win._onReady = () => win._readyResolve(true);
+  assert.equal(await Promise.race([win.ready, new Promise(resolve => setTimeout(() => resolve(false), 100))]), true);
+}, { tags: ['unit', 'windows'] });
+
 exports.MODULE_TESTS = tests;

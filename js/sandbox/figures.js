@@ -294,20 +294,20 @@ class PRDC_JSLAB_LIB_FIGURES {
    * @param {string} [type='figure'] - The type of object to close ('figure' or 'window').
    */
   close(id, type = 'figure') {
+    var result;
     if(id == "all") {
       this._fid = 0;
-      Object.keys(this.open_figures).forEach((fid) => {
-        this.closeFigure(fid);
-      });
+      result = Promise.all(Object.keys(this.open_figures).map((fid) => this.closeFigure(fid)));
     } else {
       if(type == 'window') {
-        this.jsl.inter.env.closeWindow(id);
+        result = this.jsl.inter.env.closeWindow(id);
       } else if(type == 'figure') {
-        this.closeFigure(id);
+        result = this.closeFigure(id);
       } 
     }
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
+    return result;
   }
 
   /**
@@ -886,7 +886,9 @@ class PRDC_JSLAB_FIGURE {
     
     this.wid = this.#jsl.inter.windows.openWindow('figure.html');
     this.#jsl.inter.windows.open_windows[this.wid].onClosed = function() {
-      obj.#jsl.inter.figures._closedFigure(obj.fid);
+      if(obj.#jsl.inter.figures.open_figures[obj.fid] === obj) {
+        obj.#jsl.inter.figures._closedFigure(obj.fid);
+      }
     }
   }
   
@@ -895,7 +897,11 @@ class PRDC_JSLAB_FIGURE {
    */
   async init() {
     if(!this.opened) {
-      await this.#jsl.inter.windows.open_windows[this.wid].ready;
+      var win = this.#jsl.inter.windows.open_windows[this.wid];
+      if(!win) return;
+      await win.ready;
+      if(this.#jsl.inter.windows.open_windows[this.wid] !== win ||
+          this.#jsl.inter.figures.open_figures[this.fid] !== this) return;
       await this._onReady();
       this.opened = true;
     }
@@ -983,8 +989,8 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Promise} - Resolves when the window is closed.
    */
   async close() {
-    await this.#jsl.promiseOrStoped(this.ready);
-    return await this.#jsl.inter.windows.open_windows[this.wid].close();
+    var win = this.#jsl.inter.windows.open_windows[this.wid];
+    return win ? await win.close() : false;
   }
   
   /**

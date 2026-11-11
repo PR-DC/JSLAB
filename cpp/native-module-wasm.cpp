@@ -14,8 +14,14 @@
 #endif
 
 #include "native-module-core.h"
+#include "geometry-disk-core.h"
 
 extern "C" {
+
+EMSCRIPTEN_KEEPALIVE
+int nm_min_disks_distance_3d(const double* input, double* output) {
+  return native_module_core::minDisksDistance3D(input, output);
+}
 
 EMSCRIPTEN_KEEPALIVE
 int nm_roots(const double* coefficients_in, int coefficient_count,

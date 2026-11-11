@@ -37,7 +37,7 @@ var points = tokens.map(x => parseFloat(x));
 points = reshape(points, points.length / 3, 3);
 
 disp(' newShape...');
-var shp = new this.jsl.env.AlphaShape3D(); 
+var shp = new jsl.inter.env.AlphaShape3D();
 shp.newShape(points);
 
 disp(' getCriticalAlpha...');

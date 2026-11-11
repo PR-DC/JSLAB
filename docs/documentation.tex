@@ -8843,6 +8843,26 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent Finds the nearest points in points2 for each point in points1.
 
 \vspace{5mm}
+\noindent \codeBlock{\texttt{minDisksDistance3D(O1, n1, r1, O2, n2, r2)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{O1} \texttt{<Array.<number>>}: First center.
+  \item \texttt{n1} \texttt{<Array.<number>>}: First nonzero normal.
+  \item \texttt{r1} \texttt{<number>}: First nonnegative radius.
+  \item \texttt{O2} \texttt{<Array.<number>>}: Second center.
+  \item \texttt{n2} \texttt{<Array.<number>>}: Second nonzero normal.
+  \item \texttt{r2} \texttt{<number>}: Second nonnegative radius.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Distance bounds and closest points.
+
+\noindent Finds the minimum Euclidean distance between two filled disks in 3D.
+Overlapping disks have zero distance. Normals need not have unit length.
+Throws for invalid inputs or if the error bound cannot be met.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{pointLineDistance(P, A, i)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 

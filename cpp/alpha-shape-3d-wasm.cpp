@@ -18,6 +18,7 @@ namespace alpha_shape_3d_wasm_ns {
 using namespace emscripten;
 using alpha_shape_3d_core::AlphaShape3DCore;
 using alpha_shape_3d_core::Matrix;
+using alpha_shape_3d_core::Point;
 
 class AlphaShape3D {
  public:
@@ -25,9 +26,20 @@ class AlphaShape3D {
   ~AlphaShape3D() {}
 
   void newShape(val js_points) {
-    core.newShape(matrixFromJsPointArray(js_points,
-      "Array of points expected",
-      "Each point should have exactly 3 coordinates"));
+    std::size_t count = getArrayLength(js_points, "Array of points expected");
+    std::vector<Point> points;
+    if(count < 4 || count > points.max_size()) {
+      throw std::invalid_argument("At least four noncoplanar points are required; node count is out of range");
+    }
+    points.reserve(count);
+    for(std::size_t i = 0; i < count; ++i) {
+      val row = js_points[i];
+      if(getArrayLength(row, "Each point should have exactly 3 coordinates") != 3) {
+        throw std::invalid_argument("Each point should have exactly 3 coordinates");
+      }
+      points.emplace_back(coordinateFromJs(row[0]), coordinateFromJs(row[1]), coordinateFromJs(row[2]));
+    }
+    core.newShape(std::move(points));
   }
 
   double getAlpha() {
@@ -83,7 +95,13 @@ class AlphaShape3D {
   }
 
   val getPoints() {
-    return matrixToJs(core.getPoints());
+    val output = val::array();
+    for(const Point& point : core.getPoints()) {
+      val row = val::array();
+      for(uint32_t j = 0; j < 3; ++j) row.call<void>("push", point[j]);
+      output.call<void>("push", row);
+    }
+    return output;
   }
 
   val checkInShape(val points) {
@@ -145,18 +163,21 @@ class AlphaShape3D {
     return output;
   }
   std::size_t getArrayLength(val value, const char *error_message) {
-    val length_value;
-
-    if(value.isNull() || value.isUndefined()) {
+    if(!val::global("Array").call<bool>("isArray", value)) {
       throw std::runtime_error(error_message);
     }
+    return value["length"].as<std::size_t>();
+  }
 
-    length_value = value["length"];
-    if(length_value.isUndefined() || length_value.isNull()) {
-      throw std::runtime_error(error_message);
+  double coordinateFromJs(val value) {
+    if(value.typeOf().as<std::string>() != "number") {
+      throw std::invalid_argument("Coordinates must be finite numbers");
     }
-
-    return length_value.as<std::size_t>();
+    double coordinate = value.as<double>();
+    if(!std::isfinite(coordinate)) {
+      throw std::invalid_argument("Coordinates must be finite numbers");
+    }
+    return coordinate;
   }
 
   Matrix matrixFromJsPointArray(val js_rows, const char* array_error,
@@ -174,7 +195,7 @@ class AlphaShape3D {
       }
       for(j = 0; j < 3; j++) {
         result(static_cast<uint32_t>(i), static_cast<uint32_t>(j)) =
-          row[j].as<double>();
+          coordinateFromJs(row[j]);
       }
     }
 

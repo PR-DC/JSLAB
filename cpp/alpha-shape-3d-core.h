@@ -11,16 +11,16 @@
 #include <cassert>
 #include <cstdint>
 #include <cmath>
-#include <fstream>
 #include <limits>
 #include <list>
-#include <sstream>
+#include <memory>
 #include <string>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Robust_weighted_circumcenter_filtered_traits_3.h>
 
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
@@ -42,13 +42,17 @@
 #include <CGAL/Search_traits_adapter.h>
 #include <CGAL/Orthogonal_k_neighbor_search.h>
 #include <CGAL/boost/iterator/counting_iterator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 namespace alpha_shape_3d_core {
 
 namespace SMS = CGAL::Surface_mesh_simplification;
 namespace PMP = CGAL::Polygon_mesh_processing;
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel Gt;
+// Use exact radius constructions only when a near-degenerate tetrahedron's
+// floating-point denominator vanishes despite its exact orientation being 3D.
+typedef CGAL::Robust_circumcenter_filtered_traits_3<
+  CGAL::Exact_predicates_inexact_constructions_kernel> Gt;
 typedef CGAL::Triangulation_vertex_base_with_info_3<unsigned, Gt> Tvb;
 typedef CGAL::Alpha_shape_vertex_base_3<Gt, Tvb> Vb;
 typedef CGAL::Alpha_shape_cell_base_3<Gt> Fb;
@@ -61,7 +65,7 @@ typedef std::vector<std::size_t> CGAL_Polygon;
 
 class search_map {
   private:
-    const std::vector<Point>& points;
+    const Mesh& mesh;
 
   public:
     typedef Point value_type;
@@ -69,10 +73,10 @@ class search_map {
     typedef std::size_t key_type;
     typedef boost::lvalue_property_map_tag category;
 
-    search_map(const std::vector<Point>& pts) : points(pts) {}
+    search_map(const Mesh& mesh_in) : mesh(mesh_in) {}
 
     reference operator[](key_type k) const {
-      return points[k];
+      return mesh.point(Mesh::Vertex_index(k));
     }
 
     friend reference get(const search_map& ppmap, key_type i) {
@@ -94,7 +98,9 @@ class CustomMatrix {
 
   public:
     CustomMatrix() : rows(0), cols(0) {}
-    CustomMatrix(uint32_t r, uint32_t c) : rows(r), cols(c), data(r * c) {}
+    CustomMatrix(uint32_t r, uint32_t c) : rows(0), cols(0) {
+      resize(r, c);
+    }
 
     T& operator()(uint32_t i, uint32_t j) {
       return data[i * cols + j];
@@ -113,9 +119,12 @@ class CustomMatrix {
     }
 
     void resize(uint32_t r, uint32_t c) {
+      if(c != 0 && r > data.max_size() / c) {
+        throw std::length_error("Matrix dimensions exceed the supported node count");
+      }
+      data.resize(static_cast<std::size_t>(r) * c);
       rows = r;
       cols = c;
-      data.resize(r * c);
     }
 };
 
@@ -124,67 +133,38 @@ typedef CustomMatrix<double> Matrix;
 class AlphaShape3DCore {
   public:
     AlphaShape3DCore() {
-      alpha_shape = nullptr;
-      delaunay_triangulation = nullptr;
       num_alpha_values = 0;
     }
 
-    ~AlphaShape3DCore() {
-      clearShape();
-    }
-
-    void newShape(const Matrix& points_in) {
-      uint32_t n = points_in.numRows();
-      uint64_t i_idx = 0;
-      std::size_t i;
-
-      clearShape();
-      input_points = points_in;
-      shape_points.clear();
-      indexed_points.clear();
-      surface_mesh.clear();
-      shape_points.reserve(n);
-      indexed_points.reserve(n);
-
-      for(i = 0; i < n; i++) {
-        shape_points.emplace_back(Point(
-          input_points(i, 0),
-          input_points(i, 1),
-          input_points(i, 2)
-        ));
-        indexed_points.emplace_back(std::make_pair(
-          shape_points.back(), static_cast<unsigned>(i)));
+    // Keep one owned point buffer and provide indexed points to CGAL on demand.
+    // Validate before replacing the current shape so a bad node count or a
+    // degenerate cloud cannot leave a partially initialized native object.
+    void newShape(std::vector<Point> points_in) {
+      const std::size_t n = points_in.size();
+      if(n < 4 || n > std::numeric_limits<unsigned>::max()) {
+        throw std::invalid_argument("At least four noncoplanar points are required; node count is out of range");
       }
-
-      delaunay_triangulation = new Dt(indexed_points.begin(), indexed_points.end());
-      if(delaunay_triangulation->dimension() != 3) {
+      for(const Point& point : points_in) {
+        if(!std::isfinite(point[0]) || !std::isfinite(point[1]) || !std::isfinite(point[2])) {
+          throw std::invalid_argument("Coordinates must be finite numbers");
+        }
+      }
+      auto indexed_point = [&points_in](std::size_t index) {
+        return std::make_pair(points_in[index], static_cast<unsigned>(index));
+      };
+      auto first = boost::make_transform_iterator(
+        boost::counting_iterator<std::size_t>(0), indexed_point);
+      auto last = boost::make_transform_iterator(
+        boost::counting_iterator<std::size_t>(n), indexed_point);
+      Dt triangulation(first, last);
+      if(triangulation.dimension() != 3) {
         throw std::invalid_argument("At least four noncoplanar points are required");
       }
-      triangulation_matrix.resize(
-        delaunay_triangulation->number_of_finite_cells() * 4, 3);
-
-      for(Dt::Finite_cells_iterator cit =
-            delaunay_triangulation->finite_cells_begin();
-          cit != delaunay_triangulation->finite_cells_end(); cit++) {
-        triangulation_matrix(i_idx, 0) = cit->vertex(0)->info();
-        triangulation_matrix(i_idx, 1) = cit->vertex(1)->info();
-        triangulation_matrix(i_idx, 2) = cit->vertex(2)->info();
-        i_idx++;
-        triangulation_matrix(i_idx, 0) = cit->vertex(0)->info();
-        triangulation_matrix(i_idx, 1) = cit->vertex(2)->info();
-        triangulation_matrix(i_idx, 2) = cit->vertex(3)->info();
-        i_idx++;
-        triangulation_matrix(i_idx, 0) = cit->vertex(1)->info();
-        triangulation_matrix(i_idx, 1) = cit->vertex(2)->info();
-        triangulation_matrix(i_idx, 2) = cit->vertex(3)->info();
-        i_idx++;
-        triangulation_matrix(i_idx, 0) = cit->vertex(0)->info();
-        triangulation_matrix(i_idx, 1) = cit->vertex(1)->info();
-        triangulation_matrix(i_idx, 2) = cit->vertex(3)->info();
-        i_idx++;
-      }
-
-      alpha_shape = new As3(*delaunay_triangulation, As3::GENERAL);
+      // Alpha_shape_3 takes ownership of the triangulation by swapping it.
+      auto next_shape = std::make_unique<As3>(triangulation);
+      surface_mesh.clear();
+      shape_points = std::move(points_in);
+      alpha_shape = std::move(next_shape);
       num_alpha_values = alpha_shape->number_of_alphas();
     }
 
@@ -259,14 +239,17 @@ class AlphaShape3DCore {
     }
 
     double getSurfaceArea() const {
+      ensureShape();
       return PMP::area(surface_mesh);
     }
 
     double getVolume() const {
+      ensureShape();
       return PMP::volume(surface_mesh);
     }
 
     Matrix getBoundaryFacets() const {
+      ensureShape();
       Matrix facets(surface_mesh.number_of_faces(), 3);
 
       for(Mesh::Face_index face_index : surface_mesh.faces()) {
@@ -277,16 +260,6 @@ class AlphaShape3DCore {
         facets(face_index.idx(), 2) = *vcirc++;
       }
       return facets;
-    }
-
-    Matrix getBoundaryFacets(const std::string& filename) const {
-      Matrix facets = getBoundaryFacets();
-      writeOff(filename, input_points, facets);
-      return facets;
-    }
-
-    void writeBoundaryFacets(const std::string& filename) const {
-      writeOff(filename, input_points, getBoundaryFacets());
     }
 
     Matrix checkInShape(const Matrix& query_points) const {
@@ -305,36 +278,48 @@ class AlphaShape3DCore {
     }
 
     Matrix getTriangulation() const {
+      ensureShape();
+      const std::size_t cells = alpha_shape->number_of_finite_cells();
+      if(cells > std::numeric_limits<uint32_t>::max() / 4) {
+        throw std::length_error("Triangulation exceeds the supported node count");
+      }
+      Matrix triangulation_matrix(static_cast<uint32_t>(cells * 4), 3);
+      uint32_t row = 0;
+      const uint8_t vertices[4][3] = {{0, 1, 2}, {0, 2, 3}, {1, 2, 3}, {0, 1, 3}};
+      for(auto cell = alpha_shape->finite_cells_begin(); cell != alpha_shape->finite_cells_end(); ++cell) {
+        for(uint8_t face = 0; face < 4; ++face, ++row) {
+          for(uint8_t coordinate = 0; coordinate < 3; ++coordinate) {
+            triangulation_matrix(row, coordinate) = cell->vertex(vertices[face][coordinate])->info();
+          }
+        }
+      }
       return triangulation_matrix;
     }
 
-    Matrix getPoints() const {
-      return input_points;
+    const std::vector<Point>& getPoints() const {
+      ensureShape();
+      return shape_points;
     }
 
     std::pair<Matrix, Matrix> getNearestNeighbor(const Matrix& query_points) const {
       Matrix indices(query_points.numRows(), 1);
       Matrix distances(query_points.numRows(), 1);
-      Mesh surface_mesh_s(surface_mesh);
-      std::vector<Point> surface_points;
-      std::vector<uint32_t> vertex_indices;
+      std::vector<std::size_t> vertex_indices;
       uint32_t i;
 
-      PMP::remove_isolated_vertices(surface_mesh_s);
-      if(surface_mesh_s.number_of_vertices() == 0) {
+      ensureShape();
+      vertex_indices.reserve(surface_mesh.number_of_vertices());
+      for(Mesh::Vertex_index vertex_index : surface_mesh.vertices()) {
+        if(!surface_mesh.is_isolated(vertex_index)) {
+          vertex_indices.push_back(vertex_index.idx());
+        }
+      }
+      if(vertex_indices.empty()) {
         throw std::runtime_error("Set alpha to produce a nonempty boundary before querying neighbors");
       }
 
-      for(Mesh::Vertex_index vertex_index : CGAL::vertices(surface_mesh_s)) {
-        if(!surface_mesh_s.is_removed(vertex_index)) {
-          surface_points.push_back(surface_mesh_s.point(vertex_index));
-          vertex_indices.push_back(vertex_index);
-        }
-      }
-
-      search_map surface_map(surface_points);
-      Tree tree(boost::counting_iterator<std::size_t>(0),
-        boost::counting_iterator<std::size_t>(CGAL::vertices(surface_mesh_s).size()),
+      search_map surface_map(surface_mesh);
+      Tree tree(vertex_indices.begin(), vertex_indices.end(),
         Tree::Splitter(), Traits(surface_map));
       K_neighbor_search::Distance surface_dist(surface_map);
 
@@ -344,15 +329,16 @@ class AlphaShape3DCore {
           query_points(i, 1),
           query_points(i, 2)),
           1, 0, true, surface_dist);
-        indices(i, 0) = vertex_indices[search.begin()->first];
+        indices(i, 0) = search.begin()->first;
         distances(i, 0) =
           surface_dist.inverse_of_transformed_distance(search.begin()->second);
       }
 
-      return std::make_pair(indices, distances);
+      return std::make_pair(std::move(indices), std::move(distances));
     }
 
     std::pair<Matrix, Matrix> getSimplifiedShape(double stop_ratio) const {
+      ensureShape();
       Mesh surface_mesh_s(surface_mesh);
       SMS::Edge_count_ratio_stop_predicate<Mesh> stop(stop_ratio);
       Matrix points_out;
@@ -380,24 +366,11 @@ class AlphaShape3DCore {
         facets_out(face_index.idx(), 2) = *vcirc++;
       }
 
-      return std::make_pair(points_out, facets_out);
+      return std::make_pair(std::move(points_out), std::move(facets_out));
     }
 
     std::pair<Matrix, Matrix> getSimplifiedShape() const {
       return getSimplifiedShape(0.05);
-    }
-
-    std::pair<Matrix, Matrix> getSimplifiedShape(const std::string& filename) const {
-      std::pair<Matrix, Matrix> result = getSimplifiedShape(0.05);
-      writeOff(filename, result.first, result.second);
-      return result;
-    }
-
-    std::pair<Matrix, Matrix> getSimplifiedShape(double stop_ratio,
-        const std::string& filename) const {
-      std::pair<Matrix, Matrix> result = getSimplifiedShape(stop_ratio);
-      writeOff(filename, result.first, result.second);
-      return result;
     }
 
     std::pair<Matrix, Matrix> removeUnusedPoints(const Matrix& points,
@@ -429,58 +402,16 @@ class AlphaShape3DCore {
           output_facets(i, j) = remap[static_cast<uint32_t>(facets(i, j))];
         }
       }
-      return std::make_pair(output_points, output_facets);
-    }
-
-    void writeOff(const std::string& filename, const Matrix& points_matrix,
-        const Matrix& boundary_facets) const {
-      uint32_t n = points_matrix.numRows();
-      uint32_t nbf = boundary_facets.numRows();
-      std::stringstream pts;
-      std::stringstream ind;
-      std::size_t i;
-      std::ofstream of(filename);
-
-      for(i = 0; i < n; i++) {
-        pts << points_matrix(i, 0) << " " << points_matrix(i, 1) << " " <<
-          points_matrix(i, 2) << std::endl;
-      }
-
-      for(i = 0; i < nbf; i++) {
-        ind << "3 " << static_cast<uint64_t>(boundary_facets(i, 0)) << " " <<
-          static_cast<uint64_t>(boundary_facets(i, 1)) << " " <<
-          static_cast<uint64_t>(boundary_facets(i, 2)) << std::endl;
-      }
-
-      CGAL::set_ascii_mode(of);
-      of << "OFF" << std::endl << n << " " << nbf << " 0" << std::endl;
-      of << pts.str();
-      of << ind.str();
-      of.close();
+      return std::make_pair(std::move(output_points), std::move(output_facets));
     }
 
   private:
-    void clearShape() {
-      if(alpha_shape) {
-        delete alpha_shape;
-        alpha_shape = nullptr;
-      }
-      if(delaunay_triangulation) {
-        delete delaunay_triangulation;
-        delaunay_triangulation = nullptr;
-      }
-    }
-
     void ensureShape() const {
       if(alpha_shape == nullptr) throw std::runtime_error("Shape has not been initialized");
     }
 
-    Matrix input_points;
     std::vector<Point> shape_points;
-    std::vector<std::pair<Point, unsigned> > indexed_points;
-    As3* alpha_shape;
-    Dt* delaunay_triangulation;
-    Matrix triangulation_matrix;
+    std::unique_ptr<As3> alpha_shape;
     std::size_t num_alpha_values;
     Mesh surface_mesh;
 };

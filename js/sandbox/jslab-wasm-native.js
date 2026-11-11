@@ -71,6 +71,28 @@ function createNativeModule(wasm) {
 
   return {
     wasm: true,
+    minDisksDistance3D: function(O1, n1, r1, O2, n2, r2) {
+      [O1, n1, O2, n2].forEach(function(vector) {
+        numericArray('Disk vector', vector);
+        if(vector.length !== 3) throw new RangeError('Disk vectors must have three components.');
+      });
+      if(typeof r1 !== 'number' || !Number.isFinite(r1) || r1 < 0 ||
+          typeof r2 !== 'number' || !Number.isFinite(r2) || r2 < 0) {
+        throw new RangeError('Disk radii must be finite nonnegative numbers.');
+      }
+      if(typeof wasm._nm_min_disks_distance_3d !== 'function') {
+        throw new Error('Disk distance backend is unavailable. Run npm run build-native-wasm.');
+      }
+      return withBuffers([14, 9], function(pointers) {
+        wasm.HEAPF64.set([...O1, ...n1, r1, ...O2, ...n2, r2], pointers[0] / 8);
+        var status = wasm._nm_min_disks_distance_3d(pointers[0], pointers[1]);
+        if(status === 0) throw new RangeError('Invalid disk geometry; normals must be nonzero.');
+        if(status !== 1) throw new Error('Disk distance did not converge within its error bound.');
+        var values = Array.from(wasm.HEAPF64.subarray(pointers[1] / 8, pointers[1] / 8 + 9));
+        return { L: values[0], lower_bound: values[1], P1: values.slice(2, 5),
+          P2: values.slice(5, 8), iterations: values[8] };
+      });
+    },
     roots: function(coefficients) {
       numericArray('Coefficients', coefficients);
       var start = 0;

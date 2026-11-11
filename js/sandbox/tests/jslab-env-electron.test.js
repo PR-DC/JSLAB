@@ -23,6 +23,7 @@ function loadEnvClass(runtime_scope, records = {}) {
     SpeechSynthesisUtterance: class {},
     speechSynthesis: { getVoices: function() { return []; } },
     navigator: { hardwareConcurrency: 1, onLine: true },
+    setInterval: () => { throw Error('Window readiness must not use workspace timers.'); },
     Cesium: {},
     require: function(module_path) {
       if(records.block_loads) throw new Error('Unexpected runtime module load: ' + module_path);
@@ -60,6 +61,10 @@ function loadEnvClass(runtime_scope, records = {}) {
       if(module_path === 'dgram') return {};
       if(module_path === 'child_process') return records.real_process ? require('child_process') : {};
       if(module_path === 'path') return require('path');
+      if(module_path === 'timers') return {
+        setInterval: callback => { records.poll_ready = callback; return 1; },
+        clearInterval: id => { records.cleared_interval = id; }
+      };
       if(module_path === 'tcp-port-used') return {};
       if(module_path === 'path-equal') return { pathEqual: function(a, b) { return a === b; } };
       if(module_path === 'stream') return { Readable: class {}, Writable: class {} };
@@ -193,6 +198,66 @@ tests.add('desktop environment lists a live child through the host operating sys
     child.kill();
   }
 }, { tags: ['unit', 'jslab-env-electron'] });
+
+tests.add('file reads and writes follow workspace cwd without changing process cwd', function(assert) {
+  const os = require('os');
+  const { pathToFileURL } = require('url');
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-file-cwd-'));
+  const EnvClass = loadEnvClass({ is_worker: true });
+  const env = Object.create(EnvClass.prototype);
+  env.jsl = { current_path: folder, _console: { log: error => { throw error; } } };
+  const original_cwd = process.cwd();
+  try {
+    fs.writeFileSync(path.join(folder, 'input.txt'), 'workspace data');
+    assert.equal(env.readFileSync('input.txt', 'utf8'), 'workspace data');
+    env.writeFileSync('output.txt', 'relative output');
+    assert.equal(fs.readFileSync(path.join(folder, 'output.txt'), 'utf8'), 'relative output');
+    assert.equal(env.readFileSync(pathToFileURL(path.join(folder, 'input.txt')), 'utf8'), 'workspace data');
+    const descriptor = fs.openSync(path.join(folder, 'input.txt'), 'r');
+    try { assert.equal(env.readFileSync(descriptor, 'utf8'), 'workspace data'); }
+    finally { fs.closeSync(descriptor); }
+    assert.equal(process.cwd(), original_cwd);
+  } finally {
+    fs.unlinkSync(path.join(folder, 'input.txt'));
+    if(fs.existsSync(path.join(folder, 'output.txt'))) fs.unlinkSync(path.join(folder, 'output.txt'));
+    fs.rmdirSync(folder);
+  }
+}, { tags: ['unit', 'jslab-env-electron', 'filesystem'] });
+
+tests.add('desktop window-close notifications use the private windows module', function(assert) {
+  const records = { handlers: {}, requests: [], replies: [] };
+  const EnvClass = loadEnvClass({ is_worker: false, addEventListener: function() {} }, records);
+  const closed = [];
+  new EnvClass({ app_path: '/app', inter: { windows: {
+    _closedWindow: wid => closed.push(wid)
+  } } });
+  records.handlers.SandboxWindow({}, 'window-closed', 42);
+  assert.deepEqual(closed, [42]);
+}, { tags: ['unit', 'jslab-env-electron', 'windows'] });
+
+tests.add('window readiness survives a missed DOMContentLoaded event after navigation', async function(assert) {
+  const records = {};
+  const EnvClass = loadEnvClass({ is_worker: true }, records);
+  const env = Object.create(EnvClass.prototype);
+  const child = { closed: false, location: { href: 'about:blank' },
+    document: { readyState: 'complete', addEventListener: function() {} },
+    addEventListener: function() {} };
+  env.is_worker = false;
+  env.context = { open: () => child };
+  env.jsl = { inter: { windows: { open_windows: { 1: {} } } } };
+  const [context, ready] = env.openWindow(1, '/figure.html');
+  let resolved = false;
+  ready.then(() => { resolved = true; });
+  records.poll_ready();
+  await Promise.resolve();
+  assert.equal(resolved, false);
+  // No DOMContentLoaded callback reaches the opener after the new document loads.
+  child.location.href = 'file:///figure.html';
+  records.poll_ready();
+  assert.equal(await ready, child);
+  assert.equal(context.wid, 1);
+  assert.equal(records.cleared_interval, 1);
+}, { tags: ['unit', 'jslab-env-electron', 'windows'] });
 
 exports.MODULE_TESTS = tests;
 

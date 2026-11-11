@@ -700,6 +700,7 @@ class PRDC_JSLAB_WINDOW {
     
     this.#jsl = jsl;
     this.wid = wid;
+    this._lifecycle_token = Symbol();
 
     this.context;
     this.dom;
@@ -727,6 +728,9 @@ class PRDC_JSLAB_WINDOW {
         return obj;
       }
       await ready;
+      // Internal module views wrap registry values, so object identity changes.
+      // The token still distinguishes a closed/replaced window from its view.
+      if(this.#jsl.inter.windows.open_windows[this.wid]?._lifecycle_token !== this._lifecycle_token) return;
       this.dom = this.context.document;
       this._onReady();
     }
@@ -901,8 +905,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise} - Resolves when the window is closed.
    */
   async close() {
-    await this.#jsl.promiseOrStoped(this.ready);
-    return this.#jsl.inter.env.closeWindows(this.wid);
+    return this.#jsl.inter.env.closeWindow(this.wid);
   }
   
   /**

@@ -25,6 +25,7 @@ const net = require('net');
 const udp = require('dgram');
 const cp = require("child_process");
 const path = require("path");
+const window_timers = require('timers');
 const tcpPortUsed = require('tcp-port-used');
 const { pathEqual } = require('path-equal');
 const { Readable, Writable } = require('stream');
@@ -144,6 +145,9 @@ class PRDC_JSLAB_ENV {
           case "run-last-script":
             obj.jsl.inter.eval.runLast();
             break;
+          case "window-closed":
+            obj.jsl.inter.windows._closedWindow(data);
+            break;
           case "set-current-path":
             obj.jsl.setPath(data);
             break;
@@ -187,21 +191,31 @@ class PRDC_JSLAB_ENV {
         }
       });
       
-      var loadCheckInterval = setInterval(function() {
+      var onDocumentReady;
+      var loadCheckInterval = window_timers.setInterval(function() {
         try {
-          if(isFinite(sub_context.wid)) {
-            clearInterval(loadCheckInterval);
+          if(sub_context.closed || !obj.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
+            window_timers.clearInterval(loadCheckInterval);
+            return;
           }
+          if(onDocumentReady) onDocumentReady();
         } catch {
           sub_context.close();
           obj.jsl.inter.windows._closedWindow(wid);
-          clearInterval(loadCheckInterval);
+          window_timers.clearInterval(loadCheckInterval);
           obj.error('@openWindow: '+obj.jsl.inter.lang.string(174));
         }
       }, 10);
 
       return [sub_context, new Promise(function(resolve) {
-        sub_context.addEventListener("DOMContentLoaded", function() {
+        var ready_finished = false;
+        onDocumentReady = function() {
+          if(ready_finished || sub_context.closed ||
+              !obj.jsl.inter.windows.open_windows.hasOwnProperty(wid) ||
+              sub_context.location.href === 'about:blank' ||
+              sub_context.document.readyState === 'loading') return;
+          ready_finished = true;
+          window_timers.clearInterval(loadCheckInterval);
           sub_context.wid = wid;
           
           sub_context.show = function() {
@@ -277,7 +291,8 @@ class PRDC_JSLAB_ENV {
             }
           });
           resolve(sub_context);
-        }, false);
+        };
+        sub_context.addEventListener("DOMContentLoaded", onDocumentReady, false);
       })];
     }
   }
@@ -778,6 +793,7 @@ class PRDC_JSLAB_ENV {
    */
   readFileSync(...arg) {
     try {
+      arg[0] = this._resolveFsPath(arg[0]);
       return fs.readFileSync(...arg);
     } catch(err) {
       this.jsl._console.log(err);
@@ -808,7 +824,7 @@ class PRDC_JSLAB_ENV {
    */
 	writeFileSync(file_path, data, throw_flag) {
     try {
-      return fs.writeFileSync(file_path, data);
+      return fs.writeFileSync(this._resolveFsPath(file_path), data);
     } catch(err) {
       this.jsl._console.log(err);
       if(throw_flag) {
@@ -816,6 +832,21 @@ class PRDC_JSLAB_ENV {
       }
       return false;
     }
+  }
+
+  /**
+   * Resolves relative file names against the scientific workspace directory.
+   * File descriptors, URLs and Buffer paths retain Node's native behavior.
+   * @private
+   * @param {*} file_path File name or native filesystem handle.
+   * @returns {*} Absolute file name or the original handle.
+   */
+  _resolveFsPath(file_path) {
+    if(typeof file_path === 'string' && !path.isAbsolute(file_path) &&
+        typeof this.jsl.current_path === 'string' && this.jsl.current_path.length) {
+      return path.resolve(this.jsl.current_path, file_path);
+    }
+    return file_path;
   }
 
   /**

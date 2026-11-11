@@ -33,7 +33,7 @@ for(var i = 0; i < files.length; i++) {
   
   // Install pdflatex add path to environment variables path
   var dir = getDir(file);
-  system('cd ' + dir + ' & pdflatex ' + file + ' --interaction=nonstopmode', { cwd: dir });
+  system('pdflatex --interaction=nonstopmode --halt-on-error "' + file + '"', { cwd: dir });
 }
 
 // End of program

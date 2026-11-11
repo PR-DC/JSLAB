@@ -53,3 +53,40 @@ tests.add('numerical bindings follow memory growth and free partial allocations'
 }, { tags: ['unit', 'wasm'] });
 
 exports.MODULE_TESTS = tests;
+
+tests.add('disk separation has feasible points and certified bounds', async function(assert) {
+  var native = await backend;
+  var cases = [
+    [[0, 0, 0], [0, 0, 1], 5, [6, 0, 6], [1, 0, 0], 4, Math.sqrt(5)],
+    [[0, 0, 0], [0, 0, 2], 5, [2, 1, 5.5], [3, 0, 0], 4, 1.5],
+    [[0, 0, 0], [0, 0, 1], 5, [5, 1, 2], [1, 0, 0], 4, 0],
+    [[0, 0, 0], [0, 0, 1], 5, [2, 1, 3], [0, 0, -2], 4, 3],
+    [[0, 0, 0], [0, 0, 1], 5, [0, 0, 0], [0, 0, 1], 4, 0],
+    [[0, 0, 0], [0, 0, 1], 0, [3, 4, 0], [0, 0, 1], 0, 5]
+  ];
+  for(var c of cases) {
+    var result = native.minDisksDistance3D(...c.slice(0, 6));
+    var reversed = native.minDisksDistance3D(...c.slice(3, 6), ...c.slice(0, 3));
+    assert.approx(result.L, c[6], 1e-8);
+    assert.approx(reversed.L, result.L, 1e-8);
+    // A rigid transform must preserve distance; translated inputs also test
+    // that the returned witnesses are in world coordinates.
+    var rotate = function(v) { return [-v[1], v[0], v[2]]; };
+    var translate = function(v) { return rotate(v).map(function(x, i) { return x + [1000, -200, 30][i]; }); };
+    var moved = native.minDisksDistance3D(translate(c[0]), rotate(c[1]), c[2],
+      translate(c[3]), rotate(c[4]), c[5]);
+    assert.approx(moved.L, result.L, 1e-8);
+    assert.ok(Math.hypot(...moved.P1.map(function(v, i) { return v - translate(c[0])[i]; })) <= c[2] + 1e-8);
+    assert.ok(result.L - result.lower_bound < 1e-8);
+    assert.approx(Math.hypot(...result.P1.map((v, i) => v - result.P2[i])), result.L, 1e-9);
+    [0, 1].forEach(function(index) {
+      var center = c[index * 3], normal = c[index * 3 + 1], radius = c[index * 3 + 2];
+      var point = index === 0 ? result.P1 : result.P2;
+      var delta = point.map((v, i) => v - center[i]);
+      assert.ok(Math.hypot(...delta) <= radius + 1e-8);
+      assert.ok(Math.abs(delta.reduce((s, v, i) => s + v * normal[i], 0)) < 1e-8);
+    });
+  }
+  assert.throws(function() { native.minDisksDistance3D([0, 0, 0], [0, 0, 0], 1, [0, 0, 0], [0, 0, 1], 1); }, /normal/);
+  assert.throws(function() { native.minDisksDistance3D([0, 0, 0], [0, 0, 1], -1, [0, 0, 0], [0, 0, 1], 1); }, /radii/);
+}, { tags: ['unit', 'wasm'] });

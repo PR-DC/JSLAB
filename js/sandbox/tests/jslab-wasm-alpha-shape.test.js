@@ -77,4 +77,84 @@ tests.add('AlphaShape exports through the host, remaps indices and rejects degen
   } finally { shape.dispose(); }
 }, { tags: ['unit', 'wasm', 'geometry'] });
 
+tests.add('AlphaShape rejects sparse rows and invalid native node counts without losing the current shape', async function(assert) {
+  var Shape = createAlphaShape3DClass(await compiled, {});
+  var shape = new Shape();
+  try {
+    shape.newShape(corners);
+    shape.setAlpha(100);
+    var hole = corners.map(function(row) { return row.slice(); });
+    delete hole[0][0];
+    assert.throws(function() { shape.newShape(hole); }, /finite/);
+    assert.throws(function() { shape.newShape(new Array(4)); }, /three coordinates/);
+    var invalid = [[], corners.slice(0, 3), new Array(4), hole,
+      [[0,0,0],[1,0,0],[0,1,0],[1,1,0]],
+      [[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+      [[NaN,0,0],[1,0,0],[0,1,0],[0,0,1]],
+      {length: -1}, {length: 4.5}, new Array(0x40000000)];
+    var overflow_count = new Array(0x55555556);
+    overflow_count[0] = [0, 0, 0];
+    invalid.push(overflow_count);
+    invalid.forEach(function(points) {
+      assert.throws(function() { shape._call('newShape', [points]); },
+        /noncoplanar|coordinates|finite|Array|node count/);
+      assert.approx(shape.getVolume(), 1, 1e-10);
+    });
+    assert.throws(function() { shape._call('checkInShape', [new Array(0x40000000)]); }, /node count/);
+    assert.throws(function() { shape._call('checkInShape', [overflow_count]); }, /node count/);
+    assert.deepEqual(shape.checkInShape([[0.5,0.5,0.5],[2,2,2]]), [true, false]);
+    shape.newShape(corners);
+    shape.setAlpha(100);
+    assert.approx(shape.getVolume(), 1, 1e-10);
+  } finally { shape.dispose(); }
+}, { tags: ['unit', 'wasm', 'geometry'] });
+
+tests.add('AlphaShape queries existing boundary vertices when most input nodes are isolated', async function(assert) {
+  var Shape = createAlphaShape3DClass(await compiled, {});
+  var shape = new Shape();
+  var points = [[0.5,0.5,0.5]].concat(corners, [[0.4,0.4,0.4], [0.6,0.6,0.6]], corners);
+  var queries = [[0.02,0.03,0.04], [0.98,0.97,0.96], [3,2,4], [0.5,0.5,0.5]];
+  try {
+    shape.newShape(points);
+    shape.setAlpha(100);
+    var before = shape.getBoundaryFacets();
+    var boundary = new Set(before.flat());
+    for(var pass = 0; pass < 3; pass++) {
+      var result = shape.getNearestNeighbor(queries);
+      queries.forEach(function(query, index) {
+        assert.ok(boundary.has(result.indices[index]));
+        var distance = Math.min(...Array.from(boundary, function(vertex) {
+          return Math.hypot(...points[vertex].map(function(value, coordinate) { return value - query[coordinate]; }));
+        }));
+        assert.approx(result.distances[index], distance, 1e-10);
+      });
+      assert.deepEqual(shape.getBoundaryFacets(), before);
+      assert.approx(shape.getVolume(), 1, 1e-10);
+    }
+    assert.deepEqual(shape._call('getPoints'), points);
+    assert.ok(shape.getTriangulation().every(function(face) {
+      return face.length === 3 && face.every(function(index) {
+        return Number.isInteger(index) && index >= 0 && index < points.length;
+      });
+    }));
+  } finally { shape.dispose(); }
+}, { tags: ['unit', 'wasm', 'geometry'] });
+
+tests.add('AlphaShape constructs a noncoplanar sliver whose inexact radius denominator is zero', async function(assert) {
+  var Shape = createAlphaShape3DClass(await compiled, {});
+  var shape = new Shape();
+  var delta = Math.pow(2, -27);
+  try {
+    shape.newShape([[0,0,0], [1 + delta,1 + 2 * delta,0], [0,0,1], [1,1 + delta,0]]);
+    var spectrum = shape.getAlphaSpectrum();
+    assert.ok(spectrum.length > 0);
+    assert.ok(spectrum.every(function(alpha) { return Number.isFinite(alpha) && alpha >= 0; }));
+    shape.setAlpha(spectrum[spectrum.length - 1] * 2);
+    assert.equal(shape.getBoundaryFacets().length, 4);
+    shape.newShape(corners);
+    shape.setAlpha(100);
+    assert.approx(shape.getVolume(), 1, 1e-10);
+  } finally { shape.dispose(); }
+}, { tags: ['unit', 'wasm', 'geometry'] });
+
 exports.MODULE_TESTS = tests;

@@ -73,6 +73,22 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     return id;
   }
+
+  /**
+   * Finds the minimum Euclidean distance between two filled disks in 3D.
+   * Overlapping disks have zero distance. Normals need not have unit length.
+   * Throws for invalid inputs or if the error bound cannot be met.
+   * @param {number[]} O1 First center.
+   * @param {number[]} n1 First nonzero normal.
+   * @param {number} r1 First nonnegative radius.
+   * @param {number[]} O2 Second center.
+   * @param {number[]} n2 Second nonzero normal.
+   * @param {number} r2 Second nonnegative radius.
+   * @returns {{L: number, lower_bound: number, P1: number[], P2: number[], iterations: number}} Distance bounds and closest points.
+   */
+  minDisksDistance3D(O1, n1, r1, O2, n2, r2) {
+    return this.jsl.inter.env.native_module.minDisksDistance3D(O1, n1, r1, O2, n2, r2);
+  }
   
   /**
    * Returns the shortest distance from point P to the line defined by (A, i)
