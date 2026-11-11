@@ -91,7 +91,7 @@ class PRDC_JSLAB_EDITOR_SYMBOL_INPUT {
         key.className = 'editor-symbol-key';
         key.textContent = symbol;
         key.setAttribute('data-symbol', symbol);
-        key.setAttribute('title', 'U+' + symbol.codePointAt(0).toString(16).toUpperCase());
+        key.setAttribute('title', /* lang-fixed */ 'U+' + symbol.codePointAt(0).toString(16).toUpperCase());
         grid.appendChild(key);
       });
 

@@ -11,6 +11,36 @@ const { PRDC_JSLAB_WORKSPACE_SERIALIZER } = require('./jslab-workspace-serialize
  * Class for JSLAB basic submodule.
  */
 class PRDC_JSLAB_LIB_BASIC {
+
+  /** Sets a conditional source breakpoint or enables an error breakpoint.
+   * @param {string} path Script path, 'error', or 'caught error'.
+   * @param {number} [line] One-based line.
+   * @param {string} [condition=''] Condition evaluated in the paused scope.
+   * @param {boolean} [enabled=true] Breakpoint enabled state.
+   * @returns {Promise<Object>|Object} Updated debugger configuration.
+   */
+  dbstop(path, line = 1, condition = '', enabled = true) {
+    if(path === 'error' || path === 'caught error') return this.jsl.inter.env.debugCommand('set_exception_pause', { state: path === 'error' ? 'uncaught' : 'all' });
+    if(typeof path !== 'string' || !Number.isInteger(line) || line < 1 || typeof condition !== 'string' || typeof enabled !== 'boolean') throw Error('Invalid breakpoint arguments.');
+    return this.jsl.inter.env.debugCommand('set_breakpoint', { path: this.jsl.pathResolve(path) || path, line, condition, enabled });
+  }
+
+  /** Clears one breakpoint or all line/error breakpoints.
+   * @param {string} [path='all'] Script path or 'all'.
+   * @param {number} [line] One-based line.
+   * @returns {Promise<Object>|Object} Updated debugger configuration.
+   */
+  dbclear(path = 'all', line) {
+    if(path === 'all') return this.jsl.inter.env.debugCommand('clear_breakpoints');
+    if(path === 'error' || path === 'caught error') return this.jsl.inter.env.debugCommand('set_exception_pause', { state: 'none' });
+    if(!Number.isInteger(line) || line < 1) throw Error('Expected a positive line number.');
+    return this.jsl.inter.env.debugCommand('remove_breakpoint', { id: (this.jsl.pathResolve(path) || path) + ':' + line });
+  }
+
+  /** Returns current line and exception breakpoint settings.
+   * @returns {Promise<Object>|Object} Debugger state and breakpoint configuration.
+   */
+  dbstatus() { return this.jsl.inter.env.debugCommand('get_debug_state'); }
   
   /**
    * Initializes a new instance of the PRDC_JSLAB_LIB_BASIC class.
@@ -130,6 +160,7 @@ class PRDC_JSLAB_LIB_BASIC {
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
     Object.defineProperty(this.jsl.context, 'breakpoint', { configurable: true, get: this._breakpoint.bind(this) });
+    Object.defineProperty(this.jsl.context, 'keyboard', { configurable: true, get: this._breakpoint.bind(this) });
 
     /**
      * Returns the current debug flag status.
@@ -178,14 +209,6 @@ class PRDC_JSLAB_LIB_BASIC {
      * @memberof PRDC_JSLAB_LIB_BASIC
      */
     Object.defineProperty(this.jsl.context, 'updatepoint', { configurable: true, get: this._updatepoint.bind(this) });
-
-    /**
-     * Checks if the execution should stop based on conditions.
-     * @name checkStop
-     * @kind function
-     * @memberof PRDC_JSLAB_LIB_BASIC
-     */
-    Object.defineProperty(this.jsl.context, 'checkStop', { configurable: true, get: this._checkStop.bind(this) });
 
     /**
      * Marks the endpoint of a script or process.
@@ -1106,8 +1129,6 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   _logpoint() {
     this.jsl.inter.env.setWorkspace();
-    this.checkStopLoop();
-    this.jsl.onStopLoop();
   }
 
   /**
@@ -1117,73 +1138,34 @@ class PRDC_JSLAB_LIB_BASIC {
     this._logpoint();
   } 
 
-  /**
-   * Checks whether script execution should be stopped at the current point.
-   */
-  _checkStop() {
-    this._logpoint();
-  }
-  
-  /**
-   * Introduces a breakpoint in the script, pausing execution and potentially allowing the user to continue based on their input.
-   */
+  /** Pauses at a real debugger frame, preserving the user's call stack. */
   _breakpoint() {
-    this._logpoint();
-    
-    var [line, column, script] = this.jsl.inter.eval.getExpressionPosition();
-    var ret = this.jsl.inter.env.showMessageBox({title: this.jsl.inter.lang.currentString(15), message: this.jsl.inter.lang.currentString(216)+': '+line+', '+this.jsl.inter.lang.currentString(113)+': '+column+' ('+script+'). '+this.jsl.inter.lang.currentString(213), buttons: [this.jsl.inter.lang.currentString(214), this.jsl.inter.lang.currentString(215)], cancelId: 0});
-    if(ret == 1) {
-      this.jsl.stop_loop = true;
-      this.jsl.onStopLoop();
-    }
-  }
-  
-  /**
-   * Introduces a breakpoint in the script, pausing execution and potentially allowing the user to continue based on their input.
-   */
-  _debug() {
-    this._breakpoint();
+    debugger;
   }
 
-  /**
-   * Pauses script execution, providing an opportunity to inspect the current state or continue execution based on user input.
-   */
-  _pause() {
-    this._logpoint();
-    
-    var [line, column, script] = this.jsl.inter.eval.getExpressionPosition();
-    var ret = this.jsl.inter.env.showMessageBox({title: this.jsl.inter.lang.currentString(15), message: this.jsl.inter.lang.currentString(217)+': '+line+', '+this.jsl.inter.lang.currentString(113)+': '+column+' ('+script+'). '+this.jsl.inter.lang.currentString(213), buttons: [this.jsl.inter.lang.currentString(214), this.jsl.inter.lang.currentString(215)], cancelId: 0});
-    
-    if(ret == 1) {
-      this.jsl.stop_loop = true;
-      this.jsl.onStopLoop();
-    }
+  /** Alias for a debugger breakpoint. */
+  _debug() {
+    debugger;
   }
-  
+
+  /** Pauses execution for variable inspection and stepping. */
+  _pause() {
+    debugger;
+  }
+
   /**
    * Forces the script execution to stop at a designated point.
    */
   _stoppoint() {
-    this.jsl.stop_loop = true;
-    this.jsl.onStopLoop();
+    this.jsl.inter.env.interruptExecution();
+    debugger;
   }
   
   /**
    * Marks an endpoint in the script, throwing an error to signify a critical stop or exit point in execution.
    */
   _endPoint() {
-    var [line, column, script] = this.jsl.inter.eval.getExpressionPosition();
-    throw {name: 'JslabError', message: this.jsl.inter.lang.string(116)+': '+line+', '+this.jsl.inter.lang.string(113)+': '+column+' ('+script+').'};
-  }
-  
-  /**
-   * Verifies if a loop within the script execution should be terminated, typically used to avoid infinite or lengthy unnecessary execution.
-   */
-  checkStopLoop() {
-    if(!this.jsl.stop_loop) {
-      this.jsl.stop_loop = this.jsl.inter.env.checkStopLoop();
-    }
-    return this.jsl.stop_loop;
+    throw new Error(this.jsl.inter.lang.string(116));
   }
   
   /**

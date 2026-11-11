@@ -385,7 +385,7 @@ tests.add('presentation and editor window scripts retain expected runtime marker
     'css', 'codemirror-presentation-editor-custom.css'), 'utf8');
   assert.ok(presentation_code_css.includes('.CodeMirror-presentation-slide-line'));
   assert.ok(presentation_editor_html.includes('codemirror-presentation-editor-custom.css'));
-  assert.ok(presentation_editor_html.includes('id="tab-save" src="../img/tab-save.svg" title-str="50" alt="Save"'));
+  assert.ok(presentation_editor_html.includes('id="tab-save" src="../img/tab-save.svg" title-str="50" alt-str="50"'));
   assert.ok(presentation_editor_html.includes('id="slide-notes"'));
   assert.ok(presentation_editor_html.includes('<textarea id="slide-notes-body"'));
   assert.ok(presentation_editor_html.includes('<str sid="554"></str>'));

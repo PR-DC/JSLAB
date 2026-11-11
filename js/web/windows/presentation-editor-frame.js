@@ -567,9 +567,9 @@ class PRDC_JSLAB_WEB_PRESENTATION_EDITOR {
       { action: 'go-to-code', label: currentString(321, 'Go To Code') },
       { action: 'insert-after', label: currentString(537, 'Insert Slide After') },
       { action: 'duplicate', label: currentString(538, 'Duplicate Slide') },
-      { action: 'move-up', label: 'Move Slide Up' },
-      { action: 'move-down', label: 'Move Slide Down' },
-      { action: 'delete', label: 'Delete Slide' }
+      { action: 'move-up', label: currentString(617) },
+      { action: 'move-down', label: currentString(618) },
+      { action: 'delete', label: currentString(619) }
     ];
     menu.className = 'presentation-slide-menu app-context-menu';
     menu.style.display = 'none';

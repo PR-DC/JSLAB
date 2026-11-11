@@ -47,7 +47,8 @@ if(!process.versions.electron) {
   const watchdog = setTimeout(function() {
     console.error('GUI suite timed out.');
     finish(1);
-  }, 180000);
+  }, 600000);
+  ipcMain.on('gui-test-progress', function(_event, message) { console.log(message); });
   ipcMain.on('gui-test-result', function(_event, result) {
     clearTimeout(watchdog);
     console.log(result.output);

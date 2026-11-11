@@ -178,42 +178,16 @@ class PRDC_JSLAB_WEB_SHARED_SANDBOX_SESSION {
   snapshotWorkspace() {
     var snapshot = {};
     this.jsl.getWorkspaceProperties().sort().forEach((name) => {
-      snapshot[name] = previewValue(this.jsl.context[name]);
+      const descriptor = Object.getOwnPropertyDescriptor(this.jsl.context, name);
+      snapshot[name] = descriptor?.get || descriptor?.set ? '[accessor]' : previewValue(descriptor?.value);
     });
     return snapshot;
   }
 
   async evaluate(code) {
-    var eval_runtime = this.jsl.eval;
-    this.jsl.onEvaluating();
-    this.jsl.jsl_file_name = 'jslcmdwindow';
-    this.jsl.current_script = 'jslcmdwindow';
-
-    eval_runtime.source_codes = [];
-    eval_runtime.transformed_codes = [];
-    eval_runtime.source_maps = [];
-    eval_runtime.source_map_scripts = [];
-    eval_runtime.current_source_code = undefined;
-    eval_runtime.current_source_map = undefined;
-    eval_runtime.current_source_script = undefined;
-
-    this.jsl.savePreviousWorkspace();
-    this.jsl.loadPreviousWorkspace();
-
-    try {
-      var value = await this.jsl.eval.evalString(String(code || ''));
-      if(this.jsl.no_ans === false) {
-        this.jsl.context.ans = value;
-      }
-      if(this.jsl.ignore_output === false) {
-        this.jsl.inter.env.showAns(this.jsl.inter.prettyPrint(value));
-      }
-      this.jsl.onEvaluated();
-      return value;
-    } catch(err) {
-      this.jsl.eval.onEvalError(err);
-      throw err;
-    }
+    const result = await this.jsl.inter.eval.evalCodeFromMain(String(code || ''), true, 'jslcmdwindow');
+    if(!result.success) throw Object.assign(new Error(result.error), { error_details: result.error_details });
+    return result.value;
   }
 
   setLanguage(lang) {

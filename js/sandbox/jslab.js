@@ -5,6 +5,7 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_EXECUTION } = require('./jslab-execution');
 const { PRDC_JSLAB_EVAL } = require('./jslab-eval');
 const { PRDC_JSLAB_OVERRIDE } = require('./jslab-override');
 const { CORE_INTERNAL_MODULE_NAMES } = require('./jslab-internal-protected-modules');
@@ -41,7 +42,6 @@ class PRDC_JSLAB_LIB {
     this.previous_workspace = {};
     this.previous_properties = [];
 
-    this.stop_loop = false;
     this.no_stats = false;
     this.last_script_path;
     this.last_script_lines;
@@ -62,6 +62,7 @@ class PRDC_JSLAB_LIB {
     this.promises_number = 0;
     this.last_promise_id = 0;
     
+    this.execution = new PRDC_JSLAB_EXECUTION(this);
     this.env = new PRDC_JSLAB_ENV(this);
     this.context = this.env.context;
     // Publish the runtime once, before submodules and workspace snapshots are created.
@@ -458,14 +459,15 @@ class PRDC_JSLAB_LIB {
    * Invoked at the beginning of a code evaluation to set up necessary flags and state.
    */
   onEvaluating() {
-    this.env.codeEvaluating();
+    this.inter.env._reported_error = null;
+    const token = this.inter.execution.begin();
+    this.env.codeEvaluating(token.id);
     this.ignore_output = false;
     this.no_ans = false;
-    this.stop_loop = false;
     this.no_stats = false;
     this.pending_top_level_script_finish = false;
-    this.env.resetStopLoop();
     this.env.setStatus('busy', this.lang.string(88));
+    return token;
   }
   
   /**
@@ -475,7 +477,8 @@ class PRDC_JSLAB_LIB {
     var top_level_script_finished = this.pending_top_level_script_finish === true;
     this.pending_top_level_script_finish = false;
     this.env.setWorkspace();
-    this.env.codeEvaluated({ top_level_script_finished: top_level_script_finished });
+    this.env.codeEvaluated({ top_level_script_finished: top_level_script_finished,
+      execution_id: this.inter.execution.current?.id });
     this.env.setStatus('ready', this.lang.string(87));
   }
 
@@ -501,7 +504,7 @@ class PRDC_JSLAB_LIB {
    * Clears the current workspace, stopping any ongoing operations and removing any dynamic properties.
    */
   clear() {
-    this.doCleanup();
+    this.doCleanup().catch(error => this._console.error(error));
     this.context.sym.clear();
     this.context.parallel.terminate();
     this.system._clear();
@@ -517,12 +520,9 @@ class PRDC_JSLAB_LIB {
     this.unrequireAll();
     this.onStatsChange();
 
-    var obj = this;
-    this.previous_properties.forEach(function(property) {
-      if(typeof obj.context[property] != 'function' || (typeof obj.context[property] == 'function' && obj.context[property]._jsl_saved)) {
-        delete obj.context[property];
-      }
-    });
+    for(const property of this.getWorkspaceProperties()) {
+      delete this.context[property];
+    }
     this.previous_properties = [];
     this.previous_workspace = {};
     this.no_ans = true;
@@ -535,41 +535,6 @@ class PRDC_JSLAB_LIB {
    */
   setPath(new_path) {
     this.current_path = this.env.addPathSep(new_path);
-  }
-  
-  /**
-   * Saves the properties of the current workspace to restore them later if needed.
-   */
-  savePreviousWorkspace() {
-    var obj = this;
-    this.previous_properties = this.getWorkspaceProperties();
-    this.previous_properties.forEach(function(property) {
-      if(typeof obj.context[property] == 'function') {
-        obj.context[property]._jsl_saved = true;
-      }
-      obj.previous_workspace[property] = obj.context[property];
-      delete obj.context[property];
-    });
-  }
-
-  /**
-   * Restores the properties of the workspace that were saved by `savePreviousWorkspace`.
-   */
-  loadPreviousWorkspace() {
-    var obj = this;
-    var workspace = this.getWorkspaceProperties();
-    workspace.forEach(function(property) {
-      if(obj.previous_properties.includes(property)) {
-        // This property is defined again in new code
-        obj.previous_properties.splice(
-          obj.previous_properties.indexOf(property), 1);
-      }
-    });
-
-    // Add saved properties back to global scope
-    this.previous_properties.forEach(function(property) {
-      obj.context[property] = obj.previous_workspace[property];
-    });
   }
   
   /**
@@ -602,18 +567,21 @@ class PRDC_JSLAB_LIB {
     for(var i = 0, l = current_prop_list.length; i < l; ++i) {
       var prop_name = current_prop_list[i];
       if(initial_props && initial_props.indexOf(prop_name) === -1) {
-        var prop = this.context[prop_name];
-        var type = typeof prop;
-        var name = 'none';
-
-        if(type !== 'undefined') {
-          if(prop && prop.constructor) {
-            name = prop.constructor.name;
-          } else {
-            name = '/';
+        try {
+          const descriptor = Object.getOwnPropertyDescriptor(this.context, prop_name);
+          if(!descriptor) continue;
+          if(descriptor.get || descriptor.set) {
+            workspace.push([prop_name, 'accessor', '/']);
+            continue;
           }
+          const value = descriptor.value;
+          const prototype = value != null ? Object.getPrototypeOf(value) : null;
+          const constructor = prototype && Object.getOwnPropertyDescriptor(prototype, 'constructor');
+          const name = typeof constructor?.value === 'function' ? constructor.value.name : '/';
+          workspace.push([prop_name, typeof value, name]);
+        } catch(error) {
+          workspace.push([prop_name, 'unavailable', '/']);
         }
-        workspace.push([prop_name, type, name]);
       }
     }
 
@@ -750,17 +718,6 @@ class PRDC_JSLAB_LIB {
   }
   
   /**
-   * Sets the flag to stop loop execution within the JSLAB environment.
-   * @param {Boolean} data The flag indicating whether to stop loop execution.
-   */
-  setStopLoop(data) {
-    this.stop_loop = data;
-    this.onStopLoop(true);
-    this.onEvaluated();
-    this.env.disp(this.lang.string(90));
-  }
-
-  /**
    * Disables workspace stats tracking
    */
   disableWorkspaceStats() {
@@ -773,32 +730,6 @@ class PRDC_JSLAB_LIB {
   enableWorkspaceStats() {
     this.no_stats = false;
     this.onStatsChange();
-  }
-  
-  /**
-   * Handles the process of stopping loop execution and cleaning up asynchronous operations.
-   * @param {Boolean} [throw_error=true] Indicates whether to throw an error when stopping the loop.
-   * @throws {Object} An error object with a custom message if `throw_error` is true and the loop needs to be stopped.
-   */
-  onStopLoop(throw_error = true) {
-    if(this.stop_loop) {
-      this.context.parallel.terminate();
-      this.system._clear();
-      
-      this.clearEventListeners();
-      this.clearImmediates();
-      this.clearAnimationFrames();
-      this.clearIntervals();
-      this.clearTimeouts();
-      this.clearIdleCallbacks();
-      this.stopPromises();
-      this.stopSubprocesses();
-      this.doCleanup();
-      this.onStatsChange();
-      if(throw_error) {
-        throw {name: 'JslabError', message: this.lang.string(90)};
-      }
-    }
   }
   
   /**
@@ -887,6 +818,11 @@ class PRDC_JSLAB_LIB {
    * Clears all modules that have been required during the session.
    */
   unrequireAll() {
+    if(this.inter.execution.web_modules) {
+      this.inter.execution.web_modules.clear();
+      this.required_modules = [];
+      return;
+    }
     var obj = this;
     this.required_modules.forEach(function(module) {
       try {
@@ -903,12 +839,11 @@ class PRDC_JSLAB_LIB {
   }
   
   /**
-   * Stops all promises that have been started within the environment.
+   * Releases promise accounting; execution generations invalidate continuations.
    */
   stopPromises() {
     var obj = this;
     Object.keys(this.started_promises).forEach(function(key) {
-      obj.started_promises[key].loop_stoped = true;
       delete obj.started_promises[key];
     });  
     this.promises_number = 0;
@@ -926,19 +861,16 @@ class PRDC_JSLAB_LIB {
   /**
    * Do cleanup on all registred objects;
    */
-  doCleanup() {
-    for(var entry of this.cleanup_registry) {
-      if(this.inter.isFunction(entry.fun)) {
-        try {
-          entry.fun();
-        } catch {};
-      } else if(this.inter.isFunction(entry.obj._jslabCleanup)) {
-        try {
-          entry.obj._jslabCleanup();
-        } catch {};
-      }
+  async doCleanup() {
+    const entries = this.cleanup_registry.splice(0);
+    const errors = [];
+    for(const entry of entries) {
+      try {
+        if(typeof entry.fun === 'function') await entry.fun();
+        else if(typeof entry.obj?._jslabCleanup === 'function') await entry.obj._jslabCleanup();
+      } catch(error) { errors.push(error); }
     }
-    this.cleanup_registry = [];
+    if(errors.length) throw new Error(errors.map(error => String(error.message || error)).join('; '));
   }
   
   /**
@@ -1013,6 +945,10 @@ class PRDC_JSLAB_LIB {
    * Removes all event listeners that have been added to the document body, effectively clearing any remaining event bindings.
    */
   clearEventListeners() {
+    if(this.inter.execution?.remote_ui) {
+      this.inter.execution.remote_ui.clearListeners();
+      return;
+    }
     if(typeof document == 'undefined' ||
         !document.body ||
         !document.body.parentNode) {
@@ -1025,10 +961,7 @@ class PRDC_JSLAB_LIB {
    * Lists all subprocesses.
    */
   stopSubprocesses() {
-    var pids = this.listSubprocesses();
-    pids.forEach((pid) => {
-      this.inter.killProcess(pid);
-    });
+    return this.inter.env.stopSubprocesses();
   }
   
   /**
@@ -1105,15 +1038,14 @@ class PRDC_JSLAB_LIB {
   }
   
   /**
-   * Awaits the provided promise if the loop has not been stopped.
-   * @param {Promise} p - The promise to await.
-   * @returns {Promise|undefined} - Resolves if `p` is awaited; does nothing if the loop is stopped.
+   * Awaits a resource while honoring the evaluation's cancellation lifetime.
+   * @param {Promise} promise Resource readiness.
+   * @returns {Promise<*>} Resource result.
    */
-  async promiseOrStoped(p) {
-    if(!p.loop_stoped) {
-      await p;
-    }
+  async awaitResource(promise) {
+    return this.inter.execution.wait(promise);
   }
+
 }
 
 exports.PRDC_JSLAB_LIB = PRDC_JSLAB_LIB;

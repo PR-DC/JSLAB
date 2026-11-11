@@ -69,6 +69,22 @@ class PRDC_JSLAB_EVAL {
    * @param {string} [jsl_file_name='jslcmdwindow'] Specifies the file name context for the command evaluation.
    */
   evalCommand(cmd, show_output = true, jsl_file_name = 'jslcmdwindow') {
+    try {
+      if(this.win.debugger?.isCommand(cmd)) {
+        this.win.command_window.addMessageCmd(cmd);
+        this.win.command_history.updateHistory(cmd);
+        this.win.command_window.code_input.setValue('');
+        this.win.debugger.executeCommand(cmd);
+        return;
+      }
+    } catch(error) { this.win.command_window.error(error.message); return; }
+    if(this.win.debug_paused && cmd.length) {
+      this.win.command_window.addMessageCmd(cmd);
+      this.win.command_history.updateHistory(cmd);
+      this.win.command_window.code_input.setValue('');
+      this.win.debugger.evaluate(cmd);
+      return;
+    }
     if(!this.win.evaluating) {
       if(cmd.length) {
         this.win.command_window.addMessageCmd(cmd);

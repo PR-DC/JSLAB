@@ -105,6 +105,7 @@ class PRDC_JSLAB_PARALLEL {
       const worker = new Worker(blobURL);
       worker.busy = false;
       worker.ready = false;
+      this.jsl.inter.execution.trackWorker(worker);
       this.worker_pool.push(worker);
     }
 

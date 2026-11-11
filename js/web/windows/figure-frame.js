@@ -7,12 +7,12 @@
 
 (function() {
   async function start() {
-    if(typeof globalThis.__JSLAB_WEB_setFrameTitle == 'function') {
-      globalThis.__JSLAB_WEB_setFrameTitle(document.title);
-    }
-    if(typeof globalThis.__JSLAB_WEB_applyFrameLanguage == 'function') {
-      globalThis.__JSLAB_WEB_applyFrameLanguage();
-    }
+    const updateLanguage = () => {
+      globalThis.__JSLAB_WEB_applyFrameLanguage?.();
+      globalThis.__JSLAB_WEB_setFrameTitle?.(document.title);
+    };
+    globalThis.__JSLAB_WEB_FRAME_onLanguageChange = updateLanguage;
+    updateLanguage();
 
     var menu_button = document.getElementById('figure-menu-button');
     var menu_container = document.getElementById('figure-menu-container');

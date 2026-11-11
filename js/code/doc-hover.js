@@ -417,7 +417,8 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
       print_button.className = 'jslab-doc-hover-btn';
       print_button.type = 'button';
       print_button.tabIndex = -1;
-      print_button.textContent = 'See More';
+      print_button.textContent = document.defaultView.language.currentString(601);
+      print_button.setAttribute('lang-str', '601');
       var obj = this;
       var on_print = function(item_ref) {
         return function(e) {
@@ -521,7 +522,8 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
 
     var title = document.createElement('div');
     title.className = 'jslab-doc-hover-section-title';
-    title.textContent = 'Parameters';
+    title.textContent = document.defaultView.language.currentString(602);
+    title.setAttribute('lang-str', '602');
     section.appendChild(title);
 
     entry.params.forEach(function(param) {
@@ -569,7 +571,8 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
 
     var title = document.createElement('div');
     title.className = 'jslab-doc-hover-section-title';
-    title.textContent = 'Returns';
+    title.textContent = document.defaultView.language.currentString(603);
+    title.setAttribute('lang-str', '603');
     section.appendChild(title);
 
     entry.returns.forEach(function(ret) {

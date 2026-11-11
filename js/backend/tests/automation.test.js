@@ -26,6 +26,7 @@ function createBridge() {
   var sent = [];
   var main = {
     automation_version: 'test',
+    debugger: { state: 'idle', reserve: function() {}, interrupt: async function() { sent.push(['debugger', 'interrupt']); } },
     win_main: { isDestroyed: function() { return false; }, send: function() {} },
     win_sandbox: { send: function(...args) { sent.push(args); } }
   };
@@ -46,7 +47,7 @@ tests.add('only CLI runtimes accept terminal shutdown requests', async function(
   assert.equal(closed, true);
 }, { tags: ['unit', 'cli', 'automation'] });
 
-tests.add('automation serializes jobs, ignores stale replies and interrupts cooperatively', function(assert) {
+tests.add('automation serializes jobs, ignores stale replies and requests debugger interruption', function(assert) {
   var harness = createBridge();
   var bridge = harness.bridge;
   var job = bridge.dispatch('evaluate_code', { code: '1 + 2' });
@@ -55,8 +56,8 @@ tests.add('automation serializes jobs, ignores stale replies and interrupts coop
   bridge.complete({ id: 'wrong', result: { success: true } });
   assert.equal(bridge.active_id, job.execution_id);
   assert.equal(bridge.dispatch('interrupt_execution').requested, true);
-  assert.equal(harness.main.stop_loop_in, true);
-  assert.equal(harness.sent[1][1], 'stop-loop');
+  assert.equal(harness.sent[1][0], 'debugger');
+  assert.equal(harness.sent[1][1], 'interrupt');
   assert.equal(bridge.busy, true);
   bridge.complete({ id: job.execution_id, result: { success: true, value: 3 } });
   assert.equal(bridge.dispatch('get_execution', { execution_id: job.execution_id }).result.value, 3);
@@ -134,7 +135,10 @@ tests.add('MCP discovers tools and resources, validates arguments and reports ex
     await server.connect(transports[0]);
     await client.connect(transports[1]);
     var tools = await client.listTools();
-    assert.equal(tools.tools.length, 14);
+    assert.equal(tools.tools.length, 26);
+    for(const name of ['clear_breakpoints', 'set_exception_pause', 'select_debug_target']) {
+      assert.ok(tools.tools.some(tool => tool.name === name));
+    }
     assert.ok(tools.tools.some(function(tool) { return tool.name === 'export_figure'; }));
     var guide = await client.readResource({ uri: 'jslab://agent-guide' });
     assert.ok(guide.contents[0].text.includes('get_session_status'));

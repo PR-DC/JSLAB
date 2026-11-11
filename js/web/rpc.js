@@ -100,7 +100,7 @@ class PRDC_JSLAB_WEB_RPC {
       if(data.ok) {
         pending.resolve(data.result);
       } else {
-        pending.reject(new Error(data.error || 'Unknown RPC error'));
+        pending.reject(Object.assign(new Error(data.error || 'Unknown RPC error'), { error_details: data.error_details }));
       }
       return;
     }
@@ -141,7 +141,8 @@ class PRDC_JSLAB_WEB_RPC {
           kind: 'response',
           id: data.id,
           ok: false,
-          error: err && err.stack ? err.stack : String(err)
+          error: err && err.message ? err.message : String(err),
+          error_details: err && err.error_details
         });
       }
     }

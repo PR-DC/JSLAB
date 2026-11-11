@@ -69,6 +69,7 @@ function createBootstrapHarness(web, count) {
   var modules = {
     './jslab-env-web': { PRDC_JSLAB_ENV: FixtureEnv },
     './jslab-env-electron': { PRDC_JSLAB_ENV: FixtureEnv },
+    './jslab-execution': require('../jslab-execution'),
     './jslab-eval': { PRDC_JSLAB_EVAL: class {} },
     './jslab-plotter-plotly': { PRDC_JSLAB_PLOTTER: class {} },
     './jslab-internal-protected-modules': require('../jslab-internal-protected-modules'),
@@ -88,7 +89,13 @@ function createBootstrapHarness(web, count) {
     }
     return modules[name];
   };
-  vm.createContext(scope);
+  // Electron disallows string compilation in some synthetic VM contexts.
+  // Bootstrap uses eval only to hide the host require from browser bundlers.
+  scope.eval = function(expression) {
+    if(expression === 'require') return scope.require;
+    throw new Error('Unexpected fixture evaluation: ' + expression);
+  };
+  vm.createContext(scope, { codeGeneration: { strings: true, wasm: true } });
   function load(name) {
     var source = fs.readFileSync(path.join(__dirname, '..', name + '.js'), 'utf8');
     return vm.runInContext('(function() { var exports = {};\n' + source +

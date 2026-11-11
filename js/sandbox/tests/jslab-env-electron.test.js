@@ -183,20 +183,21 @@ tests.add('desktop automation loads before runtime overrides and reuses its priv
   assert.equal(records.replies[1].data.result.success, true);
 }, { tags: ['unit', 'jslab-env-electron', 'automation'] });
 
-tests.add('desktop environment lists a live child through the host operating system', function(assert) {
-  var cp = require('child_process');
-  var child = cp.spawn(process.execPath, ['-e', 'setInterval(function() {}, 1000)'], {
-    windowsHide: true, stdio: 'ignore'
-  });
-  try {
-    var EnvClass = loadEnvClass({ is_worker: true }, { real_process: true });
-    var children = EnvClass.prototype.listSubprocesses.call({ process_pid: process.pid });
-    assert.ok(children.includes(child.pid));
-    assert.ok(children.every(function(pid) { return Number.isInteger(pid) && pid > 0 && pid !== process.pid; }));
-    assert.throws(function() { EnvClass.prototype.listSubprocesses.call({}, -1); }, /positive process ID/);
-  } finally {
-    child.kill();
-  }
+tests.add('desktop environment tracks only subprocesses it launches and forgets exits', function(assert) {
+  const { EventEmitter } = require('events');
+  const EnvClass = loadEnvClass({ is_worker: true });
+  const env = Object.create(EnvClass.prototype);
+  env.process_pid = 321;
+  env._subprocesses = new Set();
+  const child = new EventEmitter();
+  child.pid = 123;
+  child.exitCode = null;
+  env._trackSubprocess(child);
+  assert.deepEqual(env.listSubprocesses(), [123]);
+  assert.throws(() => env.listSubprocesses(-1), /positive process ID/);
+  assert.throws(() => env.listSubprocesses(987), /owned/);
+  child.emit('exit', 0);
+  assert.deepEqual(env.listSubprocesses(), []);
 }, { tags: ['unit', 'jslab-env-electron'] });
 
 tests.add('file reads and writes follow workspace cwd without changing process cwd', function(assert) {

@@ -41,12 +41,14 @@ class PRDC_JSLAB_SANDBOX_AUTOMATION {
   async execute(method, args) {
     var obj = this;
     var env = this.jsl.inter.env;
-    var previous_capture = env._automation_output;
+    var previous_capture = Object.getOwnPropertyDescriptor(env, '_automation_output')?.value;
     var output = [];
     var output_size = 0;
     var output_truncated = false;
     var reported_error = null;
-    env._automation_output = function(name, values) {
+    var capture = env._automation_output = function(name, values) {
+      // A background error belongs to its originating callback, not the current request.
+      if(env._detached_error) return;
       var text = values.map(function(value) {
         if(typeof value === 'string' && value.length > 16000) output_truncated = true;
         return typeof value === 'string' ? value.slice(0, 16000) : obj.preview(value);
@@ -67,10 +69,11 @@ class PRDC_JSLAB_SANDBOX_AUTOMATION {
       return { success: !reported_error, value: value, output: output,
         output_truncated: output_truncated, error: reported_error };
     } catch(err) {
-      return { success: false, error: this.preview(err), output: output,
+      return { success: false, error: err.jslab_error_details?.stack || this.preview(err),
+        error_details: err.jslab_error_details, output: output,
         output_truncated: output_truncated };
     } finally {
-      env._automation_output = previous_capture;
+      if(Object.getOwnPropertyDescriptor(env, '_automation_output')?.value === capture) env._automation_output = previous_capture;
     }
   }
 
@@ -109,7 +112,8 @@ class PRDC_JSLAB_SANDBOX_AUTOMATION {
         }
         if(typeof code !== 'string' || code.length > 512000) throw new Error('Expected code up to 512000 characters.');
         var result = await jsl.inter.eval.evalCodeFromMain(code, false, filename);
-        if(!result || !result.success) throw new Error(result && result.error || 'Evaluation failed.');
+        if(!result || !result.success) throw Object.assign(new Error(result && result.error || 'Evaluation failed.'),
+          { jslab_error_details: result && result.error_details });
         return { preview: this.preview(result.value), cwd: jsl.current_path };
       }
       case 'list_workspace':

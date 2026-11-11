@@ -143,7 +143,7 @@ class PRDC_JSLAB_AUTOMATION {
     }
     if(method === 'get_session_status') {
       return { pid: process.pid, ready: this.ready, busy: this.busy,
-        execution_id: this.active_id, version: this.main.automation_version };
+        execution_id: this.active_id, debugger_state: this.main.debugger?.state, version: this.main.automation_version };
     }
     if(method === 'get_execution') {
       var job = this.jobs.get(args.execution_id);
@@ -151,10 +151,17 @@ class PRDC_JSLAB_AUTOMATION {
       return job;
     }
     if(method === 'interrupt_execution') {
-      if(!this.busy) return { requested: false };
-      this.main.stop_loop_in = true;
-      this.main.win_sandbox.send('SandboxWindow', 'stop-loop', true);
+      if(!this.ready) throw new Error('Sandbox is not ready.');
+      this.main.debugger.interrupt().catch(() => {});
       return { requested: true, execution_id: this.active_id };
+    }
+    if(['get_debug_state', 'pause_execution', 'resume_execution', 'inspect_debug_object',
+        'evaluate_debug_expression', 'set_breakpoint', 'remove_breakpoint', 'clear_breakpoints',
+        'set_exception_pause', 'select_debug_target', 'update_debug_script', 'restart_debug_frame'].includes(method)) {
+      return this.main.debugCommand(method, args);
+    }
+    if(this.main.debugger && ['paused', 'stopping', 'unavailable'].includes(this.main.debugger.state)) {
+      throw new Error('Sandbox debugger is ' + this.main.debugger.state + '.');
     }
     var methods = ['get_runtime_info', 'evaluate_code', 'run_file', 'run_test_file', 'check_code',
       'list_workspace', 'read_variable', 'list_figures', 'export_figure', 'get_help'];
@@ -168,6 +175,7 @@ class PRDC_JSLAB_AUTOMATION {
     this.active_id = id;
     this.busy = true;
     try {
+      if(['evaluate_code', 'run_file', 'run_test_file'].includes(method)) this.main.debugger.reserve();
       this.main.win_main.send('MainWindow', 'code-evaluating');
       this.main.win_sandbox.send('SandboxWindow', 'automation-request',
         { id: id, method: method, args: args });
@@ -228,14 +236,14 @@ class PRDC_JSLAB_AUTOMATION {
       chunks.push(chunk);
     });
     req.on('error', function() {});
-    req.on('end', function() {
+    req.on('end', async function() {
       try {
         var data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
         if(!data || typeof data.method !== 'string' || !data.args ||
             typeof data.args !== 'object' || Array.isArray(data.args)) {
           throw new Error('Expected method and argument object.');
         }
-        reply(200, obj.dispatch(data.method, data.args));
+        reply(200, await obj.dispatch(data.method, data.args));
       } catch(err) {
         reply(400, { error: err.message });
       }

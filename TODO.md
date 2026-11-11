@@ -1,20 +1,10 @@
-# TODO List for JSLAB
+# 📝 TODO List for JSLAB
 
 This document tracks tasks and features to implement, bugs to fix, and ideas to explore for the project.
 
 ---
 
-## 🔄 In Progress
-
----
-
-## 🐛 Bug Fixes
-
-- In `AlphaShape3D`, avoid data copying by using data directly. Fix crash when node count is incorrect.
-
----
-
-## 📝 General TODOs
+## General TODOs
 
 - ~~Ensure file opening happens in only one instance of the program~~
 
@@ -65,6 +55,8 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 ## 💡 Ideas / Future Enhancements
 
 - ~~Module for interactive presentations.~~
+
+- Presenter mode for presentations.
 
 - Implement [SunCalc](https://github.com/mourner/suncalc).
 

@@ -9,6 +9,7 @@
 // --------------------
 const { ipcRenderer } = require('electron');
 
+const { PRDC_JSLAB_DEBUGGER_UI } = require('./debugger');
 const { PRDC_JSLAB_HELP } = require('./help');
 const { PRDC_JSLAB_INFO } = require('./info');
 const { PRDC_JSLAB_SETTINGS } = require('./settings');
@@ -51,6 +52,7 @@ class PRDC_JSLAB_WIN_MAIN {
     this.app = new PRDC_JSLAB_APP(this);
     this.command_history = new PRDC_JSLAB_COMMAND_HISTORY(this);
     this.command_window = new PRDC_JSLAB_COMMAND_WINDOW(this);
+    this.debugger = new PRDC_JSLAB_DEBUGGER_UI(this, ipcRenderer);
     this.info = new PRDC_JSLAB_INFO(this);
     this.settings = new PRDC_JSLAB_SETTINGS(this);
     this.folder_navigation = new PRDC_JSLAB_FOLDER_NAVIGATION(this);
@@ -147,13 +149,20 @@ class PRDC_JSLAB_WIN_MAIN {
           obj.folder_navigation.removePath(saved_path, false);
           break;
         case 'set-workspace':
-          obj.workspace.setWorkspace(data);
+          if(obj.debug_paused) obj.debugger.global_workspace = data;
+          else obj.workspace.setWorkspace(data);
           break;
         case 'update-workspace':
           obj.workspace.updateWorkspace();
           break;
         case 'update-file-browser':
           obj.file_browser.updateFileBrowser();
+          break;
+        case 'debugger-state':
+          obj.debugger.update(data);
+          break;
+        case 'debugger-select-frame':
+          obj.debugger.selectFrame(data.frame_index, data.revision);
           break;
         case 'code-evaluating':
           obj.evaluating = true;
@@ -197,7 +206,7 @@ class PRDC_JSLAB_WIN_MAIN {
         if(obj.getSelectionText() == "") {
           // No selected text
           obj.command_window.messageInternal(language.string(89));
-          ipcRenderer.send('SandboxWindow', 'stop-loop', true);
+          ipcRenderer.send('SandboxWindow', 'interrupt-execution', true);
           e.stopPropagation();
           e.preventDefault();
         }

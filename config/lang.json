@@ -2763,6 +2763,380 @@
     "en": "Notes",
     "rs": "Beleške",
     "rsc": "Белешке"
+  },
+  "555": {
+    "en": "Debugger",
+    "rs": "Debager",
+    "rsc": "Дебагер"
+  },
+  "556": {
+    "en": "Debugger (paused)",
+    "rs": "Debager (pauzirano)",
+    "rsc": "Дебагер (паузирано)"
+  },
+  "557": {
+    "en": "Execution controls",
+    "rs": "Kontrole izvršavanja",
+    "rsc": "Контроле извршавања"
+  },
+  "558": {
+    "en": "Errors",
+    "rs": "Greške",
+    "rsc": "Грешке"
+  },
+  "559": {
+    "en": "Do not pause",
+    "rs": "Ne pauziraj",
+    "rsc": "Не паузирај"
+  },
+  "560": {
+    "en": "Uncaught by user",
+    "rs": "Nepresretnute greške",
+    "rsc": "Непресретнуте грешке"
+  },
+  "561": {
+    "en": "All exceptions",
+    "rs": "Sve greške",
+    "rsc": "Све грешке"
+  },
+  "562": {
+    "en": "Pause",
+    "rs": "Pauziraj",
+    "rsc": "Паузирај"
+  },
+  "563": {
+    "en": "Continue",
+    "rs": "Nastavi",
+    "rsc": "Настави"
+  },
+  "564": {
+    "en": "Step over",
+    "rs": "Korak preko",
+    "rsc": "Корак преко"
+  },
+  "565": {
+    "en": "Step into",
+    "rs": "Korak u",
+    "rsc": "Корак у"
+  },
+  "566": {
+    "en": "Step out",
+    "rs": "Korak iz",
+    "rsc": "Корак из"
+  },
+  "567": {
+    "en": "Apply saved source",
+    "rs": "Primeni sačuvani izvor",
+    "rsc": "Примени сачувани извор"
+  },
+  "568": {
+    "en": "Apply saved functions",
+    "rs": "Primeni sačuvane funkcije",
+    "rsc": "Примени сачуване функције"
+  },
+  "569": {
+    "en": "Restart frame",
+    "rs": "Ponovo pokreni okvir",
+    "rsc": "Поново покрени оквир"
+  },
+  "570": {
+    "en": "Reset worker",
+    "rs": "Ponovo pokreni radnika",
+    "rsc": "Поново покрени радника"
+  },
+  "571": {
+    "en": "Target",
+    "rs": "Cilj",
+    "rsc": "Циљ"
+  },
+  "572": {
+    "en": "Call stack",
+    "rs": "Stek poziva",
+    "rsc": "Стек позива"
+  },
+  "573": {
+    "en": "Scope",
+    "rs": "Opseg",
+    "rsc": "Опсег"
+  },
+  "574": {
+    "en": "Main workspace",
+    "rs": "Glavni radni prostor",
+    "rsc": "Главни радни простор"
+  },
+  "575": {
+    "en": "Pause execution",
+    "rs": "Pauziraj izvršavanje",
+    "rsc": "Паузирај извршавање"
+  },
+  "576": {
+    "en": "Interrupt execution (Ctrl+C)",
+    "rs": "Prekini izvršavanje (Ctrl+C)",
+    "rsc": "Прекини извршавање (Ctrl+C)"
+  },
+  "577": {
+    "en": "Apply the selected saved source while paused",
+    "rs": "Primeni izabrani sačuvani izvor tokom pauze",
+    "rsc": "Примени изабрани сачувани извор током паузе"
+  },
+  "578": {
+    "en": "Restart the selected frame; preceding side effects may execute again",
+    "rs": "Ponovo pokreni izabrani okvir; prethodni sporedni efekti mogu se ponoviti",
+    "rsc": "Поново покрени изабрани оквир; претходни споредни ефекти могу се поновити"
+  },
+  "579": {
+    "en": "Apply saved top-level functions to future calls; current frames keep their code",
+    "rs": "Primeni sačuvane funkcije najvišeg nivoa na buduće pozive; trenutni okviri zadržavaju svoj kod",
+    "rsc": "Примени сачуване функције највишег нивоа на будуће позиве; тренутни оквири задржавају свој код"
+  },
+  "580": {
+    "en": "Discard the worker workspace and restart",
+    "rs": "Odbaci radni prostor radnika i ponovo ga pokreni",
+    "rsc": "Одбаци радни простор радника и поново га покрени"
+  },
+  "581": {
+    "en": "Debugging is unavailable with this hosting setup.",
+    "rs": "Otklanjanje grešaka nije dostupno sa ovim podešavanjima servera.",
+    "rsc": "Отклањање грешака није доступно са овим подешавањима сервера."
+  },
+  "582": {
+    "en": "Paused. Inspect variables or enter a debug command.",
+    "rs": "Pauzirano. Pregledajte promenljive ili unesite komandu debagera.",
+    "rsc": "Паузирано. Прегледајте променљиве или унесите команду дебагера."
+  },
+  "583": {
+    "en": "Paused",
+    "rs": "Pauzirano",
+    "rsc": "Паузирано"
+  },
+  "584": {
+    "en": "Edit was not applied: ",
+    "rs": "Izmena nije primenjena: ",
+    "rsc": "Измена није примењена: "
+  },
+  "585": {
+    "en": "Save the source file before applying debugger edits.",
+    "rs": "Sačuvajte izvornu datoteku pre primene izmena debagera.",
+    "rsc": "Сачувајте изворну датотеку пре примене измена дебагера."
+  },
+  "586": {
+    "en": "Save this script before setting a breakpoint.",
+    "rs": "Sačuvajte ovu skriptu pre postavljanja prekidne tačke.",
+    "rsc": "Сачувајте ову скрипту пре постављања прекидне тачке."
+  },
+  "587": {
+    "en": "Breakpoint condition",
+    "rs": "Uslov prekidne tačke",
+    "rsc": "Услов прекидне тачке"
+  },
+  "588": {
+    "en": "Condition (empty means always)",
+    "rs": "Uslov (prazno znači uvek)",
+    "rsc": "Услов (празно значи увек)"
+  },
+  "589": {
+    "en": "Enabled",
+    "rs": "Omogućeno",
+    "rsc": "Омогућено"
+  },
+  "590": {
+    "en": "Save breakpoint",
+    "rs": "Sačuvaj prekidnu tačku",
+    "rsc": "Сачувај прекидну тачку"
+  },
+  "591": {
+    "en": "Always pause",
+    "rs": "Uvek pauziraj",
+    "rsc": "Увек паузирај"
+  },
+  "592": {
+    "en": "Disabled: ",
+    "rs": "Onemogućeno: ",
+    "rsc": "Онемогућено: "
+  },
+  "593": {
+    "en": " (Shift-click to edit)",
+    "rs": " (Shift-klik za izmenu)",
+    "rsc": " (Shift-клик за измену)"
+  },
+  "594": {
+    "en": "[accessor]",
+    "rs": "[pristupnik]",
+    "rsc": "[приступник]"
+  },
+  "595": {
+    "en": "[unavailable]",
+    "rs": "[nedostupno]",
+    "rsc": "[недоступно]"
+  },
+  "596": {
+    "en": "Local Disk (C:)",
+    "rs": "Lokalni disk (C:)",
+    "rsc": "Локални диск (C:)"
+  },
+  "597": {
+    "en": "Download",
+    "rs": "Preuzmi",
+    "rsc": "Преузми"
+  },
+  "598": {
+    "en": "Import",
+    "rs": "Uvezi",
+    "rsc": "Увези"
+  },
+  "599": {
+    "en": "Import files",
+    "rs": "Uvezi datoteke",
+    "rsc": "Увези датотеке"
+  },
+  "600": {
+    "en": "Import folder",
+    "rs": "Uvezi fasciklu",
+    "rsc": "Увези фасциклу"
+  },
+  "601": {
+    "en": "See More",
+    "rs": "Više detalja",
+    "rsc": "Више детаља"
+  },
+  "602": {
+    "en": "Parameters",
+    "rs": "Parametri",
+    "rsc": "Параметри"
+  },
+  "603": {
+    "en": "Returns",
+    "rs": "Vraća",
+    "rsc": "Враћа"
+  },
+  "604": {
+    "en": "Minimize",
+    "rs": "Umanji",
+    "rsc": "Умањи"
+  },
+  "605": {
+    "en": "Maximize",
+    "rs": "Uvećaj",
+    "rsc": "Увећај"
+  },
+  "606": {
+    "en": "Close",
+    "rs": "Zatvori",
+    "rsc": "Затвори"
+  },
+  "607": {
+    "en": "Start",
+    "rs": "Pokreni",
+    "rsc": "Покрени"
+  },
+  "608": {
+    "en": "Window",
+    "rs": "Prozor",
+    "rsc": "Прозор"
+  },
+  "609": {
+    "en": "Plotlyjs Plot",
+    "rs": "Plotlyjs grafikon",
+    "rsc": "Plotlyjs графикон"
+  },
+  "610": {
+    "en": "D3 Canvas",
+    "rs": "D3 platno",
+    "rsc": "D3 платно"
+  },
+  "611": {
+    "en": "Leaflet Plot",
+    "rs": "Leaflet grafikon",
+    "rsc": "Leaflet графикон"
+  },
+  "612": {
+    "en": "Cesium Plot",
+    "rs": "Cesium grafikon",
+    "rsc": "Cesium графикон"
+  },
+  "613": {
+    "en": "Figure",
+    "rs": "Grafikon",
+    "rsc": "Графикон"
+  },
+  "614": {
+    "en": "Graph",
+    "rs": "Graf",
+    "rsc": "Граф"
+  },
+  "615": {
+    "en": "Presentation Editor",
+    "rs": "Uređivač prezentacija",
+    "rsc": "Уређивач презентација"
+  },
+  "616": {
+    "en": "Save log as",
+    "rs": "Sačuvaj dnevnik kao",
+    "rsc": "Сачувај дневник као"
+  },
+  "617": {
+    "en": "Move Slide Up",
+    "rs": "Pomeri slajd nagore",
+    "rsc": "Помери слајд нагоре"
+  },
+  "618": {
+    "en": "Move Slide Down",
+    "rs": "Pomeri slajd nadole",
+    "rsc": "Помери слајд надоле"
+  },
+  "619": {
+    "en": "Delete Slide",
+    "rs": "Obriši slajd",
+    "rsc": "Обриши слајд"
+  },
+  "620": {
+    "en": "This paused frame is no longer available.",
+    "rs": "Ovaj pauzirani okvir više nije dostupan.",
+    "rsc": "Овај паузирани оквир више није доступан."
+  },
+  "621": {
+    "en": "Only a bounded preview is shown.",
+    "rs": "Prikazan je samo ograničen pregled.",
+    "rsc": "Приказан је само ограничен преглед."
+  },
+  "622": {
+    "en": "Running",
+    "rs": "Izvršavanje",
+    "rsc": "Извршавање"
+  },
+  "623": {
+    "en": "Advanced",
+    "rs": "Napredno",
+    "rsc": "Напредно"
+  },
+  "624": {
+    "en": "Async call history",
+    "rs": "Istorija asinhronih poziva",
+    "rsc": "Историја асинхроних позива"
+  },
+  "625": {
+    "en": "The call stack appears while execution is paused in your code.",
+    "rs": "Stek poziva se prikazuje dok je izvršavanje vašeg koda pauzirano.",
+    "rsc": "Стек позива се приказује док је извршавање вашег кода паузирано."
+  },
+  "626": {
+    "en": "Continue to the next breakpoint or finish execution.",
+    "rs": "Nastavi do sledeće tačke prekida ili kraja izvršavanja.",
+    "rsc": "Настави до следеће тачке прекида или краја извршавања."
+  },
+  "627": {
+    "en": "Execute the next line without entering called functions.",
+    "rs": "Izvrši sledeći red bez ulaska u pozvane funkcije.",
+    "rsc": "Изврши следећи ред без уласка у позване функције."
+  },
+  "628": {
+    "en": "Enter the function called on the current line.",
+    "rs": "Uđi u funkciju pozvanu u trenutnom redu.",
+    "rsc": "Уђи у функцију позвану у тренутном реду."
+  },
+  "629": {
+    "en": "Finish the current function and pause in its caller.",
+    "rs": "Završi trenutnu funkciju i pauziraj u pozivaocu.",
+    "rsc": "Заврши тренутну функцију и паузирај у позиваоцу."
   }
 }
-

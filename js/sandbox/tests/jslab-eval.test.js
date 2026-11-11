@@ -65,9 +65,6 @@ function createEvalHarness(options = {}) {
           destroy() {}
         }
       },
-      override: {
-        withoutCheckStop: false
-      },
       prettyPrint: function(value) {
         return String(value);
       }
@@ -104,6 +101,20 @@ tests.add('constructor registers sandbox error event handlers', function(assert)
   assert.ok(typeof harness.event_handlers.unhandledrejection === 'function');
   assert.ok(typeof harness.event_handlers.error === 'function');
 }, { tags: ['unit', 'eval'] });
+
+tests.add('detached rejection reporting includes falsy reasons without finishing another evaluation', async function(assert) {
+  const harness = createEvalHarness();
+  let completions = 0;
+  harness.jsl.onEvaluated = () => { completions++; };
+  for(const reason of [undefined, null, 0, false, 'detached failure']) {
+    let prevented = false;
+    const details = await harness.event_handlers.unhandledrejection({ reason,
+      preventDefault() { prevented = true; } });
+    assert.equal(prevented, true);
+    assert.equal(details.message, String(reason));
+  }
+  assert.equal(completions, 0);
+}, { tags: ['unit', 'eval', 'errors'] });
 
 tests.add('checkForbiddenPattern rejects forbidden identifiers in nested patterns', function(assert) {
   var harness = createEvalHarness();
@@ -217,20 +228,18 @@ tests.add('rewriteCode rejects declarations of the runtime identifier', function
   });
 }, { tags: ['unit', 'eval'] });
 
-tests.add('onEvalError forwards JslabError messages directly', function(assert) {
+tests.add('onEvalError formats JslabError messages before completion', async function(assert) {
   var harness = createEvalHarness();
-  harness.eval_module.onEvalError({ name: 'JslabError', message: 'custom error text' });
+  await harness.eval_module.onEvalError({ name: 'JslabError', message: 'custom error text' });
   assert.ok(harness.env_errors.some(function(message) {
     return String(message).includes('custom error text');
   }));
 }, { tags: ['unit', 'eval'] });
 
-tests.add('getOriginalPosition uses source-map consumer and restores guard flag', async function(assert) {
+tests.add('getOriginalPosition uses source-map consumer without execution polling', async function(assert) {
   var harness = createEvalHarness();
-  harness.jsl.inter.override.withoutCheckStop = false;
   var result = await harness.eval_module.getOriginalPosition({}, 12, 8);
 
-  assert.equal(harness.jsl.inter.override.withoutCheckStop, false);
   assert.equal(result.line, 11);
   assert.equal(result.column, 7);
 }, { tags: ['unit', 'eval'] });
@@ -249,8 +258,8 @@ tests.add('runScript executes selected line and restores previous script context
   };
 
   var result = await harness.eval_module.runScript('C:/tmp/example.jsl', 2);
-  assert.equal(result, 'second line');
-  assert.equal(executed_code, 'second line');
+  assert.equal(result, '\nsecond line');
+  assert.equal(executed_code, '\nsecond line');
   assert.equal(harness.jsl.current_script, 'prev-script.jsl');
   assert.equal(harness.jsl.jsl_file_name, 'prev-script.jsl');
 }, { tags: ['unit', 'eval'] });

@@ -1,15 +1,149 @@
 {
   "global": {
     "basic": {
+      "dbstop": {
+        "name": "dbstop",
+        "kind": "function",
+        "description": "Sets a conditional source breakpoint or enables an error breakpoint.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "string"
+              ]
+            },
+            "description": "Script path, 'error', or 'caught error'.",
+            "name": "path"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "description": "One-based line.",
+            "name": "line",
+            "defaultvalue": 1
+          },
+          {
+            "type": {
+              "names": [
+                "string"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": "''",
+            "description": "Condition evaluated in the paused scope.",
+            "name": "condition"
+          },
+          {
+            "type": {
+              "names": [
+                "boolean"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": true,
+            "description": "Breakpoint enabled state.",
+            "name": "enabled"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<Object>",
+                "Object"
+              ]
+            },
+            "description": "Updated debugger configuration."
+          }
+        ],
+        "source_filename": "basic.js",
+        "source_lineno": 22,
+        "source_range": [
+          717,
+          1259
+        ]
+      },
+      "dbclear": {
+        "name": "dbclear",
+        "kind": "function",
+        "description": "Clears one breakpoint or all line/error breakpoints.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "string"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": "'all'",
+            "description": "Script path or 'all'.",
+            "name": "path"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "description": "One-based line.",
+            "name": "line"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<Object>",
+                "Object"
+              ]
+            },
+            "description": "Updated debugger configuration."
+          }
+        ],
+        "source_filename": "basic.js",
+        "source_lineno": 33,
+        "source_range": [
+          1499,
+          1967
+        ]
+      },
+      "dbstatus": {
+        "name": "dbstatus",
+        "kind": "function",
+        "description": "Returns current line and exception breakpoint settings.",
+        "params": [],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<Object>",
+                "Object"
+              ]
+            },
+            "description": "Debugger state and breakpoint configuration."
+          }
+        ],
+        "source_filename": "basic.js",
+        "source_lineno": 43,
+        "source_range": [
+          2123,
+          2196
+        ]
+      },
       "ans": {
         "name": "ans",
         "kind": "member",
         "description": "Stores the result of the last evaluated expression.",
         "source_filename": "basic.js",
-        "source_lineno": 28,
+        "source_lineno": 58,
         "source_range": [
-          747,
-          755
+          2606,
+          2614
         ]
       },
       "clear": {
@@ -17,21 +151,21 @@
         "kind": "function",
         "description": "Clears all defined variables in the current context.",
         "source_filename": "basic.js",
-        "source_lineno": 30
+        "source_lineno": 60
       },
       "clc": {
         "name": "clc",
         "kind": "function",
         "description": "Clears the console screen.",
         "source_filename": "basic.js",
-        "source_lineno": 38
+        "source_lineno": 68
       },
       "cls": {
         "name": "cls",
         "kind": "function",
         "description": "Clears the console screen. Alias for `clc`.",
         "source_filename": "basic.js",
-        "source_lineno": 46
+        "source_lineno": 76
       },
       "beep": {
         "name": "beep",
@@ -49,10 +183,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 996,
+        "source_lineno": 1019,
         "source_range": [
-          30486,
-          30623
+          31213,
+          31345
         ]
       },
       "version": {
@@ -60,119 +194,112 @@
         "kind": "member",
         "description": "Returns the current version of the JSLAB.",
         "source_filename": "basic.js",
-        "source_lineno": 62
+        "source_lineno": 92
       },
       "platform": {
         "name": "platform",
         "kind": "member",
         "description": "Returns the platform on which JSLAB is running.",
         "source_filename": "basic.js",
-        "source_lineno": 70
+        "source_lineno": 100
       },
       "jsl_file_name": {
         "name": "jsl_file_name",
         "kind": "member",
         "description": "Returns the file name of the current JSLAB script.",
         "source_filename": "basic.js",
-        "source_lineno": 78
+        "source_lineno": 108
       },
       "info": {
         "name": "info",
         "kind": "function",
         "description": "Provides information about the current environment.",
         "source_filename": "basic.js",
-        "source_lineno": 86
+        "source_lineno": 116
       },
       "settings": {
         "name": "settings",
         "kind": "function",
         "description": "Accesses or modifies the user settings for JSLAB.",
         "source_filename": "basic.js",
-        "source_lineno": 94
+        "source_lineno": 124
       },
       "cmd_help": {
         "name": "cmd_help",
         "kind": "function",
         "description": "Provides help information for JSLAB commands.",
         "source_filename": "basic.js",
-        "source_lineno": 102
+        "source_lineno": 132
       },
       "editor": {
         "name": "editor",
         "kind": "function",
         "description": "Accesses the code editor interface within JSLAB.",
         "source_filename": "basic.js",
-        "source_lineno": 110
+        "source_lineno": 140
       },
       "pwd": {
         "name": "pwd",
         "kind": "member",
         "description": "Returns the current working directory.",
         "source_filename": "basic.js",
-        "source_lineno": 118
+        "source_lineno": 148
       },
       "breakpoint": {
         "name": "breakpoint",
         "kind": "function",
         "description": "Sets a breakpoint in the code for debugging.",
         "source_filename": "basic.js",
-        "source_lineno": 126
+        "source_lineno": 156
       },
       "debug_flag": {
         "name": "debug_flag",
         "kind": "member",
         "description": "Returns the current debug flag status.",
         "source_filename": "basic.js",
-        "source_lineno": 134
+        "source_lineno": 165
       },
       "debug": {
         "name": "debug",
         "kind": "member",
         "description": "Enables or disables debug mode.",
         "source_filename": "basic.js",
-        "source_lineno": 142
+        "source_lineno": 173
       },
       "pause": {
         "name": "pause",
         "kind": "function",
         "description": "Pauses the execution of the current script.",
         "source_filename": "basic.js",
-        "source_lineno": 150
+        "source_lineno": 181
       },
       "stoppoint": {
         "name": "stoppoint",
         "kind": "function",
         "description": "Sets a stop point in the script execution.",
         "source_filename": "basic.js",
-        "source_lineno": 158
+        "source_lineno": 189
       },
       "logpoint": {
         "name": "logpoint",
         "kind": "function",
         "description": "Sets a log point to record information during execution.",
         "source_filename": "basic.js",
-        "source_lineno": 166
+        "source_lineno": 197
       },
       "updatepoint": {
         "name": "updatepoint",
         "kind": "function",
         "description": "Updates specific points in the script during execution.",
         "source_filename": "basic.js",
-        "source_lineno": 174
-      },
-      "checkStop": {
-        "name": "checkStop",
-        "kind": "function",
-        "description": "Checks if the execution should stop based on conditions.",
-        "source_filename": "basic.js",
-        "source_lineno": 182
+        "source_lineno": 205
       },
       "endPoint": {
         "name": "endPoint",
         "kind": "function",
         "description": "Marks the endpoint of a script or process.",
         "source_filename": "basic.js",
-        "source_lineno": 190
+        "source_lineno": 213
       },
       "run": {
         "name": "run",
@@ -222,10 +349,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 206,
+        "source_lineno": 229,
         "source_range": [
-          6844,
-          7537
+          8361,
+          9037
         ]
       },
       "jslFileName": {
@@ -244,10 +371,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 229,
+        "source_lineno": 252,
         "source_range": [
-          7682,
-          7738
+          9176,
+          9230
         ]
       },
       "clearStorage": {
@@ -256,10 +383,10 @@
         "description": "Clears the application's local storage.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 236,
+        "source_lineno": 259,
         "source_range": [
-          7804,
-          7872
+          9291,
+          9357
         ]
       },
       "savePath": {
@@ -278,10 +405,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 244,
+        "source_lineno": 267,
         "source_range": [
-          8002,
-          8249
+          9481,
+          9721
         ]
       },
       "removePath": {
@@ -300,16 +427,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 257,
+        "source_lineno": 280,
         "source_range": [
-          8404,
-          8664
+          9870,
+          10123
         ]
       },
       "addpath": {
         "name": "addpath",
         "kind": "function",
-        "description": "Adds one or more paths to the search path list.\rAlias compatible with MATLAB/Octave `addpath`.",
+        "description": "Adds one or more paths to the search path list.\nAlias compatible with MATLAB/Octave `addpath`.",
         "params": [
           {
             "type": {
@@ -334,16 +461,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 556,
+        "source_lineno": 579,
         "source_range": [
-          18002,
-          19014
+          19169,
+          20149
         ]
       },
       "rmpath": {
         "name": "rmpath",
         "kind": "function",
-        "description": "Removes one or more paths from the search path list.\rAlias compatible with MATLAB/Octave `rmpath`.",
+        "description": "Removes one or more paths from the search path list.\nAlias compatible with MATLAB/Octave `rmpath`.",
         "params": [
           {
             "type": {
@@ -368,16 +495,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 596,
+        "source_lineno": 619,
         "source_range": [
-          19270,
-          20283
+          20397,
+          21378
         ]
       },
       "path": {
         "name": "path",
         "kind": "function",
-        "description": "Retrieves or sets the active search path list.\rCompatible with MATLAB/Octave `path`.",
+        "description": "Retrieves or sets the active search path list.\nCompatible with MATLAB/Octave `path`.",
         "params": [
           {
             "type": {
@@ -402,16 +529,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 636,
+        "source_lineno": 659,
         "source_range": [
-          20521,
-          21205
+          21608,
+          22269
         ]
       },
       "ls": {
         "name": "ls",
         "kind": "function",
-        "description": "Lists contents of a folder or wildcard target.\rCompatible with MATLAB/Octave `ls`.",
+        "description": "Lists contents of a folder or wildcard target.\nCompatible with MATLAB/Octave `ls`.",
         "params": [
           {
             "type": {
@@ -435,16 +562,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 667,
+        "source_lineno": 690,
         "source_range": [
-          21422,
-          21716
+          22478,
+          22761
         ]
       },
       "dir": {
         "name": "dir",
         "kind": "function",
-        "description": "Lists directory entries with metadata.\rCompatible with MATLAB/Octave `dir`.",
+        "description": "Lists directory entries with metadata.\nCompatible with MATLAB/Octave `dir`.",
         "params": [
           {
             "type": {
@@ -468,16 +595,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 686,
+        "source_lineno": 709,
         "source_range": [
-          21932,
-          22972
+          22969,
+          23972
         ]
       },
       "isfile": {
         "name": "isfile",
         "kind": "function",
-        "description": "Returns true when the path resolves to a file.\rCompatible with MATLAB `isfile`.",
+        "description": "Returns true when the path resolves to a file.\nCompatible with MATLAB `isfile`.",
         "params": [
           {
             "type": {
@@ -499,16 +626,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 731,
+        "source_lineno": 754,
         "source_range": [
-          23155,
-          23235
+          24147,
+          24225
         ]
       },
       "isfolder": {
         "name": "isfolder",
         "kind": "function",
-        "description": "Returns true when the path resolves to a folder.\rCompatible with MATLAB `isfolder`.",
+        "description": "Returns true when the path resolves to a folder.\nCompatible with MATLAB `isfolder`.",
         "params": [
           {
             "type": {
@@ -530,16 +657,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 741,
+        "source_lineno": 764,
         "source_range": [
-          23429,
-          23516
+          24411,
+          24496
         ]
       },
       "exist": {
         "name": "exist",
         "kind": "function",
-        "description": "Checks existence with MATLAB-compatible return codes.\r`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.\rSupports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.",
+        "description": "Checks existence with MATLAB-compatible return codes.\n`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.\nSupports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.",
         "params": [
           {
             "type": {
@@ -572,16 +699,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 753,
+        "source_lineno": 776,
         "source_range": [
-          23881,
-          24846
+          24851,
+          25790
         ]
       },
       "which": {
         "name": "which",
         "kind": "function",
-        "description": "Resolves a file/module using the active search path.\rCompatible with MATLAB/Octave `which`.",
+        "description": "Resolves a file/module using the active search path.\nCompatible with MATLAB/Octave `which`.",
         "params": [
           {
             "type": {
@@ -605,16 +732,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 787,
+        "source_lineno": 810,
         "source_range": [
-          25096,
-          25988
+          26032,
+          26898
         ]
       },
       "who": {
         "name": "who",
         "kind": "function",
-        "description": "Lists workspace variable names.\rCompatible with MATLAB/Octave `who`.",
+        "description": "Lists workspace variable names.\nCompatible with MATLAB/Octave `who`.",
         "params": [
           {
             "type": {
@@ -638,16 +765,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 821,
+        "source_lineno": 844,
         "source_range": [
-          26193,
-          26830
+          27095,
+          27711
         ]
       },
       "whos": {
         "name": "whos",
         "kind": "function",
-        "description": "Lists workspace variable descriptors (name/type/class).\rCompatible with MATLAB/Octave `whos`.",
+        "description": "Lists workspace variable descriptors (name/type/class).\nCompatible with MATLAB/Octave `whos`.",
         "params": [
           {
             "type": {
@@ -671,10 +798,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 850,
+        "source_lineno": 873,
         "source_range": [
-          27078,
-          27753
+          27951,
+          28603
         ]
       },
       "cd": {
@@ -693,10 +820,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 911,
+        "source_lineno": 934,
         "source_range": [
-          28556,
-          28711
+          29368,
+          29518
         ]
       },
       "workspace": {
@@ -715,10 +842,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 954,
+        "source_lineno": 977,
         "source_range": [
-          29611,
-          29666
+          30380,
+          30433
         ]
       },
       "updateWorkspace": {
@@ -727,10 +854,10 @@
         "description": "Updates the workspace display based on the current state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 961,
+        "source_lineno": 984,
         "source_range": [
-          29750,
-          29882
+          30512,
+          30640
         ]
       },
       "updateFileBrowser": {
@@ -739,16 +866,16 @@
         "description": "Updates the file browser display based on the current state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 970,
+        "source_lineno": 993,
         "source_range": [
-          29971,
-          30107
+          30724,
+          30856
         ]
       },
       "diary": {
         "name": "diary",
         "kind": "function",
-        "description": "Controls command window transcript logging.\r`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,\rand `diary('<file>')` enables logging to the specified file (append mode).",
+        "description": "Controls command window transcript logging.\n`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,\nand `diary('<file>')` enables logging to the specified file (append mode).",
         "params": [
           {
             "type": {
@@ -773,10 +900,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1010,
+        "source_lineno": 1033,
         "source_range": [
-          30988,
-          32325
+          31701,
+          32998
         ]
       },
       "error": {
@@ -795,10 +922,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1056,
+        "source_lineno": 1079,
         "source_range": [
-          32434,
-          32552
+          33101,
+          33215
         ]
       },
       "disp": {
@@ -817,10 +944,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1066,
+        "source_lineno": 1089,
         "source_range": [
-          32656,
-          32794
+          33313,
+          33446
         ]
       },
       "dispMonospaced": {
@@ -839,10 +966,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1077,
+        "source_lineno": 1100,
         "source_range": [
-          32919,
-          33077
+          33565,
+          33718
         ]
       },
       "warn": {
@@ -861,22 +988,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1088,
+        "source_lineno": 1111,
         "source_range": [
-          33191,
-          33307
-        ]
-      },
-      "checkStopLoop": {
-        "name": "checkStopLoop",
-        "kind": "function",
-        "description": "Verifies if a loop within the script execution should be terminated, typically used to avoid infinite or lengthy unnecessary execution.",
-        "params": [],
-        "source_filename": "basic.js",
-        "source_lineno": 1182,
-        "source_range": [
-          36506,
-          36662
+          33826,
+          33938
         ]
       },
       "edit": {
@@ -896,10 +1011,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1193,
+        "source_lineno": 1175,
         "source_range": [
-          36869,
-          36919
+          35366,
+          35414
         ]
       },
       "getExamples": {
@@ -918,10 +1033,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1201,
+        "source_lineno": 1183,
         "source_range": [
-          37096,
-          37361
+          35585,
+          35845
         ]
       },
       "openExample": {
@@ -940,10 +1055,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1212,
+        "source_lineno": 1194,
         "source_range": [
-          37509,
-          37691
+          35987,
+          36164
         ]
       },
       "openExamplesFolder": {
@@ -952,10 +1067,10 @@
         "description": "Opens examples folder in File Explorer",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1222,
+        "source_lineno": 1204,
         "source_range": [
-          37756,
-          37853
+          36224,
+          36319
         ]
       },
       "goToExamplesFolder": {
@@ -964,10 +1079,10 @@
         "description": "Opens examples folder in File Explorer",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1229,
+        "source_lineno": 1211,
         "source_range": [
-          37918,
-          38007
+          36379,
+          36466
         ]
       },
       "showMessageBox": {
@@ -996,10 +1111,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1238,
+        "source_lineno": 1220,
         "source_range": [
-          38255,
-          38341
+          36707,
+          36791
         ]
       },
       "saveObject": {
@@ -1039,10 +1154,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1248,
+        "source_lineno": 1230,
         "source_range": [
-          38573,
-          38683
+          37015,
+          37123
         ]
       },
       "loadObject": {
@@ -1083,10 +1198,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1258,
+        "source_lineno": 1240,
         "source_range": [
-          38918,
-          39215
+          37350,
+          37641
         ]
       },
       "loadClass": {
@@ -1125,10 +1240,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1272,
+        "source_lineno": 1254,
         "source_range": [
-          39458,
-          39903
+          37876,
+          38306
         ]
       },
       "save": {
@@ -1157,16 +1272,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1294,
+        "source_lineno": 1276,
         "source_range": [
-          40166,
-          41295
+          38562,
+          39663
         ]
       },
       "load": {
         "name": "load",
         "kind": "function",
-        "description": "Loads variables from a specified file into the specified scope or the default script context.\rSupports current JSLAB workspace format and legacy plain JSON object files.",
+        "description": "Loads variables from a specified file into the specified scope or the default script context.\nSupports current JSLAB workspace format and legacy plain JSON object files.",
         "params": [
           {
             "type": {
@@ -1181,10 +1296,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1329,
+        "source_lineno": 1311,
         "source_range": [
-          41606,
-          43294
+          39967,
+          41607
         ]
       },
       "getCompletions": {
@@ -1213,10 +1328,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1384,
+        "source_lineno": 1366,
         "source_range": [
-          43563,
-          47552
+          41869,
+          45752
         ]
       },
       "getObjectByProp": {
@@ -1264,10 +1379,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1499,
+        "source_lineno": 1481,
         "source_range": [
-          47908,
-          48087
+          46099,
+          46275
         ]
       },
       "getObjectsByProp": {
@@ -1314,10 +1429,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1511,
+        "source_lineno": 1493,
         "source_range": [
-          48460,
-          48623
+          46639,
+          46799
         ]
       },
       "strcmp": {
@@ -1355,10 +1470,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1522,
+        "source_lineno": 1504,
         "source_range": [
-          48831,
-          48905
+          46999,
+          47071
         ]
       },
       "compareVersions": {
@@ -1396,10 +1511,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1532,
+        "source_lineno": 1514,
         "source_range": [
-          49136,
-          49551
+          47294,
+          47694
         ]
       },
       "checkForUpdate": {
@@ -1419,10 +1534,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1553,
+        "source_lineno": 1535,
         "source_range": [
-          49693,
-          51167
+          47830,
+          49270
         ]
       },
       "unrequire": {
@@ -1441,10 +1556,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1593,
+        "source_lineno": 1575,
         "source_range": [
-          51302,
-          51627
+          49399,
+          49715
         ]
       },
       "resetApp": {
@@ -1453,10 +1568,10 @@
         "description": "Resets app.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1607,
+        "source_lineno": 1589,
         "source_range": [
-          51667,
-          51720
+          49750,
+          49801
         ]
       },
       "resetSandbox": {
@@ -1465,10 +1580,10 @@
         "description": "Resets the sandbox environment to its initial state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1614,
+        "source_lineno": 1596,
         "source_range": [
-          51801,
-          51862
+          49877,
+          49936
         ]
       },
       "openDevTools": {
@@ -1486,10 +1601,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1622,
+        "source_lineno": 1604,
         "source_range": [
-          51988,
-          52056
+          50056,
+          50122
         ]
       },
       "installModule": {
@@ -1519,10 +1634,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1631,
+        "source_lineno": 1613,
         "source_range": [
-          52274,
-          54507
+          50333,
+          52503
         ]
       },
       "addForCleanup": {
@@ -1550,10 +1665,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1701,
+        "source_lineno": 1683,
         "source_range": [
-          54741,
-          54808
+          52730,
+          52795
         ]
       }
     },
@@ -4210,6 +4325,60 @@
       }
     },
     "non_blocking": {
+      "runInterruptible": {
+        "name": "runInterruptible",
+        "kind": "function",
+        "description": "Runs scientific/native work outside the persistent workspace so it can be stopped safely.\nThe function receives copied arguments and must not depend on caller closures.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "function"
+              ]
+            },
+            "description": "Function to execute in an isolated scientific runtime.",
+            "name": "work_function"
+          },
+          {
+            "type": {
+              "names": [
+                "Array"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": "[]",
+            "description": "Structured-cloneable arguments.",
+            "name": "args"
+          },
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": "{}",
+            "description": "Optional timeout_ms and AbortSignal signal.",
+            "name": "options"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<*>"
+              ]
+            },
+            "description": "Copied result; parent variables survive task interruption."
+          }
+        ],
+        "source_filename": "non-blocking.js",
+        "source_lineno": 30,
+        "source_range": [
+          991,
+          4929
+        ]
+      },
       "nbwhile": {
         "name": "nbwhile",
         "kind": "function",
@@ -4226,150 +4395,10 @@
           }
         ],
         "source_filename": "non-blocking.js",
-        "source_lineno": 26,
-        "source_range": [
-          675,
-          1020
-        ]
-      },
-      "nbrun": {
-        "name": "nbrun",
-        "kind": "function",
-        "description": "Executes a given function once in a non-blocking manner.",
-        "params": [
-          {
-            "type": {
-              "names": [
-                "function"
-              ]
-            },
-            "description": "The function to be executed.",
-            "name": "fn"
-          }
-        ],
-        "source_filename": "non-blocking.js",
-        "source_lineno": 44,
-        "source_range": [
-          1159,
-          1366
-        ]
-      },
-      "nbnext": {
-        "name": "nbnext",
-        "kind": "function",
-        "description": "Schedules the next block of code to be executed in a non-blocking manner.",
-        "params": [
-          {
-            "type": {
-              "names": [
-                "function"
-              ]
-            },
-            "description": "The function to execute next.",
-            "name": "fn"
-          }
-        ],
-        "source_filename": "non-blocking.js",
-        "source_lineno": 56,
-        "source_range": [
-          1523,
-          1801
-        ]
-      },
-      "waitMSeconds": {
-        "name": "waitMSeconds",
-        "kind": "function",
-        "description": "Waits for a specified number of milliseconds in a non-blocking manner.",
-        "params": [
-          {
-            "type": {
-              "names": [
-                "Number"
-              ]
-            },
-            "description": "The number of milliseconds to wait.",
-            "name": "ms"
-          }
-        ],
-        "returns": [
-          {
-            "type": {
-              "names": [
-                "Promise.<void>"
-              ]
-            },
-            "description": "A promise that resolves after the specified time has elapsed."
-          }
-        ],
-        "source_filename": "non-blocking.js",
-        "source_lineno": 73,
-        "source_range": [
-          2052,
-          2336
-        ]
-      },
-      "waitSeconds": {
-        "name": "waitSeconds",
-        "kind": "function",
-        "description": "Waits for a specified number of seconds in a non-blocking manner.",
-        "params": [
-          {
-            "type": {
-              "names": [
-                "Number"
-              ]
-            },
-            "description": "The number of seconds to wait.",
-            "name": "s"
-          }
-        ],
-        "returns": [
-          {
-            "type": {
-              "names": [
-                "Promise.<void>"
-              ]
-            },
-            "description": "A promise that resolves after the specified time has elapsed."
-          }
-        ],
-        "source_filename": "non-blocking.js",
-        "source_lineno": 87,
-        "source_range": [
-          2578,
-          2828
-        ]
-      },
-      "waitMinutes": {
-        "name": "waitMinutes",
-        "kind": "function",
-        "description": "Waits for a specified number of minutes in a non-blocking manner.",
-        "params": [
-          {
-            "type": {
-              "names": [
-                "Number"
-              ]
-            },
-            "description": "The number of minutes to wait.",
-            "name": "min"
-          }
-        ],
-        "returns": [
-          {
-            "type": {
-              "names": [
-                "Promise.<void>"
-              ]
-            },
-            "description": "A promise that resolves after the specified time has elapsed."
-          }
-        ],
-        "source_filename": "non-blocking.js",
         "source_lineno": 101,
         "source_range": [
-          3070,
-          3327
+          5101,
+          5233
         ]
       },
       "clearIntervalIf": {
@@ -4399,10 +4428,10 @@
           }
         ],
         "source_filename": "non-blocking.js",
-        "source_lineno": 115,
+        "source_lineno": 138,
         "source_range": [
-          3517,
-          3639
+          6136,
+          6253
         ]
       },
       "clearTimeoutIf": {
@@ -4432,10 +4461,10 @@
           }
         ],
         "source_filename": "non-blocking.js",
-        "source_lineno": 127,
+        "source_lineno": 150,
         "source_range": [
-          3829,
-          3949
+          6436,
+          6551
         ]
       },
       "resetTimeout": {
@@ -4482,10 +4511,10 @@
           }
         ],
         "source_filename": "non-blocking.js",
-        "source_lineno": 141,
+        "source_lineno": 164,
         "source_range": [
-          4150,
-          4289
+          6743,
+          6878
         ]
       },
       "initWorker": {
@@ -4514,10 +4543,10 @@
           }
         ],
         "source_filename": "non-blocking.js",
-        "source_lineno": 152,
+        "source_lineno": 175,
         "source_range": [
-          4508,
-          4724
+          7090,
+          7337
         ]
       }
     },
@@ -6069,7 +6098,7 @@
         "source_lineno": 432,
         "source_range": [
           12803,
-          17060
+          16981
         ]
       },
       "openPlotlyjs": {
@@ -6089,10 +6118,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 546,
+        "source_lineno": 543,
         "source_range": [
-          17255,
-          17945
+          17176,
+          17787
         ]
       },
       "openCanvas": {
@@ -6112,10 +6141,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 571,
+        "source_lineno": 565,
         "source_range": [
-          18142,
-          18952
+          17984,
+          18715
         ]
       },
       "openWindowBlank": {
@@ -6135,10 +6164,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 598,
+        "source_lineno": 589,
         "source_range": [
-          19096,
-          19365
+          18859,
+          19128
         ]
       },
       "showMermaidGraph": {
@@ -6168,10 +6197,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 611,
+        "source_lineno": 602,
         "source_range": [
-          19607,
-          20558
+          19370,
+          20321
         ]
       }
     },
@@ -15253,7 +15282,7 @@
         "source_lineno": 142,
         "source_range": [
           4560,
-          4897
+          4890
         ]
       },
       "chooseFile": {
@@ -15285,8 +15314,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 178,
         "source_range": [
-          6018,
-          6877
+          5982,
+          6823
         ]
       },
       "chooseFolder": {
@@ -15318,8 +15347,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 203,
         "source_range": [
-          7128,
-          8084
+          7073,
+          8007
         ]
       },
       "getDefaultPath": {
@@ -15350,8 +15379,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 232,
         "source_range": [
-          8310,
-          8390
+          8232,
+          8312
         ]
       },
       "openFolder": {
@@ -15372,8 +15401,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 240,
         "source_range": [
-          8524,
-          8597
+          8446,
+          8519
         ]
       },
       "makeDirectory": {
@@ -15404,8 +15433,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 250,
         "source_range": [
-          8995,
-          9083
+          8917,
+          9005
         ]
       },
       "mkdir": {
@@ -15436,8 +15465,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 260,
         "source_range": [
-          9508,
-          9588
+          9430,
+          9510
         ]
       },
       "openDir": {
@@ -15458,8 +15487,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 268,
         "source_range": [
-          9754,
-          9821
+          9676,
+          9743
         ]
       },
       "showFolder": {
@@ -15480,8 +15509,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 276,
         "source_range": [
-          9979,
-          10052
+          9901,
+          9974
         ]
       },
       "showDir": {
@@ -15502,8 +15531,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 284,
         "source_range": [
-          10213,
-          10280
+          10135,
+          10202
         ]
       },
       "openProgramFolder": {
@@ -15514,8 +15543,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 291,
         "source_range": [
-          10368,
-          10473
+          10290,
+          10395
         ]
       },
       "showFileInFolder": {
@@ -15536,8 +15565,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 299,
         "source_range": [
-          10633,
-          10718
+          10555,
+          10640
         ]
       },
       "showFileInDir": {
@@ -15558,8 +15587,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 307,
         "source_range": [
-          10910,
-          10989
+          10832,
+          10911
         ]
       },
       "readcsv": {
@@ -15600,8 +15629,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 317,
         "source_range": [
-          11309,
-          12373
+          11231,
+          12295
         ]
       },
       "checkFile": {
@@ -15622,8 +15651,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 349,
         "source_range": [
-          12499,
-          12569
+          12421,
+          12491
         ]
       },
       "existFile": {
@@ -15644,8 +15673,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 357,
         "source_range": [
-          12694,
-          12750
+          12616,
+          12672
         ]
       },
       "checkDirectory": {
@@ -15666,8 +15695,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 365,
         "source_range": [
-          12890,
-          12980
+          12812,
+          12902
         ]
       },
       "existDirectory": {
@@ -15688,8 +15717,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 373,
         "source_range": [
-          13120,
-          13196
+          13042,
+          13118
         ]
       },
       "copyDir": {
@@ -15719,8 +15748,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 382,
         "source_range": [
-          13417,
-          14352
+          13339,
+          14274
         ]
       },
       "copyFolder": {
@@ -15750,8 +15779,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 414,
         "source_range": [
-          14552,
-          14617
+          14474,
+          14539
         ]
       },
       "cp": {
@@ -15781,8 +15810,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 423,
         "source_range": [
-          14824,
-          14881
+          14746,
+          14803
         ]
       },
       "copyDir7z": {
@@ -15812,8 +15841,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 432,
         "source_range": [
-          15128,
-          15531
+          15050,
+          15453
         ]
       }
     },
@@ -20838,8 +20867,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 30,
         "source_range": [
-          825,
-          919
+          854,
+          950
         ]
       },
       "boundaryFollow2D": {
@@ -20850,8 +20879,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 37,
         "source_range": [
-          1005,
-          1110
+          1041,
+          1148
         ]
       },
       "boundaryFollow3D": {
@@ -20862,8 +20891,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 44,
         "source_range": [
-          1196,
-          1301
+          1239,
+          1346
         ]
       },
       "findNearestPoints": {
@@ -20903,14 +20932,14 @@
         "source_filename": "geometry.js",
         "source_lineno": 54,
         "source_range": [
-          1548,
-          2310
+          1601,
+          2384
         ]
       },
       "minDisksDistance3D": {
         "name": "minDisksDistance3D",
         "kind": "function",
-        "description": "Finds the minimum Euclidean distance between two filled disks in 3D.\nOverlapping disks have zero distance. Normals need not have unit length.\nThrows for invalid inputs or if the error bound cannot be met.",
+        "description": "Finds the minimum Euclidean distance between two filled disks in 3D.\rOverlapping disks have zero distance. Normals need not have unit length.\rThrows for invalid inputs or if the error bound cannot be met.",
         "params": [
           {
             "type": {
@@ -20980,14 +21009,14 @@
         "source_filename": "geometry.js",
         "source_lineno": 89,
         "source_range": [
-          2958,
-          3094
+          3046,
+          3184
         ]
       },
       "pointLineDistance": {
         "name": "pointLineDistance",
         "kind": "function",
-        "description": "Returns the shortest distance from point P to the line defined by (A, i)\nand the closest point (P1) on that line.",
+        "description": "Returns the shortest distance from point P to the line defined by (A, i)\rand the closest point (P1) on that line.",
         "params": [
           {
             "type": {
@@ -21024,20 +21053,20 @@
                 "Object"
               ]
             },
-            "description": "d   - shortest distance\n  P1  - point on the line with the smallest distance to P"
+            "description": "d   - shortest distance\r  P1  - point on the line with the smallest distance to P"
           }
         ],
         "source_filename": "geometry.js",
         "source_lineno": 103,
         "source_range": [
-          3533,
-          3887
+          3635,
+          3999
         ]
       },
       "pointSegmentDistance": {
         "name": "pointSegmentDistance",
         "kind": "function",
-        "description": "Computes the shortest distance from a point to a line segment in 2D.\n\nThe point and segment endpoints are expected as objects with numeric\nproperties {x, y}. The result is the Euclidean distance to the closest\npoint on the segment.",
+        "description": "Computes the shortest distance from a point to a line segment in 2D.\r\rThe point and segment endpoints are expected as objects with numeric\rproperties {x, y}. The result is the Euclidean distance to the closest\rpoint on the segment.",
         "params": [
           {
             "type": {
@@ -21080,14 +21109,14 @@
         "source_filename": "geometry.js",
         "source_lineno": 127,
         "source_range": [
-          4407,
-          4795
+          4533,
+          4930
         ]
       },
       "lineCircleIntersection": {
         "name": "lineCircleIntersection",
         "kind": "function",
-        "description": "Returns the intersection points of a circle (center O, radius r) \nin a plane with a line passing through point P with direction i.",
+        "description": "Returns the intersection points of a circle (center O, radius r) \rin a plane with a line passing through point P with direction i.",
         "params": [
           {
             "type": {
@@ -21133,20 +21162,20 @@
                 "Object"
               ]
             },
-            "description": "flag = 0 -> intersection (two points)\n  flag = 1 -> tangent (one point)\n  flag = 2 -> no intersection"
+            "description": "flag = 0 -> intersection (two points)\r  flag = 1 -> tangent (one point)\r  flag = 2 -> no intersection"
           }
         ],
         "source_filename": "geometry.js",
         "source_lineno": 150,
         "source_range": [
-          5341,
-          6020
+          5490,
+          6193
         ]
       },
       "planesIntersection": {
         "name": "planesIntersection",
         "kind": "function",
-        "description": "Returns the line (point P, direction i) that is the intersection \nof two planes, or indicates if they are the same or parallel.",
+        "description": "Returns the line (point P, direction i) that is the intersection \rof two planes, or indicates if they are the same or parallel.",
         "params": [
           {
             "type": {
@@ -21192,20 +21221,20 @@
                 "Object"
               ]
             },
-            "description": "flag = 0 -> planes intersect\n  flag = 1 -> planes are the same\n  flag = 2 -> planes are parallel (no intersection)"
+            "description": "flag = 0 -> planes intersect\r  flag = 1 -> planes are the same\r  flag = 2 -> planes are parallel (no intersection)"
           }
         ],
         "source_filename": "geometry.js",
         "source_lineno": 188,
         "source_range": [
-          6563,
-          8781
+          6750,
+          9040
         ]
       },
       "isPointOnLine": {
         "name": "isPointOnLine",
         "kind": "function",
-        "description": "Checks if point P lies on the line segment A-B.\nReturns 1 if on segment, 0 otherwise.",
+        "description": "Checks if point P lies on the line segment A-B.\rReturns 1 if on segment, 0 otherwise.",
         "params": [
           {
             "type": {
@@ -21245,14 +21274,14 @@
         "source_filename": "geometry.js",
         "source_lineno": 270,
         "source_range": [
-          9029,
-          9535
+          9298,
+          9818
         ]
       },
       "linesOverlap": {
         "name": "linesOverlap",
         "kind": "function",
-        "description": "Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,\nor indicates no overlap.",
+        "description": "Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,\ror indicates no overlap.",
         "params": [
           {
             "type": {
@@ -21299,8 +21328,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 295,
         "source_range": [
-          9874,
-          10825
+          10168,
+          11154
         ]
       },
       "minPointsDistance3D": {
@@ -21334,14 +21363,14 @@
                 "Object"
               ]
             },
-            "description": "L  - The minimal distance found.\n  P1 - The point in P1i corresponding to the minimal distance.\n  P2 - The point in P2i corresponding to the minimal distance."
+            "description": "L  - The minimal distance found.\r  P1 - The point in P1i corresponding to the minimal distance.\r  P2 - The point in P2i corresponding to the minimal distance."
           }
         ],
         "source_filename": "geometry.js",
         "source_lineno": 342,
         "source_range": [
-          11309,
-          12024
+          11650,
+          12397
         ]
       },
       "triangle": {
@@ -21390,8 +21419,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 383,
         "source_range": [
-          12253,
-          12337
+          12635,
+          12721
         ]
       },
       "delaunayTriangulation": {
@@ -21422,8 +21451,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 392,
         "source_range": [
-          12518,
-          14027
+          12909,
+          14460
         ]
       },
       "getRotationMatrix": {
@@ -21463,8 +21492,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 442,
         "source_range": [
-          14278,
-          15997
+          14719,
+          16482
         ]
       },
       "transform": {
@@ -21522,8 +21551,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 496,
         "source_range": [
-          16449,
-          16797
+          16944,
+          17298
         ]
       },
       "createVectors3D": {
@@ -21628,8 +21657,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 517,
         "source_range": [
-          17496,
-          21856
+          18012,
+          22499
         ]
       },
       "createDisks3D": {
@@ -21723,8 +21752,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 658,
         "source_range": [
-          22555,
-          25938
+          23212,
+          26699
         ]
       },
       "createPlanes3D": {
@@ -21827,8 +21856,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 777,
         "source_range": [
-          26753,
-          30488
+          27529,
+          31369
         ]
       },
       "createLines3D": {
@@ -21904,8 +21933,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 894,
         "source_range": [
-          30901,
-          31697
+          31794,
+          32619
         ]
       },
       "createPoints3D": {
@@ -21954,8 +21983,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 932,
         "source_range": [
-          31947,
-          32574
+          32878,
+          33531
         ]
       },
       "createText3D": {
@@ -22004,8 +22033,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 967,
         "source_range": [
-          32824,
-          34082
+          33790,
+          35087
         ]
       },
       "symRectangle": {
@@ -22056,8 +22085,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 1015,
         "source_range": [
-          34390,
-          34528
+          35404,
+          35548
         ]
       },
       "circle": {
@@ -22097,8 +22126,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 1029,
         "source_range": [
-          34796,
-          35034
+          35824,
+          36069
         ]
       },
       "disk": {
@@ -22147,8 +22176,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 1045,
         "source_range": [
-          35378,
-          35747
+          36422,
+          36802
         ]
       },
       "boundary3D": {
@@ -22190,8 +22219,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 1064,
         "source_range": [
-          36066,
-          36657
+          37129,
+          37741
         ]
       },
       "writeOff": {
@@ -22230,8 +22259,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 1093,
         "source_range": [
-          36902,
-          37097
+          37994,
+          38196
         ]
       },
       "readOff": {
@@ -22262,8 +22291,8 @@
         "source_filename": "geometry.js",
         "source_lineno": 1108,
         "source_range": [
-          37428,
-          38842
+          38535,
+          39997
         ]
       }
     },
@@ -27936,10 +27965,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 721,
+        "source_lineno": 712,
         "source_range": [
-          22644,
-          23273
+          22407,
+          23036
         ]
       },
       "show": {
@@ -27959,10 +27988,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 743,
+        "source_lineno": 734,
         "source_range": [
-          23456,
-          23576
+          23219,
+          23337
         ]
       },
       "hide": {
@@ -27982,10 +28011,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 752,
+        "source_lineno": 743,
         "source_range": [
-          23758,
-          23878
+          23519,
+          23637
         ]
       },
       "focus": {
@@ -28005,10 +28034,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 761,
+        "source_lineno": 752,
         "source_range": [
-          23997,
-          24119
+          23756,
+          23876
         ]
       },
       "minimize": {
@@ -28028,10 +28057,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 770,
+        "source_lineno": 761,
         "source_range": [
-          24308,
-          24436
+          24065,
+          24191
         ]
       },
       "center": {
@@ -28051,10 +28080,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 779,
+        "source_lineno": 770,
         "source_range": [
-          24628,
-          24752
+          24383,
+          24505
         ]
       },
       "moveTop": {
@@ -28074,10 +28103,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 788,
+        "source_lineno": 779,
         "source_range": [
-          24975,
-          25101
+          24728,
+          24852
         ]
       },
       "setSize": {
@@ -28116,10 +28145,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 799,
+        "source_lineno": 790,
         "source_range": [
-          25351,
-          25505
+          25102,
+          25254
         ]
       },
       "setPos": {
@@ -28158,10 +28187,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 810,
+        "source_lineno": 801,
         "source_range": [
-          25773,
-          25917
+          25522,
+          25664
         ]
       },
       "setResizable": {
@@ -28191,10 +28220,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 820,
+        "source_lineno": 811,
         "source_range": [
-          26223,
-          26371
+          25970,
+          26116
         ]
       },
       "setMovable": {
@@ -28224,10 +28253,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 830,
+        "source_lineno": 821,
         "source_range": [
-          26671,
-          26815
+          26416,
+          26558
         ]
       },
       "setAspectRatio": {
@@ -28257,10 +28286,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 840,
+        "source_lineno": 831,
         "source_range": [
-          27122,
-          27288
+          26865,
+          27029
         ]
       },
       "setOpacity": {
@@ -28290,10 +28319,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 850,
+        "source_lineno": 841,
         "source_range": [
-          27619,
-          27767
+          27360,
+          27506
         ]
       },
       "setFullscreen": {
@@ -28323,10 +28352,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 860,
+        "source_lineno": 851,
         "source_range": [
-          28022,
-          28172
+          27761,
+          27909
         ]
       },
       "setTitle": {
@@ -28356,10 +28385,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 870,
+        "source_lineno": 861,
         "source_range": [
-          28366,
-          28506
+          28103,
+          28241
         ]
       },
       "printToPdf": {
@@ -28389,10 +28418,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 880,
+        "source_lineno": 871,
         "source_range": [
-          28657,
-          28805
+          28392,
+          28538
         ]
       },
       "getSize": {
@@ -28412,10 +28441,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 889,
+        "source_lineno": 880,
         "source_range": [
-          28943,
-          29069
+          28676,
+          28800
         ]
       },
       "getPos": {
@@ -28435,10 +28464,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 898,
+        "source_lineno": 889,
         "source_range": [
-          29207,
-          29331
+          28938,
+          29060
         ]
       },
       "close": {
@@ -28458,10 +28487,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 907,
+        "source_lineno": 898,
         "source_range": [
-          29443,
-          29516
+          29172,
+          29245
         ]
       },
       "openDevTools": {
@@ -28481,10 +28510,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 915,
+        "source_lineno": 906,
         "source_range": [
-          29696,
-          29832
+          29425,
+          29559
         ]
       },
       "getMediaSourceId": {
@@ -28505,10 +28534,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 924,
+        "source_lineno": 915,
         "source_range": [
-          29979,
-          30123
+          29706,
+          29848
         ]
       },
       "startVideoRecording": {
@@ -28539,10 +28568,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 934,
+        "source_lineno": 925,
         "source_range": [
-          30284,
-          30491
+          30009,
+          30214
         ]
       },
       "addScript": {
@@ -28561,10 +28590,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 943,
+        "source_lineno": 934,
         "source_range": [
-          30604,
-          31170
+          30327,
+          30893
         ]
       },
       "addLinkStylesheet": {
@@ -28583,10 +28612,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 960,
+        "source_lineno": 951,
         "source_range": [
-          31298,
-          31512
+          31021,
+          31235
         ]
       },
       "addUI": {
@@ -28595,10 +28624,10 @@
         "description": "Loads the UI script.",
         "params": [],
         "source_filename": "windows.js",
-        "source_lineno": 970,
+        "source_lineno": 961,
         "source_range": [
-          31556,
-          31657
+          31279,
+          31380
         ]
       }
     },
@@ -28626,7 +28655,7 @@
         "source_lineno": 913,
         "source_range": [
           27710,
-          27851
+          27849
         ]
       },
       "setSize": {
@@ -28667,8 +28696,8 @@
         "source_filename": "figures.js",
         "source_lineno": 924,
         "source_range": [
-          28091,
-          28262
+          28089,
+          28258
         ]
       },
       "setPos": {
@@ -28709,8 +28738,8 @@
         "source_filename": "figures.js",
         "source_lineno": 935,
         "source_range": [
-          28522,
-          28683
+          28518,
+          28677
         ]
       },
       "setTitle": {
@@ -28742,8 +28771,8 @@
         "source_filename": "figures.js",
         "source_lineno": 945,
         "source_range": [
-          28877,
-          29034
+          28871,
+          29026
         ]
       },
       "getSize": {
@@ -28765,8 +28794,8 @@
         "source_filename": "figures.js",
         "source_lineno": 954,
         "source_range": [
-          29164,
-          29309
+          29156,
+          29299
         ]
       },
       "getPos": {
@@ -28788,8 +28817,8 @@
         "source_filename": "figures.js",
         "source_lineno": 963,
         "source_range": [
-          29439,
-          29582
+          29429,
+          29570
         ]
       },
       "getMediaSourceId": {
@@ -28811,8 +28840,8 @@
         "source_filename": "figures.js",
         "source_lineno": 972,
         "source_range": [
-          29690,
-          29853
+          29678,
+          29839
         ]
       },
       "startVideoRecording": {
@@ -28845,8 +28874,8 @@
         "source_filename": "figures.js",
         "source_lineno": 982,
         "source_range": [
-          30013,
-          30190
+          29999,
+          30174
         ]
       },
       "close": {
@@ -28868,8 +28897,8 @@
         "source_filename": "figures.js",
         "source_lineno": 991,
         "source_range": [
-          30294,
-          30419
+          30278,
+          30403
         ]
       },
       "hideMenu": {
@@ -28880,8 +28909,8 @@
         "source_filename": "figures.js",
         "source_lineno": 999,
         "source_range": [
-          30461,
-          30657
+          30445,
+          30641
         ]
       },
       "showMenu": {
@@ -28892,8 +28921,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1009,
         "source_range": [
-          30699,
-          30889
+          30683,
+          30873
         ]
       }
     },
@@ -28916,8 +28945,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1241,
         "source_range": [
-          37579,
-          37723
+          37563,
+          37707
         ]
       },
       "xlabel": {
@@ -28938,8 +28967,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1252,
         "source_range": [
-          37843,
-          37981
+          37827,
+          37965
         ]
       },
       "ylabel": {
@@ -28960,8 +28989,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1263,
         "source_range": [
-          38099,
-          38237
+          38083,
+          38221
         ]
       },
       "zlabel": {
@@ -28982,8 +29011,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1274,
         "source_range": [
-          38355,
-          38493
+          38339,
+          38477
         ]
       },
       "title": {
@@ -29004,8 +29033,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1285,
         "source_range": [
-          38596,
-          38732
+          38580,
+          38716
         ]
       },
       "xlim": {
@@ -29026,8 +29055,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1296,
         "source_range": [
-          38847,
-          39005
+          38831,
+          38989
         ]
       },
       "ylim": {
@@ -29048,8 +29077,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1308,
         "source_range": [
-          39120,
-          39278
+          39104,
+          39262
         ]
       },
       "zlim": {
@@ -29070,8 +29099,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1320,
         "source_range": [
-          39393,
-          39551
+          39377,
+          39535
         ]
       },
       "view": {
@@ -29101,8 +29130,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1333,
         "source_range": [
-          39734,
-          39896
+          39718,
+          39880
         ]
       },
       "zoom": {
@@ -29123,8 +29152,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1344,
         "source_range": [
-          40000,
-          40136
+          39984,
+          40120
         ]
       },
       "axis": {
@@ -29145,8 +29174,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1355,
         "source_range": [
-          40309,
-          40449
+          40293,
+          40433
         ]
       },
       "fromJSON": {
@@ -29167,8 +29196,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1366,
         "source_range": [
-          40546,
-          40670
+          40530,
+          40654
         ]
       },
       "print": {
@@ -29199,8 +29228,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1378,
         "source_range": [
-          40883,
-          41233
+          40867,
+          41215
         ]
       },
       "update": {
@@ -29230,8 +29259,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1398,
         "source_range": [
-          41461,
-          41545
+          41443,
+          41527
         ]
       },
       "updateById": {
@@ -29253,8 +29282,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1406,
         "source_range": [
-          41709,
-          41791
+          41691,
+          41773
         ]
       },
       "remove": {
@@ -29265,8 +29294,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1413,
         "source_range": [
-          41894,
-          41988
+          41876,
+          41970
         ]
       }
     },
@@ -41879,14 +41908,14 @@
         "source_filename": "geography-map.js",
         "source_lineno": 69,
         "source_range": [
-          2480,
-          3550
+          2412,
+          3377
         ]
       },
       "setCenter": {
         "name": "setCenter",
         "kind": "function",
-        "description": "Sets the center of the map to the specified latitude and longitude.\rThis will update the internal state and move the Leaflet map if it is ready.",
+        "description": "Sets the center of the map to the specified latitude and longitude.\nThis will update the internal state and move the Leaflet map if it is ready.",
         "params": [
           {
             "type": {
@@ -41908,16 +41937,16 @@
           }
         ],
         "source_filename": "geography-map.js",
-        "source_lineno": 103,
+        "source_lineno": 100,
         "source_range": [
-          3806,
-          3979
+          3625,
+          3792
         ]
       },
       "setZoom": {
         "name": "setZoom",
         "kind": "function",
-        "description": "Sets the zoom level of the map.\rThis will update the internal state and adjust the Leaflet map if it is ready.",
+        "description": "Sets the zoom level of the map.\nThis will update the internal state and adjust the Leaflet map if it is ready.",
         "params": [
           {
             "type": {
@@ -41930,10 +41959,10 @@
           }
         ],
         "source_filename": "geography-map.js",
-        "source_lineno": 116,
+        "source_lineno": 113,
         "source_range": [
-          4169,
-          4300
+          3975,
+          4101
         ]
       },
       "addMarker": {
@@ -41972,10 +42001,10 @@
           }
         ],
         "source_filename": "geography-map.js",
-        "source_lineno": 129,
+        "source_lineno": 126,
         "source_range": [
-          4576,
-          4677
+          4369,
+          4468
         ]
       }
     },
@@ -41998,8 +42027,8 @@
         "source_filename": "geography-map-3d.js",
         "source_lineno": 36,
         "source_range": [
-          810,
-          2154
+          775,
+          2004
         ]
       },
       "setView": {
@@ -42058,10 +42087,10 @@
           }
         ],
         "source_filename": "geography-map-3d.js",
-        "source_lineno": 82,
+        "source_lineno": 79,
         "source_range": [
-          2489,
-          3042
+          2329,
+          2865
         ]
       },
       "addEntity": {
@@ -42090,10 +42119,10 @@
           }
         ],
         "source_filename": "geography-map-3d.js",
-        "source_lineno": 106,
+        "source_lineno": 103,
         "source_range": [
-          3255,
-          3351
+          3071,
+          3165
         ]
       },
       "removeAllEntities": {
@@ -42102,10 +42131,10 @@
         "description": "Removes all entities from the 3D map viewer.",
         "params": [],
         "source_filename": "geography-map-3d.js",
-        "source_lineno": 113,
+        "source_lineno": 110,
         "source_range": [
-          3424,
-          3489
+          3233,
+          3296
         ]
       },
       "flyTo": {
@@ -42124,10 +42153,10 @@
           }
         ],
         "source_filename": "geography-map-3d.js",
-        "source_lineno": 121,
+        "source_lineno": 118,
         "source_range": [
-          3622,
-          3748
+          3423,
+          3545
         ]
       }
     },
@@ -42232,8 +42261,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 29,
         "source_range": [
-          690,
-          770
+          662,
+          740
         ]
       },
       "workerFunction": {
@@ -42277,8 +42306,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 39,
         "source_range": [
-          1101,
-          2242
+          1063,
+          2170
         ]
       },
       "init": {
@@ -42321,8 +42350,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 81,
         "source_range": [
-          2585,
-          3559
+          2505,
+          3500
         ]
       },
       "assignTasksToWorkers": {
@@ -42331,10 +42360,10 @@
         "description": "Assigns tasks from the queue to available workers.",
         "params": [],
         "source_filename": "parallel.js",
-        "source_lineno": 117,
+        "source_lineno": 118,
         "source_range": [
-          3636,
-          4875
+          3572,
+          4769
         ]
       },
       "run": {
@@ -42404,10 +42433,10 @@
           }
         ],
         "source_filename": "parallel.js",
-        "source_lineno": 170,
+        "source_lineno": 171,
         "source_range": [
-          5415,
-          6245
+          5298,
+          6103
         ]
       },
       "parfor": {
@@ -42509,10 +42538,10 @@
         ],
         "async": true,
         "source_filename": "parallel.js",
-        "source_lineno": 210,
+        "source_lineno": 211,
         "source_range": [
-          7113,
-          9349
+          6956,
+          9125
         ]
       },
       "terminate": {
@@ -42521,10 +42550,10 @@
         "description": "Terminates all workers and resets the worker pool.",
         "params": [],
         "source_filename": "parallel.js",
-        "source_lineno": 282,
+        "source_lineno": 283,
         "source_range": [
-          9426,
-          9612
+          9197,
+          9376
         ]
       }
     },

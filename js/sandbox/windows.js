@@ -471,9 +471,6 @@ class PRDC_JSLAB_LIB_WINDOWS {
     context.imports_ready = false;
     context.document.body.appendChild(script);
     while(!context.imports_ready) {
-      if(this.jsl.inter.basic.checkStopLoop()) {
-        return false;
-      }
       await this.jsl.inter.non_blocking.waitMSeconds(1);
     }
     context.sceneToJSON = async function(file_path, scene = context.scene) {
@@ -549,9 +546,6 @@ class PRDC_JSLAB_LIB_WINDOWS {
     var context = this.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
-      if(this.jsl.inter.basic.checkStopLoop()) {
-        return false;
-      }
       if(typeof context.Plotly != 'undefined') {
         context.imports_ready = true;
       }
@@ -574,9 +568,6 @@ class PRDC_JSLAB_LIB_WINDOWS {
     var context = this.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
-      if(this.jsl.inter.basic.checkStopLoop()) {
-        return false;
-      }
       if(typeof context.d3 != 'undefined') {
         context.imports_ready = true;
       }
@@ -741,7 +732,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was shown successfully, or `false` if the window ID is invalid.
    */
   async show() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.showWindow(this.wid);
   }
 
@@ -750,7 +741,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was hidden successfully, or `false` if the window ID is invalid.
    */
   async hide() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.hideWindow(this.wid);
   }
   
@@ -759,7 +750,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise} - Resolves when the window size is focused.
    */
   async focus() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.focusWindow(this.wid);
   }
 
@@ -768,7 +759,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was minimized successfully, or `false` if the window ID is invalid.
    */
   async minimize() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.minimizeWindow(this.wid);
   }
 
@@ -777,7 +768,7 @@ class PRDC_JSLAB_WINDOW {
  * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was centered successfully, or `false` if the window ID is invalid.
  */
   async center() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.centerWindow(this.wid);
   }
 
@@ -786,7 +777,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was moved to the top successfully, or `false` if the window ID is invalid.
    */
   async moveTop() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.moveTopWindow(this.wid);
   }
   
@@ -797,7 +788,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise} - Resolves when the window size is set.
    */
   async setSize(width, height) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowSize(this.wid, width, height);
   }
   
@@ -808,7 +799,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise} - Resolves when the window position is set.
    */
   async setPos(left, top) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowPos(this.wid, left, top);
   }
 
@@ -818,7 +809,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the resizable state was set successfully, or `false` if the window ID is invalid.
    */
   async setResizable(state) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowResizable(this.wid, state);
   }
 
@@ -828,7 +819,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the movable state was set successfully, or `false` if the window ID is invalid.
    */
   async setMovable(state) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowMovable(this.wid, state);
   }
 
@@ -838,7 +829,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the aspect ratio was set successfully, or `false` if the window ID is invalid.
    */
   async setAspectRatio(aspect_ratio) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowAspectRatio(this.wid, aspect_ratio);
   }
 
@@ -848,7 +839,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the opacity was set successfully, or `false` if the window ID is invalid.
    */
   async setOpacity(opacity) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowOpacity(this.wid, opacity);
   }
 
@@ -858,7 +849,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the fullscreen was set successfully, or `false` if the window ID is invalid.
    */
   async setFullscreen(state) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowFullscreen(this.wid, state);
   }
   
@@ -868,7 +859,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<*>} A promise that resolves when the title is set.
    */
   async setTitle(title) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowTitle(this.wid, title);
   }
 
@@ -878,7 +869,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Buffer} Generated PDF data.
    */
   async printToPdf(options) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.printWindowToPdf(this.wid, options);
   }
   
@@ -887,7 +878,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<Array>} - Resolves with an array [width, height].
    */
   async getSize() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.getWindowSize(this.wid);
   }
   
@@ -896,7 +887,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<Array>} - Resolves with an array [left, top].
    */
   async getPos() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.getWindowPos(this.wid);
   }
   
@@ -913,7 +904,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Promise<boolean>} A promise that resolves to true when dev tools are opened.
    */
   async openDevTools() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.openWindowDevTools(this.wid);
   }
 
@@ -922,7 +913,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {String|boolean} Media source id if there is window; otherwise, false.
    */
   async getMediaSourceId() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.getWindowMediaSourceId(this.wid);
   }
 
@@ -932,7 +923,7 @@ class PRDC_JSLAB_WINDOW {
    * @returns {Object|boolean} - Returns recorder object.
    */
   async startVideoRecording(opts) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.device.startVideoRecording(this.#jsl.inter.env.getWindowMediaSourceId(this.wid), opts);
   }
   

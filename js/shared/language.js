@@ -85,6 +85,15 @@ class PRDC_JSLAB_LANGUAGE {
    */
   update(cont = 'html', flag = true) {
     var obj = this;
+    document.querySelectorAll(cont + ' [lang-str]').forEach(function(el) {
+      el.textContent = obj.currentString(el.getAttribute('lang-str'));
+    });
+    document.querySelectorAll(cont + ' [aria-label-str]').forEach(function(el) {
+      el.setAttribute('aria-label', obj.currentString(el.getAttribute('aria-label-str')));
+    });
+    document.querySelectorAll(cont + ' [alt-str]').forEach(function(el) {
+      el.setAttribute('alt', obj.currentString(el.getAttribute('alt-str')));
+    });
 
     if(flag) {
       document.querySelectorAll(cont + ' str').forEach(function(el) {

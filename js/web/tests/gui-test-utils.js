@@ -26,6 +26,14 @@ function webTest(tests, name, fun, ...args) {
           var deadline = Date.now() + 5000;
           while(!fun()) { if(Date.now() > deadline) throw new Error('Timeout: ' + label); await new Promise(resolve => setTimeout(resolve, 20)); }
         },
+        async debuggerPane() {
+          const managed = await this.app._openEditorDebugger();
+          await this.wait(() => managed.iframe.contentWindow.__JSLAB_WEB_EDITOR__);
+          return managed.iframe.contentDocument;
+        },
+        hideDebugger() {
+          this.app.window_manager.windows.get(this.app.editor_window_id)?.iframe.contentDocument.getElementById('editor-debugger-close')?.click();
+        },
         async editor() {
           var managed = this.app.window_manager.windows.get(this.app.editor_window_id);
           if(!managed) { this.click('#editor-menu'); await this.wait(() => this.app.window_manager.windows.has(this.app.editor_window_id)); managed = this.app.window_manager.windows.get(this.app.editor_window_id); }
@@ -49,7 +57,16 @@ function webTest(tests, name, fun, ...args) {
         }
       };
     });
-    var result = await gui_browser.evaluate(fun, ...args);
+    var result;
+    try { result = await gui_browser.evaluate(fun, ...args); }
+    catch(error) {
+      const state = await gui_browser.evaluate(() => {
+        const state = { stage: globalThis.debug_test_stage, details: globalThis.debug_test_info, debugger_state: globalThis.jslab_web?.worker_debugger?.state, last_result: globalThis.jslab_web?.worker_debugger?.last_result };
+        globalThis.jslab_web?.worker_debugger?.dispose();
+        return state;
+      });
+      throw new Error(error.message + ' ' + JSON.stringify(state));
+    }
     assert.ok(result !== false, name);
   }, { tags: ['gui', 'web', 'integration'], timeout_ms: 20000 });
 }

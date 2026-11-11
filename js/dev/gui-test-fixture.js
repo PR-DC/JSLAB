@@ -52,7 +52,12 @@ async function initializeFixture(type, frame) {
   var scripts = [...html.matchAll(/<script[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(m => m[1]);
   html = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
   html = html.replace('<head>', '<head><base href="' + pathToFileURL(path.join(root, 'html') + path.sep).href + '">');
-  win.document.open(); win.document.write(html); win.document.close();
+  // Finish the replacement document's load before exposing its DOM. Otherwise a
+  // late about:blank/document navigation can replace markup during fixture setup.
+  win.document.open();
+  var markup_loaded = new Promise(resolve => win.addEventListener('load', resolve, { once: true }));
+  win.document.write(html); win.document.close();
+  await markup_loaded;
   var errors = [];
   win.addEventListener('error', e => { errors.push(String(e.error && e.error.stack || e.message)); e.preventDefault(); });
   win.addEventListener('unhandledrejection', e => { errors.push(String(e.reason && e.reason.stack || e.reason)); e.preventDefault(); });

@@ -57,6 +57,7 @@ class PRDC_JSLAB_ENV {
     this.jsl = jsl;
     this.runtime_scope = RUNTIME_SCOPE;
     this.is_worker = IS_WORKER_CONTEXT;
+    this._subprocesses = new Set();
     this._automation = this.is_worker ? null : new PRDC_JSLAB_SANDBOX_AUTOMATION(this.jsl);
     const internal_app_path = this.jsl.app_path;
     const wasm = getWasmModules();
@@ -138,9 +139,6 @@ class PRDC_JSLAB_ENV {
             break;
           case "get-completions":
             ipcRenderer.send("completions-" + data[0], obj.jsl.inter.basic.getCompletions(data));
-            break;
-          case "stop-loop":
-            obj.jsl.setStopLoop(data);
             break;
           case "run-last-script":
             obj.jsl.inter.eval.runLast();
@@ -284,7 +282,7 @@ class PRDC_JSLAB_ENV {
             } else if(e.ctrlKey && e.key.toLowerCase() == 'c') {
               if(obj.getWinSelectionText(sub_context) == "") {
                 // No selected text
-                obj.jsl.setStopLoop(true);
+                obj.interruptExecution();
                 e.stopPropagation();
                 e.preventDefault();
               }
@@ -822,7 +820,7 @@ class PRDC_JSLAB_ENV {
    * @param {boolean} throw_flag - Whether to throw an error on failure.
    * @returns {boolean} - Returns true if the write was successful, false otherwise.
    */
-	writeFileSync(file_path, data, throw_flag) {
+  writeFileSync(file_path, data, throw_flag) {
     try {
       return fs.writeFileSync(this._resolveFsPath(file_path), data);
     } catch(err) {
@@ -947,28 +945,42 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
-  /**
-   * Checks if a loop stop flag has been set, indicating whether to halt execution.
-   * @returns {boolean} True if the loop should stop, false otherwise.
-   */
-  checkStopLoop() {
-    if(!this.is_worker) {
-      return ipcRenderer.sendSync("sync-message", "check-stop-loop");
-    }
-    return false;
+  /** Requests debugger-backed interruption from the main process. */
+  interruptExecution() {
+    if(!this.is_worker) ipcRenderer.send('SandboxWindow', 'interrupt-execution');
   }
 
-  /**
-   * Resets the loop stop flag to allow continued execution.
-   * @returns {undefined} No return value.
-   */
-  resetStopLoop() {
-    if(!this.is_worker) {
-      return ipcRenderer.sendSync("sync-message", "reset-stop-loop");
-    }
-    return false;
+  /** Runs a native task in a separately owned scientific process. */
+  runInterruptibleTask(id, source, args) {
+    if(this.is_worker) throw Error('Start isolated native processes from the main scientific workspace.');
+    return ipcRenderer.invoke('JSLAB_TASK_START', { id, source, args, cwd: this.jsl.current_path });
   }
-  
+
+  /** Waits for the owned native process tree to stop. */
+  cancelInterruptibleTask(id) { return ipcRenderer.invoke('JSLAB_TASK_CANCEL', id); }
+
+  /** Configures the host debugger from running scripts without bypassing its controller. */
+  async debugCommand(method, args = {}) {
+    const result = await ipcRenderer.invoke('JSLAB_DEBUGGER', method, args);
+    if(!result.success) throw Error(result.error);
+    return result.value;
+  }
+
+  /** Registers source mappings and breakpoints before evaluation begins. */
+  registerDebugSource(source) {
+    if(!this.is_worker) {
+      return ipcRenderer.invoke('JSLAB_DEBUG_SOURCE', source);
+    }
+  }
+
+  /** Resolves native CommonJS wrapper columns through the debugger's compiled source. */
+  resolveModulePosition(frame) {
+    if(!this.is_worker && frame.line === 1 && this.pathIsAbsolute(frame.path)) {
+      return ipcRenderer.invoke('JSLAB_MODULE_POSITION', frame);
+    }
+    return frame;
+  }
+
   /**
    * Opens the editor window and optionally loads a script.
    * @param {string} filename - The path to the script file to open.
@@ -1076,13 +1088,16 @@ class PRDC_JSLAB_ENV {
    * @param {string} msg The error message to be displayed.
    */
   error(msg, throw_flag = true) {
+    if(!this._formatting_error && this.jsl?.inter?.execution?.current) {
+      const error = new Error(String(msg));
+      if(throw_flag) throw error;
+      this._reported_error = error;
+      return;
+    }
     if(this._automation_output) this._automation_output('error', [msg]);
     if(!this.is_worker) {
-      this.jsl.stop_loop = true;
-      this.jsl.onStopLoop(false);
       this.jsl.no_ans = true;
       this.jsl.ignore_output = true;
-      this.jsl.onEvaluated();
       if(throw_flag) {
         throw new Error(msg);
       } else {
@@ -1142,18 +1157,51 @@ class PRDC_JSLAB_ENV {
    * @returns {Array<number>} Child process IDs.
    */
   listSubprocesses(pid = this.process_pid) {
-    if(!Number.isInteger(pid) || pid < 1) throw new TypeError('A positive process ID is required.');
-    if(process.platform === 'win32') {
-      var command = 'Get-CimInstance Win32_Process -Filter "ParentProcessId = ' + pid +
-        '" | Where-Object { $_.ProcessId -ne $PID } | ForEach-Object { $_.ProcessId }';
-      return cp.execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command],
-        { encoding: 'utf8', windowsHide: true }).trim().split(/\s+/).map(Number).filter(function(value) {
-          return Number.isInteger(value) && value > 0;
-        });
+    if(!Number.isInteger(pid) || pid <= 0) throw new Error('Expected a positive process ID.');
+    if(pid !== this.process_pid) throw new Error('Only JSLAB-owned subprocesses can be listed.');
+    return Array.from(this._subprocesses || []).filter(child => child.exitCode === null && child.pid)
+      .map(child => child.pid);
+  }
+
+  /** @private Tracks only processes launched through the JSLAB environment. */
+  _trackSubprocess(child) {
+    this._subprocesses.add(child);
+    const forget = () => this._subprocesses.delete(child);
+    child.once('exit', forget);
+    child.once('error', forget);
+    return child;
+  }
+
+  /** Stops owned processes, including their descendants on Windows. */
+  async stopSubprocesses() {
+    const children = Array.from(this._subprocesses);
+    const errors = [];
+    for(const child of children) {
+      if(!child.pid || child.exitCode !== null) continue;
+      try {
+        if(process.platform === 'win32') {
+          await new Promise((resolve, reject) => {
+            cp.execFile('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'],
+              { windowsHide: true }, error => {
+                if(error && child.exitCode === null) {
+                  // Direct child handles remain usable when OS tree termination
+                  // is restricted. Never claim completion until the child exits.
+                  try {
+                    if(!child.kill()) reject(error); else resolve();
+                  } catch(kill_error) { reject(kill_error); }
+                } else resolve();
+              });
+          });
+        } else child.kill('SIGTERM');
+        if(child.exitCode === null && child.signalCode === null) {
+          await new Promise((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error('Owned process did not exit: ' + child.pid)), 2000);
+            child.once('exit', () => { clearTimeout(timer); resolve(); });
+          });
+        }
+      } catch(error) { errors.push(error.message); }
     }
-    return cp.execFileSync('ps', ['-eo', 'pid=,ppid='], { encoding: 'utf8' })
-      .trim().split('\n').map(function(line) { return line.trim().split(/\s+/).map(Number); })
-      .filter(function(row) { return row[1] === pid; }).map(function(row) { return row[0]; });
+    if(errors.length) throw new Error(errors.join('; '));
   }
 
   /**
@@ -1245,8 +1293,10 @@ class PRDC_JSLAB_ENV {
   /**
    * Notifies the main window that code evaluation has started.
    */
-  codeEvaluating() {
+  codeEvaluating(id) {
     if(!this.is_worker) {
+      const result = ipcRenderer.sendSync('sync-message', 'execution-started', id);
+      if(result && result.error) throw new Error(result.error);
       ipcRenderer.send("MainWindow", "code-evaluating");
     }
   }
@@ -1388,7 +1438,10 @@ class PRDC_JSLAB_ENV {
    * @param {...*} args Command arguments.
    */
   exec(...args){
-    return cp.exec(...args);
+    if(typeof args[args.length - 1] === 'function') {
+      args[args.length - 1] = this.jsl.inter.execution.wrap(args[args.length - 1]);
+    }
+    return this._trackSubprocess(cp.exec(...args));
   }
   
   /**
@@ -1413,7 +1466,7 @@ class PRDC_JSLAB_ENV {
    * @param {...*} args Command arguments.
    */
   spawn(...args){
-    return cp.spawn(...args);
+    return this._trackSubprocess(cp.spawn(...args));
   }
   
   /**

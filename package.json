@@ -18,6 +18,7 @@
     "mcp": "node js/mcp/server.js",
     "inspect": "electron . --inspect=9229 --remote-debugging-port=9222",
     "debug": "electron . --debug-app",
+    "pretest": "npm run check-ui-translations",
     "test": "electron . --test-app",
     "test:gui": "node js/dev/run-all-gui-tests.js",
     "test:gui:electron": "node js/dev/run-gui-tests.js",
@@ -35,6 +36,7 @@
     "make-doc": "node js/dev/make-doc.js",
     "make-source-code-book": "node js/dev/make-source-code-book.js",
     "make-codebase-source": "node js/dev/make-codebase-source.js",
+    "check-ui-translations": "node js/dev/check-ui-translations.js",
     "check-sandbox-globals": "node js/dev/check-sandbox-globals.js",
     "check-sandbox-inter": "node js/dev/check-sandbox-inter-usage.js"
   },
@@ -143,11 +145,12 @@
     "markdown-it": "15.0.3"
   },
   "dependencies": {
+    "7zip-bin": "^5.2.0",
     "@babel/parser": "7.27.5",
     "@babel/plugin-syntax-top-level-await": "7.14.5",
+    "@jridgewell/trace-mapping": "0.3.31",
     "@lydell/node-pty": "1.1.0",
     "@modelcontextprotocol/sdk": "1.32.2",
-    "7zip-bin": "^5.2.0",
     "big-json-viewer": "0.1.7",
     "bytenode": "1.5.7",
     "dir-compare": "5.0.0",

@@ -1,0 +1,11 @@
+/**
+ * Interrupt this loop with Ctrl+C or Stop. No checkpoints are required.
+ * The counter and saved object remain available after interruption.
+ */
+var saved_result = { description: 'Preserved after Ctrl+C', value: 42 };
+var iterations = 0;
+var interruption_cleanup_count = 0;
+jsl.addForCleanup({}, () => { interruption_cleanup_count++; });
+while(true) {
+  iterations++;
+}

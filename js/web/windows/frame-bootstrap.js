@@ -47,6 +47,14 @@
   }
 
   function applyLanguage() {
+    document.querySelectorAll('[lang-str]').forEach(function(el) {
+      el.textContent = currentString(el.getAttribute('lang-str'));
+    });
+    for(const attr of ['aria-label', 'alt']) {
+      document.querySelectorAll('[' + attr + '-str]').forEach(function(el) {
+        el.setAttribute(attr, currentString(el.getAttribute(attr + '-str')));
+      });
+    }
     document.querySelectorAll('str').forEach(function(el) {
       el.textContent = currentString(el.getAttribute('sid'));
     });

@@ -15,17 +15,10 @@ var { createNativeModule } = require('./jslab-wasm-native');
 var { createAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
 var { getWasmModules } = require('./jslab-wasm-loader');
 
-class IdentitySourceMapConsumer {
-
-  constructor() {}
-
-  originalPositionFor(position) {
-    return {
-      line: position && position.line != null ? position.line : null,
-      column: position && position.column != null ? position.column : null
-    };
-  }
-
+const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
+class PRDC_JSLAB_WEB_SOURCE_MAP {
+  constructor(map) { this.map = new TraceMap(map); }
+  originalPositionFor(position) { return originalPositionFor(this.map, position); }
   destroy() {}
 }
 
@@ -54,11 +47,11 @@ class PRDC_JSLAB_ENV {
     this.process_pid = 0;
     this.recast = recast;
     this.babel_parser = babel_parser;
-    this.SourceMapConsumer = IdentitySourceMapConsumer;
+    this.SourceMapConsumer = PRDC_JSLAB_WEB_SOURCE_MAP;
     this.math = null;
     this.fmin = null;
     this.exports = ['debug', 'version', 'platform', 'web', 'buildShareLink'];
-    this.bridge = null;
+    this.bridge = this.is_worker ? globalThis.__JSLAB_WEB_BRIDGE__ || null : null;
     if(!this.is_worker) {
       try {
         if(globalThis.parent && globalThis.parent !== globalThis &&
@@ -337,10 +330,37 @@ class PRDC_JSLAB_ENV {
 
   codeEvaluating() {}
   codeEvaluated() {}
-  resetStopLoop() {}
+  stopSubprocesses() {}
 
-  checkStopLoop() {
-    return false;
+  interruptExecution() {
+    if(this.jsl.inter.execution.web_debugger) {
+      this.jsl.inter.execution.web_debugger.interrupt();
+      return;
+    }
+    throw new Error('Use the isolated worker debugger to interrupt browser execution.');
+  }
+
+  /** Applies debugger configuration from numerical worker scripts. */
+  debugCommand(method, args = {}) {
+    const debugger_runtime = this.jsl.inter.execution.web_debugger;
+    if(!debugger_runtime) throw Error('Enable the Worker debugger for debugger commands.');
+    switch(method) {
+      case 'get_debug_state': return { state: debugger_runtime.active ? 'running' : 'idle',
+        breakpoints: Array.from(debugger_runtime.breakpoints.values()), pause_on_exceptions: debugger_runtime.pause_on_exceptions };
+      case 'set_breakpoint': {
+        const id = args.path + ':' + args.line;
+        debugger_runtime.breakpoints.set(id, { ...args, id, enabled: args.enabled !== false });
+        break;
+      }
+      case 'remove_breakpoint': debugger_runtime.breakpoints.delete(args.id); break;
+      case 'clear_breakpoints': debugger_runtime.breakpoints.clear(); debugger_runtime.pause_on_exceptions = 'none'; break;
+      case 'set_exception_pause': debugger_runtime.pause_on_exceptions = args.state; break;
+      default: throw Error('This command must run in the debugger console.');
+    }
+    (this.jsl.inter.execution._send || globalThis.postMessage.bind(globalThis))({ type: 'debug-settings', settings: {
+      breakpoints: Array.from(debugger_runtime.breakpoints.values()), pause_on_exceptions: debugger_runtime.pause_on_exceptions
+    } });
+    return { success: true };
   }
 
   addPathSep(path_in) {
@@ -523,6 +543,12 @@ class PRDC_JSLAB_ENV {
   }
 
   error(message, throw_flag = true) {
+    if(!this._formatting_error && this.jsl?.inter?.execution?.current) {
+      const error = new Error(String(message));
+      if(throw_flag) throw error;
+      this._reported_error = error;
+      return;
+    }
     if(this.jsl && typeof this.jsl.emitRuntimeMessage == 'function') {
       this.jsl.emitRuntimeMessage(String(message || 'Unknown browser-mode error'), 'error');
     }
@@ -706,6 +732,7 @@ class PRDC_JSLAB_ENV {
   }
 
   sendPty() {
+    if(arguments[0] === 'killAll') return true;
     return this.reportUnavailable('PTY support');
   }
 
@@ -733,7 +760,7 @@ class PRDC_JSLAB_ENV {
   }
 
   openWindow(wid, file = 'blank.html') {
-    if(this.is_worker || !this.bridge || typeof this.bridge.openManagedWindow != 'function') {
+    if(!this.bridge || typeof this.bridge.openManagedWindow != 'function') {
       return [false, Promise.resolve(false)];
     }
     var opened = this.bridge.openManagedWindow(wid, file);
@@ -747,7 +774,9 @@ class PRDC_JSLAB_ENV {
     if(!this.bridge || typeof this.bridge.closeManagedWindow != 'function') {
       return false;
     }
-    return this.bridge.closeManagedWindow(wid, { notifySandbox: false });
+    const closed = this.bridge.closeManagedWindow(wid, { notifySandbox: false });
+    if(closed) this.jsl.inter.windows._closedWindow(wid);
+    return closed;
   }
 
   closeWindows(wid) {

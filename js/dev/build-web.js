@@ -32,7 +32,7 @@ var native_wasm_root = path.join(app_root, 'lib', 'native-wasm');
 function isGuiSource(filename) {
   var relative = path.relative(app_root, filename).replace(/\\/g, '/');
   return /^(js\/(web|main|editor|code|windows)\/.*\.js|lib\/PRDC_(TABS|PANEL|POPUP)\/.*\.js)$/.test(relative) &&
-    !relative.includes('/shims/') && !relative.endsWith('presentation.js');
+    !relative.includes('/shims/') && !relative.endsWith('presentation.js') && !relative.endsWith('init-debug-worker.js');
 }
 
 function injectScriptsBeforeBodyClose(html, scripts) {
@@ -590,6 +590,7 @@ async function buildWeb() {
     entryPoints: {
       'init-web': 'js/web/init-web.js',
       'sandbox-frame': 'js/web/init-sandbox-frame.js',
+      'debug-worker': 'js/web/init-debug-worker.js',
       'frame-bootstrap': 'js/web/windows/frame-bootstrap.js',
       'editor-frame': 'js/web/windows/editor-frame.js',
       'figure-frame': 'js/web/windows/figure-frame.js',
@@ -611,6 +612,7 @@ async function buildWeb() {
     'figure.css',
     'three.css',
     'editor.css',
+    'editor-debugger.css',
     'presentation-editor.css',
     'tabs.css',
     'big-json-viewer-notepadpp-theme.css',
@@ -820,6 +822,16 @@ async function buildWeb() {
   var html = html_template
     .replace(/%APP_VERSION%/g, String(package_json.version || ''));
   fs.writeFileSync(path.join(dist_root, 'index.html'), html, 'utf8');
+  // Static hosts supporting _headers can enable the isolated worker debugger.
+  fs.writeFileSync(path.join(dist_root, '_headers'),
+    '/*\n  Cross-Origin-Opener-Policy: same-origin\n  Cross-Origin-Embedder-Policy: require-corp\n', 'utf8');
+  // Apache/cPanel reads .htaccess rather than the static-host _headers file.
+  fs.writeFileSync(path.join(dist_root, '.htaccess'),
+    '# JSLAB: upload this hidden file beside index.html; merge with existing rules.\n' +
+    '<IfModule mod_headers.c>\n' +
+    '  Header always set Cross-Origin-Opener-Policy "same-origin"\n' +
+    '  Header always set Cross-Origin-Embedder-Policy "require-corp"\n' +
+    '</IfModule>\n', 'utf8');
 
   console.log('Built JSLAB web scaffold to ' + dist_root);
   if(gui_test_build) gui_handler_coverage.writeReport(path.join(app_root, 'temp/gui-handler-inventory-web.json'));

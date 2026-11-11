@@ -430,3 +430,12 @@ body.has-minimized-windows #taskbar-container {
 .web-hidden {
   display: none !important;
 }
+
+/* Shared debugger editor markers and condition editor. */
+.jslab-breakpoints { width: 14px; cursor: pointer; }
+.jslab-breakpoint-marker { display: block; width: 10px; height: 10px; margin: 3px 2px; box-sizing: border-box; border: 2px solid #c62828; border-radius: 50%; background: #c62828; }
+.jslab-breakpoint-marker.disabled { background: transparent; }
+.jslab-debug-line { background: #fff2b3 !important; }
+.jslab-breakpoint-dialog { position: fixed; z-index: 100000; top: 20%; left: 20%; width: 60%; padding: 14px; background: white; color: #222; border: 1px solid #888; box-shadow: 0 3px 15px #5558; }
+.jslab-breakpoint-dialog > input[type=text] { width: 95%; margin-bottom: 12px; }
+.jslab-breakpoint-dialog button { margin-left: 12px; }

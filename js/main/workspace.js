@@ -128,9 +128,13 @@ class PRDC_JSLAB_WORKSPACE {
       };
       row.setAttribute('variable', variable);
       row.className = 'row';
-      row.innerHTML = '<div class="col col-1" style="width:'+cells_size[0]+'%">' + variable +
-        '</div><div class="col col-2" style="width:'+cells_size[1]+'%">' + type +
-        '</div><div class="col col-3" style="width:'+cells_size[2]+'%">' + value + '</div>';
+      [variable, type, value].forEach(function(text, index) {
+        var cell = document.createElement('div');
+        cell.className = 'col col-' + (index + 1);
+        cell.style.width = cells_size[index] + '%';
+        cell.textContent = text;
+        row.appendChild(cell);
+      });
       workspace_table.appendChild(row);
     });
   }

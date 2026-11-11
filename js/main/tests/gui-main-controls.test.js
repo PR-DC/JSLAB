@@ -168,11 +168,11 @@ guiTest(tests, 'main', 'stats popup opens and closes outside', ['#sandbox-stats-
 
 for(const [key, options, action] of [
   ['F11', {}, 'set-fullscreen'], ['F12', {}, 'show-dev-tools'],
-  ['c', { ctrlKey: true }, 'stop-loop']
+  ['c', { ctrlKey: true }, 'interrupt-execution']
 ]) {
   guiTest(tests, 'main', 'main keyboard shortcut ' + key, [], function(assert, f) {
     f.key(null, key, options);
-    sent(assert, f, action === 'stop-loop' ? 'SandboxWindow' : 'MainProcess', action);
+    sent(assert, f, action === 'interrupt-execution' ? 'SandboxWindow' : 'MainProcess', action);
   });
 }
 for(const [key, dialog] of [['h', 'help'], ['i', 'info'], ['s', 'settings']]) {

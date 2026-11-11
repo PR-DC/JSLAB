@@ -37,7 +37,7 @@ class PRDC_JSLAB_EDITOR {
     $("#save-as-menu").click(function() { obj.win.script_manager.saveAsScript(); });
     $("#open-menu").click(function() { obj.win.script_manager.openScriptFile(); });
 
-    $("#run-menu").click(function() { obj.win.script_manager.runScript(); });
+    $("#run-menu").click(function() { if(!obj.win.debugger_toolbar?.handleRun()) obj.win.script_manager.runScript(); });
     $("#new-tab").click(function() { obj.win.script_manager.createScript(); });
     $("#new-script").click(function() { obj.win.script_manager.createScript(); });
     
@@ -193,7 +193,7 @@ class PRDC_JSLAB_EDITOR {
         e.stopPropagation();
         e.preventDefault();
       } else if(e.key === "F5") {
-        obj.win.script_manager.runScript();
+        if(!obj.win.debugger_toolbar?.handleRun()) obj.win.script_manager.runScript();
       } else if(e.ctrlKey && e.key.toLowerCase() === "o") {
         obj.win.script_manager.openScriptFile();
       } else if(e.ctrlKey && e.key.toLowerCase() === "s" && !e.shiftKey) {

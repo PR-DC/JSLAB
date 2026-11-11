@@ -1,0 +1,42 @@
+/* Use the application's existing horizontal splitter and panel scrollbars. */
+#editor-workspace { position: relative; height: calc(100vh - 74px); overflow: hidden; }
+#editor-workspace > #code { position: absolute; left: 0; right: 0; height: 100%; }
+#editor-debugger-pane { position: absolute; left: 0; right: 0; padding: 5px; box-sizing: border-box; background: #fff; overflow: hidden; }
+#editor-debugger-pane[hidden], #editor-workspace .horizontal-resizer[hidden] { display: none; }
+#editor-debugger-pane > .panel-container { height: 100%; box-sizing: border-box; position: relative; border: 1px solid #f1f3f4; border-radius: 3px; transition: border .2s linear; }
+#editor-debugger-pane > .panel-container:hover { border-color: #f7df1e; }
+#editor-debugger-header { display: flex; align-items: center; gap: 12px; margin: 5px 10px 0; padding-bottom: 3px; border-bottom: 1px solid #f7df1e; color: #666; font-size: 14px; font-weight: 300; user-select: none; white-space: nowrap; }
+.editor-debugger-title { text-transform: uppercase; color: inherit; }
+#debugger-state { color: #999; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+#editor-debugger-header-controls { margin-left: auto; display: flex; align-items: center; gap: 3px; }
+#debugger-menu-toggle, #editor-debugger-close { border: 0; background: transparent; padding: 3px; cursor: pointer; }
+#debugger-menu-toggle img, #editor-debugger-close img { width: 14px; height: 14px; opacity: .4; }
+#debugger-menu-toggle:hover, #editor-debugger-close:hover { background: #eee; }
+#debugger-content { position: absolute; inset: 38px 0 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 6px 12px; padding: 4px 10px; box-sizing: border-box; overflow: hidden; font-size: 12px; }
+#debugger-content [hidden] { display: none !important; }
+#debugger-stack { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+#debugger-content label { display: block; color: #777; font-weight: 300; margin: 0 0 3px; }
+#debugger-content select { box-sizing: border-box; width: 100%; font-family: inherit; font-size: 12px; padding: 3px; margin: 0; color: #333; background: #fff; border: 1px solid #f1f3f4; border-radius: 0; }
+#debugger-content #debugger-frames { flex: 1; min-height: 0; padding: 0; border: 0; }
+#debugger-frames option { padding: 4px 8px; }
+#debugger-empty { color: #777; margin: 4px 0; }
+#debugger-menu { position: fixed; z-index: 100000; width: 245px; max-width: calc(100vw - 20px); overflow: visible; }
+#debugger-menu > ul { max-height: inherit; overflow: auto; }
+#debugger-menu[data-above="true"] .popup-triangle { top: auto; bottom: -11px; transform: none; }
+#debugger-menu label { display: block; color: #777; font-size: 13px; margin: 0 0 5px; }
+#debugger-menu select { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; color: #666; background: #fff; border: 1px solid #ddd; }
+#debugger-target-row { margin-top: 8px; }
+#debugger-menu .debugger-menu-action button { display: block; width: 100%; padding: 0; background: transparent; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+#debugger-menu button:disabled { opacity: .4; cursor: default; }
+#debugger-menu li:has(> button[hidden]), #debugger-menu [hidden] { display: none; }
+#debugger-menu summary { cursor: pointer; font-size: 14px; }
+#debugger-history-details { margin-top: 8px; }
+#debugger-history { white-space: pre-wrap; overflow-wrap: anywhere; font-family: monospace; font-size: 11px; line-height: 1.5; }
+#debugger-message { grid-column: 1 / -1; color: #b50000; line-height: 1.5; max-height: 40px; overflow: auto; }
+#debugger-message:empty { display: none; }
+#debugger-content ::-webkit-scrollbar, #debugger-menu::-webkit-scrollbar { width: 12px; height: 12px; background: transparent; }
+#debugger-content ::-webkit-scrollbar-track, #debugger-menu::-webkit-scrollbar-track { background: transparent; }
+#debugger-content ::-webkit-scrollbar-thumb, #debugger-menu::-webkit-scrollbar-thumb { background: #ddd; border-radius: 5px; background-clip: content-box; border: 2px solid transparent; }
+#debugger-content ::-webkit-scrollbar-button, #debugger-menu::-webkit-scrollbar-button { width: 0; height: 0; }
+#editor-workspace .horizontal-resizer { position: absolute; left: 0; right: 0; z-index: 5; background: url(../img/hdrag.svg) center / auto 6px no-repeat; cursor: n-resize; user-select: none; }
+#editor-workspace .horizontal-resizer:hover { border-bottom: 1px solid #f7df1e; }

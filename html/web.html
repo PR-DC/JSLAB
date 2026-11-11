@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSLAB / WEB | PR-DC</title>
+    <title lang-fixed>JSLAB / WEB | PR-DC</title>
     <link rel="icon" type="image/svg+xml" href="./img/JSLAB.svg">
     <link rel="stylesheet" type="text/css" href="./css/codemirror-notepadpp-theme.css">
     <link rel="stylesheet" type="text/css" href="./css/highlight-notepadpp-theme.css">
@@ -31,10 +31,10 @@
           <li id="settings-menu"><img src="./img/settings-menu.svg"><str sid="9"></str></li>
         </ul>
         <ul id="web-main-actions">
-          <li id="github-button">GitHub</li>
-          <li id="download-button">Download</li>
+          <li id="github-button" lang-fixed>GitHub</li>
+          <li id="download-button"><str sid="597"></str></li>
         </ul>
-        <div id="app-title">JSLAB / WEB</div>
+        <div id="app-title" lang-fixed>JSLAB / WEB</div>
         <div class="clear"></div>
       </div>
     </div>
@@ -47,7 +47,7 @@
               <div class="panel-title"><str sid="4"></str></div>
               <div id="file-browser-options" class="options">
                 <div class="options-right">
-                  <i id="file-browser-import-button" class="import" title="Import"></i>
+                  <i id="file-browser-import-button" class="import" title-str="598"></i>
                   <i id="file-browser-import-url-button" class="import-url" title-str="543"></i>
                 </div>
               </div>
@@ -120,7 +120,7 @@
                 <div id="command-window-input-submit-cont">
                   <img src="./img/enter.svg" title-str="226">
                 </div>
-                <textarea id="command-window-input" spellcheck="false">cmd_help;</textarea>
+                <textarea id="command-window-input" spellcheck="false" lang-fixed>cmd_help;</textarea>
               </div>
             </div>
 
@@ -137,8 +137,8 @@
     </div>
 
     <div id="file-browser-import-menu" class="app-context-menu">
-      <button id="file-browser-import-files-action" type="button">Import files</button>
-      <button id="file-browser-import-folder-action" type="button">Import folder</button>
+      <button id="file-browser-import-files-action" type="button"><str sid="599"></str></button>
+      <button id="file-browser-import-folder-action" type="button"><str sid="600"></str></button>
     </div>
 
     %WEB_HELP_CONTAINER%
@@ -155,9 +155,11 @@
       <div id="taskbar"></div>
     </div>
 
+
     <div id="status-container">
       <div id="sandbox-stats-icon" class="ready"></div>
       <div id="status"><str sid="87"></str></div>
+
       <div id="status-icons"></div>
       <div class="clear"></div>
     </div>

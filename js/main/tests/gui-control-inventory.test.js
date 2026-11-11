@@ -13,7 +13,7 @@ if(!globalThis.__JSLAB_GUI_COMPONENT__) { exports.MODULE_TESTS = tests; return; 
 
 // Load registrations even when this module is selected on its own.
 for(const name of ['main-controls', 'main-data', 'inspector', 'terminal-history', 'panels']) require('./gui-' + name + '.test');
-for(const name of ['editor-controls', 'editor-tabs', 'editor-search']) require('../../editor/tests/gui-' + name + '.test');
+for(const name of ['editor-controls', 'editor-tabs', 'editor-search', 'debugger', 'debugger-pane']) require('../../editor/tests/gui-' + name + '.test');
 for(const name of ['auxiliary-windows', 'presentation-editor', 'presentation-viewer']) require('../../windows/tests/gui-' + name + '.test');
 
 for(const type of ['main', 'editor', 'figure', 'serial_terminal', 'presentation-editor', 'presentation']) {

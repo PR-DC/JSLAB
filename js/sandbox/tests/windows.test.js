@@ -158,40 +158,21 @@ tests.add('internal active-window bookkeeping updates language and closed window
   }));
 }, { tags: ['unit', 'windows'] });
 
-tests.add('openCanvas returns false immediately when stop loop is active', async function(assert) {
-  var wait_calls = 0;
-  var jsl = {
-    inter: {
-      env: {},
-      basic: {
-        checkStopLoop: function() {
-          return true;
-        }
-      },
-      non_blocking: {
-        waitMSeconds: async function() {
-          wait_calls += 1;
-        }
-      }
-    }
-  };
-  var windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
-  windows.openWindow = function() {
-    return 1;
-  };
-  windows.open_windows[1] = {
-    ready: Promise.resolve(),
-    context: {}
-  };
-
-  var out = await windows.openCanvas();
-  assert.equal(out, false);
-  assert.equal(wait_calls, 0);
+tests.add('openCanvas readiness wait propagates execution cancellation without polling', async function(assert) {
+  let wait_calls = 0;
+  const jsl = { inter: { env: {}, non_blocking: {
+    waitMSeconds: async function() { wait_calls++; throw new Error('Execution interrupted.'); }
+  } } };
+  const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
+  windows.openWindow = () => 1;
+  windows.open_windows[1] = { ready: Promise.resolve(), context: {} };
+  await assert.rejects(windows.openCanvas(), /interrupted/);
+  assert.equal(wait_calls, 1);
 }, { tags: ['unit', 'windows', 'async'] });
 
 tests.add('a ready window closes through the environment window API', async function(assert) {
   const calls = [];
-  const jsl = { promiseOrStoped: promise => promise, inter: { env: {
+  const jsl = { awaitResource: promise => promise, inter: { env: {
     pathIsAbsolute: () => true,
     checkFile: () => true,
     openWindow: () => [{ document: {} }, Promise.resolve()],
@@ -208,7 +189,7 @@ tests.add('a ready window closes through the environment window API', async func
 
 tests.add('a loading window closes without waiting for document readiness', async function(assert) {
   const calls = [];
-  const jsl = { promiseOrStoped: promise => promise, inter: { env: {
+  const jsl = { awaitResource: promise => promise, inter: { env: {
     pathIsAbsolute: () => true,
     checkFile: () => true,
     openWindow: () => [{ document: {} }, new Promise(() => {})],

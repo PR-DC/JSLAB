@@ -143,11 +143,11 @@ for(const [selector, action] of [['#compile-dialog-menu', 'compile'], ['#upload-
 }
 
 for(const [key, options, action] of [
-  ['F11', {}, 'set-fullscreen'], ['F12', {}, 'show-dev-tools'], ['c', { ctrlKey: true }, 'stop-loop']
+  ['F11', {}, 'set-fullscreen'], ['F12', {}, 'show-dev-tools'], ['c', { ctrlKey: true }, 'interrupt-execution']
 ]) {
   guiTest(tests, 'editor', 'editor shortcut ' + key + ' sends ' + action, [], function(assert, f) {
     f.key(null, key, options);
-    sent(assert, f, action === 'stop-loop' ? 'SandboxWindow' : 'MainProcess', action);
+    sent(assert, f, action === 'interrupt-execution' ? 'SandboxWindow' : 'MainProcess', action);
   });
 }
 guiTest(tests, 'editor', 'Ctrl+N creates a tab and Ctrl+F4 closes it', [], function(assert, f, c) {

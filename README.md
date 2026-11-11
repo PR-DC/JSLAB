@@ -1,6 +1,6 @@
 # PR-DC JSLAB - JavaScript LABoratory Environment
 
-**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [Windows CLI](docs/documentation.md#command-line-interface) | [AI agents and MCP](docs/documentation.md#mcp-server) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
+**Quick links:** [Website](https://pr-dc.com/jslab/) | [Try it online](https://pr-dc.com/jslab/web/) | [Discourse](https://discourse.jsl.pr-dc.com/) | [Documentation](https://pr-dc.com/jslab/doc/) | [Windows CLI](docs/documentation.md#command-line-interface) | [AI agents and MCP](docs/documentation.md#mcp-server) | [Releases](https://github.com/PR-DC/JSLAB/releases) | [Examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
 <p align="center">
   <img src="https://pr-dc.com/img/github/JSLAB.svg?v1" width="150">

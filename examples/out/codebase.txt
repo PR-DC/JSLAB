@@ -1,0 +1,26 @@
+Directory Tree:
+input files/
+│   ├── background.bmp
+│   ├── sample.heic
+│   ├── sample.mp4
+│   ├── sample.pdf
+│   ├── sample.svg
+│   ├── sample.tex
+│   ├── unicode.tex
+
+
+
+
+# ======================
+# File: sample.tex
+# ======================
+
+\documentclass{article}
+\begin{document}Hello JSLAB.\end{document}
+
+
+# ======================
+# File: unicode.tex
+# ======================
+
+Test “quotes” and​ zero width.

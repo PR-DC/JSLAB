@@ -4,7 +4,11 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
+const { isInternalDebugFrame } = require('../shared/debugger-frames');
 
+const { PRDC_JSLAB_DEBUGGER_INSPECTOR } = require('../shared/debugger-inspector');
+var { parseDebuggerCommand, executeDebuggerCommand } = require('../shared/debugger-commands');
+var { PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT } = require('./worker-debugger');
 var { PRDC_JSLAB_WEB_FS } = require('./storage/opfs-fs');
 var { PRDC_JSLAB_WEB_TASKBAR } = require('./taskbar');
 var { PRDC_JSLAB_WEB_WINDOW_MANAGER } = require('./window-manager');
@@ -144,6 +148,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     this._bindImportActions();
     this._bindCommandActions();
     this._bindGlobalShortcuts();
+    this._bindWorkerDebugger();
     this._bindWorkspaceFilter();
     this._bindDialogs();
     this._bindInspectorHandlers();
@@ -215,6 +220,9 @@ class PRDC_JSLAB_WEB_APP_SHELL {
         obj.handleSandboxRuntimeLog(message, kind || 'info');
         return true;
       },
+      debugCommand: (method, args) => obj._debugCommand(method, args),
+      getDebugState: () => obj._workerDebugState(),
+      openDebugger: () => obj._openEditorDebugger(),
       runEditorCode: function(code, label) {
         return obj.runEditorCode(code, label);
       },
@@ -462,6 +470,25 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       delete document.body.dataset.jslabWebSandboxError;
     }
 
+    this.ui_sandbox_api = this.sandbox_api;
+    if(globalThis.crossOriginIsolated && typeof SharedArrayBuffer === 'function') {
+      await this._startWorkerDebugger();
+      const shell = this;
+      this.sandbox_api = {
+        handshake: () => ({ ...shell.ui_sandbox_api.handshake(), runtime: 'scientific-worker', workspace: shell.worker_debugger?.workspace || [] }),
+        evaluate: async code => {
+          await shell._startWorkerDebugger();
+          const result = await shell.worker_debugger.evaluate(String(code), { files: shell._workerDebugFiles(), cwd: shell.current_path });
+          if(!result.success) throw Object.assign(Error(result.error), { error_details: result.error_details, interrupted: result.interrupted });
+          return { ...result, ok: true };
+        },
+        getCompletions: async data => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('completions', { data }); },
+        clearWorkspace: async () => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('clear'); },
+        setLanguage: lang => shell.worker_debugger?.operation('language', { lang }),
+        notifyWindowClosed: wid => shell.worker_debugger?.operation('window-closed', { wid }),
+        workerUI: operation => shell.ui_sandbox_api.workerUI(operation)
+      };
+    }
     var handshake = this.sandbox_api.handshake();
     this._setStatus('ready', '', 87);
     this._renderWorkspaceVariables(handshake.workspace || []);
@@ -925,6 +952,11 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     document.querySelectorAll('.main-dialog').forEach(function(dialog) {
       dialog.style.display = 'none';
     });
+    for(const button of document.querySelectorAll('[aria-controls]')) {
+      if(document.getElementById(button.getAttribute('aria-controls'))?.classList.contains('main-dialog')) {
+        button.setAttribute('aria-expanded', String(button.getAttribute('aria-controls') === id));
+      }
+    }
     var dialog = document.getElementById(id);
     if(dialog) {
       dialog.style.display = 'block';
@@ -965,6 +997,9 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     var dialog = document.getElementById(id);
     if(dialog) {
       dialog.style.display = 'none';
+    }
+    for(const button of document.querySelectorAll('[aria-controls]')) {
+      if(button.getAttribute('aria-controls') === id) button.setAttribute('aria-expanded', 'false');
     }
   }
 
@@ -1200,7 +1235,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       html += '<button class="jslab-inspector-action" data-action="clear-filter"' + attrs + '>' +
         this.escapeInspectorLocalizedHtml(toolbar.clear_filter_label || '') + '</button>';
     }
-    html += '<button class="jslab-inspector-action" data-action="table-filter-expr"' + attrs + '>' +
+    if(toolbar.allow_filter_expression !== false) html += '<button class="jslab-inspector-action" data-action="table-filter-expr"' + attrs + '>' +
       this.escapeInspectorLocalizedHtml(toolbar.filter_expr_label || '') + '</button>';
     if(toolbar.show_clear_expr) {
       html += '<button class="jslab-inspector-action" data-action="table-clear-filter-expr"' + attrs + '>' +
@@ -1312,7 +1347,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
   renderInspector(model) {
     var meta_parts = model && Array.isArray(model.meta_parts) ? model.meta_parts : [];
     var note_parts = model && Array.isArray(model.note_parts) ? model.note_parts : [];
-    var html = '<div class="jslab-inspector">' +
+    var html = '<div class="jslab-inspector"' + (model.debug_context ? ' data-debug-context="' + this.escapeInspectorAttr(model.debug_context) + '"' : '') + '>' +
       '<div class="jslab-inspector-header">' +
       '<div class="jslab-inspector-title">' + this.escapeInspectorLocalizedHtml(model.title || '') + ': <code>' +
       this.escapeInspectorHtml(model.variable || '') + '</code></div>' +
@@ -1537,6 +1572,8 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    * @param {HTMLElement} el
    */
   async handleInspectorAction(el) {
+    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
+    if(debug_context && debug_context !== this._debugScopeToken()) throw Error(this.language.currentString(620));
     var variable = el.getAttribute('data-variable');
     var action = el.getAttribute('data-action');
     var state = this.getInspectorStateFromElement(el);
@@ -1546,6 +1583,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       return;
     }
     if(action == 'refresh') {
+      if(debug_context && debug_context !== this._debugScopeToken()) throw Error(this.language.currentString(620));
       await this.runInspectCommand(variable, state);
       return;
     }
@@ -1564,11 +1602,13 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       } else {
         delete state.filter;
       }
+      if(debug_context && debug_context !== this._debugScopeToken()) throw Error(this.language.currentString(620));
       await this.runInspectCommand(variable, state);
       return;
     }
     if(action == 'clear-filter') {
       delete state.filter;
+      if(debug_context && debug_context !== this._debugScopeToken()) throw Error(this.language.currentString(620));
       await this.runInspectCommand(variable, state);
       return;
     }
@@ -1586,6 +1626,8 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    * @param {HTMLElement} el
    */
   async editInspectorCell(el) {
+    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
+    if(debug_context && debug_context !== this._debugScopeToken()) throw Error(this.language.currentString(620));
     var variable = el.getAttribute('data-variable');
     var path_raw = el.getAttribute('data-path') || '[]';
     var path;
@@ -1615,6 +1657,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     if(!result) {
       return;
     }
+    if(debug_context && debug_context !== this._debugScopeToken()) throw Error(this.language.currentString(620));
     expression = result.values[0].trim();
     if(!expression.length) {
       return;
@@ -2227,7 +2270,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     this._hideFileBrowserImportMenu();
     if(this.runtime_info.supports_open_picker) {
       result = await this._showOpenDialog({
-        title: 'Import files',
+        title: this.language.currentString(599),
         buttonLabel: 'Import files',
         properties: ['openFile', 'multiSelections']
       });
@@ -2246,7 +2289,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     this._hideFileBrowserImportMenu();
     if(this.runtime_info.supports_directory_picker) {
       result = await this._showOpenDialog({
-        title: 'Import folder',
+        title: this.language.currentString(600),
         buttonLabel: 'Import folder',
         properties: ['openDirectory']
       });
@@ -2905,7 +2948,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
 
     return this.window_manager.createWindow({
       id: this.editor_window_id,
-      title: 'Editor',
+      title: this.language.currentString(1),
       width: 920,
       height: 640,
       minWidth: 720,
@@ -3161,21 +3204,21 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    */
   _getWindowDefaults(file_name) {
     var defaults = {
-      'blank.html': { title: 'Window', width: 720, height: 520, minWidth: 250, minHeight: 50 },
-      'plotlyjs.html': { title: 'Plotlyjs Plot', width: 860, height: 620, minWidth: 250, minHeight: 50 },
-      'd3.html': { title: 'D3 Canvas', width: 860, height: 620, minWidth: 250, minHeight: 50 },
-      'leaflet.html': { title: 'Leaflet Plot', width: 860, height: 620, minWidth: 250, minHeight: 50 },
-      'cesium.html': { title: 'Cesium Plot', width: 980, height: 720, minWidth: 250, minHeight: 50 },
-      'three.html': { title: 'THREE', width: 980, height: 720, minWidth: 250, minHeight: 50 },
-      'figure.html': { title: 'Figure', width: 900, height: 640, minWidth: 250, minHeight: 50 },
-      'mermaid_graph.html': { title: 'Graph', width: 860, height: 620, minWidth: 250, minHeight: 50 },
-      'serial_terminal.html': { title: 'Serial Terminal', width: 860, height: 620, minWidth: 250, minHeight: 50 },
-      'url.html': { title: 'URL', width: 980, height: 720, minWidth: 250, minHeight: 50 },
-      'documentation.html': { title: 'Documentation', width: 1120, height: 760, minWidth: 250, minHeight: 50 },
-      'presentation-editor.html': { title: 'Presentation Editor', width: 920, height: 640, minWidth: 720, minHeight: 500 },
-      'editor-web.html': { title: 'Editor', width: 920, height: 640, minWidth: 720, minHeight: 500 }
+      'blank.html': { title: this.language.currentString(608), width: 720, height: 520, minWidth: 250, minHeight: 50 },
+      'plotlyjs.html': { title: this.language.currentString(609), width: 860, height: 620, minWidth: 250, minHeight: 50 },
+      'd3.html': { title: this.language.currentString(610), width: 860, height: 620, minWidth: 250, minHeight: 50 },
+      'leaflet.html': { title: this.language.currentString(611), width: 860, height: 620, minWidth: 250, minHeight: 50 },
+      'cesium.html': { title: this.language.currentString(612), width: 980, height: 720, minWidth: 250, minHeight: 50 },
+      'three.html': { title: /* lang-fixed */ 'THREE', width: 980, height: 720, minWidth: 250, minHeight: 50 },
+      'figure.html': { title: this.language.currentString(613), width: 900, height: 640, minWidth: 250, minHeight: 50 },
+      'mermaid_graph.html': { title: this.language.currentString(614), width: 860, height: 620, minWidth: 250, minHeight: 50 },
+      'serial_terminal.html': { title: this.language.currentString(520), width: 860, height: 620, minWidth: 250, minHeight: 50 },
+      'url.html': { title: /* lang-fixed */ 'URL', width: 980, height: 720, minWidth: 250, minHeight: 50 },
+      'documentation.html': { title: this.language.currentString(252), width: 1120, height: 760, minWidth: 250, minHeight: 50 },
+      'presentation-editor.html': { title: this.language.currentString(615), width: 920, height: 640, minWidth: 720, minHeight: 500 },
+      'editor-web.html': { title: this.language.currentString(1), width: 920, height: 640, minWidth: 720, minHeight: 500 }
     };
-    return defaults[file_name] || { title: 'Window', width: 720, height: 520, minWidth: 250, minHeight: 50 };
+    return defaults[file_name] || { title: this.language.currentString(608), width: 720, height: 520, minWidth: 250, minHeight: 50 };
   }
 
   /**
@@ -3586,9 +3629,9 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     });
     var file_name = 'jslab_' + new Date().toISOString().replace(/[:T]/g, '_').replace(/\..+$/, '') + '.log';
     var save_target = await this._showSaveDialog({
-      title: this.language.currentString(150) || 'Save log as',
+      title: this.language.currentString(150),
       defaultPath: file_name,
-      buttonLabel: this.language.currentString(151) || 'Save',
+      buttonLabel: this.language.currentString(151),
       filters: [{ name: 'log', extensions: ['log'] }]
     });
     if(!save_target) {
@@ -4010,12 +4053,12 @@ class PRDC_JSLAB_WEB_APP_SHELL {
         '<img class="app-logo" src="./img/JSLAB.svg">' +
         '<img class="company-logo" src="./img/PR-DC_icon.svg">' +
         '<div class="clear"></div>' +
-        '<p><span>JSLAB</span>, ' + escapeHtml(this.language.string(8)) + ' ' + escapeHtml(version) + '</p>' +
-        '<p>' + escapeHtml(this.language.string(136)) + ' ' + new Date().getFullYear() + ' &copy; <span>PR-DC</span> info@pr-dc.com</p>' +
+        '<p><span lang-fixed>JSLAB</span>, ' + escapeHtml(this.language.string(8)) + ' ' + escapeHtml(version) + '</p>' +
+        '<p>' + escapeHtml(this.language.string(136)) + ' ' + new Date().getFullYear() + ' &copy; <span lang-fixed>PR-DC</span> <span lang-fixed>info@pr-dc.com</span></p>' +
         '<p>' + escapeHtml(this.language.string(137)) + '</p>' +
         '<p>' + escapeHtml(this.language.string(138)) + '</p>' +
-        '<p>' + escapeHtml(this.language.string(139)) + ' <span>cmd_help</span></p>' +
-        '<p>' + escapeHtml(this.language.string(135)) + ' <a href="https://pr-dc.com/jslab" target="_blank" rel="noopener">pr-dc.com/jslab</a></p>' +
+        '<p>' + escapeHtml(this.language.string(139)) + ' <span lang-fixed>cmd_help</span></p>' +
+        '<p>' + escapeHtml(this.language.string(135)) + ' <a href="https://pr-dc.com/jslab" target="_blank" rel="noopener" lang-fixed>pr-dc.com/jslab</a></p>' +
         '<p>' + escapeHtml(this.language.string(249)) + ': ' +
           '<a href="https://pr-dc.com/jslab/" target="_blank" rel="noopener">' + escapeHtml(this.language.string(250)) + '</a> &bull; ' +
           '<a href="https://discourse.jsl.pr-dc.com/" target="_blank" rel="noopener">' + escapeHtml(this.language.string(251)) + '</a> &bull; ' +
@@ -4025,6 +4068,168 @@ class PRDC_JSLAB_WEB_APP_SHELL {
           '<a href="https://github.com/PR-DC/JSLAB/tree/master/examples" target="_blank" rel="noopener">' + escapeHtml(this.language.string(255)) + '</a>' +
         '</p>' +
       '</div>';
+  }
+
+  /** Brings the existing Editor forward and opens its bottom debugger area. */
+  async _openEditorDebugger() {
+    const win = this._ensureEditorWindow();
+    this.window_manager.show(this.editor_window_id); this.window_manager.focus(this.editor_window_id);
+    const api = await this._getEditorWindowApi(win);
+    api.updateDebugState(this._workerDebugState()); api.showDebugger();
+    return win;
+  }
+
+  /** The main console keeps its execution shortcuts independently of the tool window. */
+  _bindWorkerDebugger() {
+    document.addEventListener('keydown', event => {
+      if(event.ctrlKey && event.key.toLowerCase() === 'c' && this.worker_debugger &&
+          !['closed', 'unavailable'].includes(this.worker_debugger.state) && !window.getSelection().toString()) {
+        this.worker_debugger.interrupt(); event.preventDefault();
+      }
+    });
+  }
+
+  /** Starts the existing scientific runtime and publishes state to its tool window. */
+  async _startWorkerDebugger() {
+    if(this.worker_debugger && !['closed', 'unavailable'].includes(this.worker_debugger.state)) return this.worker_debugger;
+    this.debug_inspection_epoch = (this.debug_inspection_epoch || 0) + 1;
+    this.worker_debugger = new PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT({
+      state: state => {
+        this.worker_debug_state = state;
+        if(state.state === 'paused') this._renderPausedWorkspace(state.variables || []);
+        else if(this.debug_global_workspace) { this._renderWorkspaceVariables(this.debug_global_workspace); this.debug_global_workspace = null; }
+        if(state.state === 'paused') {
+          this._showWorkerDebugSource(state.frames?.[this._activeWorkerDebugger()?.frame_index || 0]);
+          this._setStatus('busy', '', 583);
+        } else if(state.state === 'idle') this._setStatus('ready', '', 87);
+        this._updateWorkerEditor();
+      },
+      targets: () => this._updateWorkerEditor(),
+      remoteRoots: () => ({ window: globalThis, document, bridge: this.bridge }),
+      ui: operation => {
+        if(operation.kind === 'write-bytes') { this.fs.writeBytesSync(operation.path, operation.bytes); return true; }
+        if(operation.kind === 'write-text') { this.fs.writeTextFileSync(operation.path, operation.text); return true; }
+        return this.sandbox_api.workerUI(operation);
+      },
+      settings: settings => {
+        try { localStorage.setItem('jslab.web.debugger-settings', JSON.stringify(settings)); } catch(error) {}
+        this._updateWorkerEditor();
+      },
+      log: message => this.handleSandboxRuntimeLog(message.message, message.level),
+      workspace: workspace => {
+        if(this._activeWorkerDebugger()?.state === 'paused') this.debug_global_workspace = workspace;
+        else this._renderWorkspaceVariables(workspace);
+      },
+      variables: variables => {
+        if(this.worker_debug_state) this.worker_debug_state.variables = variables;
+        if(this._activeWorkerDebugger()?.state === 'paused') this._renderPausedWorkspace(variables);
+      }
+    });
+    const client = this.worker_debugger;
+    try {
+      const settings = JSON.parse(localStorage.getItem('jslab.web.debugger-settings') || '{}');
+      for(const point of settings.breakpoints || []) client.breakpoints.set(point.path + ':' + point.line, point);
+      client.pause_on_exceptions = settings.pause_on_exceptions || 'none';
+    } catch(error) {}
+    try { await client.start({ lang: this.language.lang }); }
+    catch(error) {
+      client.dispose(); if(this.worker_debugger === client) this.worker_debugger = null;
+      this.worker_debug_state = { state: 'unavailable', frames: [], error: this.language.currentString(581) };
+      this._updateWorkerEditor(); throw error;
+    }
+    return client;
+  }
+
+  /** Adapts selected-frame descriptors to the application's normal inspector. */
+  _debugInspector() {
+    if(!this.debug_inspector) this.debug_inspector = new PRDC_JSLAB_DEBUGGER_INSPECTOR({
+      currentString: id => this.language.currentString(id), token: () => this._debugScopeToken(),
+      request: (method, args) => this._debugCommand(method, args), showInspector: model => this.showInspector(model)
+    });
+    return this.debug_inspector;
+  }
+
+  _debugScopeToken() {
+    const client = this._activeWorkerDebugger();
+    return client?.state === 'paused' ? JSON.stringify([this.debug_inspection_epoch, this.worker_debug_state?.revision,
+      this.worker_debugger.selected_target || '', client.frame_index || 0]) : '';
+  }
+
+  _renderPausedWorkspace(variables) {
+    if(!this.debug_global_workspace) this.debug_global_workspace = this.workspace_state;
+    this._renderWorkspaceVariables(this._debugInspector().rows(variables));
+  }
+
+  /** Returns the selected child or main scientific execution target. */
+  _activeWorkerDebugger() { return this.worker_debugger?.selectedClient(); }
+
+  /** Returns the selected debugger's current stack and persisted breakpoints. */
+  _workerDebugState() {
+    const client = this._activeWorkerDebugger();
+    return { ...this.worker_debug_state, state: client?.state || this.worker_debug_state?.state || 'unavailable',
+      ...client?.settings(), frame_index: client?.frame_index || 0,
+      selected_target: this.worker_debugger?.selected_target,
+      workers: Array.from(this.worker_debugger?.targets || [], ([id, target]) => ({ session_id: id, name: target.name || id, paused: target.state === 'paused' })) };
+  }
+
+  /** Dispatches the same debugger operations used by desktop consoles/editors. */
+  async _debugCommand(method, args = {}) {
+    if(!this.worker_debugger) {
+      await this._startWorkerDebugger();
+
+    }
+    const root = this.worker_debugger;
+    const client = root.selectedClient();
+    switch(method) {
+      case 'select_debug_frame': {
+        if(args.revision !== undefined && args.revision !== this.worker_debug_state?.revision) throw Error('Expired debugger frame.');
+        const result = await client.selectFrame(args.frame_index);
+        if(result.success === false) throw Error(result.error);
+        this._showWorkerDebugSource(client.frames[args.frame_index]); this._updateWorkerEditor();
+        return this._workerDebugState();
+      }
+      case 'select_debug_target': root.selectTarget(args.session_id || null); this._updateWorkerEditor(); return this._workerDebugState();
+      case 'evaluate_debug_expression': return client.evaluatePaused(args.expression, args.frame_index ?? client.frame_index);
+      case 'inspect_debug_object': return client.inspectObject(args.object_id);
+      case 'reset_debugger': root.dispose(); await this._startWorkerDebugger(); return this._workerDebugState();
+      case 'update_debug_script': return client.updateScript(args.path, args.code ?? this.fs.readTextFileSync(args.path), args);
+      case 'get_debug_state': return this._workerDebugState();
+      case 'set_breakpoint': return client.setBreakpoint(args.path, args.line, args.condition, args.enabled);
+      case 'remove_breakpoint': return client.removeBreakpoint(args.id);
+      case 'clear_breakpoints': return client.clearBreakpoints();
+      case 'set_exception_pause': return client.setExceptionPause(args.state);
+      case 'pause_execution': return client.pause();
+      case 'resume_execution': return root.resumeTargets(args.action);
+      case 'interrupt_execution': return root.interrupt();
+      default: throw Error('Unknown debugger command.');
+    }
+  }
+
+  /** Opens the paused source and decorates its original line. */
+  async _showWorkerDebugSource(frame) {
+    if(isInternalDebugFrame(frame) || !this.fs.existsFileSync(frame.path)) return;
+    await this._openEditorWindow(frame.path, frame.line);
+    this._updateWorkerEditor(frame);
+  }
+
+  /** Updates existing browser editor gutters without moving the active tab. */
+  _updateWorkerEditor(frame) {
+    const window = this.window_manager.windows.get(this.editor_window_id);
+    window?.iframe?.contentWindow?.__JSLAB_WEB_EDITOR__?.updateDebugState?.(this._workerDebugState(), frame);
+  }
+
+  /** Collects text sources for nested run() calls in the numerical worker. */
+  _workerDebugFiles() {
+    const files = {};
+    const visit = directory => {
+      for(const entry of this.fs.readDirSync(directory, { withFileTypes: true }) || []) {
+        const path = directory.replace(/\/$/, '') + '/' + entry.name;
+        if(entry.isDirectory()) visit(path);
+        else files[path] = /\.(jsl|js|json|txt|csv)$/i.test(entry.name) ? this.fs.readTextFileSync(path) : this.fs.readBytesSync(path);
+      }
+    };
+    visit('/workspace/');
+    return files;
   }
 
   /**
@@ -4063,10 +4268,34 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     this._setStatus('busy', 'Evaluating...');
 
     try {
-      var result = await this.sandbox_api.evaluate(command);
-      this._renderWorkspaceVariables(result.workspace || []);
-      this._setStatus('ready', '', 87);
+      var result;
+      const debugger_command = parseDebuggerCommand(command);
+      if(debugger_command) {
+        const reply = await executeDebuggerCommand(debugger_command, {
+          request: (method, args) => this._debugCommand(method, args),
+          frameIndex: () => this._activeWorkerDebugger()?.frame_index || 0,
+          selectFrame: async index => {
+            const result = await this._activeWorkerDebugger().selectFrame(index);
+            this._updateWorkerEditor();
+            if(result.success) this._showWorkerDebugSource(this._activeWorkerDebugger().frames[index]);
+            return result;
+          }
+        });
+        if(reply.value !== undefined) this.handleSandboxRuntimeLog(JSON.stringify(reply.value), 'info');
+      } else if(this._activeWorkerDebugger()?.state === 'paused') {
+        if(await this._debugInspector().handle(command)) result = { success: true, preview: '' };
+        else result = await this._activeWorkerDebugger().evaluatePaused(command);
+        const text = result.success ? result.preview : result.error;
+        this._appendCommandWindowMessage(result.success ? 'data-in' : 'error', escapeHtml(text), text);
+        this._setStatus('busy', '', 583);
+      } else {
+        result = this.worker_debugger ? await this.worker_debugger.evaluate(command, { files: this._workerDebugFiles() }) :
+          await this.sandbox_api.evaluate(command);
+        this._renderWorkspaceVariables(result.workspace || []);
+      }
+      if(this._activeWorkerDebugger()?.state !== 'paused') this._setStatus('ready', '', 87);
     } catch(_err) {
+      this.handleSandboxRuntimeLog(_err.message, 'error');
       this._setStatus('ready', '', 87);
     }
 

@@ -74,9 +74,6 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
     var context = this.jsl.inter.windows.open_windows[wid].context;
     context.imports_ready = false;
     while(!context.imports_ready) {
-      if(this.jsl.inter.basic.checkStopLoop()) {
-        return false;
-      }
       if(typeof context.L != 'undefined') {
         context.imports_ready = true;
       }

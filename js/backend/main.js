@@ -14,6 +14,8 @@ const os = require('os');
 const Store = require('electron-store');
 
 const { PRDC_APP_LOGGER } = require('./../../lib/PRDC_APP_LOGGER/PRDC_APP_LOGGER');
+const { PRDC_JSLAB_TASKS } = require('./tasks');
+const { PRDC_JSLAB_DEBUGGER } = require('./debugger');
 const { PRDC_JSLAB_PTY } = require('./pty.js');
 const { PRDC_JSLAB_BACKEND_LANGUAGE } = require('./backend-language');
 const { PRDC_JSLAB_SCRIPT_OPENER } = require('./script-opener');
@@ -31,6 +33,7 @@ class PRDC_JSLAB_MAIN {
     var obj = this;
 
     this.store = new Store();
+    this.native_tasks = new PRDC_JSLAB_TASKS();
     this.lang_index = this.store.get('lang_index');
     if(this.lang_index === undefined || this.lang_index === null) {
       this.lang_index = 0;
@@ -49,7 +52,6 @@ class PRDC_JSLAB_MAIN {
     this.win_sandbox;
     this.win_opacity = 0;
     this.editor_close_ready = false;
-    this.stop_loop_in = false;
     this.attention_flash_active = false;
     this.script_opener = new PRDC_JSLAB_SCRIPT_OPENER(this);
     this.instance_router = new PRDC_JSLAB_INSTANCE_ROUTER({
@@ -82,7 +84,7 @@ class PRDC_JSLAB_MAIN {
     this.pty = new PRDC_JSLAB_PTY();
     
     // Create folder for app
-    this.app_folder = app.getPath('documents')+'\\'+app.getName();
+    this.app_folder = this.cli_mode ? app.getPath('userData') : app.getPath('documents')+'\\'+app.getName();
     if(!fs.existsSync(this.app_folder)) {
       fs.mkdirSync(this.app_folder);
     }
@@ -356,6 +358,36 @@ class PRDC_JSLAB_MAIN {
         backgroundThrottling: false
       }
     });
+    this.debugger = new PRDC_JSLAB_DEBUGGER(this.win_sandbox.webContents, {
+      state: state => {
+        if(this.win_main && !this.win_main.isDestroyed()) this.win_main.send('MainWindow', 'debugger-state', state);
+        if(this.win_editor && !this.win_editor.isDestroyed()) this.win_editor.send('EditorWindow', 'debugger-state', state);
+      },
+      settings: settings => this.store.set('debugger-settings', settings),
+      interrupted: (_id, result) => {
+        if(this.automation && this.automation.active_id) {
+          this.automation.complete({ id: this.automation.active_id,
+            result: { success: false, interrupted: true, error: 'Execution interrupted.',
+              cleanup_errors: result.cleanup_errors, output: [] } });
+        } else if(this.automation) this.automation.busy = false;
+        if(this.win_main && !this.win_main.isDestroyed()) {
+          this.win_main.send('MainWindow', 'code-evaluated', { interrupted: true });
+          this.win_main.send('MainWindow', 'disp', 'Execution interrupted.');
+          for(const error of result.cleanup_errors || []) this.win_main.send('MainWindow', 'warn', 'Cleanup: ' + error);
+        }
+      },
+      error: error => {
+        if(this.win_main && !this.win_main.isDestroyed()) this.win_main.send('MainWindow', 'warn', error.message);
+        console.error('[debugger] ' + error.message);
+      }
+    });
+    const saved_debugger = this.store.get('debugger-settings', {});
+    this.debugger.ready.then(async () => {
+      for(const point of saved_debugger.breakpoints || []) {
+        await this.debugger.setBreakpoint(point.path, point.line, point.condition || '', point.enabled !== false);
+      }
+      if(saved_debugger.pause_on_exceptions) await this.debugger.setExceptionPause(saved_debugger.pause_on_exceptions);
+    }).catch(error => console.error('[debugger settings] ' + error.message));
     this.bindAttentionReset(this.win_sandbox);
 
     // Hide menu
@@ -511,7 +543,8 @@ class PRDC_JSLAB_MAIN {
       app.relaunch();
     });
     
-    this._on_sandbox_ready = function() {
+    this._on_sandbox_ready = async function() {
+      await obj.debugger.ready;
       if(obj.automation) obj.automation.ready = true;
       if(!obj.cli_mode && !obj.store.get('shown-getting-started')) {
         obj.store.set('shown-getting-started', 1);
@@ -537,9 +570,14 @@ class PRDC_JSLAB_MAIN {
     if(this.sandbox_sub_wins[wid] === win) delete this.sandbox_sub_wins[wid];
   }
 
-  /**
-   * Create editor window
-   */
+  /** Opens debugging in the existing Editor, preserving the selected frame. */
+  openEditorDebugger() {
+    this.showEditor();
+    this.win_editor.send('EditorWindow','open-debugger',this.debugger_view_state || {...this.debugger.status(),frame_index:0});
+    return true;
+  }
+
+  /** Creates the existing Editor window. */
   createEditorWindow() {
     var obj = this;
     var options = {
@@ -706,12 +744,9 @@ class PRDC_JSLAB_MAIN {
         case 'is-maximized-win':
           retval = BrowserWindow.fromWebContents(e.sender).isMaximized();
           break;
-        case 'check-stop-loop':
-          retval = obj.stop_loop_in;
-          break;
-        case 'reset-stop-loop':
-          obj.stop_loop_in = false;
-          retval = true;
+        case 'execution-started':
+          try { obj.debugger.begin(data); retval = true; }
+          catch(error) { retval = { error: error.message }; }
           break;
         case 'get-process-arguments':
           retval = process.argv;
@@ -794,7 +829,7 @@ class PRDC_JSLAB_MAIN {
           break;
         case 'close-win':
           BrowserWindow.fromWebContents(e.sender).close();
-          e.sender.destroy();
+          if(!e.sender.isDestroyed()) e.sender.destroy();
           break;
         case 'close-app':
           if(obj.win_main !== undefined && !obj.win_main.isDestroyed()) {
@@ -924,6 +959,9 @@ class PRDC_JSLAB_MAIN {
     
     // For MainWindow
     ipcMain.on('MainWindow', function(e, action, data) {
+      if(e.sender === obj.win_sandbox.webContents && action === 'code-evaluated') {
+        obj.debugger.finish(data && data.execution_id);
+      }
       if(obj.automation && e.sender === obj.win_sandbox.webContents) {
         if(action === 'code-evaluating') obj.automation.busy = true;
         if(action === 'code-evaluated' && obj.automation.active_id) return;
@@ -943,6 +981,10 @@ class PRDC_JSLAB_MAIN {
     // For EditorWindow
     ipcMain.on('EditorWindow', function(e, action, data) {
       switch(action) {
+        case 'debug-location':
+          if(data?.path && fs.existsSync(data.path)) obj.showEditor();
+          obj.win_editor.send('EditorWindow', action, data);
+          break;
         case 'open-script':
           // Open file in editor
           obj.showEditor();
@@ -957,6 +999,11 @@ class PRDC_JSLAB_MAIN {
     
     // For SandboxWindow
     ipcMain.on('SandboxWindow', function(e, action, data) {
+      if((action === 'eval-code' || action === 'run-last-script') && obj.debugger.state !== 'idle') {
+        obj.win_main.send('MainWindow', 'warn', 'Sandbox execution is ' + obj.debugger.state + '.');
+        if(obj.debugger.state === 'unavailable') obj.win_main.send('MainWindow', 'code-evaluated', {});
+        return;
+      }
       if(obj.automation && (action === 'eval-code' || action === 'run-last-script')) {
         if(obj.automation.busy || obj.automation.active_id) {
           obj.win_main.send('MainWindow', 'code-evaluating');
@@ -965,23 +1012,60 @@ class PRDC_JSLAB_MAIN {
         }
         obj.automation.busy = true;
       }
-      if(action == 'stop-loop') {
-        obj.stop_loop_in = data;
+      if(action === 'interrupt-execution') {
+        obj.debugger.interrupt().catch(() => {});
+        return;
       }
+      if(obj.debugger.state === 'stopping') return;
+      if(action === 'eval-code' || action === 'run-last-script') obj.debugger.reserve();
       switch(action) {
         default:
           obj.win_sandbox.send('SandboxWindow', action, data);
           break;
       }
     });
+    ipcMain.handle('JSLAB_DEBUG_SOURCE', async (event, source) => {
+      if(event.sender !== obj.win_sandbox.webContents) throw new Error('Expected sandbox source registration.');
+      await obj.debugger.registerSource(source);
+      return true;
+    });
+    ipcMain.handle('JSLAB_MODULE_POSITION', async (event, frame) => {
+      if(event.sender !== obj.win_sandbox.webContents) throw Error('Expected sandbox module location.');
+      return obj.debugger.originalModulePosition(frame);
+    });
+    ipcMain.handle('JSLAB_TASK_START', async (event, request) => {
+      if(event.sender !== obj.win_sandbox.webContents) throw Error('Expected the scientific sandbox.');
+      return obj.native_tasks.run(event.sender, request);
+    });
+    ipcMain.handle('JSLAB_TASK_CANCEL', async (event, id) => obj.native_tasks.cancel(event.sender.id, id));
+
+    ipcMain.handle('JSLAB_DEBUGGER_OPEN', async event => {
+      if(![obj.win_main.webContents, obj.win_editor?.webContents].includes(event.sender)) throw Error('Expected an application editor or main window.');
+      return obj.openEditorDebugger();
+    });
+    ipcMain.handle('JSLAB_DEBUGGER_VIEW_STATE', async event => {
+      if(event.sender !== obj.win_editor?.webContents) throw Error('Expected the Editor window.');
+      return obj.debugger_view_state || { ...obj.debugger.status(), frame_index: 0 };
+    });
+    ipcMain.on('DebuggerPane', (event, action, data) => {
+      if(event.sender !== obj.win_main.webContents) return;
+      if(action === 'state') obj.debugger_view_state = data;
+      if(obj.win_editor && !obj.win_editor.isDestroyed() && action === 'state') obj.win_editor.send('EditorWindow','debugger-view-state',data);
+    });
+    ipcMain.handle('JSLAB_DEBUGGER', async (_event, method, args = {}) => {
+      try { return { success: true, value: await obj.debugCommand(method, args) }; }
+      catch(error) { return { success: false, error: error.message }; }
+    });
     ipcMain.on('JSLAB_AUTOMATION_RESULT', function(e, data) {
-      if(obj.automation && e.sender === obj.win_sandbox.webContents) {
+      if(obj.automation && e.sender === obj.win_sandbox.webContents && obj.debugger.state !== 'stopping') {
         obj.automation.complete(data);
       }
     });
     ipcMain.on('JSLAB_SANDBOX_READY', function(e) {
       if(e.sender === obj.win_sandbox.webContents && obj._on_sandbox_ready) {
-        obj._on_sandbox_ready();
+        obj._on_sandbox_ready().catch(error => {
+          obj.win_main.send("MainWindow", "error", error.message);
+        });
       }
     });
     ipcMain.on('JSLAB_SANDBOX_FAILED', function(e, error) {
@@ -990,6 +1074,35 @@ class PRDC_JSLAB_MAIN {
         obj.win_main.send('MainWindow', 'error', error);
       }
     });
+  }
+
+  /** Dispatches the same debugger commands for GUI and automation clients. */
+  debugCommand(method, args = {}) {
+    switch(method) {
+      case 'get_debug_state': return this.debugger.status();
+      case 'select_debug_frame': {
+        const state = this.debugger.status();
+        if(state.state !== 'paused' || !Number.isInteger(args.frame_index) || !state.frames[args.frame_index] ||
+            args.revision !== undefined && args.revision !== state.revision) throw Error('Expired debugger frame.');
+        this.debugger_view_state = { ...state, frame_index: args.frame_index };
+        this.win_main.send('MainWindow', 'debugger-select-frame', { frame_index: args.frame_index, revision: state.revision });
+        if(this.win_editor && !this.win_editor.isDestroyed()) this.win_editor.send('EditorWindow','debugger-view-state',this.debugger_view_state);
+        return this.debugger_view_state;
+      }
+      case 'interrupt_execution': return this.debugger.interrupt();
+      case 'pause_execution': return this.debugger.pause();
+      case 'resume_execution': return this.debugger.resume(args.action);
+      case 'inspect_debug_object': return this.debugger.properties(args.object_id);
+      case 'evaluate_debug_expression': return this.debugger.evaluate(args.expression, args.frame_index, args.allow_side_effects === true);
+      case 'set_breakpoint': return this.debugger.setBreakpoint(args.path, args.line, args.condition, args.enabled);
+      case 'remove_breakpoint': return this.debugger.removeBreakpoint(args.id);
+      case 'update_debug_script': return this.debugger.updateScript(args.path, args.code, args);
+      case 'restart_debug_frame': return this.debugger.restartFrame(args.frame_index);
+      case 'clear_breakpoints': return this.debugger.clearBreakpoints();
+      case 'set_exception_pause': return this.debugger.setExceptionPause(args.state);
+      case 'select_debug_target': return this.debugger.selectTarget(args.session_id || null);
+      default: throw new Error('Unknown debugger command.');
+    }
   }
 
   /**
@@ -1156,6 +1269,16 @@ class PRDC_JSLAB_MAIN {
   openDevTools(win) {
     if(win.webContents.isDevToolsOpened()) {
       win.webContents.closeDevTools();
+    }
+    if(win === this.win_sandbox && this.debugger) {
+      if(this.debugger.state !== 'idle' && this.debugger.state !== 'unavailable') {
+        this.win_main.send('MainWindow', 'warn', 'Stop execution before opening sandbox DevTools.');
+        return;
+      }
+      win.webContents.once('devtools-closed', () => {
+        this.debugger.ready = this.debugger.attach();
+        this.debugger.ready.catch(error => console.error('[debugger] ' + error.message));
+      });
     }
     win.webContents.openDevTools({mode: 'undocked'});
     win.webContents.once('devtools-opened', function() {

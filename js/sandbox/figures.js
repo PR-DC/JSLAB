@@ -911,7 +911,7 @@ class PRDC_JSLAB_FIGURE {
    * Brings the figure window to the foreground.
    */
   async focus() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].focus();
   }
 
@@ -922,7 +922,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Promise} - Resolves when the window size is set.
    */
   async setSize(width, height) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].setSize(width, height);
   }
   
@@ -933,7 +933,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Promise} - Resolves when the window position is set.
    */
   async setPos(left, top) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].setPos(left, top);
   }
   
@@ -943,7 +943,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Promise<*>} A promise that resolves when the title is set.
    */
   async setTitle(title) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].setTitle(title);
   }
   
@@ -952,7 +952,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Promise<Array>} - Resolves with an array [width, height].
    */
   async getSize() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].getSize();
   }
   
@@ -961,7 +961,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Promise<Array>} - Resolves with an array [left, top].
    */
   async getPos() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].getPos();
   }
 
@@ -970,7 +970,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {String} - Media source id.
    */
   async getMediaSourceId() {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].getMediaSourceId();
   }
 
@@ -980,7 +980,7 @@ class PRDC_JSLAB_FIGURE {
    * @returns {Object|boolean} - Returns recorder object.
    */
   async startVideoRecording(opts) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].startVideoRecording(opts);
   }
   
@@ -1376,7 +1376,7 @@ class PRDC_JSLAB_PLOT {
    * @param {Object} options - Options for the print job.
    */
   async print(filename, options) {
-    await this.#jsl.promiseOrStoped(this.ready);
+    await this.#jsl.awaitResource(this.ready);
     var type = 'png';
     var size;
     if(options) {

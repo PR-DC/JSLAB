@@ -186,41 +186,9 @@ async function bootSandbox() {
   }
 
   async function evaluate(code) {
-    var eval_runtime = jsl.eval;
-    jsl.onEvaluating();
-    jsl.jsl_file_name = 'jslcmdwindow';
-    jsl.current_script = 'jslcmdwindow';
-
-    eval_runtime.source_codes = [];
-    eval_runtime.transformed_codes = [];
-    eval_runtime.source_maps = [];
-    eval_runtime.source_map_scripts = [];
-    eval_runtime.current_source_code = undefined;
-    eval_runtime.current_source_map = undefined;
-    eval_runtime.current_source_script = undefined;
-
-    jsl.savePreviousWorkspace();
-    jsl.loadPreviousWorkspace();
-
-    try {
-      var value = await jsl.eval.evalString(String(code || ''));
-      if(jsl.no_ans === false) {
-        jsl.context.ans = value;
-      }
-      if(jsl.ignore_output === false) {
-        jsl.inter.env.showAns(jsl.inter.prettyPrint(value));
-      }
-      jsl.onEvaluated();
-      return {
-        ok: true,
-        value: value,
-        preview: previewValue(value),
-        workspace: snapshotWorkspace()
-      };
-    } catch(err) {
-      jsl.eval.onEvalError(err);
-      throw err;
-    }
+    const result = await jsl.inter.eval.evalCodeFromMain(String(code || ''), true, 'jslcmdwindow');
+    if(!result.success) throw Object.assign(new Error(result.error), { error_details: result.error_details });
+    return { ok: true, value: result.value, preview: previewValue(result.value), workspace: snapshotWorkspace() };
   }
 
   function setLanguage(next_lang) {
@@ -273,6 +241,41 @@ async function bootSandbox() {
     return [];
   }
 
+  const worker_plots = new Map();
+  const { FIGURE_COMMANDS, PLOT_COMMANDS } = require('./worker-ui');
+  async function workerUI(operation) {
+    const figures = jsl.inter.figures;
+    if(operation.kind === 'figure') {
+      figures.figure(operation.fid);
+      await figures.getFigure(operation.fid).ready;
+    } else if(operation.kind === 'plot') {
+      figures.figure(operation.fid);
+      const plot = figures.plot(...operation.args);
+      worker_plots.set(operation.handle, plot);
+      await plot.ready;
+    } else if(operation.kind === 'plot-method') {
+      const plot = worker_plots.get(operation.handle);
+      if(!plot || !PLOT_COMMANDS.includes(operation.method) || typeof plot[operation.method] !== 'function') throw Error('Unknown remote plot or method.');
+      await plot[operation.method](...operation.args);
+      if(operation.method === 'update') {
+        const context = figures.getFigure(plot.fid)?.context;
+        if(context) await new Promise(resolve => context.requestAnimationFrame(resolve));
+      }
+    } else if(operation.kind === 'figure-method') {
+      if(!FIGURE_COMMANDS.includes(operation.method)) throw Error('Unsupported worker figure operation.');
+      figures.figure(operation.fid);
+      if(operation.method === 'print') await figures.getPlot(operation.fid).print(...operation.args);
+      else await figures[operation.method](...operation.args);
+    } else if(operation.kind === 'close') {
+      if(operation.fid === 'all') {
+        await Promise.all(Object.keys(figures.open_figures).map(fid => figures.closeFigure(fid)));
+      } else await figures.closeFigure(operation.fid);
+      for(const [id, plot] of worker_plots) if(operation.fid === 'all' || plot.fid === operation.fid) worker_plots.delete(id);
+    }
+    else throw Error('Unsupported worker UI operation.');
+    return true;
+  }
+
   globalThis.__JSLAB_WEB_SANDBOX__ = {
     jsl: jsl,
     handshake: function() {
@@ -287,6 +290,7 @@ async function bootSandbox() {
       };
     },
     evaluate: evaluate,
+    workerUI,
     setLanguage: setLanguage,
     clearWorkspace: clearWorkspace,
     getCompletions: getCompletions,

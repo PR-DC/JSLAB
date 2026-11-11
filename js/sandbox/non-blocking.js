@@ -20,91 +20,114 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
   }
 
   /**
+   * Runs scientific/native work outside the persistent workspace so it can be stopped safely.
+   * The function receives copied arguments and must not depend on caller closures.
+   * @param {Function} work_function Function to execute in an isolated scientific runtime.
+   * @param {Array} [args=[]] Structured-cloneable arguments.
+   * @param {Object} [options={}] Optional timeout_ms and AbortSignal signal.
+   * @returns {Promise<*>} Copied result; parent variables survive task interruption.
+   */
+  runInterruptible(work_function, args = [], options = {}) {
+    if(typeof work_function !== 'function' || !Array.isArray(args)) throw Error('Expected a function and an argument array.');
+    if(options.timeout_ms !== undefined && (!Number.isFinite(options.timeout_ms) || options.timeout_ms <= 0)) throw Error('Expected a positive timeout_ms.');
+    const source = this.jsl.inter.execution.web_debugger?.originalFunctionSource(work_function) || Function.prototype.toString.call(work_function);
+    const signal = options.signal || this.jsl.inter.execution.signal();
+    const NativePromise = this.jsl._Promise || Promise;
+    const id = 'native-task-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+    let worker, worker_url, timer, settled = false, reject_task;
+    const cleanup = () => {
+      if(timer) this.jsl.inter.clearTimeout(timer);
+      if(worker_url) URL.revokeObjectURL(worker_url);
+      signal?.removeEventListener('abort', abort);
+      const index = this.jsl.cleanup_registry.findIndex(entry => entry.obj === token);
+      if(index >= 0) this.jsl.cleanup_registry.splice(index, 1);
+    };
+    const stop = async () => {
+      if(worker) worker.terminate();
+      else if(this.jsl.inter.env.cancelInterruptibleTask) await this.jsl.inter.env.cancelInterruptibleTask(id);
+    };
+    const abort = () => {
+      if(settled) return;
+      settled = true;
+      stop().catch(() => {}).then(() => {
+        cleanup();
+        reject_task(Object.assign(Error('Isolated task aborted.'), { name: 'AbortError' }));
+      });
+    };
+    const token = {};
+    const promise = new NativePromise((resolve, reject) => {
+      reject_task = reject;
+      const finish = result => {
+        if(settled) return;
+        settled = true; cleanup(); if(worker) worker.terminate();
+        if(result.success) resolve(result.value);
+        else reject(Object.assign(Error(result.error || 'Isolated task failed.'), { jslab_error_details: result.error_details }));
+      };
+      if(signal?.aborted) { abort(); return; }
+      signal?.addEventListener('abort', abort, { once: true });
+      this.jsl.addForCleanup(token, async () => { await stop(); abort(); });
+      if(options.timeout_ms) timer = this.jsl.inter.setTimeout(() => {
+        if(settled) return;
+        settled = true; stop().catch(() => {}).then(() => {
+          cleanup();
+          reject(Object.assign(Error('Isolated task timed out.'), { name: 'TimeoutError' }));
+        });
+      }, options.timeout_ms);
+      try {
+        if(typeof this.jsl.inter.env.runInterruptibleTask === 'function') {
+          this.jsl.inter.env.runInterruptibleTask(id, source, args).then(finish, error => finish({ success: false, error: error.message }));
+        } else {
+          const body = 'self.addEventListener("message", async event => { try { const value = await (' + source + ')(...event.data.args); self.postMessage({ type: "task-result", success: true, value }); } catch(error) { self.postMessage({ type: "task-result", success: false, error: String(error.message || error), error_details: await jsl.inter.eval.source_errors.describe(error) }); } }); self.postMessage({ type: "task-ready" });';
+          const url = worker_url = URL.createObjectURL(new Blob([body], { type: 'application/javascript' }));
+          worker = new Worker(url, { name: options.name || id });
+          worker.onmessage = event => {
+            if(event.data?.type === 'task-ready') {
+              try { URL.revokeObjectURL(url); worker.postMessage({ args }); }
+              catch(error) { finish({ success: false, error: error.message }); }
+            }
+            else if(event.data?.type === 'task-result') finish(event.data);
+          };
+          worker.onerror = event => { URL.revokeObjectURL(url); finish({ success: false, error: event.message }); };
+        }
+      } catch(error) { finish({ success: false, error: error.message }); }
+    });
+    return promise;
+  }
+
+  /**
    * Executes a given function in a non-blocking while loop.
    * @param {Function} fn A function that returns a boolean value; when false, the loop exits.
    */
   nbwhile(fn) {
-    var obj = this;
-    function fnw() {
-      if(!obj.jsl.inter.basic.checkStopLoop()) {
-        if(!fn()) {
-          obj.jsl.inter.env.setImmediate(fnw);
-        }
-      } else {
-        obj.jsl.inter.env.error('@nbwhile: '+obj.jsl.inter.lang.string(125));
-      }
-    }
-    this.jsl.inter.env.setImmediate(fnw);
+    const schedule = () => this.jsl.inter.setImmediate(() => {
+      if(!fn()) schedule();
+    });
+    schedule();
   }
 
-  /**
-   * Executes a given function once in a non-blocking manner.
-   * @param {Function} fn The function to be executed.
-   */
+  /** @param {Function} fn Function to schedule once. */
   nbrun(fn) {
-    if(!this.jsl.inter.basic.checkStopLoop()) {
-      this.jsl.inter.env.setImmediate(fn);
-    } else {
-      this.jsl.inter.env.error('@nbrun: '+this.jsl.inter.lang.string(125));
-    }
+    return this.jsl.inter.setImmediate(fn);
   }
 
-  /**
-   * Schedules the next block of code to be executed in a non-blocking manner.
-   * @param {Function} fn The function to execute next.
-   */
+  /** @param {Function} fn Next callback. */
   nbnext(fn) {
-    var obj = this;
-    function fnw() {
-      if(!obj.jsl.inter.basic.checkStopLoop()) {
-        fn();
-      } else {
-        obj.jsl.inter.env.error('@nbnext: '+obj.jsl.inter.lang.string(125));
-      }
-    }
-    this.jsl.inter.env.setImmediate(fnw);
+    return this.jsl.inter.setImmediate(fn);
   }
 
-  /**
-   * Waits for a specified number of milliseconds in a non-blocking manner.
-   * @param {Number} ms The number of milliseconds to wait.
-   * @returns {Promise<void>} A promise that resolves after the specified time has elapsed.
-   */
+  /** @param {number} ms Delay in milliseconds. @returns {Promise<void>} Delay. */
   waitMSeconds(ms) {
-    if(!this.jsl.inter.basic.checkStopLoop()) {
-      return new Promise(function(resolve, reject) { setTimeout(resolve, ms) });
-    } else {
-      this.jsl.inter.env.error('@waitMSeconds: '+this.jsl.inter.lang.string(125), true);
-    }
-    return false;
-  }
-  
-  /**
-   * Waits for a specified number of seconds in a non-blocking manner.
-   * @param {Number} s The number of seconds to wait.
-   * @returns {Promise<void>} A promise that resolves after the specified time has elapsed.
-   */
-  waitSeconds(s) {
-    if(!this.jsl.inter.basic.checkStopLoop()) {
-      return this.jsl.inter.waitMSeconds(s*1000);
-    } else {
-      this.jsl.inter.env.error('@waitSeconds: '+this.jsl.inter.lang.string(125), true);
-    }
-    return false;
+    return new this.jsl._Promise(resolve => this.jsl.inter.setTimeout(resolve, ms));
   }
 
-  /**
-   * Waits for a specified number of minutes in a non-blocking manner.
-   * @param {Number} min The number of minutes to wait.
-   * @returns {Promise<void>} A promise that resolves after the specified time has elapsed.
-   */
-  waitMinutes(min) {
-    if(!this.jsl.inter.basic.checkStopLoop()) {
-      return this.jsl.inter.waitMSeconds(min*60*1000);
-    } else {
-      this.jsl.inter.env.error('@waitMinutes: '+this.jsl.inter.lang.string(125), true);
-    }
-    return false;
+  /** @param {number} seconds Delay. @returns {Promise<void>} Delay. */
+  waitSeconds(seconds) {
+    return this.waitMSeconds(seconds * 1000);
+  }
+
+  /** @param {number} minutes Delay. @returns {Promise<void>} Delay. */
+  waitMinutes(minutes) {
+    return this.waitMSeconds(minutes * 60000);
   }
 
   /**
@@ -155,7 +178,7 @@ class PRDC_JSLAB_LIB_NON_BLOCKING {
       type: 'configureWorker', 
       module_path: path
     });
-    return worker;
+    return this.jsl.inter.execution.trackWorker(worker);
   }
 }
 

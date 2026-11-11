@@ -10,6 +10,8 @@ const path = require('path');
 const { ipcRenderer } = require('electron');
 const { PRDC_JSLAB_CODE_DOC_HOVER } = require('../code/doc-hover');
 
+const { PRDC_JSLAB_CODE_DEBUGGER } = require('../code/debugger');
+
 const SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
 
 /**
@@ -71,6 +73,20 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       searchDialog: true,
       highlightSelectionMatches: { annotateScrollbar: true },
     });
+
+    this.debugger = new PRDC_JSLAB_CODE_DEBUGGER(this.code_editor, {
+      path: () => this.path,
+      error: message => this.win.editor.disp(message),
+      request: async (method, args) => {
+        const result = await ipcRenderer.invoke('JSLAB_DEBUGGER', method, args);
+        if(!result.success) throw Error(result.error);
+        return result.value;
+      }
+    });
+    if(this.win.debugger_state) this.debugger.update(this.win.debugger_state);
+    ipcRenderer.invoke('JSLAB_DEBUGGER', 'get_debug_state').then(result => {
+      if(result.success) this.debugger.update(result.value);
+    }).catch(() => {});
 
     this.code_editor.setOption("foldOptions", {
       rangeFinder: CodeMirror.fold.combine(

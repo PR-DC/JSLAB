@@ -76,15 +76,12 @@ tests.add('command getters retain their runtime when global jsl is replaced', fu
   jsl.clear = function() { calls.push('clear'); };
   jsl.inter.env.clc = function() { calls.push('clc'); };
   jsl.inter.env.setWorkspace = function() { calls.push('workspace'); };
-  jsl.inter.env.checkStopLoop = function() { return false; };
-  jsl.onStopLoop = function() { calls.push('stop'); };
-  jsl.stop_loop = false;
   void jsl.context.clear;
   void jsl.context.clc;
   void jsl.context.cls;
-  void jsl.context.checkStop;
+  assert.equal(Object.hasOwn(jsl.context, "checkStop"), false);
   void jsl.context.updatepoint;
-  assert.deepEqual(calls, ['clear', 'clc', 'clc', 'workspace', 'stop', 'workspace', 'stop']);
+  assert.deepEqual(calls, ['clear', 'clc', 'clc', 'workspace']);
   assert.equal(jsl.no_ans, true);
   assert.equal(jsl.ignore_output, true);
 }, { tags: ['unit', 'basic'] });
@@ -812,5 +809,25 @@ tests.add('exist returns MATLAB-like codes and supports typed checks', function(
   assert.equal(harness.basic.exist('data', 'dir'), 7);
   assert.equal(harness.basic.exist('missing'), 0);
 }, { tags: ['unit', 'basic'] });
+
+tests.add('dbstop dbclear and dbstatus validate and forward every configuration form', async assert => {
+  const { basic, jsl } = createBasicDiaryHarness();
+  const calls = [];
+  jsl.pathResolve = value => '/workspace/' + value;
+  jsl.inter.env.debugCommand = (method, args) => { calls.push({ method, args }); return { success: true }; };
+  basic.dbstop('sample.jsl', 4, 'x > 2', false);
+  assert.equal(calls.at(-1).args.path, '/workspace/sample.jsl');
+  assert.equal(calls.at(-1).args.enabled, false);
+  basic.dbstop('error'); assert.equal(calls.at(-1).args.state, 'uncaught');
+  basic.dbstop('caught error'); assert.equal(calls.at(-1).args.state, 'all');
+  basic.dbclear('sample.jsl', 4); assert.equal(calls.at(-1).args.id, '/workspace/sample.jsl:4');
+  basic.dbclear('error'); assert.equal(calls.at(-1).args.state, 'none');
+  basic.dbclear(); assert.equal(calls.at(-1).method, 'clear_breakpoints');
+  basic.dbstatus(); assert.equal(calls.at(-1).method, 'get_debug_state');
+  assert.throws(() => basic.dbstop('file', 0));
+  assert.throws(() => basic.dbstop('file', 2, 3));
+  assert.throws(() => basic.dbclear('file', 0));
+  assert.equal(Object.getOwnPropertyDescriptor(jsl.context, 'keyboard').get instanceof Function, true);
+}, { tags: ['unit', 'basic', 'debugger'] });
 
 exports.MODULE_TESTS = tests;

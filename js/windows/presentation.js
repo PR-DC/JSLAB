@@ -1766,9 +1766,9 @@ class PRDC_JSLAB_PRESENTATION_STOPWATCH {
     this.menu = document.createElement('div');
     this.menu.id = 'presentation-stopwatch-menu';
     this.menu.innerHTML = `
-      <div class="item" data-action="start">Start</div>
-      <div class="item" data-action="stop">Stop</div>
-      <div class="item" data-action="reset">Reset</div>`;
+      <div class="item" data-action="start"><str sid="607">${language.currentString(607)}</str></div>
+      <div class="item" data-action="stop"><str sid="332">${language.currentString(332)}</str></div>
+      <div class="item" data-action="reset"><str sid="221">${language.currentString(221)}</str></div>`;
     document.body.appendChild(this.menu);
     
     this.el.addEventListener('pointerdown', (e) => this._onPointerDown(e));

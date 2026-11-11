@@ -14,6 +14,7 @@
 const CORE_INTERNAL_MODULE_NAMES = Object.freeze([
   "env",
   "eval",
+  "execution",
   "override",
   "plotter",
   "context",

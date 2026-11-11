@@ -21,7 +21,7 @@ async function run() {
   global.process_arguments = ['gui-web-tests', ...process.argv.slice(2).filter(arg => arg.startsWith('--test-'))];
   try {
     await gui_browser.navigate(gui_base);
-    await gui_browser.waitFor(() => document.body.dataset.jslabWebReady === 'true' || document.body.dataset.jslabWebReady === 'false', 'web bootstrap');
+    await gui_browser.waitFor(() => document.body && (document.body.dataset.jslabWebReady === 'true' || document.body.dataset.jslabWebReady === 'false'), 'web bootstrap');
     var boot = await gui_browser.evaluate(() => ({ ...document.body.dataset }));
     if(boot.jslabWebReady !== 'true') throw new Error('Web bootstrap failed: ' + JSON.stringify(boot));
     const { PRDC_JSLAB_TESTER } = require('../shared/tester');

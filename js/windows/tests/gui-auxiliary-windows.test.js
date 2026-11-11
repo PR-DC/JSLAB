@@ -24,7 +24,8 @@ async function figure(f) {
     figures: { open_figures: {}, saveFigureDialog: id => f.calls.push(['figure', 'save', id]) },
     plotter: { updatePlotLayout: id => f.calls.push(['figure', 'reset', id]) }
   } };
-  var result = new PRDC_JSLAB_FIGURE(jsl, 1); await result.init();
+  f.figure_runtime = jsl;
+  var result = new PRDC_JSLAB_FIGURE(jsl, 1); jsl.inter.figures.open_figures[1] = result; await result.init();
   result.plot = { fid: 1 }; return result;
 }
 

@@ -39,14 +39,15 @@ class PRDC_JSLAB_CLI_SESSION {
       : null;
     var executable = packaged
       ? path.resolve(root, '..', '..', cli_config.runtime)
-      : require('electron');
+      : process.versions.electron ? process.execPath : require('electron');
     var env = Object.assign({}, process.env);
     delete env.ELECTRON_RUN_AS_NODE;
     this.profile = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-cli-'));
     var args = (packaged ? [] : [root]).concat(['--cli-runtime', '--cli-parent-pid=' + process.pid,
       '--user-data-dir=' + this.profile]);
+    if(this.options.headless) args.push('--disable-gpu', '--in-process-gpu');
     this.child = cp.spawn(executable, args, { env: env, cwd: this.options.cwd,
-      windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+      windowsHide: true, detached: this.options.detached === true, stdio: ['pipe', 'pipe', 'pipe'] });
     this.child.on('error', function(err) { obj.start_error = err; });
     [this.child.stdout, this.child.stderr].forEach(function(stream) {
       stream.on('data', function(data) { obj.diagnostics = (obj.diagnostics + data.toString()).slice(-8000); });
@@ -96,7 +97,7 @@ class PRDC_JSLAB_CLI_SESSION {
   }
 
   /**
-   * Requests cooperative interruption of the current operation.
+   * Requests debugger interruption and registered-resource cleanup.
    */
   async interrupt() {
     this.interrupted = true;
@@ -124,6 +125,8 @@ class PRDC_JSLAB_CLI_SESSION {
       });
     }
     if(this.profile) {
+      const target = path.resolve(this.profile);
+      if(path.dirname(target) !== path.resolve(os.tmpdir()) || !path.basename(target).startsWith('jslab-cli-')) throw Error('Unexpected CLI profile cleanup path.');
       try { await fs.promises.rm(this.profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch(err) {}
     }
   }

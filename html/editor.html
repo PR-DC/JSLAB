@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title str="518">Editor - JSLAB | PR-DC</title>
+    <title str="518"></title>
     <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/tabs.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-editor-custom.css">
 		<link rel="stylesheet" type="text/css" href="../css/editor.css" />
+    <link rel="stylesheet" href="../css/editor-debugger.css">
     <link rel="stylesheet" type="text/css" href="../css/context-menu.css" />
     <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
     
@@ -43,7 +44,59 @@
       <img id="editor-more-icon" src="../img/more.svg" />
       <div class="tabs-bottom-bar"></div>
     </div>
-    <div id="code"></div>
+    <div id="editor-workspace">
+      <div id="code"></div>
+      <section id="editor-debugger-pane" hidden aria-label-str="555">
+        <div class="panel-container">
+          <div id="editor-debugger-header" class="panel-title">
+            <span class="editor-debugger-title"><str sid="555"></str></span>
+            <span id="debugger-state" role="status"></span>
+            <div id="editor-debugger-header-controls">
+              <div id="editor-debugger-controls" role="toolbar" aria-label-str="555">
+                <div id="editor-debugger-actions" hidden>
+                  <button type="button" data-editor-debug-action="stepOver" title-str="627" aria-label-str="564"><img src="../img/debug-step-over.svg" alt=""></button>
+                  <button type="button" data-editor-debug-action="stepInto" title-str="628" aria-label-str="565"><img src="../img/debug-step-into.svg" alt=""></button>
+                  <button type="button" data-editor-debug-action="stepOut" title-str="629" aria-label-str="566"><img src="../img/debug-step-out.svg" alt=""></button>
+                  <button type="button" data-editor-debug-action="stop" title-str="576" aria-label-str="332"><img src="../img/debug-stop.svg" alt=""></button>
+                </div>
+              </div>
+              <button id="debugger-menu-toggle" type="button" title-str="36" aria-label-str="36" aria-controls="debugger-menu" aria-expanded="false"><img src="../img/more.svg" alt=""></button>
+              <button id="editor-debugger-close" type="button" title-str="606" aria-label-str="606"><img src="../img/win-close.svg" alt=""></button>
+            </div>
+          </div>
+          <div id="debugger-content" class="options-cont">
+            <div id="debugger-stack">
+              <label for="debugger-frames"><str sid="572"></str></label>
+              <select id="debugger-frames" size="8"></select>
+              <p id="debugger-empty" lang-str="625"></p>
+            </div>
+            <div id="debugger-message" role="alert"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div id="debugger-menu" style="display: none;">
+      <ul>
+        <li class="debugger-menu-preferences">
+          <label for="debugger-exceptions"><str sid="558"></str></label>
+          <select id="debugger-exceptions"><option value="none" str="559"></option><option value="uncaught" str="560"></option><option value="all" str="561"></option></select>
+          <div id="debugger-target-row">
+            <label for="debugger-targets"><str sid="571"></str></label>
+            <select id="debugger-targets"></select>
+          </div>
+        </li>
+        <li class="debugger-menu-action">
+          <button data-debug-action="apply" lang-str="567" title-str="577"></button></li>
+        <li class="debugger-menu-action"><button data-debug-action="restart" title-str="578"><str sid="569"></str></button></li>
+        <li class="debugger-menu-action"><button data-debug-action="reset" title-str="580"><str sid="570"></str></button>
+        </li>
+        <li id="debugger-history-row"><details id="debugger-history-details">
+            <summary lang-str="624"></summary>
+            <pre id="debugger-history"></pre>
+          </details></li>
+      </ul>
+      <div class="popup-triangle"></div>
+    </div>
     <div id="close-dialog-cont">
       <div id="close-dialog">
         <div id="close-dialog-header">
@@ -65,6 +118,7 @@
       <ul>
         <li id="search-dialog-menu" title-str="169"><img src="../img/search-dialog.svg"/><str sid="168"></str></li>
         <li id="search-all-menu" title-str="373"><img src="../img/search-all-dialog.svg"/><str sid="373"></str></li>
+        <li id="editor-debugger-open" title-str="555" aria-controls="editor-debugger-pane" aria-expanded="false"><img src="../img/debugger-menu.svg"/><str sid="555"></str></li>
         <li id="symbol-input-menu" title-str="364"><img src="../img/symbols.svg"/><str sid="364"></str></li>
         <li id="compile-dialog-menu" class="arduino" title-str="227"><img src="../img/compile-dialog.svg"/><str sid="227"></str></li>
         <li id="upload-dialog-menu" class="arduino" title-str="228"><img src="../img/upload-dialog.svg"/><str sid="228"></str></li>

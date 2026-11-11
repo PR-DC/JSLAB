@@ -145,6 +145,15 @@ class PRDC_JSLAB_OVERRIDE {
     
     // Execute override submodule
     this.execute();
+    const NativeWorker = this.jsl.context.Worker;
+    if(typeof NativeWorker === 'function') {
+      this.jsl.context.Worker = class extends NativeWorker {
+        constructor(...args) {
+          super(...args);
+          obj.jsl.inter.execution.trackWorker(this);
+        }
+      };
+    }
     Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach(function(prop) {
       if(!['constructor', 'execute'].includes(prop) && !prop.startsWith('_')) {
         if(cfg.DEBUG_FUN_SHADOW && obj.jsl.context.hasOwnProperty(prop)) {
@@ -259,6 +268,7 @@ class PRDC_JSLAB_OVERRIDE {
     // Delete globals
     this.delete_globals.forEach(function(prop) {
       var context = obj.jsl.inter.env.context;
+      if(obj.is_web_runtime && obj.jsl.inter.env.is_worker && ['onmessage', 'onmessageerror'].includes(prop)) return;
       try {
         obj.deleted[prop] = context[prop];
       } catch {
@@ -357,57 +367,43 @@ class PRDC_JSLAB_OVERRIDE {
       }
     };
     
-    /**
-     * Provides a custom Promise implementation with enhanced functionality to integrate with JSLAB's execution flow.
-     */
-    this.Promise = class extends this.jsl._Promise {
+    // Preserve Promise semantics; cancelled continuations never enter user code.
+    const NativePromise = this.jsl._Promise;
+    this.Promise = class extends NativePromise {
       constructor(executor) {
-        obj.jsl.inter.basic.checkStopLoop();
-        obj.jsl.promises_number += 1;
-        obj.jsl.last_promise_id += 1;
-        let promises_id = obj.jsl.last_promise_id;
-        obj.jsl.onStatsChange();
-        super(function(_resolve, _reject) {
-           return executor(function(...args) {
-             obj.jsl.clearPromise(promises_id);
-             _resolve(...args);
-           }, function(...args) {
-             obj.jsl.clearPromise(promises_id);
-             _reject(...args);
-           });
-        });
-        this.loop_stoped = false;
-        obj.jsl.started_promises[promises_id] = this;
+        const id = ++obj.jsl.last_promise_id;
+        const generation = obj.jsl.inter.execution.generation;
+        let settled = false;
+        const settle = () => {
+          settled = true;
+          if(obj.jsl.started_promises[id]) obj.jsl.clearPromise(id);
+        };
+        super((resolve, reject) => executor(value => { settle(); resolve(value); },
+          error => { settle(); reject(error); }));
+        this._generation = generation;
+        if(!settled) {
+          obj.jsl.started_promises[id] = this;
+          obj.jsl.promises_number++;
+          obj.jsl.onStatsChange();
+        }
       }
 
-      // Override the `then` method
-      then(...args) {
-        if(!this.loop_stoped) {
-          let newPromise = super.then(...args);
-          return newPromise;
-        }
-        return false;
-      }
-
-      // Override the `catch` method
-      catch(...args) {
-        if(!this.loop_stoped) {
-          let newPromise = super.catch(...args);          
-          return newPromise;
-        }
-        return false;
-      }
-      
-      // Override the `finally` method
-      finally(...args) {
-        if(!this.loop_stoped) {
-          let newPromise = super.finally(...args);
-          return newPromise;
-        }
-        return false;
+      then(on_fulfilled, on_rejected) {
+        const generation = this._generation;
+        if(typeof on_fulfilled === 'function') on_fulfilled = obj.jsl.inter.execution.wrap(on_fulfilled);
+        if(typeof on_rejected === 'function') on_rejected = obj.jsl.inter.execution.wrap(on_rejected);
+        const guard = (callback, rejected) => value => {
+          if(generation !== obj.jsl.inter.execution.generation) return new NativePromise(() => {});
+          if(typeof callback === 'function') return callback(value);
+          if(rejected) throw value;
+          return value;
+        };
+        const result = super.then(guard(on_fulfilled, false), guard(on_rejected, true));
+        result._generation = generation;
+        return result;
       }
     };
-    
+
     if(this.is_web_runtime) {
       this._Module.prototype.require = function(module_name) {
         return obj.jsl.inter.env.reportUnavailable('Module "' + module_name + '"');
@@ -427,6 +423,11 @@ class PRDC_JSLAB_OVERRIDE {
     }
   }
   
+  /** @private Guards callbacks without exposing execution machinery as commands. */
+  _guardCallback(callback) {
+    return this.jsl.inter.execution ? this.jsl.inter.execution.wrap(callback) : callback;
+  }
+
   /**
    * Schedules a function to be called on the next animation frame in a non-blocking manner.
    * @param {Function} fun The function to call on the next animation frame.
@@ -434,8 +435,9 @@ class PRDC_JSLAB_OVERRIDE {
    */
   requestAnimationFrame(fun) {
     var obj = this;
-    var request_id = this.jsl._requestAnimationFrame(function() {
-      fun();
+    fun = this._guardCallback(fun);
+    var request_id = this.jsl._requestAnimationFrame(function(timestamp) {
+      fun(timestamp);
       obj.jsl.inter.array.removeElementByValue(obj.jsl.started_animation_frames, request_id);
       obj.jsl.onStatsChange();
     });
@@ -462,11 +464,12 @@ class PRDC_JSLAB_OVERRIDE {
    */
   requestIdleCallback(fun, options) {
     var obj = this;
-    var request_id = this.jsl.requestIdleCallback(function() {
-      fun(options);
+    fun = this._guardCallback(fun);
+    var request_id = this.jsl._requestIdleCallback(function(deadline) {
+      fun(deadline);
       obj.jsl.inter.array.removeElementByValue(obj.jsl.started_idle_callbacks, request_id);
       obj.jsl.onStatsChange();
-    });
+    }, options);
     this.jsl.started_idle_callbacks.push(request_id);
     this.jsl.onStatsChange();
     return request_id;
@@ -489,6 +492,7 @@ class PRDC_JSLAB_OVERRIDE {
    * @returns {number} The interval ID.
    */
   setInterval(...arg) {
+    arg[0] = this._guardCallback(arg[0]);
     var request_id = this.jsl._setInterval(...arg);
     this.jsl.started_intervals.push(request_id);
     this.jsl.onStatsChange();
@@ -513,6 +517,7 @@ class PRDC_JSLAB_OVERRIDE {
    */
   setTimeout(fun, delay, ...arg) {
     var obj = this;
+    fun = this._guardCallback(fun);
     var request_id = this.jsl._setTimeout(function() {
       fun(...arg);
       obj.jsl.inter.array.removeElementByValue(obj.jsl.started_timeouts, request_id); 
@@ -538,10 +543,11 @@ class PRDC_JSLAB_OVERRIDE {
    * @param {Function} fun The function to execute.
    * @returns {number} The immediate ID.
    */
-  setImmediate(fun) {
+  setImmediate(fun, ...args) {
     var obj = this;
+    fun = this._guardCallback(fun);
     var request_id = this.jsl._setImmediate(function() {
-      fun();
+      fun(...args);
       obj.jsl.inter.array.removeElementByValue(obj.jsl.started_immediates, request_id);
       obj.jsl.onStatsChange();
     });

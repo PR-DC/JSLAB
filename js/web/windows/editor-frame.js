@@ -5,11 +5,17 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_EDITOR_DEBUGGER_PANE } = require('../../code/editor-debugger-pane');
+const { PRDC_JSLAB_WEB_PANEL_GROUP } = require('../panels');
+const { PRDC_JSLAB_WEB_METADATA_STORE } = require('../storage/metadata-store');
+const { PRDC_JSLAB_DEBUGGER_TOOLBAR } = require('../../code/debugger-toolbar');
 var { PRDC_POPUP } = require('../../../lib/PRDC_POPUP/PRDC_POPUP');
 var { PRDC_JSLAB_EDITOR_SEARCH_ALL } = require('../../editor/search-all');
 var { PRDC_JSLAB_EDITOR_SYMBOL_INPUT } = require('../../editor/symbol-input');
 var { createCodeMirrorLintOptions } = require('../eslint');
 var { PRDC_JSLAB_CODE_DOC_HOVER } = require('../../code/doc-hover');
+
+var { PRDC_JSLAB_CODE_DEBUGGER } = require('../../code/debugger');
 
 var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
 
@@ -149,6 +155,13 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
         searchDialog: true,
         highlightSelectionMatches: { annotateScrollbar: true }
       });
+
+      this.debugger = new PRDC_JSLAB_CODE_DEBUGGER(this.code_editor, {
+        path: () => this.path,
+        error: message => this.bridge.appendConsoleMessage(message, 'error'),
+        request: (method, args) => this.bridge.debugCommand(method, args)
+      });
+      this.debugger.update(this.bridge.getDebugState?.() || {});
 
       this.code_editor.setOption('foldOptions', {
         rangeFinder: CodeMirror.fold.combine(
@@ -860,7 +873,21 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
       this.context_menu_paste = document.getElementById('editor-context-paste');
       this.context_menu_select_all = document.getElementById('editor-context-select-all');
       this.editor = this;
-
+      const debugger_host = {
+      closeMenu:() => this.editor_more_popup?.close(),
+        platform:'web', currentString:id => this.bridge.currentString(id),
+        request:(method,args) => this.bridge.debugCommand(method,args), open:() => this.debugger_pane.toggle(),
+        error:message => this.bridge.appendConsoleMessage(message,'error'),
+        hasSelection:() => !!(this.getActiveCodeEditor()?.getSelection() || globalThis.getSelection().toString() ||
+          document.activeElement?.selectionEnd > document.activeElement?.selectionStart),
+        createPanel:(container,cells,refresh) => new PRDC_JSLAB_WEB_PANEL_GROUP(new PRDC_JSLAB_WEB_METADATA_STORE('jslab-web'),
+          'editor-debugger','horizontal',container,cells,[70,30],refresh),
+        refresh:() => { for(const script of this.script_manager.scripts) script.code_editor.refresh(); },
+      };
+      this.debugger_toolbar = new PRDC_JSLAB_DEBUGGER_TOOLBAR(document,debugger_host);
+      this.debugger_pane = new PRDC_JSLAB_EDITOR_DEBUGGER_PANE(document,debugger_host);
+      this.debugger_toolbar.update(this.bridge.getDebugState());
+      this.debugger_pane.update(this.bridge.getDebugState());
       this.editor_symbol_input = new PRDC_JSLAB_EDITOR_SYMBOL_INPUT(this);
       this.editor_search_all = new PRDC_JSLAB_EDITOR_SEARCH_ALL(this);
       this.editor_more_popup = new PRDC_POPUP(
@@ -912,7 +939,7 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
         obj.script_manager.openScriptFile();
       });
       document.getElementById('run-menu').addEventListener('click', function() {
-        obj.script_manager.runScript();
+        if(!obj.debugger_toolbar.handleRun()) obj.script_manager.runScript();
       });
       document.getElementById('new-tab').addEventListener('click', function() {
         obj.bridge.createUntitledEditorFile();
@@ -1056,7 +1083,7 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
           event.stopPropagation();
           event.preventDefault();
         } else if(event.key === 'F5') {
-          obj.script_manager.runScript();
+          if(!obj.debugger_toolbar.handleRun()) obj.script_manager.runScript();
           event.preventDefault();
         } else if(event.ctrlKey && event.key.toLowerCase() === 'o') {
           obj.script_manager.openScriptFile();
@@ -1182,6 +1209,14 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
       openFile: function(file_path, lineno, charpos) {
         return editor.openFile(file_path, lineno, charpos);
       },
+      updateDebugState: function(state, frame) {
+        editor.debugger_toolbar.update(state);
+        editor.debugger_pane.update(state);
+        for(const script of editor.script_manager.scripts) script.debugger?.update(state, frame);
+      },
+      showDebugger:() => editor.debugger_pane.show(),
+      hideDebugger:() => editor.debugger_pane.hide(),
+      debuggerPane:editor.debugger_pane,
       saveActiveTab: function() {
         return editor.saveActiveTab();
       },
@@ -1208,8 +1243,14 @@ var SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
       if(editor.editor_search_all) {
         editor.editor_search_all.refreshLanguage();
       }
+      for(const script of editor.script_manager.scripts) {
+        if(script.debugger) script.debugger.update(script.debugger.state, script.debugger.selected_frame);
+      }
+      editor.debugger_toolbar.update(editor.debugger_toolbar.state);
+      editor.debugger_pane.view.update(editor.debugger_pane.view.state);
       editor.updateWindowTitle();
     };
+    globalThis.__JSLAB_WEB_FRAME_onLanguageChange();
   }
 
   document.addEventListener('DOMContentLoaded', function() {

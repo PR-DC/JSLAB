@@ -10,7 +10,11 @@ const { ipcRenderer } = require('electron');
 exports.run = async function(args) {
   var output = [];
   var original_log = console.log;
-  console.log = function(...items) { output.push(items.join(' ')); };
+  console.log = function(...items) {
+    const message = items.join(' ');
+    output.push(message);
+    if(/^\s*(Running|\[\d*0\/|Summary)/.test(message)) ipcRenderer.send('gui-test-progress', message);
+  };
   try {
     global.app_path = require('path').resolve(__dirname, '..', '..');
     global.process_arguments = ['gui-tests', ...args];

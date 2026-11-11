@@ -49,7 +49,8 @@ function createOverrideHarness() {
     _cancelAnimationFrame: function(request_id) {
       captured.cancel_raf_id = request_id;
     },
-    requestIdleCallback: function(callback) {
+    _requestIdleCallback: function(callback, options) {
+      captured.idle_options = options;
       captured.idle_callback = callback;
       return 12;
     },
@@ -121,8 +122,10 @@ tests.add('requestIdleCallback and cancelIdleCallback manage idle queue', functi
 
   assert.equal(request_id, 12);
   assert.deepEqual(harness.jsl.started_idle_callbacks, [12]);
-  harness.captured.idle_callback();
-  assert.deepEqual(seen, { timeout: 5 });
+  const deadline = { timeRemaining: function() { return 5; } };
+  harness.captured.idle_callback(deadline);
+  assert.equal(seen, deadline);
+  assert.deepEqual(harness.captured.idle_options, { timeout: 5 });
   assert.deepEqual(harness.jsl.started_idle_callbacks, []);
 
   harness.jsl.started_idle_callbacks = [12];

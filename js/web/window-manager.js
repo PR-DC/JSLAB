@@ -72,7 +72,8 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER {
     var minimize = document.createElement('button');
     minimize.type = 'button';
     minimize.className = 'web-window-action web-window-system-action';
-    minimize.title = 'Minimize';
+    minimize.setAttribute('title-str', '604');
+    minimize.title = language.currentString(604);
     minimize.innerHTML = '<img src="./img/win-minimize.svg" alt="">';
     minimize.addEventListener('click', function(event) {
       event.stopPropagation();
@@ -83,7 +84,8 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER {
     var maximize = document.createElement('button');
     maximize.type = 'button';
     maximize.className = 'web-window-action web-window-system-action';
-    maximize.title = 'Maximize';
+    maximize.setAttribute('title-str', '605');
+    maximize.title = language.currentString(605);
     maximize.innerHTML = '<img src="./img/win-maximize.svg" alt="">';
     maximize.addEventListener('click', function(event) {
       event.stopPropagation();
@@ -94,7 +96,8 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER {
     var close = document.createElement('button');
     close.type = 'button';
     close.className = 'web-window-action web-window-system-action close';
-    close.title = 'Close';
+    close.setAttribute('title-str', '606');
+    close.title = language.currentString(606);
     close.innerHTML = '<img src="./img/win-close.svg" alt="">';
     close.addEventListener('click', function(event) {
       event.stopPropagation();

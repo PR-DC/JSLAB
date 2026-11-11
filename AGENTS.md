@@ -11,14 +11,16 @@ JSLAB is a scientific JavaScript desktop environment built with Electron. User s
 - The workspace and working directory persist between calls and are shared with the user. Inspect existing variables before replacing them. Avoid clearing the workspace or closing figures unless the task requires it.
 - Inspect `result.success`, captured output and error details. `check_code` diagnostics must also be checked for error severity. Execution success alone does not validate a numerical result.
 - When a tool returns `status: "running"`, poll `get_execution` using the returned execution ID. Do not submit the same calculation again just because the tool stopped waiting or the connection failed.
-- Use `interrupt_execution` to request a stop, then confirm completion. Interruption is cooperative. Ask the user to reset the sandbox if an operation cannot stop; resetting discards the shared workspace.
-- Include `checkStop;` checkpoints in long CPU loops so they can respond to interruption.
+- Use `interrupt_execution` to request a stop, then confirm completion. Interruption terminates JavaScript through the main-process debugger and runs registered resource cleanup without clearing the workspace. Native blocking operations may still require a sandbox reset, which discards the workspace.
+- Loop checkpoints are not required. Use `pause_execution`, `get_debug_state`, `inspect_debug_object` and `evaluate_debug_expression` to inspect paused frames, then `resume_execution` to continue or step. Frame handles expire on resume.
 - Use `list_workspace` and `read_variable` for focused inspection. Previews are bounded and are not lossless data exports.
 - Use `list_figures` and `export_figure` to inspect plots. Export to a task-specific absolute path. Raster exports up to 4 MiB can return an image directly to the agent.
 - For repeatable checks, create a `.jsl` test script whose assertions throw on failure, then call `run_test_file`. Background callbacks must be awaited if their results determine success.
 - Code runs with the user's JSLAB permissions. Keep file writes, external processes and device operations within the user's requested task. Do not print, commit or share session descriptor credentials.
 
 ## Work on the repository
+
+- Translate user-visible UI text through `config/lang.json` for `en`, `rs` and `rsc`. Run `npm run check-ui-translations`. Mark intentionally fixed HTML text locally with `lang-fixed`, or an adjacent JavaScript literal with `/* lang-fixed */`; do not use these annotations to exempt text that should be translated.
 
 - Follow nearby source conventions: `PRDC_JSLAB_*` class names, two-space indentation, `if(...)` formatting, descriptive JSDoc comments, and the existing file header format.
 - Main-process code is in `js/backend`, desktop GUI code in `js/main`, sandbox modules in `js/sandbox`, and the stdio adapter in `js/mcp`.

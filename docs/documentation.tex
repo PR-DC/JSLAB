@@ -48,7 +48,7 @@
 
 \lstdefinestyle{JavaScriptStyle}{
     language=JavaScript,
-    basicstyle=\fontfamily{pcr}\selectfont\footnotesize, 
+    basicstyle=\fontfamily{pcr}\selectfont\footnotesize,
     commentstyle=\color{jsl-green},
     keywordstyle=\bf\color{jsl-blue},
     stringstyle=\color{jsl-gray},
@@ -63,7 +63,7 @@
     extendedchars=true,
     literate=
         {°}{{\textdegree}}1
-        {º}{{\textordmasculine}}1 
+        {º}{{\textordmasculine}}1
         {š}{{\v{s}}}1
         {Š}{{\v{S}}}1
         {č}{{\v{c}}}1
@@ -73,14 +73,14 @@
         {ć}{{\'{c}}}1
         {Ć}{{\'{C}}}1
         {θ}{{$\theta$}}1
-        {µ}{{$\micro$}}1 
+        {µ}{{$\micro$}}1
 }
 
 \newtcbox{\code}[1][]{%
     on line,
     colback=jsl-light-gray,
-    colframe=jsl-light-gray, 
-    boxrule=0pt, 
+    colframe=jsl-light-gray,
+    boxrule=0pt,
     arc=3pt,
     left=2pt,
     right=2pt,
@@ -93,8 +93,8 @@
 
 \newtcbox{\codeBlock}[1][]{%
     colback=jsl-light-gray,
-    colframe=jsl-light-gray, 
-    boxrule=0pt, 
+    colframe=jsl-light-gray,
+    boxrule=0pt,
     arc=3pt,
     left=2pt,
     right=2pt,
@@ -157,7 +157,7 @@
             \end{minipage}
             \begin{minipage}{2.6cm}
                 \vspace{1mm}
-                
+
                 \companyLogo[0.15]{black}
             \end{minipage}
            \begin{minipage}{5cm}
@@ -165,7 +165,7 @@
                 web: \href{https://pr-dc.com}{pr-dc.com} \\
                 email: \href{mailto:info@pr-dc.com}{info@pr-dc.com}\\
                 github: \href{https://github.com/PR-DC}{github.com/PR-DC}
-            \end{minipage}  
+            \end{minipage}
            \begin{minipage}{6.5cm}
                 \raggedleft {\large\textbf{JSLAB \appversion}} \\
                 \raggedleft DOCUMENTATION
@@ -206,43 +206,43 @@
 \begin{titlepage}
 
     \centering
-    
+
     \vphantom{vspace}
-    
+
     \vspace{5mm}
-    
+
     \companyLogo[0.5]{black}
-	
+
     \vspace{5mm}
-    
+
     \centerline{\footnotesize{web: \href{https://pr-dc.com}{pr-dc.com}, email: \href{mailto:info@pr-dc.com}{info@pr-dc.com}, github: \href{https://github.com/PR-DC}{github.com/PR-DC}}}
-    
+
     \vspace{5mm}
 
     \hrule
-	
+
     \vspace{10mm}
 
     \jslabLogo[0.2]{0.1cm}
 
     \vspace{8mm}
-    
+
     {\Huge\textbf{JSLAB \appversion} \par}
-   
+
     \vspace{2mm}
 
     {\LARGE DOCUMENTATION \par}
 
     \vspace{8mm}
-    
+
    \href{https://github.com/PR-DC/JSLAB}{github.com/PR-DC/JSLAB}
-    
+
     \vspace{8mm}
-    
+
     \hrule
-    
+
     \vfill
-    
+
     \textbf{PRDC d.o.o.}, Novo naselje bb, 22310 Šimanovci, Republic of Serbia
 
 \end{titlepage}
@@ -263,7 +263,7 @@
 
 Welcome to the \textbf{JSLAB} Documentation! This guide provides comprehensive information for users and contributors, detailing the features, usage, and contribution guidelines to ensure a consistent and high-quality codebase.
 
-\textbf{Quick links:} 
+\textbf{Quick links:}
 \begin{itemize}
   \item \href{https://pr-dc.com/jslab/}{Website - pr-dc.com/jslab/}
   \item \href{https://pr-dc.com/jslab/web/}{Try it online - pr-dc.com/jslab/web/}
@@ -392,7 +392,7 @@ Clear documentation is essential for maintaining and understanding the codebase.
 
 \begin{itemize}
   \item \textbf{JSDoc:} Use JSDoc comments to document files, classes, methods, parameters, and return values.
-  
+
   \item \textbf{Inline Comments:} Add comments to explain non-trivial code segments.
 \end{itemize}
 
@@ -412,11 +412,11 @@ constructor(config) {
 \subsection{Naming Conventions}
 \begin{itemize}
   \item \textbf{Classes and Constants:} Use uppercase letters with underscores (e.g., \code{PRDC\_JSLAB\_LIB}).
-  
+
   \item \textbf{Functions and Methods:} Use camelCase (e.g., \code{getFullFilePath}).
-  
+
   \item \textbf{Variables:} Use lowercase letters with underscores (e.g., \code{new\_file\_path}).
-  
+
   \item \textbf{Meaningful Names:} Choose self-explanatory names that convey the purpose clearly.
 \end{itemize}
 
@@ -424,7 +424,7 @@ constructor(config) {
 \subsection{Code Structure and Modularization}
 \begin{itemize}
   \item \textbf{Separation of Concerns:} Organize code into separate modules/files based on functionality.
-  
+
   \item \textbf{Object-Oriented Design:} Use ES6 classes to encapsulate related properties and methods.
 \end{itemize}
 
@@ -443,7 +443,7 @@ class PRDC_JSLAB_LIB {
 \subsection{Error Handling}
 \begin{itemize}
   \item \textbf{Try-Catch Blocks:} Use try-catch to handle potential errors gracefully.
-  
+
   \item \textbf{Custom Errors:} Throw custom error objects for specific error scenarios.
 \end{itemize}
 
@@ -459,7 +459,7 @@ try {
 \subsection{State Management and Cleanup}
 \begin{itemize}
   \item \textbf{Resource Tracking:} Maintain arrays and objects to track active asynchronous operations.
-  
+
   \item \textbf{Cleanup Methods:} Implement methods to clear resources and reset the environment state.
 \end{itemize}
 
@@ -467,7 +467,7 @@ try {
 \subsection{Configuration Management}
 \begin{itemize}
   \item \textbf{Centralized Configuration:} Use a dedicated class (\code{PRDC\_APP\_CONFIG}) to manage all configuration settings.
-  
+
   \item \textbf{Conditional Configurations:} Adjust settings based on the runtime environment or command-line arguments.
 \end{itemize}
 
@@ -475,11 +475,11 @@ try {
 \subsection{Best Practices}
 \begin{itemize}
   \item \textbf{Consistent Formatting:} Use a consistent code formatter to maintain uniform code style.
-  
+
   \item \textbf{Meaningful Commit Messages:} Write clear and descriptive commit messages that explain the purpose of the changes.
-  
+
   \item \textbf{Modular Code:} Write reusable and modular code to enhance maintainability and scalability.
-  
+
   \item \textbf{Comprehensive Testing:} Implement thorough tests to ensure the reliability of your contributions.
 \end{itemize}
 
@@ -491,10 +491,10 @@ You can install \textbf{JSLAB} by either downloading the latest stable release f
 % ----------
 \subsection{Download the Latest Stable Release}
 \begin{itemize}
-  \item Visit the JSLAB Releases Page on GitHub Repository: 
-  
-  \url{https://github.com/PR-DC/JSLAB/releases} 
-  
+  \item Visit the JSLAB Releases Page on GitHub Repository:
+
+  \url{https://github.com/PR-DC/JSLAB/releases}
+
   \item Download the appropriate installer and install program.
 
   \item Try the examples from:
@@ -518,20 +518,20 @@ If you prefer to build \textbf{JSLAB} from source, follow the detailed \hyperref
 In order to download necessary tools, clone the repository, and install dependencies via npm, you need network access.
 
 \begin{itemize}
-    \item \textbf{Node.js:} Ensure that Node.js is installed on your system. You can download it from the official website: 
-    
+    \item \textbf{Node.js:} Ensure that Node.js is installed on your system. You can download it from the official website:
+
     \url{https://nodejs.org/}
-    
+
     \item \textbf{npm:} npm is typically installed alongside Node.js.
-    
+
     \item \textbf{Emscripten:} Install the SDK to compile the shared numerical and geometry backend. See the WebAssembly backend section for setup instructions.
 
     \item \textbf{node-gyp:} Included for compiling user extensions and third-party native dependencies. Required platform tools are described at:
-    
+
     \url{https://github.com/nodejs/node-gyp}
-    
-    \item \textbf{Git:} Suggested for cloning the repository. Download it from the official website: 
-    
+
+    \item \textbf{Git:} Suggested for cloning the repository. Download it from the official website:
+
     \url{https://git-scm.com/}
 
 \end{itemize}
@@ -543,7 +543,7 @@ In order to download necessary tools, clone the repository, and install dependen
 \begin{verbatim}
    git clone git clone https://github.com/PR-DC/JSLAB.git
 \end{verbatim}
-    
+
     \item Navigate to the project directory:
 \begin{verbatim}
     cd JSLAB
@@ -813,7 +813,7 @@ function onWindowResize() {
 function animate( time ) {
   mesh.rotation.x = time / 2000;
   mesh.rotation.y = time / 1000;
-  
+
   renderer.render( scene, camera );
 }
 \end{lstlisting}
@@ -828,8 +828,8 @@ Parallel execution is critical for handling computationally intensive tasks, as 
 // JavaScript Example
 var computeSquare = (i) => i * i;
 
-// Run parallel execution 
-var results = await parallel.parfor(0, 20, 1, 
+// Run parallel execution
+var results = await parallel.parfor(0, 20, 1,
   parallel.getProcessorsNum(), {}, undefined, computeSquare);
 disp(results);
 \end{lstlisting}
@@ -883,9 +883,9 @@ await sym.load();
 [le, x, E, Iz] = sym.syms(['le', 'x', 'E', 'Iz']);
 
 P = sym.mat([
-  [1, 0, 0, 0], 
-  [0, 1, 0, 0], 
-  [1, le, sym.pow(le, 2), sym.pow(le, 3)], 
+  [1, 0, 0, 0],
+  [0, 1, 0, 0],
+  [1, le, sym.pow(le, 2), sym.pow(le, 3)],
   [0, 1, sym.mul(2, le), sym.mul(3, sym.pow(le, 2))]
 ]);
 p = sym.mat([[1, x, sym.pow(x, 2), sym.pow(x, 3)]]);
@@ -956,7 +956,7 @@ var data = {
 var beamsFile = pwd + 'out/beams.json';
 writeFile(beamsFile, stringify(data));
 
-// Run FreeCADLink 
+// Run FreeCADLink
 await freecad_link.start(exe, {
   port: port,
   host: host,
@@ -1106,7 +1106,7 @@ Command & Action \\
 .pwd & Show the working directory. \\
 \hline
 \end{longtable}
-Ctrl+C clears unfinished input or interrupts a running operation. Use checkStop; checkpoints in long CPU loops for cooperative interruption. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
+Ctrl+C clears unfinished input or interrupts a running operation. Interruption does not require loop checkpoints and preserves completed workspace assignments. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
 
 History is stored in JSLAB/cli-history.json under APPDATA on Windows. Use --no-history to disable storage or --history-file to choose another path. Closing the CLI stops its owned runtime; the runtime also exits if the CLI process disappears. Temporary session profiles are removed on normal exit.
 
@@ -1306,7 +1306,7 @@ Tool & Purpose \\
 \texttt{export\_figure} & Export an existing figure using an absolute output path. \\
 \texttt{get\_help} & Read function documentation by name, \texttt{lib.function}, or category. \\
 \texttt{get\_execution} & Poll an execution or retrieve its completed result. \\
-\texttt{interrupt\_execution} & Request cooperative interruption of the current execution. \\
+\texttt{interrupt\_execution} & Interrupt JavaScript and clean up registered resources; preserve workspace values. \\
 \hline
 \end{longtable}
 \texttt{evaluate\_code}, \texttt{run\_file} and \texttt{run\_test\_file} accept an optional absolute \texttt{cwd}. It changes the shared working directory and remains in effect after the call. A script's location does not automatically become its working directory. Script execution uses JSLAB's evaluator, including its code rewriting, workspace persistence and source error handling. Input scripts and code are limited to 512000 bytes or characters respectively.
@@ -1350,16 +1350,55 @@ A response with \texttt{status: "running"} means execution continues. Call \text
 
 Only one sandbox operation runs at a time. Overlapping agent operations and GUI code submissions receive a busy response. Session status, execution polling and interruption remain available while code runs. A lost connection or a client timeout does not cancel execution: inspect status before retrying a command with side effects.
 
-Interruption uses JSLAB's existing cooperative stop mechanism. Acknowledgement means the stop was requested, not that execution has finished. Poll until completion. Blocking native calls and uncooperative operations may require the user's existing sandbox reset control. Reset discards the workspace; it is not exposed as an agent tool.
+Ctrl+C and \texttt{interrupt\_execution} terminate JavaScript through the main-process debugger without loop checkpoints. Acknowledgement means interruption was requested; poll the execution until completion. The workspace and completed assignments survive, while the interrupted function stack is discarded. Interruption does not roll back partially modified objects.
 
-For long CPU loops, include the existing \texttt{checkStop} checkpoint so the desktop can request interruption:
+Registered cleanup runs after the interrupted stack has unwound, in a separate evaluation. Timers, animation/idle callbacks, JSLAB workers and registered subprocesses are stopped. Use \texttt{jsl.addForCleanup(object, callback)} to register resource cleanup; asynchronous callbacks are awaited, cleanup failures are returned as \texttt{cleanup\_errors}, and the remaining cleanup still runs. JavaScript \texttt{finally} blocks are not a substitute for this registration because V8 termination can bypass them. Arbitrary external operations and promises are not automatically reversible or cancellable. Blocking native calls may delay interruption; sandbox reset is the last resort and discards the workspace.
 
-\begin{lstlisting}[style=JavaScriptStyle,language={}]
-while(working) {
-  checkStop;
-  // Perform the next bounded calculation step.
-}
-\end{lstlisting}
+Execution controls are in the Editor beside the source. Its existing Run action becomes Pause while code is running and Continue while paused. Compact icons provide Step over (F10), Step into (F11), Step out (Shift+F11), and Stop. The icons appear during execution and disappear when it ends. The call stack opens in a resizable split below the Editor source when execution pauses. The Editor bug icon shows or hides it; the Command Window bug icon opens the Editor with this split visible. Hiding the split does not resume execution or change the selected frame. Its Advanced section contains exception preferences, child-worker selection when workers exist, live editing, frame restart and browser workspace reset; historical async calls are also collapsed there. User-facing stacks omit JSLAB runtime frames. Finishing a step does not open internal files. While paused, selecting a call frame shows its locals in the existing Workspace. Use the normal Workspace inspection action and variable inspector to inspect or edit those locals; the Command Window also evaluates expressions in that frame. Descriptor previews do not invoke getters. Old inspector controls reject edits after a frame change or resume. Debugging stays inside the existing Editor window on desktop and in the browser. The split uses the existing panel resizer and remembers its height. \texttt{debugger;}, \texttt{breakpoint;}, \texttt{debug;} and \texttt{pause;} create real debugger pauses rather than modal dialogs. \texttt{stoppoint;} requests interruption. \texttt{logpoint;} and \texttt{updatepoint;} refresh the workspace without polling interruption flags.
+
+\begin{longtable}{p{0.30\linewidth}p{0.62\linewidth}}
+\hline
+Debugger tool & Purpose \\
+\hline
+\texttt{get\_debug\_state} & Read state, stack frames and scope object handles. \\
+\texttt{pause\_execution} & Request a pause at the next JavaScript statement. \\
+\texttt{resume\_execution} & Continue, or pass \texttt{action: "stepOver"}, \texttt{"stepInto"} or \texttt{"stepOut"}. \\
+\texttt{inspect\_debug\_object} & Read a scope/object by \texttt{object\_id} without invoking accessors. \\
+\texttt{evaluate\_debug\_expression} & Evaluate \texttt{expression} in \texttt{frame\_index}; side effects require \texttt{allow\_side\_effects: true}. \\
+\texttt{set\_breakpoint} & Set an original-source \texttt{path} and one-based \texttt{line}, optional \texttt{condition}, and \texttt{enabled} state. \\
+\texttt{remove\_breakpoint} & Remove a logical breakpoint by returned \texttt{id}. \\
+\texttt{clear\_breakpoints} & Clear line breakpoints and exception stops. \\
+\texttt{set\_exception\_pause} & Choose \texttt{none}, \texttt{uncaught} by user code, or \texttt{all} exceptions. \\
+\texttt{select\_debug\_target} & Select a paused worker \texttt{session\_id}, or omit it to select the main sandbox. \\
+\texttt{update\_debug\_script} & Validate (\texttt{dry\_run}) or apply saved/source code while paused; active-frame editing requires \texttt{allow\_top\_frame\_editing}. \\
+\texttt{restart\_debug\_frame} & Restart the selected \texttt{frame\_index}; earlier side effects can execute again. \\
+\hline
+\end{longtable}
+Read debugger state after a pause request to confirm suspension. Paused frame and scope handles expire when execution resumes. Worker pauses are coordinated and acknowledged independently; they do not form an instantaneous snapshot. Native calls and external processes are not frozen by a JavaScript pause. Opening sandbox DevTools is allowed while idle; close it to restore JSLAB's debugger controller before running another calculation.
+
+Click a line number to add a source breakpoint. A compact breakpoint gutter appears to the left of the line numbers and disappears after the last breakpoint is removed. Click a marker to remove it; Shift-click opens its condition and enabled-state editor. The paused source opens automatically and its current line is highlighted. Desktop settings survive application restarts; browser settings survive page reloads. A disabled breakpoint remains saved. Conditions are JavaScript expressions evaluated in the breakpoint's scope, and can have side effects.
+
+The command window accepts \texttt{dbstop in "file.jsl" at 12 if index === 3}, \texttt{dbstop if error}, \texttt{dbstop if caught error}, \texttt{dbclear all}, \texttt{dbclear("file.jsl", 12)}, \texttt{dbclear if error}, \texttt{dbstatus}, \texttt{dbstack}, \texttt{dbcont}, \texttt{dbstep in}, \texttt{dbstep over}, \texttt{dbstep out}, \texttt{dbup}, \texttt{dbdown}, and \texttt{dbquit}. These host commands remain available while execution is paused. Script code can use \texttt{await dbstop(path, line, condition, enabled)}, \texttt{await dbstop('error')}, \texttt{await dbstop('caught error')}, \texttt{await dbclear(path, line)}, \texttt{await dbclear()}, and \texttt{await dbstatus()}. \texttt{keyboard;} is an alias for a debugger pause.
+
+An exception stop pauses before the instrumented function's scope is released; caught-error mode also stops in user catch handlers. Error reporting after an exception has unwound remains separate from this debugger feature. Browser frames backed by retained lexical closures can be selected for inspection and deliberate modification, including recursive and available async caller frames. Frames without a retained closure are displayed but cannot be inspected. Engine-created async ancestry is not a complete history of all prior calls.
+
+See \texttt{examples/exampleInterruption.jsl} and \texttt{examples/exampleDebugger.jsl}.
+
+The web edition uses one persistent scientific Worker workspace for commands, editor execution, variable inspection, figures and debugging. Browser objects stay on the responsive UI thread; synchronous references expose DOM properties, methods and constructors to scientific code, while callbacks return asynchronously to their original Worker closures. Browser promises can be awaited. Registered event listeners are removed on interruption without replacing the application document. A callback cannot synchronously return a Worker value to a native browser caller, and delayed event callbacks cannot cancel an event already dispatched. Browser hosting must use HTTPS (or localhost) and send \texttt{Cross-Origin-Opener-Policy: same-origin} and \texttt{Cross-Origin-Embedder-Policy: require-corp}. The web build includes an \texttt{\_headers} file for compatible static hosts; configure these headers explicitly on other servers. Resources loaded from other origins must also satisfy the browser's embedding policy. Without isolation the application explicitly falls back to the legacy iframe runtime, without Worker debugger guarantees.
+
+Browser child Workers have their own initialized scientific runtime and debugger target. Select a target to inspect and modify its retained locals or step its code; Continue resumes suspended targets and Stop terminates owned children. Child message handlers receive user messages separately from private debugger messages.
+
+The web debugger inserts synchronous source checkpoints automatically, including inside otherwise empty loops. User scripts do not call \texttt{checkStop}, and ordinary functions stay synchronous. A pause retains the current function's lexical scope for inspection and deliberate console evaluation. Select available caller frames in the stack or use \texttt{dbup}/\texttt{dbdown}. Object inspection uses bounded own-property descriptors and displays accessors without invoking their getters. Ctrl+C also cancels awaited timers and instrumented background callbacks. Browser native/Wasm calls that do not return to JavaScript require \textbf{Reset}, which terminates the Worker and discards that workspace.
+
+For native work that must be cancellable while retaining parent variables, use \texttt{await runInterruptible(function, args, options)}. It runs a function in an owned desktop process or browser child Worker and copies arguments/results. The function can use that runtime's scientific commands but must not depend on caller closures. \texttt{options.timeout\_ms} and \texttt{options.signal} provide a timeout and explicit AbortSignal; Ctrl+C also cancels owned jobs. For example, \texttt{await runInterruptible(values => new Float64Array(Array.from(values, x => x * 2)), [new Float64Array([1, 2, 3])])}. Hard cancellation discards only the isolated runtime. It cannot roll back files, device effects or other external work already performed. Desktop sessions allow up to four such jobs concurrently.
+
+The Editor debugger areas show bounded asynchronous scheduling ancestry, separately from inspectable live scopes. Desktop captures up to 128 history entries; browser scheduling history is also bounded. Historical locals are unavailable after their frames have disappeared. Desktop \textbf{Apply saved source} uses V8 live editing and reports engine restrictions instead of silently restarting execution. \textbf{Restart frame} is explicit because side effects can repeat. Browser \textbf{Apply saved functions} replaces ordinary function definitions for future calls without rerunning top-level initializers; executing frames retain their original code and locals. Browser frame restart and arbitrary active-code replacement are unavailable through ordinary page APIs.
+
+JSLAB retains its shared source rewriter for persistent workspace properties, \texttt{clear}, script/module adaptation and expression results. DevTools' native REPL supports persistent lexical declarations and top-level await, but those declarations do not have JSLAB's deletable workspace-property semantics, and normal web pages cannot access the Chrome debugging protocol. Source maps translate generated locations back to original scripts, including selected-line offsets and functions retained from earlier evaluations.
+
+Failed agent executions include structured \texttt{error\_details}: \texttt{name}, \texttt{message}, \texttt{kind}, original \texttt{location} (\texttt{path}, one-based \texttt{line} and \texttt{column}), \texttt{frames}, and \texttt{stack}. Nested \texttt{run} calls and CommonJS module failures preserve their originating file and caller frames. Syntax errors, awaited rejections and primitive thrown values use the same reporting path. Detached callback/rejection errors are reported independently and do not complete an unrelated evaluation.
+
+Run desktop debugger/error integration checks with \texttt{node js/dev/run-debugger-tests.js --sandbox-suite}; this starts an isolated JSLAB desktop session and tests its MCP interface. Run browser checks with \texttt{node js/dev/run-web-gui-tests.js}.
 
 Results contain bounded textual previews rather than a lossless serialization of arbitrary objects. Output captures JSLAB display, warning and error methods, including the JSLAB console. Capture ends when the requested operation completes; detached asynchronous work can continue afterward. Output is limited to 200 messages and 64000 characters, and previews to 16000 characters. Inspect selected variables or save large results to files when needed.
 
@@ -1378,6 +1417,44 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \section{Code references}
 
 \subsection{basic}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{dbstop(path, [line], [condition], [enabled])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path} \texttt{<string>}: Script path, 'error', or 'caught error'.
+  \item \texttt{line} \texttt{<number>}: One-based line.
+  \item \texttt{condition} \texttt{<string>}: Condition evaluated in the paused scope.
+  \item \texttt{enabled} \texttt{<boolean>}: Breakpoint enabled state.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<Object>>}: Updated debugger configuration.
+
+\noindent Sets a conditional source breakpoint or enables an error breakpoint.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{dbclear([path], [line])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{path} \texttt{<string>}: Script path or 'all'.
+  \item \texttt{line} \texttt{<number>}: One-based line.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<Object>>}: Updated debugger configuration.
+
+\noindent Clears one breakpoint or all line/error breakpoints.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{dbstatus()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Promise.<Object>>}: Debugger state and breakpoint configuration.
+
+\noindent Returns current line and exception breakpoint settings.
+
 \vspace{5mm}
 \noindent \code{\texttt{ans}}{\color{jsl-gray}\vspace{2mm}\hrule}\vspace{4mm}
 
@@ -1515,12 +1592,6 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent Updates specific points in the script during execution.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{checkStop()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent Checks if the execution should stop based on conditions.
-
-\vspace{5mm}
 \noindent \codeBlock{\texttt{endPoint()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -1587,7 +1658,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
 
-\noindent Adds one or more paths to the search path list.Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
+\noindent Adds one or more paths to the search path list.
+Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{rmpath(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1600,7 +1672,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
 
-\noindent Removes one or more paths from the search path list.Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
+\noindent Removes one or more paths from the search path list.
+Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{path(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1613,7 +1686,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Active search path entries.
 
-\noindent Retrieves or sets the active search path list.Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
+\noindent Retrieves or sets the active search path list.
+Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ls([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1626,7 +1700,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Entry names.
 
-\noindent Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
+\noindent Lists contents of a folder or wildcard target.
+Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{dir([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1639,7 +1714,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Directory entries.
 
-\noindent Lists directory entries with metadata.Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
+\noindent Lists directory entries with metadata.
+Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isfile(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1650,9 +1726,10 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{path\_in} \texttt{<string>}: Path or symbol.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
-\noindent Returns true when the path resolves to a file.Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
+\noindent Returns true when the path resolves to a file.
+Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isfolder(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1663,9 +1740,10 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{path\_in} \texttt{<string>}: Path or folder symbol.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
-\noindent Returns true when the path resolves to a folder.Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
+\noindent Returns true when the path resolves to a folder.
+Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{exist(name, [kind])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1679,7 +1757,9 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: Existence code.
 
-\noindent Checks existence with MATLAB-compatible return codes.\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
+\noindent Checks existence with MATLAB-compatible return codes.
+\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.
+Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{which(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1692,7 +1772,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<string>}: Resolved absolute path, or false if not found.
 
-\noindent Resolves a file/module using the active search path.Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
+\noindent Resolves a file/module using the active search path.
+Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{who(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1705,7 +1786,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Variable names.
 
-\noindent Lists workspace variable names.Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
+\noindent Lists workspace variable names.
+Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{whos(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1718,7 +1800,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<Array.<string>>>}: Workspace descriptor rows.
 
-\noindent Lists workspace variable descriptors (name/type/class).Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
+\noindent Lists workspace variable descriptors (name/type/class).
+Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cd(new\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1762,7 +1845,9 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when command was accepted.
 
-\noindent Controls command window transcript logging.\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
+\noindent Controls command window transcript logging.
+\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,
+and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{error(msg)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1807,12 +1892,6 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \end{itemize}
 
 \noindent Displays a warning message.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{checkStopLoop()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent Verifies if a loop within the script execution should be terminated, typically used to avoid infinite or lengthy unnecessary execution.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{edit([filepath])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1932,7 +2011,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{args} \texttt{<*>}: A single filename or a scope and filename to specify where to load the variables.
 \end{itemize}
 
-\noindent Loads variables from a specified file into the specified scope or the default script context.Supports current JSLAB workspace format and legacy plain JSON object files.
+\noindent Loads variables from a specified file into the specified scope or the default script context.
+Supports current JSLAB workspace format and legacy plain JSON object files.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getCompletions(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2040,7 +2120,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent \codeBlock{\texttt{openDevTools()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Opens the developer tools for the sandbox environment in the current context.
 
@@ -2096,7 +2176,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array>}: Tuple \textasciigrave{}[success, wasm\_path|undefined]\textasciigrave{}.
 
-\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
+\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
+The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
 
 
 \subsection{docs}
@@ -2206,7 +2287,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Matching summary lines.
 
-\noindent Searches documentation by keyword and prints matching symbols.MATLAB-compatible alias for documentation search.
+\noindent Searches documentation by keyword and prints matching symbols.
+MATLAB-compatible alias for documentation search.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{source(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2405,7 +2487,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Grid object: \{ xAxis, yAxis, Z, m, n, filled \}.
 
-\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Ordering can be arbitrary. Values that are NaN/Inf are ignored.
+\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.
+Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{gridSolveYforXZ(x, y, z, x0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2429,7 +2512,9 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array>}: Array of y solutions.
 
-\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
+\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{gridSolveXforYZ(x, y, z, y0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2451,7 +2536,9 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{opts.minFillIfMissing} \texttt{<number>}: Minimum filled ratio when allowMissing is true.
 \end{itemize}
 
-\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
+\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bilinearFunction(x, midPoint, midValue)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2672,7 +2759,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{A} \texttt{<Array>}: If \textasciigrave{}A\textasciigrave{} is a matrix (2D array), computes its characteristic polynomial.                   If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polynomial with those roots.
+  \item \texttt{A} \texttt{<Array>}: If \textasciigrave{}A\textasciigrave{} is a matrix (2D array), computes its characteristic polynomial.
+                   If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polynomial with those roots.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - Coefficients of the resulting polynomial.
@@ -2820,7 +2908,12 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The minimum value found in the array.
 
-\noindent Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
+\noindent Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.
+Complex numbers are represented as objects with 'real' and 'imag' properties.
+The comparison follows Octave's rules:
+1. Compare magnitudes (absolute values) of the numbers.
+2. If magnitudes are equal, compare real parts.
+3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{max(arr)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2833,7 +2926,12 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The maximum value found in the array.
 
-\noindent Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
+\noindent Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.
+Complex numbers are represented as objects with 'real' and 'imag' properties.
+The comparison follows Octave's rules:
+1. Compare magnitudes (absolute values) of the numbers.
+2. If magnitudes are equal, compare real parts.
+3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clamp(v, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2848,7 +2946,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The clamped value.
 
-\noindent Clamps a value to the inclusive range [a, b].Assumes a <= b.
+\noindent Clamps a value to the inclusive range [a, b].
+Assumes a <= b.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{real(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2861,7 +2960,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The real part(s) of the input.
 
-\noindent Extracts the real part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
+\noindent Extracts the real part of a number or an array of numbers.
+Handles mixed inputs containing both real numbers and complex numbers.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{imag(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2874,7 +2974,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The imaginary part(s) of the input.
 
-\noindent Extracts the imaginary part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
+\noindent Extracts the imaginary part of a number or an array of numbers.
+Handles mixed inputs containing both real numbers and complex numbers.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cumtrapz(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2932,6 +3033,22 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \subsection{non\_blocking}
 \vspace{5mm}
+\noindent \codeBlock{\texttt{runInterruptible(work\_function, [args], [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{work\_function} \texttt{<function>}: Function to execute in an isolated scientific runtime.
+  \item \texttt{args} \texttt{<Array>}: Structured-cloneable arguments.
+  \item \texttt{options} \texttt{<Object>}: Optional timeout\_ms and AbortSignal signal.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<*>>}: Copied result; parent variables survive task interruption.
+
+\noindent Runs scientific/native work outside the persistent workspace so it can be stopped safely.
+The function receives copied arguments and must not depend on caller closures.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{nbwhile(fn)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -2941,67 +3058,6 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \end{itemize}
 
 \noindent Executes a given function in a non-blocking while loop.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{nbrun(fn)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{fn} \texttt{<function>}: The function to be executed.
-\end{itemize}
-
-\noindent Executes a given function once in a non-blocking manner.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{nbnext(fn)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{fn} \texttt{<function>}: The function to execute next.
-\end{itemize}
-
-\noindent Schedules the next block of code to be executed in a non-blocking manner.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{waitMSeconds(ms)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{ms} \texttt{<Number>}: The number of milliseconds to wait.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves after the specified time has elapsed.
-
-\noindent Waits for a specified number of milliseconds in a non-blocking manner.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{waitSeconds(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{s} \texttt{<Number>}: The number of seconds to wait.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves after the specified time has elapsed.
-
-\noindent Waits for a specified number of seconds in a non-blocking manner.
-
-\vspace{5mm}
-\noindent \codeBlock{\texttt{waitMinutes(min)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
-
-
-\noindent \textbf{Parameters:}
-\begin{itemize}
-  \item \texttt{min} \texttt{<Number>}: The number of minutes to wait.
-\end{itemize}
-
-\noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves after the specified time has elapsed.
-
-\noindent Waits for a specified number of minutes in a non-blocking manner.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clearIntervalIf(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5116,7 +5172,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of adding all operands.
 
-\noindent Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+\noindent Adds multiple operands, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{add(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5129,7 +5186,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of adding all operands.
 
-\noindent Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+\noindent Adds multiple operands, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{minus(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5142,7 +5200,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of subtracting all subsequent operands from the first one.
 
-\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{subtract(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5155,7 +5214,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of subtracting all subsequent operands from the first one.
 
-\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cross3D(A, B, cols)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6302,7 +6362,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<string>}: The generated CSV as a string, with each row representing an entry and each column representing data from the corresponding key in the input object.
 
-\noindent Generates a CSV string from an simple object containing arrays of values.Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
+\noindent Generates a CSV string from an simple object containing arrays of values.
+Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{simpleArray2Csv(data, [delimiter])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6411,10 +6472,10 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{output} \texttt{<object>}: 
+  \item \texttt{output} \texttt{<object>}:
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: 
+\noindent \textbf{Returns:} \texttt{<object>}:
 
 \noindent Parses Arduino output from stdout or stderr.
 
@@ -6524,7 +6585,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent \codeBlock{\texttt{showDesktopSources()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Displays the available desktop sources by generating and injecting HTML elements for each source.
 
@@ -6613,7 +6674,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent \codeBlock{\texttt{requestSerialPort()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Promise.<(Object|false)>>}: 
+\noindent \textbf{Returns:} \texttt{<Promise.<(Object|false)>>}:
 
 \noindent Prompts the browser to authorize a serial port if supported.
 
@@ -6671,7 +6732,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent \codeBlock{\texttt{chooseSerialPort()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Promise.<(string|false)>>}: 
+\noindent \textbf{Returns:} \texttt{<Promise.<(string|false)>>}:
 
 \noindent Opens a window to choose a serial port.
 
@@ -6679,7 +6740,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent \codeBlock{\texttt{chooseSerialOptions()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Promise.<(string|false)>>}: 
+\noindent \textbf{Returns:} \texttt{<Promise.<(string|false)>>}:
 
 \noindent Opens a window to choose serial options.
 
@@ -6905,7 +6966,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the directory was successfully created or already exists, false if an error occurred.
 
-\noindent Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
+\noindent Creates a directory at the specified path if it does not already exist.
+This method delegates the directory creation task to the environment's makeDirectory function.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{mkdir(directory)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6918,7 +6980,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the directory was successfully created or already exists, false if an error occurred.
 
-\noindent Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
+\noindent Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.
+This method delegates the directory creation task to the environment's makeDirectory function.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openDir(filepath)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7164,7 +7227,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{program\_name} \texttt{<string>}: The name of the program to check.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array>}: An array where the first element is a boolean indicating if the program is running,                  and the second element is an array of process IDs if the program is running.
+\noindent \textbf{Returns:} \texttt{<Array>}: An array where the first element is a boolean indicating if the program is running,
+                 and the second element is an array of process IDs if the program is running.
 
 \noindent Checks if a specific program is running and retrieves its process IDs.
 
@@ -7362,7 +7426,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Object>}: An object containing the calculated heading (in radians from North, positive East) and pitch (in radians from the local horizontal, positive Up).
 
-\noindent Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
+\noindent Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.
+The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{mslToEllipsoidAlt(lat\_deg, lon\_deg, h\_msl\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7377,7 +7442,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: Ellipsoid altitude(s) in meters.
 
-\noindent Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+\noindent Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.
+The conversion can handle single values or arrays of values.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ellipsoidToMslAlt(lat\_deg, lon\_deg, h\_ellipsoid\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7392,7 +7458,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<number>}: MSL altitude(s) in meters.
 
-\noindent Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+\noindent Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.
+The conversion can handle single values or arrays of values.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{positionToEllipsoid(lat\_deg, lon\_deg, h\_msl\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7407,7 +7474,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Cesium.Cartesian3>}: Cartesian coordinate(s) in the WGS84 system.
 
-\noindent Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
+\noindent Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.
+The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
 
 
 \subsection{networking}
@@ -7673,7 +7741,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<string>}: A string containing the formatted number.
 
-\noindent Formats a floating-point number to a fixed number of significant digits,automatically adjusting decimal places depending on the integer part length.
+\noindent Formats a floating-point number to a fixed number of significant digits,
+automatically adjusting decimal places depending on the integer part length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clip(number, control\_number, clip\_value, [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7849,7 +7918,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when all names are unique.
 
-\noindent Ensures that name list contains unique values.Throws when a duplicate name is found.
+\noindent Ensures that name list contains unique values.
+Throws when a duplicate name is found.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{compareMixedValues(a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8278,7 +8348,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<string>}: A JSON string representation of the object, with special handling for deep objects, circular references, and HTML escaping of strings.
 
-\noindent Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.It also escapes strings to prevent HTML injection.
+\noindent Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.
+It also escapes strings to prevent HTML injection.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{escapeHTML(string)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8331,7 +8402,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<string>}: A unique key string not present in the object.
 
-\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,numerical suffixes are appended until uniqueness is achieved.
+\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,
+numerical suffixes are appended until uniqueness is achieved.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{randomString(num)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8398,7 +8470,8 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when the value is valid.
 
-\noindent Checks that an input contains a finite numberand—if supplied—is within the inclusive range [min, max].
+\noindent Checks that an input contains a finite number
+and—if supplied—is within the inclusive range [min, max].
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bold(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8489,7 +8562,13 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Result object with \textasciigrave{}plain\textasciigrave{} and \textasciigrave{}tex\textasciigrave{} strings.
 
-\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/valuepairs or as a final options object.Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,align, float, caption, label, escapeTeX.
+\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.
+
+Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
+pairs or as a final options object.
+
+Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
+align, float, caption, label, escapeTeX.
 
 
 \subsection{table}
@@ -8502,9 +8581,13 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{args} \texttt{<*>}: Columns and options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
-\noindent Creates a table from columns.Usage examples:table(colA, colB, \{ VariableNames: ['A', 'B'] \})table(\{ A: colA, B: colB \})table(colA, colB, 'VariableNames', ['A', 'B'])
+\noindent Creates a table from columns.
+Usage examples:
+table(colA, colB, \{ VariableNames: ['A', 'B'] \})
+table(\{ A: colA, B: colB \})
+table(colA, colB, 'VariableNames', ['A', 'B'])
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{timetable(row\_times, args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8516,9 +8599,12 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{args} \texttt{<*>}: Columns and options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
-\noindent Creates a timetable from row times and columns.Usage examples:timetable(times, colA, colB, \{ VariableNames: ['A', 'B'] \})timetable(times, \{ A: colA, B: colB \})
+\noindent Creates a timetable from row times and columns.
+Usage examples:
+timetable(times, colA, colB, \{ VariableNames: ['A', 'B'] \})
+timetable(times, \{ A: colA, B: colB \})
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{array2table(A, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8530,7 +8616,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Table options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Creates a table from a 2D array.
 
@@ -8544,7 +8630,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Table options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Creates a table from an array of objects.
 
@@ -8557,7 +8643,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{T} \texttt{<PRDC\_JSLAB\_TABLE>}: Table-like object.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array.<Array>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Array>>}:
 
 \noindent Converts a table/timetable into a 2D array.
 
@@ -8570,7 +8656,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{value} \texttt{<*>}: Candidate value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
 \noindent Checks whether value is a table.
 
@@ -8583,7 +8669,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{value} \texttt{<*>}: Candidate value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
 \noindent Checks whether value is a timetable.
 
@@ -8597,7 +8683,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Read options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Reads a delimited text file into a table.
 
@@ -8611,7 +8697,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Read options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Reads a delimited text file into a timetable.
 
@@ -8625,7 +8711,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: CSV options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<string>}: 
+\noindent \textbf{Returns:} \texttt{<string>}:
 
 \noindent Serializes table/timetable into CSV text.
 
@@ -8640,7 +8726,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Write options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
 \noindent Writes table/timetable to CSV/TSV file.
 
@@ -8656,7 +8742,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Additional options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Retime timetable using fixed bucket step.
 
@@ -8671,7 +8757,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Join options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Alias for innerjoin.
 
@@ -8686,7 +8772,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Join options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Performs inner join.
 
@@ -8701,7 +8787,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Join options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Performs outer join.
 
@@ -8717,7 +8803,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{datavars} \texttt{<Array>}: Variables to aggregate.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Groups rows and computes aggregates.
 
@@ -8732,7 +8818,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{options} \texttt{<Object>}: Options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Applies a function to selected table variables.
 
@@ -8745,7 +8831,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{value} \texttt{<*>}: Input value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<*>}: 
+\noindent \textbf{Returns:} \texttt{<*>}:
 
 \noindent Missing-value mask for scalar/array/table.
 
@@ -8760,7 +8846,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
   \item \texttt{fill\_value} \texttt{<*>}: Constant replacement value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<*>}: 
+\noindent \textbf{Returns:} \texttt{<*>}:
 
 \noindent Fills missing values for scalar/array/table.
 
@@ -8873,9 +8959,11 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{i} \texttt{<Array.<number>>}: a unit direction vector of the line
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: d   - shortest distance  P1  - point on the line with the smallest distance to P
+\noindent \textbf{Returns:} \texttt{<Object>}: d   - shortest distance
+  P1  - point on the line with the smallest distance to P
 
-\noindent Returns the shortest distance from point P to the line defined by (A, i)and the closest point (P1) on that line.
+\noindent Returns the shortest distance from point P to the line defined by (A, i)
+and the closest point (P1) on that line.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{pointSegmentDistance(p, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8890,7 +8978,11 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The minimal distance from p to the segment a-b.
 
-\noindent Computes the shortest distance from a point to a line segment in 2D.The point and segment endpoints are expected as objects with numericproperties \{x, y\}. The result is the Euclidean distance to the closestpoint on the segment.
+\noindent Computes the shortest distance from a point to a line segment in 2D.
+
+The point and segment endpoints are expected as objects with numeric
+properties \{x, y\}. The result is the Euclidean distance to the closest
+point on the segment.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{lineCircleIntersection(P, i, O, r)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8904,9 +8996,12 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{r} \texttt{<number>}: circle radius
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> intersection (two points)  flag = 1 -> tangent (one point)  flag = 2 -> no intersection
+\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> intersection (two points)
+  flag = 1 -> tangent (one point)
+  flag = 2 -> no intersection
 
-\noindent Returns the intersection points of a circle (center O, radius r) in a plane with a line passing through point P with direction i.
+\noindent Returns the intersection points of a circle (center O, radius r)
+in a plane with a line passing through point P with direction i.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{planesIntersection(P1, n1, P2, n2)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8920,9 +9015,12 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{n2} \texttt{<Array.<number>>}: normal to plane 2
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> planes intersect  flag = 1 -> planes are the same  flag = 2 -> planes are parallel (no intersection)
+\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> planes intersect
+  flag = 1 -> planes are the same
+  flag = 2 -> planes are parallel (no intersection)
 
-\noindent Returns the line (point P, direction i) that is the intersection of two planes, or indicates if they are the same or parallel.
+\noindent Returns the line (point P, direction i) that is the intersection
+of two planes, or indicates if they are the same or parallel.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isPointOnLine(P, A, B)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8930,14 +9028,15 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{P} \texttt{<Array.<number>>}: 
-  \item \texttt{A} \texttt{<Array.<number>>}: 
-  \item \texttt{B} \texttt{<Array.<number>>}: 
+  \item \texttt{P} \texttt{<Array.<number>>}:
+  \item \texttt{A} \texttt{<Array.<number>>}:
+  \item \texttt{B} \texttt{<Array.<number>>}:
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<number>}: 1 (on segment), 0 (not on segment)
 
-\noindent Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 otherwise.
+\noindent Checks if point P lies on the line segment A-B.
+Returns 1 if on segment, 0 otherwise.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{linesOverlap(P1, P2, P3, P4)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8945,15 +9044,16 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{P1} \texttt{<Array.<number>>}: 
-  \item \texttt{P2} \texttt{<Array.<number>>}: 
-  \item \texttt{P3} \texttt{<Array.<number>>}: 
-  \item \texttt{P4} \texttt{<Array.<number>>}: 
+  \item \texttt{P1} \texttt{<Array.<number>>}:
+  \item \texttt{P2} \texttt{<Array.<number>>}:
+  \item \texttt{P3} \texttt{<Array.<number>>}:
+  \item \texttt{P4} \texttt{<Array.<number>>}:
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: 
+\noindent \textbf{Returns:} \texttt{<Object>}:
 
-\noindent Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,or indicates no overlap.
+\noindent Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,
+or indicates no overlap.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{minPointsDistance3D(P1i, P2i)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8965,7 +9065,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{P2i} \texttt{<Array.<Array.<number>>>}: Another array of 3D points.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: L  - The minimal distance found.  P1 - The point in P1i corresponding to the minimal distance.  P2 - The point in P2i corresponding to the minimal distance.
+\noindent \textbf{Returns:} \texttt{<Object>}: L  - The minimal distance found.
+  P1 - The point in P1i corresponding to the minimal distance.
+  P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent Finds the minimal 3D distance between all pairs of points in two arrays.
 
@@ -9308,7 +9410,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{t} \texttt{<Array.<number>>}: Time vector array.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: An object containing the response:                  - y: Output signal array.                  - t: Time vector array (same as input).
+\noindent \textbf{Returns:} \texttt{<object>}: An object containing the response:
+                  - y: Output signal array.
+                  - t: Time vector array (same as input).
 
 \noindent Simulate the time response of a discrete-time linear system.
 
@@ -9354,10 +9458,16 @@ Throws for invalid inputs or if the error bound cannot be met.
 \begin{itemize}
   \item \texttt{fnc} \texttt{<function>}: Function to be minimized. Accepts an array of size N and returns a scalar.
   \item \texttt{x0} \texttt{<Array>}: Initial guess for the parameters as an array of size N.
-  \item \texttt{options} \texttt{<Object>}: Optional parameters:  - eps: Convergence threshold (default: 1e-6)  - alpha: Initial step size scaling factor (default: 0.001)  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
+  \item \texttt{options} \texttt{<Object>}: Optional parameters:
+  - eps: Convergence threshold (default: 1e-6)
+  - alpha: Initial step size scaling factor (default: 0.001)
+  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
+  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:  - argument: The parameter array that minimizes the function.  - fncvalue: The function value at the minimized parameters.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:
+  - argument: The parameter array that minimizes the function.
+  - fncvalue: The function value at the minimized parameters.
 
 \noindent Minimizes an unconstrained function using a coordinate descent-like Powell algorithm.
 
@@ -9382,7 +9492,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{parameters.history} \texttt{<Array.<Object>>}: Optional array to store the history of simplex states for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
+  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
+  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
 
 \noindent Performs optimization using the Nelder-Mead algorithm.
 
@@ -9399,7 +9511,10 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
+  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
+  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Conjugate Gradient method.
 
@@ -9417,7 +9532,10 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
+  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
+  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Gradient Descent method.
 
@@ -9437,7 +9555,10 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis, including line search details.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
+  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
+  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+  - \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Gradient Descent method with Wolfe Line Search.
 
@@ -9480,7 +9601,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{parameters.history} \texttt{<Array.<Object>>}: Optional array to store the history of simplex states for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
+  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
+  - \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
 
 \noindent Performs search using the Nelder-Mead algorithm.
 
@@ -9496,7 +9619,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{tol} \texttt{<number>}: The tolerance for convergence (optional).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.  - \textasciigrave{}x\textasciigrave{}: The x-value where the function attains its minimum within [a, b].
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
+  - \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
+  - \textasciigrave{}x\textasciigrave{}: The x-value where the function attains its minimum within [a, b].
 
 \noindent Finds the minimum of a univariate function within a specified interval using a bracketing method.
 
@@ -9526,7 +9651,11 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the opened presentation.
 
-\noindent Opens an existing presentation in a new window and returns its context.In the opened presentation, press Ctrl+S to toggle the slide controls.Press F9 to toggle the stopwatch overlay.When the stopwatch is visible, right-click it for Start, Stop, and Reset,drag it to move it, and drag any corner to resize it.
+\noindent Opens an existing presentation in a new window and returns its context.
+In the opened presentation, press Ctrl+S to toggle the slide controls.
+Press F9 to toggle the stopwatch overlay.
+When the stopwatch is visible, right-click it for Start, Stop, and Reset,
+drag it to move it, and drag any corner to resize it.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{editPresentation(file\_path, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9540,7 +9669,9 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the editor window.
 
-\noindent Opens the presentation editor for the specified project and returns its context.The preview uses the same runtime controls as openPresentation,including Ctrl+S for slide controls and F9 for the stopwatch.
+\noindent Opens the presentation editor for the specified project and returns its context.
+The preview uses the same runtime controls as openPresentation,
+including Ctrl+S for slide controls and F9 for the stopwatch.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{updatePresentation(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9623,7 +9754,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{opts\_in} \texttt{<Object>}: Extra plotting options
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Promise.<\{extrems: Array.<String>, context: Object\}>>}: 
+\noindent \textbf{Returns:} \texttt{<Promise.<\{extrems: Array.<String>, context: Object\}>>}:
 
 \noindent Plots beam diagrams.
 
@@ -10614,7 +10745,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{height()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<number>}: 
+\noindent \textbf{Returns:} \texttt{<number>}:
 
 \noindent Gets table height (number of rows).
 
@@ -10622,7 +10753,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{width()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<number>}: 
+\noindent \textbf{Returns:} \texttt{<number>}:
 
 \noindent Gets table width (number of variables).
 
@@ -10635,7 +10766,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{dim} \texttt{<number>}: Dimension index (0 or 1).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array.<number>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<number>>}:
 
 \noindent Gets size tuple [height, width] or one dimension.
 
@@ -10648,7 +10779,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{name} \texttt{<string>}: Variable name.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
 \noindent Checks whether variable name exists.
 
@@ -10661,7 +10792,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{name} \texttt{<string>}: Variable name.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array>}: 
+\noindent \textbf{Returns:} \texttt{<Array>}:
 
 \noindent Gets variable column.
 
@@ -10675,7 +10806,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{values} \texttt{<*>}: Column values.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Sets or creates a variable column.
 
@@ -10688,7 +10819,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{names} \texttt{<Array>}: Variable names.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Returns selected variables as a new table.
 
@@ -10701,7 +10832,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{names} \texttt{<Array>}: Variable names to remove.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Removes variables and returns a new table.
 
@@ -10715,7 +10846,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{new\_names} \texttt{<Array>}: New variable names.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Renames variables and returns a new table.
 
@@ -10728,7 +10859,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{args} \texttt{<*>}: Variables and optional \{ NewVariableNames: [] \}.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Appends variables and returns a new table.
 
@@ -10741,7 +10872,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{row\_selector} \texttt{<number>}: Row selector.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Returns a row subset as a new table.
 
@@ -10754,7 +10885,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{row\_selector} \texttt{<number>}: Row selector.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Alias for subsetRows.
 
@@ -10767,7 +10898,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{n} \texttt{<number>}: Rows count.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Returns first N rows.
 
@@ -10780,7 +10911,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{n} \texttt{<number>}: Rows count.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Returns last N rows.
 
@@ -10793,7 +10924,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{predicate} \texttt{<function>}: Row predicate.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Filters rows using predicate.
 
@@ -10807,7 +10938,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{direction} \texttt{<string>}: Sort direction.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Sorts rows by variable.
 
@@ -10821,7 +10952,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: Join options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Inner join with another table.
 
@@ -10835,7 +10966,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: Join options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Outer join with another table.
 
@@ -10849,7 +10980,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: Join options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Alias for inner join.
 
@@ -10864,7 +10995,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{datavars} \texttt{<Array>}: Data variable names.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Group summary for this table.
 
@@ -10878,7 +11009,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: varfun options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Applies a function to table variables.
 
@@ -10886,7 +11017,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{ismissing()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Missing-value mask table.
 
@@ -10900,7 +11031,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{fill\_value} \texttt{<*>}: Fill value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
 \noindent Filled table copy.
 
@@ -10913,7 +11044,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{max\_scan\_rows} \texttt{<number>}: Max rows to inspect per variable.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object.<string, string>>}: 
+\noindent \textbf{Returns:} \texttt{<Object.<string, string>>}:
 
 \noindent Returns inferred variable types.
 
@@ -10921,7 +11052,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toObjectRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}:
 
 \noindent Converts table to row objects.
 
@@ -10929,7 +11060,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toArray()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Array>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Array>>}:
 
 \noindent Converts table to 2D array.
 
@@ -10937,7 +11068,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toColumns()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Object.<string, Array>>}: 
+\noindent \textbf{Returns:} \texttt{<Object.<string, Array>>}:
 
 \noindent Returns plain object with cloned columns.
 
@@ -10945,7 +11076,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{summary()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Object>}: 
+\noindent \textbf{Returns:} \texttt{<Object>}:
 
 \noindent Returns summary object.
 
@@ -10953,7 +11084,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{getInspectorColumns()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}:
 
 \noindent Returns inspector column definitions.
 
@@ -10961,7 +11092,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{getInspectorRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}:
 
 \noindent Returns inspector row payload.
 
@@ -10976,7 +11107,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{value} \texttt{<*>}: New value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
 \noindent Sets cell value.
 
@@ -10990,7 +11121,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{column\_name} \texttt{<string>}: Column name or index.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<*>}: 
+\noindent \textbf{Returns:} \texttt{<*>}:
 
 \noindent Gets cell value.
 
@@ -10998,7 +11129,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toString()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<string>}: 
+\noindent \textbf{Returns:} \texttt{<string>}:
 
 \noindent String representation.
 
@@ -11006,7 +11137,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toJSON()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Object>}: 
+\noindent \textbf{Returns:} \texttt{<Object>}:
 
 \noindent JSON representation.
 
@@ -11014,7 +11145,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toSafeJSON()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Object>}: 
+\noindent \textbf{Returns:} \texttt{<Object>}:
 
 \noindent Safe JSON representation.
 
@@ -11022,7 +11153,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toPrettyString()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<string>}: 
+\noindent \textbf{Returns:} \texttt{<string>}:
 
 \noindent Pretty string representation.
 
@@ -11032,7 +11163,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{height()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<number>}: 
+\noindent \textbf{Returns:} \texttt{<number>}:
 
 \noindent Gets timetable height.
 
@@ -11045,7 +11176,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{row\_times} \texttt{<*>}: Row times column.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Sets row times.
 
@@ -11058,7 +11189,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{row\_selector} \texttt{<number>}: Row selector.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Returns row subset as new timetable.
 
@@ -11072,7 +11203,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{direction} \texttt{<string>}: Sort direction.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Sorts rows by row times or variable.
 
@@ -11087,7 +11218,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: Additional options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Retimes timetable with fixed bucket size.
 
@@ -11101,7 +11232,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{end\_time} \texttt{<*>}: Inclusive upper bound.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}: 
+\noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
 \noindent Selects rows within [start\_time, end\_time].
 
@@ -11109,7 +11240,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toObjectRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}:
 
 \noindent Converts timetable to row objects.
 
@@ -11117,7 +11248,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{getInspectorColumns()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}:
 
 \noindent Returns inspector column definitions.
 
@@ -11125,7 +11256,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{getInspectorRows()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<Object>>}: 
+\noindent \textbf{Returns:} \texttt{<Array.<Object>>}:
 
 \noindent Returns inspector row payload.
 
@@ -11140,7 +11271,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{value} \texttt{<*>}: New value.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<boolean>}: 
+\noindent \textbf{Returns:} \texttt{<boolean>}:
 
 \noindent Sets cell value (supports row times through "\_\_rowtime\_\_").
 
@@ -11148,7 +11279,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toString()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<string>}: 
+\noindent \textbf{Returns:} \texttt{<string>}:
 
 \noindent String representation.
 
@@ -11156,7 +11287,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{toJSON()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Object>}: 
+\noindent \textbf{Returns:} \texttt{<Object>}:
 
 \noindent JSON representation.
 
@@ -11723,13 +11854,15 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: Configuration options such as port and host.
 \end{itemize}
 
-\noindent Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.Attempts to start FreeCAD if it's not running and connects to its TCP server.
+\noindent Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.
+Attempts to start FreeCAD if it's not running and connects to its TCP server.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{findServer()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.Checks if the TCP server is reachable by sending a 'PING' command.
+\noindent Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.
+Checks if the TCP server is reachable by sending a 'PING' command.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{send(message, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11743,7 +11876,8 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Buffer>}: - The response from the server or false if the request times out.
 
-\noindent Sends a message to the FreeCAD TCP server and waits for a response.Manages the TCP communication by ensuring message integrity and handling timeouts.
+\noindent Sends a message to the FreeCAD TCP server and waits for a response.
+Manages the TCP communication by ensuring message integrity and handling timeouts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{inputParser(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11756,7 +11890,8 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - An array of parsed message components.
 
-\noindent Parses the input from FreeCAD responses to identify errors and data.Splits the message by '|' and checks for error or data messages.
+\noindent Parses the input from FreeCAD responses to identify errors and data.
+Splits the message by '|' and checks for error or data messages.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{showMessage(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11767,13 +11902,15 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{message} \texttt{<string>}: The message received from FreeCAD.
 \end{itemize}
 
-\noindent Displays a message from FreeCAD in the JSLAB interface.Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
+\noindent Displays a message from FreeCAD in the JSLAB interface.
+Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{quit()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Closes the FreeCAD application gracefully.Sends a quit command and handles the termination of the TCP connection.
+\noindent Closes the FreeCAD application gracefully.
+Sends a quit command and handles the termination of the TCP connection.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{open(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11785,7 +11922,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Opens a specified file in FreeCAD.Sends a command to open a file and handles responses to confirm file access.
+\noindent Opens a specified file in FreeCAD.
+Sends a command to open a file and handles responses to confirm file access.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{importFile(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11797,7 +11935,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Imports a file into the current FreeCAD document.Sends an import command and handles responses to confirm the import operation.
+\noindent Imports a file into the current FreeCAD document.
+Sends an import command and handles responses to confirm the import operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{newDocument(filename, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11809,7 +11948,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Creates a new document in FreeCAD, optionally specifying a filename.Sends a command to create a new document and handles the document creation response.
+\noindent Creates a new document in FreeCAD, optionally specifying a filename.
+Sends a command to create a new document and handles the document creation response.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{save(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11820,7 +11960,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Saves the current document in FreeCAD.Sends a save command and handles responses to confirm the save operation.
+\noindent Saves the current document in FreeCAD.
+Sends a save command and handles responses to confirm the save operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{saveAs(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11832,7 +11973,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Saves the current document in FreeCAD under a new filename.Sends a save as command and handles responses to confirm the operation.
+\noindent Saves the current document in FreeCAD under a new filename.
+Sends a save as command and handles responses to confirm the operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{close(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11843,7 +11985,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Closes the current document in FreeCAD.Sends a close command and handles responses to confirm the document closure.
+\noindent Closes the current document in FreeCAD.
+Sends a close command and handles responses to confirm the document closure.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{evaluate(command, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11855,7 +11998,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Executes a command in FreeCAD and returns the evaluation result.Sends an evaluate command with the specified command string.
+\noindent Executes a command in FreeCAD and returns the evaluation result.
+Sends an evaluate command with the specified command string.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{callScript(script, param, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11868,7 +12012,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Runs a script in FreeCAD with optional parameters.Sends a script command along with parameters and handles the script execution response.
+\noindent Runs a script in FreeCAD with optional parameters.
+Sends a script command along with parameters and handles the script execution response.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getArea(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11879,7 +12024,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Retrieves the area of the selected object in FreeCAD.Sends a measure area command and parses the response to extract the area value.
+\noindent Retrieves the area of the selected object in FreeCAD.
+Sends a measure area command and parses the response to extract the area value.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getVolume(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11890,7 +12036,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Retrieves the volume of the selected object in FreeCAD.Sends a measure volume command and parses the response to extract the volume value.
+\noindent Retrieves the volume of the selected object in FreeCAD.
+Sends a measure volume command and parses the response to extract the volume value.
 
 
 \subsection{om\_link}
@@ -11903,7 +12050,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{exe} \texttt{<string>}: Path to the executable to be run, defaults to the OpenModelica compiler if not provided.
 \end{itemize}
 
-\noindent Starts the interaction with an external executable by initializing the necessary environment and parameters.Launches the executable with the appropriate command-line arguments for interaction via ZMQ.Waits for a port file to be created to establish the ZMQ communication.
+\noindent Starts the interaction with an external executable by initializing the necessary environment and parameters.
+Launches the executable with the appropriate command-line arguments for interaction via ZMQ.
+Waits for a port file to be created to establish the ZMQ communication.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{sendExpression(expr)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11916,7 +12065,8 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<any>>}: - A promise that resolves with the parsed result of the expression evaluation.
 
-\noindent Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.Parses the response using a dedicated expression parser.
+\noindent Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.
+Parses the response using a dedicated expression parser.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ModelicaSystem(filename, modelname, [libraries], [command\_line\_options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -11930,7 +12080,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{command\_line\_options} \texttt{<string>}: Additional command-line options for the simulation.
 \end{itemize}
 
-\noindent Initializes and configures a Modelica system with the specified parameters and libraries.Loads necessary files and prepares the environment for simulation.
+\noindent Initializes and configures a Modelica system with the specified parameters and libraries.
+Loads necessary files and prepares the environment for simulation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{BuildModelicaModel()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12220,13 +12371,15 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - The parsed data which could be an array, an object, or a string.
 
-\noindent Parses a given expression string into structured data based on predefined formats.Handles various formats including single and nested lists, records, and single elements.
+\noindent Parses a given expression string into structured data based on predefined formats.
+Handles various formats including single and nested lists, records, and single elements.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{close()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
+\noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.
+Terminates any active processes and removes temporary port files.
 
 
 \subsection{tcp\_client}
@@ -12917,7 +13070,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{callback} \texttt{<function>}: The callback function to execute when the event occurs.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Subscribe to an event.
 
@@ -12931,7 +13084,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{callback} \texttt{<function>}: The callback function to remove.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Unsubscribe from an event.
 
@@ -12945,7 +13098,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{callback} \texttt{<function>}: The callback function to execute when the event occurs.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Subscribe to an event once.
 
@@ -12959,7 +13112,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{data} \texttt{<*>}: The data to pass to the event handlers.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Emit an event, triggering all bound callbacks.
 
@@ -12981,7 +13134,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{options} \texttt{<Object>}: Optional import options.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Import functions or constants into math.js.
 
@@ -14274,7 +14427,7 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{callback} \texttt{<function>}: The function to execute on each element.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<void>}: 
+\noindent \textbf{Returns:} \texttt{<void>}:
 
 \noindent Iterate over each element of a matrix or array.
 
@@ -16835,7 +16988,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{keepCache} \texttt{<boolean>}: 
+  \item \texttt{keepCache} \texttt{<boolean>}:
 \end{itemize}
 
 \noindent Resets logging and optionally clears the feasibility cache.
@@ -16846,9 +16999,9 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{dx} \texttt{<number>}: 
-  \item \texttt{dy} \texttt{<number>}: 
-  \item \texttt{ambiguous} \texttt{<string>}: 
+  \item \texttt{dx} \texttt{<number>}:
+  \item \texttt{dy} \texttt{<number>}:
+  \item \texttt{ambiguous} \texttt{<string>}:
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<Object>}: - Result object (diagnostics + closed flag).
@@ -16881,7 +17034,17 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{dz} \texttt{<number>}: Fine grid spacing in Z (must be >0).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: Result object:  - dim: 3  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise  - surfaceCells: number of mixed voxels visited (surface voxel count)  - evalCount: total feasibility evaluations performed  - N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]  - grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)  - fineBracket: refined fine flip bracket used to start flood-fill  - startVoxel: voxel indices used as flood-fill start
+\noindent \textbf{Returns:} \texttt{<Object>}: Result object:
+  - dim: 3
+  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
+  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
+  - surfaceCells: number of mixed voxels visited (surface voxel count)
+  - evalCount: total feasibility evaluations performed
+  - N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]
+  - grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics
+  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
+  - fineBracket: refined fine flip bracket used to start flood-fill
+  - startVoxel: voxel indices used as flood-fill start
 
 \noindent Main entry (3D).
 
@@ -16891,7 +17054,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{createWindow()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Promise.<void>>}: 
+\noindent \textbf{Returns:} \texttt{<Promise.<void>>}:
 
 \noindent Opens a window with Leaflet and initializes the map.
 
@@ -16905,7 +17068,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{lon} \texttt{<number>}: Longitude.
 \end{itemize}
 
-\noindent Sets the center of the map to the specified latitude and longitude.This will update the internal state and move the Leaflet map if it is ready.
+\noindent Sets the center of the map to the specified latitude and longitude.
+This will update the internal state and move the Leaflet map if it is ready.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{setZoom(zoom)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -16916,7 +17080,8 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{zoom} \texttt{<number>}: The zoom level.
 \end{itemize}
 
-\noindent Sets the zoom level of the map.This will update the internal state and adjust the Leaflet map if it is ready.
+\noindent Sets the zoom level of the map.
+This will update the internal state and adjust the Leaflet map if it is ready.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{addMarker(lat, lon)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -16938,7 +17103,7 @@ Throws for invalid inputs or if the error bound cannot be met.
 \noindent \codeBlock{\texttt{createWindow()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Promise.<void>>}: 
+\noindent \textbf{Returns:} \texttt{<Promise.<void>>}:
 
 \noindent Opens a window with Cesium and initializes 3D map.
 
@@ -17306,7 +17471,8 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves when the libraries are loaded.
 
-\noindent Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.Initializes the Python environment for symbolic computations.
+\noindent Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
+Initializes the Python environment for symbolic computations.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getSymbolName(symbol)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

@@ -6,7 +6,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 const cp = require('child_process');
 const http = require('http');
 
@@ -125,7 +124,9 @@ async function startBrowser(folder) {
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].filter(Boolean);
   var executable = choices.find(filename => fs.existsSync(filename));
   if(!executable) throw new Error('Chrome/Chromium is required; set JSLAB_GUI_BROWSER to its executable.');
-  var profile = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-browser-tests-'));
+  var profile_root = path.resolve(__dirname, '../../temp');
+  fs.mkdirSync(profile_root, { recursive: true });
+  var profile = fs.mkdtempSync(path.join(profile_root, 'jslab-browser-tests-'));
   var server = http.createServer(function(request, response) {
     var url = new URL(request.url, 'http://localhost');
     var relative = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
@@ -133,6 +134,8 @@ async function startBrowser(folder) {
     if(!filename.startsWith(path.resolve(folder) + path.sep)) { response.writeHead(403); response.end(); return; }
     if(!fs.existsSync(filename) || !fs.statSync(filename).isFile()) { response.writeHead(404); response.end(); return; }
     var types = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+    response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    response.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
     response.setHeader('Content-Type', types[path.extname(filename)] || 'application/octet-stream');
     fs.createReadStream(filename).pipe(response);
   });
@@ -145,12 +148,13 @@ async function startBrowser(folder) {
   child.stderr.on('data', data => { stderr = (stderr + data).slice(-5000); });
   var browser = new PRDC_JSLAB_GUI_BROWSER();
   async function cleanup() {
+    try { await browser.send('Browser.close'); } catch(error) {}
     await browser.close();
     if(child.exitCode === null) { child.kill(); await new Promise(resolve => { child.once('exit', resolve); setTimeout(resolve, 3000); }); }
     await new Promise(resolve => server.close(resolve));
     var target = path.resolve(profile);
-    if(path.dirname(target) !== path.resolve(os.tmpdir()) || !path.basename(target).startsWith('jslab-browser-tests-')) throw new Error('Unexpected browser profile path');
-    fs.rmSync(target, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    if(path.dirname(target) !== profile_root || !path.basename(target).startsWith('jslab-browser-tests-')) throw new Error('Unexpected browser profile path');
+    await fs.promises.rm(target, { recursive: true, force: true, maxRetries: 10, retryDelay: 250 });
   }
   try {
     var port = await waitForPort(profile, child);

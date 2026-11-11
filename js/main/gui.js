@@ -215,6 +215,11 @@ class PRDC_JSLAB_GUI {
     if(!e.is(':visible')) {
       this.last_focus = document.activeElement;
       $('.main-dialog').fadeOut(300, 'linear');
+      for(const button of document.querySelectorAll('[aria-controls]')) {
+        if(document.getElementById(button.getAttribute('aria-controls'))?.classList.contains('main-dialog')) {
+          button.setAttribute('aria-expanded', String(button.getAttribute('aria-controls') === e[0].id));
+        }
+      }
       e.fadeIn(300, 'linear', function() {
         e.focus();
       });
@@ -227,6 +232,9 @@ class PRDC_JSLAB_GUI {
    */
   closeDialog(e) {
     e.fadeOut(300, 'linear');
+    for(const button of document.querySelectorAll('[aria-controls]')) {
+      if(button.getAttribute('aria-controls') === e[0].id) button.setAttribute('aria-expanded', 'false');
+    }
     $(this.last_focus).focus();
   } 
 

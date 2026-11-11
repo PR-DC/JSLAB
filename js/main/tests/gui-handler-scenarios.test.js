@@ -15,8 +15,10 @@ if(!globalThis.__JSLAB_GUI_COMPONENT__) { exports.MODULE_TESTS = tests; return; 
 guiTest(tests, 'figure', 'figure hover timers, leave cleanup and resize callbacks work', [], async function(assert, f) {
   var figure = await require('../../windows/tests/gui-auxiliary-windows.test').figure(f), resized = 0;
   figure.plot = { _onResize() { resized++; } };
+  f.window.dispatchEvent(new f.window.Event('resize')); assert.equal(resized, 1);
   // Resize is ignored once the figure has been removed from the figure registry.
-  f.window.dispatchEvent(new f.window.Event('resize')); assert.equal(resized, 0);
+  delete f.figure_runtime.inter.figures.open_figures[1];
+  f.window.dispatchEvent(new f.window.Event('resize')); assert.equal(resized, 1);
   var menu = f.query('#figure-menu-container');
   menu.dispatchEvent(new f.window.MouseEvent('mouseenter'));
   assert.equal(menu.classList.contains('hovered'), true);

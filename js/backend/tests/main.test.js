@@ -44,6 +44,8 @@ function loadMainClass(screen_area, out) {
     },
     clearTimeout: function() {},
     require: function(module_path) {
+      if(module_path === './tasks') return { PRDC_JSLAB_TASKS: class {} };
+      if(module_path === './debugger') return require('../debugger');
       if(module_path === 'electron') {
         return electron_stub;
       }
@@ -184,6 +186,7 @@ tests.add('handleMessages binds dialog handlers to sender BrowserWindow', functi
   main.app_icon = 'app-icon.ico';
   main.win_sandbox = { send: function() {} };
   main.sandbox_sub_wins = {};
+  main.debugger = { state: 'idle', reserve: function() {}, finish: function() {} };
   main.pty = {};
   main.win_main = {
     isDestroyed: function() { return false; },
@@ -229,6 +232,7 @@ tests.add('handleMessages requests taskbar attention after top-level script comp
   main.app_icon = 'app-icon.ico';
   main.win_sandbox = { send: function() {} };
   main.sandbox_sub_wins = {};
+  main.debugger = { state: 'idle', reserve: function() {}, finish: function() {} };
   main.pty = {};
   main.win_main = {
     isDestroyed: function() { return false; },
@@ -307,6 +311,7 @@ tests.add('automation blocks overlapping GUI commands and accepts replies only f
   main.win_sandbox = { webContents: {}, send: function(...args) { forwarded.push(args); } };
   main.win_main = { isDestroyed: function() { return false; }, send: function() {} };
   main.win_editor = { send: function() {} };
+  main.debugger = { state: 'idle', reserve: function() {}, finish: function() {} };
   main.pty = {};
   main.sandbox_sub_wins = {};
   var replies = [];
@@ -344,5 +349,22 @@ tests.add('closed sandbox windows are released once without deleting replacement
   main._destroyClosedSandboxWindow(2, old_window);
   assert.equal(main.sandbox_sub_wins[2], undefined);
 }, { tags: ['unit', 'backend', 'windows'] });
+
+tests.add('Editor call-stack selection validates pause revisions and updates the existing console frame', async function(assert) {
+  const MainClass = loadMainClass(); const main = Object.create(MainClass.prototype); const calls = [];
+  let state = { state: 'paused', revision: 9, frames: [{ name: 'callee' }, { name: 'caller' }] };
+  main.debugger = { status: () => state };
+  main.win_main = { send: (...args) => calls.push(args) };
+  main.win_editor = { isDestroyed: () => false, send: (...args) => calls.push(args) };
+  const selected = await main.debugCommand('select_debug_frame', { frame_index: 1, revision: 9 });
+  assert.equal(selected.frame_index, 1); assert.equal(calls[0][1], 'debugger-select-frame');
+  assert.equal(calls[1][2].frame_index, 1);
+  await assert.rejects(() => main.debugCommand('select_debug_frame', { frame_index: 0, revision: 8 }), /Expired/);
+  await assert.rejects(() => main.debugCommand('select_debug_frame', { frame_index: 99 }), /Expired/);
+  await assert.rejects(() => main.debugCommand('select_debug_frame', { frame_index: '1' }), /Expired/);
+  state = { state: 'running', revision: 10, frames: [] };
+  await assert.rejects(() => main.debugCommand('select_debug_frame', { frame_index: 1 }), /Expired/);
+  assert.equal(calls.length, 2);
+}, { tags: ['unit', 'backend', 'debugger'] });
 
 exports.MODULE_TESTS = tests;

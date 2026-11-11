@@ -5,6 +5,9 @@
  * info@pr-dc.com
  */
 
+const { instrumentWebDebug } = require('./jslab-web-debug-instrument');
+const { PRDC_JSLAB_SOURCE_ERRORS } = require('./jslab-source-errors');
+
 /**
  * Class for JSLAB library eval.
  */
@@ -18,37 +21,48 @@ class PRDC_JSLAB_EVAL {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
+    this.debug_sources = new Map();
+    this.source_urls = new Map();
+    this.source_errors = new PRDC_JSLAB_SOURCE_ERRORS(this);
+    this.debug_script_sequence = 0;
     
-    // Errors handling
-    this.jsl.context.addEventListener('unhandledrejection', function(e) { 
-      if(e && e.reason) {
-        if(obj.jsl.ready) {
-          if(e.reason.hasOwnProperty('stack')) {
-            obj.rewriteError('@jslab: '+e.reason.stack.toString());
-          } else if(e.reason.message) {
-            obj.jsl.inter.env.error('@jslab: '+e.reason.message, false);
-          }
-        } else {
-          console.log(e);
-          obj.jsl.inter.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
-        }
-        e.preventDefault();
-      }
+    // Detached callbacks use the same formatter without finishing an unrelated command.
+    this.jsl.context.addEventListener('unhandledrejection', function(event) {
+      if(!event || !('reason' in event)) return;
+      if(event.preventDefault) event.preventDefault();
+      return obj.reportAsyncError(event.reason);
     });
+    this.jsl.context.addEventListener('error', function(event) {
+      if(!event) return;
+      if(event.preventDefault) event.preventDefault();
+      const error = 'error' in event ? event.error : new Error(event.message || 'Script error');
+      return obj.reportAsyncError(error, event.filename ? {
+        path: event.filename, line: event.lineno, column: event.colno
+      } : undefined);
+    });
+  }
 
-    this.jsl.context.addEventListener('error', function(e) {
-      if(obj.jsl.ready) {
-        if(e && e.error && 'stack' in e.error) {
-          obj.rewriteError('@jslab: '+e.error.stack.toString());
-        } else if(e && e.error && e.error.message) {
-          obj.jsl.inter.env.error('@jslab: '+e.error.message, false);
-        }
-      } else {
-        console.log(e);
-        obj.jsl.inter.env.errorInternal('@jslab [FATAL INTERNAL]: ' + e.message);
-      }
-      e.preventDefault();
-    });
+  /** Formats detached failures, including falsy and non-Error rejection reasons. */
+  async reportAsyncError(error, fallback) {
+    const execution = this.jsl.inter.execution;
+    if(error?.name === 'JslabInterrupted' && execution?.web_debugger && !execution.web_debugger.active) {
+      await execution.interrupt(null);
+      execution.web_debugger.resetControl();
+      (execution._send || globalThis.postMessage.bind(globalThis))({ type: 'debug-state', state: 'idle' });
+      return;
+    }
+    execution?.web_debugger?.exception(error);
+    const details = await this.source_errors.describe(error, fallback);
+    execution?.onAsyncError?.(details);
+    this.jsl.last_error_details = details;
+    this.jsl.inter.env._formatting_error = true;
+    this.jsl.inter.env._detached_error = true;
+    try { this.jsl.inter.env.error(details.stack, false); }
+    finally {
+      this.jsl.inter.env._formatting_error = false;
+      this.jsl.inter.env._detached_error = false;
+    }
+    return details;
   }
 
   /**
@@ -56,15 +70,27 @@ class PRDC_JSLAB_EVAL {
    * @param {*} err Error object.
    * @returns {Promise<void>|undefined} Pending source error formatting, if needed.
    */
-  onEvalError(err) {
-    this.jsl.onEvaluated();
-    if(err && err.name == 'JslabError') {
-      this.jsl.inter.env.error(err.message, false);
-    } else if(err && err.stack) {
-      return this.rewriteError(err.stack.toString());
-    } else {
-      this.jsl.inter.env.error('@jslab: ' + String(err), false);
+  async onEvalError(err) {
+    this.jsl.inter.execution?.web_debugger?.exception(err);
+    const details = await this.source_errors.describe(err, {
+      path: this.jsl.current_script || this.jsl.jsl_file_name || 'jslcmdwindow', line: 1, column: 1
+    });
+    const execution = this.jsl.inter.execution;
+    if(execution?.current) {
+      execution.cancel(execution.current.id);
+      details.cleanup_errors = await execution.cleanupResources();
     }
+    this.jsl.last_error_details = details;
+    this.jsl.inter.env._formatting_error = true;
+    try { this.jsl.inter.env.error(details.stack, false); }
+    finally { this.jsl.inter.env._formatting_error = false; }
+    this.jsl.onEvaluated();
+    return details;
+  }
+
+  /** Records a throw location without changing its value or catch semantics. */
+  captureThrown(value, path, line, column) {
+    return this.source_errors.capture(value, { path: path, line: line, column: column });
   }
 
   /**
@@ -196,7 +222,8 @@ class PRDC_JSLAB_EVAL {
   async evalCodeFromMain(code, show_output = true, jsl_file_name = 'jslcmdwindow') {
     var obj = this;
 
-    this.jsl.onEvaluating();
+    const execution = this.jsl.inter.execution;
+    const token = this.jsl.onEvaluating();
     this.jsl.jsl_file_name = jsl_file_name;
     this.jsl.current_script =  jsl_file_name;
     
@@ -204,15 +231,20 @@ class PRDC_JSLAB_EVAL {
     this.transformed_codes = [];
     this.source_maps = [];
     this.source_map_scripts = [];
-    this.current_source_code;
-    this.current_source_map;
-    this.current_source_script;    
+    this.current_source_code = undefined;
+    this.current_source_map = undefined;
+    this.current_source_script = undefined;
     
-    this.jsl.savePreviousWorkspace();
-    this.jsl.loadPreviousWorkspace();
 
     try {
-      var data = await this.evalString(code);
+      var data = await (execution ? execution.wait(this.evalString(code), token) : this.evalString(code));
+      if(execution?.beforeComplete) await execution.wait(execution.beforeComplete(), token);
+      if(execution && !execution.valid(token)) return { success: false, interrupted: true, error: "Execution interrupted." };
+      if(this.jsl.inter.env._reported_error) {
+        const details = await this.onEvalError(this.jsl.inter.env._reported_error);
+        if(execution) execution.finish(token);
+        return { success: false, error: details.stack, error_details: details };
+      }
       if(obj.jsl.no_ans == false) {
         obj.jsl.context.ans = data;
       }
@@ -220,10 +252,13 @@ class PRDC_JSLAB_EVAL {
         obj.jsl.inter.env.showAns(this.jsl.inter.prettyPrint(data));
       }
       obj.jsl.onEvaluated();
+      if(execution) execution.finish(token);
       return { success: true, value: data };
     } catch(err) {
-      await this.onEvalError(err);
-      return { success: false, error: err && (err.stack || err.message) || String(err) };
+      if(execution && !execution.valid(token)) return { success: false, interrupted: true, error: "Execution interrupted." };
+      const details = await this.onEvalError(err);
+      if(execution) execution.finish(token);
+      return { success: false, error: details.stack, error_details: details };
     }
   }
   
@@ -233,8 +268,13 @@ class PRDC_JSLAB_EVAL {
    * @returns {*} The result of the evaluated code.
    */
   async evalString(code) { 
+    const token = this.jsl.inter.execution?.current;
     var rewrite_result = this.rewriteCode(code);
     if(rewrite_result) {
+      if(rewrite_result.debug_source && typeof this.jsl.inter.env.registerDebugSource === 'function') {
+        await this.jsl.inter.env.registerDebugSource(rewrite_result.debug_source);
+      }
+      if(token && !this.jsl.inter.execution.valid(token)) throw new Error('Execution interrupted.');
       this.source_maps.push(rewrite_result.map);
       this.transformed_codes.push(rewrite_result.code);
       this.source_codes.push(code);
@@ -247,12 +287,15 @@ class PRDC_JSLAB_EVAL {
       this.current_source_map = rewrite_result.map;
       this.current_source_script = this.jsl.current_script;
 
-      var result = await this.jsl._eval(rewrite_result.code);
-      
-      this.current_source_code = current_source_code;
-      this.current_source_map = current_source_map;
-      this.current_source_script = current_source_script;
-      return result;
+      try {
+        return await this.jsl._eval(rewrite_result.code);
+      } finally {
+        if(!token || this.jsl.inter.execution.valid(token)) {
+          this.current_source_code = current_source_code;
+          this.current_source_map = current_source_map;
+          this.current_source_script = current_source_script;
+        }
+      }
     }
     return false;
   }
@@ -282,7 +325,7 @@ class PRDC_JSLAB_EVAL {
             if(typeof lines === 'number' && isFinite(lines)) {
               var line_number = Math.floor(lines);
               if(line_number >= 1 && code_lines.length >= line_number) {
-                script_code = code_lines[line_number - 1];
+                script_code = '\n'.repeat(line_number - 1) + code_lines[line_number - 1];
               } else {
                 this.jsl.inter.env.error('@runScript: '+this.jsl.inter.lang.string(104)+'!\n '+this.jsl.inter.lang.string(105)+': '+ script_path, false);
                 return false;
@@ -295,7 +338,7 @@ class PRDC_JSLAB_EVAL {
                 start_line >= 1 &&
                 end_line >= start_line &&
                 code_lines.length >= end_line) {
-                script_code = code_lines.slice(start_line - 1, end_line).join('\n');
+                script_code = '\n'.repeat(start_line - 1) + code_lines.slice(start_line - 1, end_line).join('\n');
               } else {
                 this.jsl.inter.env.error('@runScript: '+this.jsl.inter.lang.string(104)+'!\n '+this.jsl.inter.lang.string(105)+': '+ script_path);
                 return false;
@@ -334,107 +377,22 @@ class PRDC_JSLAB_EVAL {
    * @param {String} stack The error stack trace.
    */
   async rewriteError(stack, on_rewrite = false) {
-    this.jsl._console.log(stack, on_rewrite);
-    
-    const regex_normal = /at\s(.*?)\s\((.*\\.*?):(\d+):(\d+)\)/;
-    const regex_eval = /eval at evalString\s*\(.*:(\d+):(\d+)\)$/;
-    const regex_rewrite = /\((\d+):(\d+)\)/;
-    var lines = stack.split('\n');
-    var msg = lines[0];
-    
-    if(on_rewrite) {
-      msg = msg.replace(/\(\d+:\d+\)/g, '');
-      let matchs = lines[0].match(regex_rewrite);
-      if(matchs) {
-        let line = parseInt(matchs[1]);
-        let column = parseInt(matchs[2]);
-        
-        msg += "\n  "+this.jsl.inter.lang.string(114)+" ";
-        msg += "(" + this.jsl.current_script + ") "+this.jsl.inter.lang.string(112)+": " + line + ", "+this.jsl.inter.lang.string(113)+": " +  column;
-      }
-      throw {
-        name: 'JslabError',
-        message: msg
-      };
-    } else {
-      for(let i = 1; i < lines.length; i++) {
-        if(lines[i].includes("eval at evalString (")) {
-          msg += "\n  "+this.jsl.inter.lang.string(114)+" ";
-          let matchs = lines[i].match(regex_eval);
-          let line = parseInt(matchs[1]);
-          let column = parseInt(matchs[2]);
-          let map = this.current_source_map;
-          if(!map && this.source_maps && this.source_maps.length) {
-            map = this.source_maps[this.source_maps.length - 1];
-          }
-          let result = map ? await this.getOriginalPosition(map, line, column) : { line: line, column: column };
-          if(!result || result.line == null || result.column == null) {
-            result = { line: line, column: column };
-          }
-          
-          var script_name = this.current_source_script || this.jsl.current_script;
-          msg += "(" + script_name + ") "+this.jsl.inter.lang.string(112)+": " + result.line + ", "+this.jsl.inter.lang.string(113)+": " +  result.column;
-          break;
-        } else {
-          let matchs = lines[i].match(regex_normal);
-          if(matchs) {
-            msg += "\n  "+this.jsl.inter.lang.string(114)+" ";
-            let expression = matchs[1];
-            let path = matchs[2];
-            let line = parseInt(matchs[3]);
-            let column = parseInt(matchs[4]);            
-            msg += expression + " (" + path + ") "+this.jsl.inter.lang.string(112)+": " + line + ", "+this.jsl.inter.lang.string(113)+": " +  column;
-          }
-        }
-      }
-      this.jsl.inter.env.error(msg, false);
-    }
+    const text = String(stack);
+    const heading = text.split(/\r?\n/)[0];
+    const error = { name: heading.includes(':') ? heading.slice(0, heading.indexOf(':')) : 'Error',
+      message: heading.includes(':') ? heading.slice(heading.indexOf(':') + 1).trim() : heading, stack: text };
+    const details = await this.source_errors.describe(error);
+    if(on_rewrite) throw Object.assign(new Error(details.stack), { jslab_error_details: details });
+    this.jsl.inter.env.error(details.stack, false);
+    return details;
   }
-  
-  /**
-   * Extracts the position (line and column) of an expression from an error stack trace, providing context for debugging.
-   * @returns {Array} An array containing the line number, column number, and script path of the expression causing the error.
-   */
-  async getExpressionPosition() {
-    var err = new Error();
-    var stack = err.stack;
 
-    const regex_normal = /at\s(.*?)\s\((.*\\.*?):(\d+):(\d+)\)/;
-    const regex_eval = /eval at evalString\s*\(.*:(\d+):(\d+)\)$/;
-    var lines = stack.split('\n');
-    var line;
-    var column;
-    var script;
-    
-    for(let i = 2; i < lines.length; i++) {
-      if(lines[i].includes("eval at evalString (")) {
-        let matchs = lines[i].match(regex_eval);
-        line = parseInt(matchs[1]);
-        column = parseInt(matchs[2]);
-        script = this.current_source_script || this.jsl.current_script;
-        break;
-      } else {
-        let matchs = lines[i].match(regex_normal);
-        if(matchs) {
-          line = parseInt(matchs[3]);
-          column = parseInt(matchs[4]);
-          script = matchs[2];
-          break;
-        }
-      }
-    }
-    
-    let map = this.current_source_map;
-    if(!map && this.source_maps && this.source_maps.length) {
-      map = this.source_maps[this.source_maps.length - 1];
-    }
-    let result = map ? await this.getOriginalPosition(map, line, column) : { line: line, column: column };
-    if(!result || result.line == null || result.column == null) {
-      result = { line: line, column: column };
-    }
-    return [result.line, result.column, script];
+  /** Resolves the nearest user-source location in the current stack. */
+  async getExpressionPosition() {
+    const details = await this.source_errors.describe(new Error());
+    return [details.location?.line, details.location?.column, details.location?.path];
   }
-  
+
   /**
    * Retrieves the original source position from a source map.
    * @param {Object} map - The source map object.
@@ -443,12 +401,12 @@ class PRDC_JSLAB_EVAL {
    * @returns {Promise<Object>} An object containing the original source position, including source file, line, and column.
    */
   async getOriginalPosition(map, line, column) {
-    this.jsl.inter.override.withoutCheckStop = true;
-    var smc = await new this.jsl.inter.env.SourceMapConsumer(map);
-    this.jsl.inter.override.withoutCheckStop = false;
-    var result = smc.originalPositionFor({ line: line, column: column });
-    smc.destroy();
-    return result;
+    const consumer = await new this.jsl.inter.env.SourceMapConsumer(map);
+    try {
+      let position = consumer.originalPositionFor({ line, column });
+      if(position.line == null) position = consumer.originalPositionFor({ line, column, bias: 2 });
+      return position;
+    } finally { consumer.destroy(); }
   }
   
   /**
@@ -467,6 +425,32 @@ class PRDC_JSLAB_EVAL {
     return undefined;
   }
   
+  /** Replaces only top-level function declarations; active browser frames keep their old code. */
+  _applyFunctionEdits(code, path, dry_run = false) {
+    const ast = this.jsl.inter.env.babel_parser.parse(code, { sourceType: 'module' });
+    const edits = [];
+    const characters = code.split('');
+    for(const node of ast.program.body) {
+      const function_declaration = node.type === 'FunctionDeclaration';
+      const function_variables = node.type === 'VariableDeclaration' && node.declarations.every(declaration =>
+        declaration.id.type === 'Identifier' && ['FunctionExpression', 'ArrowFunctionExpression'].includes(declaration.init?.type));
+      if(function_declaration || function_variables) edits.push(...(function_declaration ? [node.id.name] : node.declarations.map(declaration => declaration.id.name)));
+      else for(let index = node.start; index < node.end; index++) if(characters[index] !== '\n' && characters[index] !== '\r') characters[index] = ' ';
+    }
+    if(!edits.length) throw Error('Browser live editing requires top-level function declarations or function variables.');
+    const old_path = this.jsl.current_script;
+    const debugger_runtime = this.jsl.inter.execution.web_debugger;
+    const enabled = debugger_runtime.enabled;
+    try {
+      this.jsl.current_script = path;
+      const rewritten = this.rewriteCode(characters.join(''));
+      if(dry_run) return { applied: false, status: 'Validated', functions: edits };
+      debugger_runtime.enabled = false;
+      this.jsl._eval(rewritten.code.replace('(async () => {', '(() => {'));
+      return { applied: true, status: 'AppliedToFutureCalls', functions: edits, active_frames_unchanged: true };
+    } finally { this.jsl.current_script = old_path; debugger_runtime.enabled = enabled; }
+  }
+
   /**
    * Rewrites a string of code using Recast and Babel Parser.
    * @param {String} code The code string to evaluate.
@@ -479,10 +463,8 @@ class PRDC_JSLAB_EVAL {
     const runtimeJslIdentifier = this.jsl.internal_jsl_identifier || 'jsl';
     const forbiddenNames = new Set([runtimeJslIdentifier]);
 
-    // Trick from devtools: Wrap code in parentheses if it's an object literal
-    if(/^\s*\{/.test(code) && /\}\s*$/.test(code)) {
-      code = '(' + code + ')';
-    }
+    // Prefer an object expression when valid, without adding a source column.
+    const object_candidate = /^\s*\{/.test(code) && /\}\s*$/.test(code);
 
     if(cfg.DEBUG_PRE_TRANSFORMED_CODE) {
       obj.jsl._console.log(code);
@@ -494,27 +476,50 @@ class PRDC_JSLAB_EVAL {
       ast = this.jsl.inter.env.recast.parse(code, {
         parser: {
           parse(source) {
-            return obj.jsl.inter.env.babel_parser.parse(source, {
-              sourceType: 'module',
-              plugins: [
-                'jsx',
-                'typescript',
-                'classProperties',
-                'dynamicImport',
-                'optionalChaining',
-                'nullishCoalescingOperator',
-                "@babel/plugin-syntax-top-level-await"
-              ],
-              tolerant: true
-            });
+            const options = { sourceType: 'module', plugins: ['jsx', 'typescript',
+              'classProperties', 'dynamicImport', 'optionalChaining', 'nullishCoalescingOperator'] };
+            if(object_candidate) {
+              try {
+                const expression = obj.jsl.inter.env.babel_parser.parseExpression(source, options);
+                if(expression.type === 'ObjectExpression') {
+                  const b = obj.jsl.inter.env.recast.types.builders;
+                  const statement = b.expressionStatement(expression);
+                  statement.loc = expression.loc;
+                  const program = b.program([statement]);
+                  program.loc = expression.loc;
+                  const file = b.file(program);
+                  file.loc = expression.loc;
+                  return file;
+                }
+              } catch(error) { /* A valid block must still parse as a normal script. */ }
+            }
+            return obj.jsl.inter.env.babel_parser.parse(source, options);
           },
         },
         sourceFileName: "source.js"
       });
     } catch(err) {
-      throw { name: 'JslabError',
-        message: String(err.message) + '\n  ' + this.jsl.current_script };
+      const error = new SyntaxError(String(err.message));
+      error.jslab_location = { path: this.jsl.current_script,
+        line: err.loc?.line || 1, column: (err.loc?.column || 0) + 1 };
+      throw error;
     }
+
+    this.jsl.inter.env.recast.types.visit(ast, {
+      visitNode(path) {
+        if(/^(TS|JSX|Export)/.test(path.node.type)) {
+          const error = new SyntaxError('Unsupported JavaScript syntax: ' + path.node.type);
+          error.jslab_location = { path: obj.jsl.current_script,
+            line: path.node.loc?.start.line || 1, column: (path.node.loc?.start.column || 0) + 1 };
+          throw error;
+        }
+        this.traverse(path);
+      }
+    });
+    if(this.jsl.inter.execution?.web_debugger?.enabled) {
+      instrumentWebDebug(ast, this.jsl.inter.env.recast, runtimeJslIdentifier, this.jsl.current_script);
+    }
+    this.source_errors.instrument(ast, this.jsl.inter.env.recast, runtimeJslIdentifier, this.jsl.current_script);
 
     const checkPattern = (pattern) => {
       obj.checkForbiddenPattern(pattern, forbiddenNames, lang);
@@ -997,6 +1002,23 @@ class PRDC_JSLAB_EVAL {
 
     this.jsl.inter.env.recast.types.visit(ast, visitObj);
 
+    const catches = [];
+    this.jsl.inter.env.recast.types.visit(ast, {
+      visitTryStatement(path) {
+        if(path.node.handler && path.node.block.loc) {
+          const excluded = [];
+          obj.jsl.inter.env.recast.types.visit(path.node.block, {
+            visitFunction(inner) {
+              if(inner.node.loc) excluded.push({ start: inner.node.loc.start, end: inner.node.loc.end });
+              return false;
+            }
+          });
+          catches.push({ start: path.node.block.loc.start, end: path.node.block.loc.end, excluded });
+        }
+        this.traverse(path);
+      }
+    });
+
     // Ensure the value of the last expression is returned
     const finalBody = ast.program.body;
     if(finalBody.length > 0) {
@@ -1026,14 +1048,24 @@ class PRDC_JSLAB_EVAL {
     });
 
     // Wrap the code in an async IIFE to allow top-level await
-    const transformedCode = `(async () => { ${result.code} })();`;
+    const source_key = String(this.jsl.current_script) + '\0' + !!this.jsl.inter.execution?.web_debugger?.enabled + '\0' + code;
+    const source_url = this.source_urls.get(source_key) || 'jslab://scripts/' + (++this.debug_script_sequence) + '.js';
+    this.source_urls.set(source_key, source_url);
+    const debug_map = Object.assign({}, result.map, { mappings: ';' + result.map.mappings });
+    const original_path = String(this.jsl.current_script || 'jslcmdwindow').replace(/\\/g, '/');
+    debug_map.sources = debug_map.sources.map(() => /^[a-z]:\//i.test(original_path) ? 'file:///' + original_path : original_path);
+    const encoded_map = btoa(unescape(encodeURIComponent(JSON.stringify(debug_map))));
+    const transformedCode = `(async () => {\n${result.code}\n})();\n//# sourceURL=${source_url}\n//# sourceMappingURL=data:application/json;base64,${encoded_map}`;
+    this.debug_sources.set(source_url, { map: debug_map, path: this.jsl.current_script });
+
 
     if(cfg.DEBUG_TRANSFORMED_CODE) {
       obj.jsl._console.log(transformedCode);
       obj.jsl._console.log(result.map);
     }
 
-    return { code: transformedCode, map: result.map };
+    return { code: transformedCode, map: debug_map,
+      debug_source: { url: source_url, path: this.jsl.current_script, map: debug_map, catches } };
   }
 }
 

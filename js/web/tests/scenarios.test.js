@@ -108,7 +108,10 @@ webTest(tests, 'web inspector delegated table and editable-cell actions use thei
 webTest(tests, 'web editor tab drag, middle-close and search keyboard paths preserve documents', async function() {
   var t = GUI, w = await t.editor(), doc = w.document;
   for(var i = 0; i < 3; i++) { t.click('#new-tab', doc); await new Promise(resolve => setTimeout(resolve, 20)); }
-  var first = doc.querySelector('.tab'), handle = first.querySelector('.tab-drag-handle'), rect = handle.getBoundingClientRect();
+  var first = doc.querySelector('.tab');
+  first.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  await new Promise(resolve => w.requestAnimationFrame(() => w.requestAnimationFrame(resolve)));
+  var handle = first.querySelector('.tab-drag-handle'), rect = handle.getBoundingClientRect();
   function pointer(target, type, x) { target.dispatchEvent(new w.PointerEvent(type, { pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, clientX: x, clientY: rect.top + 5, bubbles: true, cancelable: true })); }
   pointer(handle, 'pointerdown', rect.left + 5); pointer(doc, 'pointermove', rect.left + 30); pointer(doc, 'pointermove', rect.left + 700);
   await new Promise(resolve => setTimeout(resolve, 40)); pointer(doc, 'pointerup', rect.left + 700);

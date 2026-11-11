@@ -107,7 +107,7 @@ async function testTerminal(folder) {
     await waitFor('jslab>');
     terminal.write("disp('VALUE=' + cli_answer);\r");
     await waitFor('VALUE=42');
-    terminal.write('while(true) { checkStop; }\r');
+    terminal.write('while(true) {}\r');
     await new Promise(function(resolve) { setTimeout(resolve, 500); });
     terminal.write('\x03');
     await waitFor('jslab>');
@@ -204,7 +204,7 @@ async function main() {
     assert.equal(JSON.parse(failed.stdout).success, false);
     var invalid = await runCLI(['--unknown']);
     assert.equal(invalid.code, 2);
-    var timeout = await runCLI(['--json', '--timeout', '0.1', '-e', 'while(true) { checkStop; }']);
+    var timeout = await runCLI(['--json', '--timeout', '0.1', '-e', 'while(true) {}']);
     assert.equal(timeout.code, 124, timeout.stdout + timeout.stderr);
     console.log('CLI batch execution, scripts, arguments, cwd, stdin, errors and timeout passed.');
     if(process.platform === 'win32') {

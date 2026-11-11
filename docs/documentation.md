@@ -721,7 +721,7 @@ Enter JavaScript and JSLAB functions at the jslab> prompt. Variables remain avai
 | .cd directory | Change the working directory. |
 | .pwd | Show the working directory. |
 
-Ctrl+C clears unfinished input or interrupts a running operation. Use checkStop; checkpoints in long CPU loops for cooperative interruption. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
+Ctrl+C clears unfinished input or interrupts a running operation. Interruption does not require loop checkpoints and preserves completed workspace assignments. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
 
 History is stored in JSLAB/cli-history.json under APPDATA on Windows. Use --no-history to disable storage or --history-file to choose another path. Closing the CLI stops its owned runtime; the runtime also exits if the CLI process disappears. Temporary session profiles are removed on normal exit.
 
@@ -893,7 +893,7 @@ Alternatively, use `--session-file` followed by the descriptor's absolute path. 
 | `export_figure` | Export an existing figure using an absolute output path. |
 | `get_help` | Read function documentation by name, `lib.function`, or category. |
 | `get_execution` | Poll an execution or retrieve its completed result. |
-| `interrupt_execution` | Request cooperative interruption of the current execution. |
+| `interrupt_execution` | Interrupt JavaScript and clean up registered resources; preserve workspace values. |
 
 `evaluate_code`, `run_file` and `run_test_file` accept an optional absolute `cwd`. It changes the shared working directory and remains in effect after the call. A script's location does not automatically become its working directory. Script execution uses JSLAB's evaluator, including its code rewriting, workspace persistence and source error handling. Input scripts and code are limited to 512000 bytes or characters respectively.
 
@@ -935,16 +935,52 @@ A response with `status: "running"` means execution continues. Call `get_executi
 
 Only one sandbox operation runs at a time. Overlapping agent operations and GUI code submissions receive a busy response. Session status, execution polling and interruption remain available while code runs. A lost connection or a client timeout does not cancel execution: inspect status before retrying a command with side effects.
 
-Interruption uses JSLAB's existing cooperative stop mechanism. Acknowledgement means the stop was requested, not that execution has finished. Poll until completion. Blocking native calls and uncooperative operations may require the user's existing sandbox reset control. Reset discards the workspace; it is not exposed as an agent tool.
+Ctrl+C and `interrupt_execution` terminate JavaScript through the main-process debugger without loop checkpoints. Acknowledgement means interruption was requested; poll the execution until completion. The workspace and completed assignments survive, while the interrupted function stack is discarded. Interruption does not roll back partially modified objects.
 
-For long CPU loops, include the existing `checkStop` checkpoint so the desktop can request interruption:
+Registered cleanup runs after the interrupted stack has unwound, in a separate evaluation. Timers, animation/idle callbacks, JSLAB workers and registered subprocesses are stopped. Use `jsl.addForCleanup(object, callback)` to register resource cleanup; asynchronous callbacks are awaited, cleanup failures are returned as `cleanup_errors`, and the remaining cleanup still runs. JavaScript `finally` blocks are not a substitute for this registration because V8 termination can bypass them. Arbitrary external operations and promises are not automatically reversible or cancellable. Blocking native calls may delay interruption; sandbox reset is the last resort and discards the workspace.
 
-```javascript
-while(working) {
-  checkStop;
-  // Perform the next bounded calculation step.
-}
-```
+Execution controls are in the Editor beside the source. Its existing Run action becomes Pause while code is running and Continue while paused. Compact icons provide Step over (F10), Step into (F11), Step out (Shift+F11), and Stop. The icons appear during execution and disappear when it ends. The call stack opens in a resizable split below the Editor source when execution pauses. The Editor bug icon shows or hides it; the Command Window bug icon opens the Editor with this split visible. Hiding the split does not resume execution or change the selected frame. Its Advanced section contains exception preferences, child-worker selection when workers exist, live editing, frame restart and browser workspace reset; historical async calls are also collapsed there. User-facing stacks omit JSLAB runtime frames. Finishing a step does not open internal files. While paused, selecting a call frame shows its locals in the existing Workspace. Use the normal Workspace inspection action and variable inspector to inspect or edit those locals; the Command Window also evaluates expressions in that frame. Descriptor previews do not invoke getters. Old inspector controls reject edits after a frame change or resume. Debugging stays inside the existing Editor window on desktop and in the browser. The split uses the existing panel resizer and remembers its height. `debugger;`, `breakpoint;`, `debug;` and `pause;` create real debugger pauses rather than modal dialogs. `stoppoint;` requests interruption. `logpoint;` and `updatepoint;` refresh the workspace without polling interruption flags.
+
+| Debugger tool | Purpose |
+| --- | --- |
+| `get_debug_state` | Read state, stack frames and scope object handles. |
+| `pause_execution` | Request a pause at the next JavaScript statement. |
+| `resume_execution` | Continue, or pass `action: "stepOver"`, `"stepInto"` or `"stepOut"`. |
+| `inspect_debug_object` | Read a scope/object by `object_id` without invoking accessors. |
+| `evaluate_debug_expression` | Evaluate `expression` in `frame_index`; side effects require `allow_side_effects: true`. |
+| `set_breakpoint` | Set an original-source `path` and one-based `line`, optional `condition`, and `enabled` state. |
+| `remove_breakpoint` | Remove a logical breakpoint by returned `id`. |
+| `clear_breakpoints` | Clear line breakpoints and exception stops. |
+| `set_exception_pause` | Choose `none`, `uncaught` by user code, or `all` exceptions. |
+| `select_debug_target` | Select a paused worker `session_id`, or omit it to select the main sandbox. |
+| `update_debug_script` | Validate (`dry_run`) or apply saved/source code while paused; active-frame editing requires `allow_top_frame_editing`. |
+| `restart_debug_frame` | Restart the selected `frame_index`; earlier side effects can execute again. |
+
+Read debugger state after a pause request to confirm suspension. Paused frame and scope handles expire when execution resumes. Worker pauses are coordinated and acknowledged independently; they do not form an instantaneous snapshot. Native calls and external processes are not frozen by a JavaScript pause. Opening sandbox DevTools is allowed while idle; close it to restore JSLAB's debugger controller before running another calculation.
+
+Click a line number to add a source breakpoint. A compact breakpoint gutter appears to the left of the line numbers and disappears after the last breakpoint is removed. Click a marker to remove it; Shift-click opens its condition and enabled-state editor. The paused source opens automatically and its current line is highlighted. Desktop settings survive application restarts; browser settings survive page reloads. A disabled breakpoint remains saved. Conditions are JavaScript expressions evaluated in the breakpoint's scope, and can have side effects.
+
+The command window accepts `dbstop in "file.jsl" at 12 if index === 3`, `dbstop if error`, `dbstop if caught error`, `dbclear all`, `dbclear("file.jsl", 12)`, `dbclear if error`, `dbstatus`, `dbstack`, `dbcont`, `dbstep in`, `dbstep over`, `dbstep out`, `dbup`, `dbdown`, and `dbquit`. These host commands remain available while execution is paused. Script code can use `await dbstop(path, line, condition, enabled)`, `await dbstop('error')`, `await dbstop('caught error')`, `await dbclear(path, line)`, `await dbclear()`, and `await dbstatus()`. `keyboard;` is an alias for a debugger pause.
+
+An exception stop pauses before the instrumented function's scope is released; caught-error mode also stops in user catch handlers. Error reporting after an exception has unwound remains separate from this debugger feature. Browser frames backed by retained lexical closures can be selected for inspection and deliberate modification, including recursive and available async caller frames. Frames without a retained closure are displayed but cannot be inspected. Engine-created async ancestry is not a complete history of all prior calls.
+
+See `examples/exampleInterruption.jsl` and `examples/exampleDebugger.jsl`.
+
+The web edition uses one persistent scientific Worker workspace for commands, editor execution, variable inspection, figures and debugging. Browser objects stay on the responsive UI thread; synchronous references expose DOM properties, methods and constructors to scientific code, while callbacks return asynchronously to their original Worker closures. Browser promises can be awaited. Registered event listeners are removed on interruption without replacing the application document. A callback cannot synchronously return a Worker value to a native browser caller, and delayed event callbacks cannot cancel an event already dispatched. Browser hosting must use HTTPS (or localhost) and send `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. The web build includes an `_headers` file for compatible static hosts; configure these headers explicitly on other servers. Resources loaded from other origins must also satisfy the browser's embedding policy. Without isolation the application explicitly falls back to the legacy iframe runtime, without Worker debugger guarantees.
+
+Browser child Workers have their own initialized scientific runtime and debugger target. Select a target to inspect and modify its retained locals or step its code; Continue resumes suspended targets and Stop terminates owned children. Child message handlers receive user messages separately from private debugger messages.
+
+The web debugger inserts synchronous source checkpoints automatically, including inside otherwise empty loops. User scripts do not call `checkStop`, and ordinary functions stay synchronous. A pause retains the current function's lexical scope for inspection and deliberate console evaluation. Select available caller frames in the stack or use `dbup`/`dbdown`. Object inspection uses bounded own-property descriptors and displays accessors without invoking their getters. Ctrl+C also cancels awaited timers and instrumented background callbacks. Browser native/Wasm calls that do not return to JavaScript require **Reset**, which terminates the Worker and discards that workspace.
+
+For native work that must be cancellable while retaining parent variables, use `await runInterruptible(function, args, options)`. It runs a function in an owned desktop process or browser child Worker and copies arguments/results. The function can use that runtime's scientific commands but must not depend on caller closures. `options.timeout_ms` and `options.signal` provide a timeout and explicit AbortSignal; Ctrl+C also cancels owned jobs. For example, `await runInterruptible(values => new Float64Array(Array.from(values, x => x * 2)), [new Float64Array([1, 2, 3])])`. Hard cancellation discards only the isolated runtime. It cannot roll back files, device effects or other external work already performed. Desktop sessions allow up to four such jobs concurrently.
+
+The Editor debugger areas show bounded asynchronous scheduling ancestry, separately from inspectable live scopes. Desktop captures up to 128 history entries; browser scheduling history is also bounded. Historical locals are unavailable after their frames have disappeared. Desktop **Apply saved source** uses V8 live editing and reports engine restrictions instead of silently restarting execution. **Restart frame** is explicit because side effects can repeat. Browser **Apply saved functions** replaces ordinary function definitions for future calls without rerunning top-level initializers; executing frames retain their original code and locals. Browser frame restart and arbitrary active-code replacement are unavailable through ordinary page APIs.
+
+JSLAB retains its shared source rewriter for persistent workspace properties, `clear`, script/module adaptation and expression results. DevTools' native REPL supports persistent lexical declarations and top-level await, but those declarations do not have JSLAB's deletable workspace-property semantics, and normal web pages cannot access the Chrome debugging protocol. Source maps translate generated locations back to original scripts, including selected-line offsets and functions retained from earlier evaluations.
+
+Failed agent executions include structured `error_details`: `name`, `message`, `kind`, original `location` (`path`, one-based `line` and `column`), `frames`, and `stack`. Nested `run` calls and CommonJS module failures preserve their originating file and caller frames. Syntax errors, awaited rejections and primitive thrown values use the same reporting path. Detached callback/rejection errors are reported independently and do not complete an unrelated evaluation.
+
+Run desktop debugger/error integration checks with `node js/dev/run-debugger-tests.js --sandbox-suite`; this starts an isolated JSLAB desktop session and tests its MCP interface. Run browser checks with `node js/dev/run-web-gui-tests.js`.
 
 Results contain bounded textual previews rather than a lossless serialization of arbitrary objects. Output captures JSLAB display, warning and error methods, including the JSLAB console. Capture ends when the requested operation completes; detached asynchronous work can continue afterward. Output is limited to 200 messages and 64000 characters, and previews to 16000 characters. Inspect selected variables or save large results to files when needed.
 
@@ -961,6 +997,36 @@ If no session is found, check that JSLAB was started with `--mcp` under the same
 ### Global functions and properties
 
 #### basic
+
+##### `dbstop(path, [line], [condition], [enabled])`
+
+Sets a conditional source breakpoint or enables an error breakpoint.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `path` | `string` | Script path, 'error', or 'caught error'. |
+| `line` | `number` | One-based line. Optional. Default: `1`. |
+| `condition` | `string` | Condition evaluated in the paused scope. Optional. Default: `''`. |
+| `enabled` | `boolean` | Breakpoint enabled state. Optional. Default: `true`. |
+
+**Returns:** `Promise.<Object> | Object` Updated debugger configuration.
+
+##### `dbclear([path], [line])`
+
+Clears one breakpoint or all line/error breakpoints.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `path` | `string` | Script path or 'all'. Optional. Default: `'all'`. |
+| `line` | `number` | One-based line. Optional. |
+
+**Returns:** `Promise.<Object> | Object` Updated debugger configuration.
+
+##### `dbstatus()`
+
+Returns current line and exception breakpoint settings.
+
+**Returns:** `Promise.<Object> | Object` Debugger state and breakpoint configuration.
 
 ##### `ans`
 
@@ -1044,10 +1110,6 @@ Sets a log point to record information during execution.
 
 Updates specific points in the script during execution.
 
-##### `checkStop()`
-
-Checks if the execution should stop based on conditions.
-
 ##### `endPoint()`
 
 Marks the endpoint of a script or process.
@@ -1091,7 +1153,8 @@ Removes a previously saved path from the application's list of saved paths.
 
 ##### `addpath(args)`
 
-Adds one or more paths to the search path list.Alias compatible with MATLAB/Octave `addpath`.
+Adds one or more paths to the search path list.
+Alias compatible with MATLAB/Octave `addpath`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1101,7 +1164,8 @@ Adds one or more paths to the search path list.Alias compatible with MATLAB/Oct
 
 ##### `rmpath(args)`
 
-Removes one or more paths from the search path list.Alias compatible with MATLAB/Octave `rmpath`.
+Removes one or more paths from the search path list.
+Alias compatible with MATLAB/Octave `rmpath`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1111,7 +1175,8 @@ Removes one or more paths from the search path list.Alias compatible with MATLA
 
 ##### `path(args)`
 
-Retrieves or sets the active search path list.Compatible with MATLAB/Octave `path`.
+Retrieves or sets the active search path list.
+Compatible with MATLAB/Octave `path`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1121,7 +1186,8 @@ Retrieves or sets the active search path list.Compatible with MATLAB/Octave `pa
 
 ##### `ls([target])`
 
-Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave `ls`.
+Lists contents of a folder or wildcard target.
+Compatible with MATLAB/Octave `ls`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1131,7 +1197,8 @@ Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave `ls
 
 ##### `dir([target])`
 
-Lists directory entries with metadata.Compatible with MATLAB/Octave `dir`.
+Lists directory entries with metadata.
+Compatible with MATLAB/Octave `dir`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1141,7 +1208,8 @@ Lists directory entries with metadata.Compatible with MATLAB/Octave `dir`.
 
 ##### `isfile(path_in)`
 
-Returns true when the path resolves to a file.Compatible with MATLAB `isfile`.
+Returns true when the path resolves to a file.
+Compatible with MATLAB `isfile`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1151,7 +1219,8 @@ Returns true when the path resolves to a file.Compatible with MATLAB `isfile`.
 
 ##### `isfolder(path_in)`
 
-Returns true when the path resolves to a folder.Compatible with MATLAB `isfolder`.
+Returns true when the path resolves to a folder.
+Compatible with MATLAB `isfolder`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1161,7 +1230,9 @@ Returns true when the path resolves to a folder.Compatible with MATLAB `isfolde
 
 ##### `exist(name, [kind])`
 
-Checks existence with MATLAB-compatible return codes.`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.Supports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.
+Checks existence with MATLAB-compatible return codes.
+`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.
+Supports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1172,7 +1243,8 @@ Checks existence with MATLAB-compatible return codes.`1` variable, `2` file, `5
 
 ##### `which(name)`
 
-Resolves a file/module using the active search path.Compatible with MATLAB/Octave `which`.
+Resolves a file/module using the active search path.
+Compatible with MATLAB/Octave `which`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1182,7 +1254,8 @@ Resolves a file/module using the active search path.Compatible with MATLAB/Octa
 
 ##### `who(names)`
 
-Lists workspace variable names.Compatible with MATLAB/Octave `who`.
+Lists workspace variable names.
+Compatible with MATLAB/Octave `who`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1192,7 +1265,8 @@ Lists workspace variable names.Compatible with MATLAB/Octave `who`.
 
 ##### `whos(names)`
 
-Lists workspace variable descriptors (name/type/class).Compatible with MATLAB/Octave `whos`.
+Lists workspace variable descriptors (name/type/class).
+Compatible with MATLAB/Octave `whos`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1224,7 +1298,9 @@ Updates the file browser display based on the current state.
 
 ##### `diary([mode_or_file])`
 
-Controls command window transcript logging.`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,and `diary('<file>')` enables logging to the specified file (append mode).
+Controls command window transcript logging.
+`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,
+and `diary('<file>')` enables logging to the specified file (append mode).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1263,10 +1339,6 @@ Displays a warning message.
 | Parameter | Type | Description |
 | --- | --- | --- |
 | `msg` | `string` | The warning message to display. |
-
-##### `checkStopLoop()`
-
-Verifies if a loop within the script execution should be terminated, typically used to avoid infinite or lengthy unnecessary execution.
 
 ##### `edit([filepath])`
 
@@ -1352,7 +1424,8 @@ Saves specified variables to a file using workspace serializer.
 
 ##### `load(args)`
 
-Loads variables from a specified file into the specified scope or the default script context.Supports current JSLAB workspace format and legacy plain JSON object files.
+Loads variables from a specified file into the specified scope or the default script context.
+Supports current JSLAB workspace format and legacy plain JSON object files.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1475,7 +1548,8 @@ Compiles a N-API module located at the specified path.
 
 ##### `compileWasm(path, [show_output])`
 
-Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.The method automatically selects `emcc` for native sources and `wasm-pack` when a Cargo.toml is present.
+Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
+The method automatically selects `emcc` for native sources and `wasm-pack` when a Cargo.toml is present.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1562,7 +1636,8 @@ Searches the documentation for methods that match all words in the given query, 
 
 ##### `lookfor(query)`
 
-Searches documentation by keyword and prints matching symbols.MATLAB-compatible alias for documentation search.
+Searches documentation by keyword and prints matching symbols.
+MATLAB-compatible alias for documentation search.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1706,7 +1781,8 @@ Interpolates grid data using the specified method.
 
 ##### `buildGridFromFlat(xFlat, yFlat, zFlat, [tolIn], [tolIn.tolX], [tolIn.tolY])`
 
-Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Ordering can be arbitrary. Values that are NaN/Inf are ignored.
+Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.
+Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1721,7 +1797,9 @@ Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Or
 
 ##### `gridSolveYforXZ(x, y, z, x0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])`
 
-Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
+Finds y values where z(x0, y) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1742,7 +1820,9 @@ Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array,
 
 ##### `gridSolveXforYZ(x, y, z, y0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])`
 
-Finds x values where z(x, y0) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
+Finds x values where z(x, y0) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1930,7 +2010,8 @@ Computes the characteristic polynomial of a matrix or the polynomial from roots.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `A` | `Array` | If `A` is a matrix (2D array), computes its characteristic polynomial.                   If `A` is an array of roots, computes the polynomial with those roots. |
+| `A` | `Array` | If `A` is a matrix (2D array), computes its characteristic polynomial.
+                   If `A` is an array of roots, computes the polynomial with those roots. |
 
 **Returns:** `Array` - Coefficients of the resulting polynomial.
 
@@ -2039,7 +2120,12 @@ Compares two numbers (real or complex) according to Octave's rules.
 
 ##### `min(arr)`
 
-Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
+Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.
+Complex numbers are represented as objects with 'real' and 'imag' properties.
+The comparison follows Octave's rules:
+1. Compare magnitudes (absolute values) of the numbers.
+2. If magnitudes are equal, compare real parts.
+3. If real parts are equal, compare imaginary parts.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2049,7 +2135,12 @@ Finds the minimum value in an array of numbers, which can include both real numb
 
 ##### `max(arr)`
 
-Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
+Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.
+Complex numbers are represented as objects with 'real' and 'imag' properties.
+The comparison follows Octave's rules:
+1. Compare magnitudes (absolute values) of the numbers.
+2. If magnitudes are equal, compare real parts.
+3. If real parts are equal, compare imaginary parts.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2059,7 +2150,8 @@ Finds the maximum value in an array of numbers, which can include both real numb
 
 ##### `clamp(v, a, b)`
 
-Clamps a value to the inclusive range [a, b].Assumes a <= b.
+Clamps a value to the inclusive range [a, b].
+Assumes a <= b.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2071,7 +2163,8 @@ Clamps a value to the inclusive range [a, b].Assumes a <= b.
 
 ##### `real(input)`
 
-Extracts the real part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
+Extracts the real part of a number or an array of numbers.
+Handles mixed inputs containing both real numbers and complex numbers.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2081,7 +2174,8 @@ Extracts the real part of a number or an array of numbers.Handles mixed inputs 
 
 ##### `imag(input)`
 
-Extracts the imaginary part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
+Extracts the imaginary part of a number or an array of numbers.
+Handles mixed inputs containing both real numbers and complex numbers.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2132,6 +2226,19 @@ Calculates the coefficients of the characteristic polynomial of a square matrix.
 
 #### non_blocking
 
+##### `runInterruptible(work_function, [args], [options])`
+
+Runs scientific/native work outside the persistent workspace so it can be stopped safely.
+The function receives copied arguments and must not depend on caller closures.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `work_function` | `function` | Function to execute in an isolated scientific runtime. |
+| `args` | `Array` | Structured-cloneable arguments. Optional. Default: `[]`. |
+| `options` | `Object` | Optional timeout_ms and AbortSignal signal. Optional. Default: `{}`. |
+
+**Returns:** `Promise.<*>` Copied result; parent variables survive task interruption.
+
 ##### `nbwhile(fn)`
 
 Executes a given function in a non-blocking while loop.
@@ -2139,52 +2246,6 @@ Executes a given function in a non-blocking while loop.
 | Parameter | Type | Description |
 | --- | --- | --- |
 | `fn` | `function` | A function that returns a boolean value; when false, the loop exits. |
-
-##### `nbrun(fn)`
-
-Executes a given function once in a non-blocking manner.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `fn` | `function` | The function to be executed. |
-
-##### `nbnext(fn)`
-
-Schedules the next block of code to be executed in a non-blocking manner.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `fn` | `function` | The function to execute next. |
-
-##### `waitMSeconds(ms)`
-
-Waits for a specified number of milliseconds in a non-blocking manner.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `ms` | `Number` | The number of milliseconds to wait. |
-
-**Returns:** `Promise.<void>` A promise that resolves after the specified time has elapsed.
-
-##### `waitSeconds(s)`
-
-Waits for a specified number of seconds in a non-blocking manner.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `s` | `Number` | The number of seconds to wait. |
-
-**Returns:** `Promise.<void>` A promise that resolves after the specified time has elapsed.
-
-##### `waitMinutes(min)`
-
-Waits for a specified number of minutes in a non-blocking manner.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `min` | `Number` | The number of minutes to wait. |
-
-**Returns:** `Promise.<void>` A promise that resolves after the specified time has elapsed.
 
 ##### `clearIntervalIf(timeout)`
 
@@ -3797,7 +3858,8 @@ Moves the first `n` elements of the array to the end.
 
 ##### `plus(args)`
 
-Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Adds multiple operands, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -3807,7 +3869,8 @@ Adds multiple operands, which can be either scalars or arrays.If multiple opera
 
 ##### `add(args)`
 
-Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Adds multiple operands, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -3817,7 +3880,8 @@ Adds multiple operands, which can be either scalars or arrays.If multiple opera
 
 ##### `minus(args)`
 
-Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Subtracts multiple operands from the first one, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -3827,7 +3891,8 @@ Subtracts multiple operands from the first one, which can be either scalars or a
 
 ##### `subtract(args)`
 
-Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Subtracts multiple operands from the first one, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -4729,7 +4794,8 @@ Converts top, right, bottom, and left margins into x and y coordinates.
 
 ##### `simpleObj2Csv(data, [delimiter])`
 
-Generates a CSV string from an simple object containing arrays of values.Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
+Generates a CSV string from an simple object containing arrays of values.
+Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5207,7 +5273,8 @@ Opens the specified folder in the system's file manager.
 
 ##### `makeDirectory(directory)`
 
-Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
+Creates a directory at the specified path if it does not already exist.
+This method delegates the directory creation task to the environment's makeDirectory function.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5217,7 +5284,8 @@ Creates a directory at the specified path if it does not already exist.This met
 
 ##### `mkdir(directory)`
 
-Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
+Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.
+This method delegates the directory creation task to the environment's makeDirectory function.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5406,7 +5474,8 @@ Checks if a specific program is running and retrieves its process IDs.
 | --- | --- | --- |
 | `program_name` | `string` | The name of the program to check. |
 
-**Returns:** `Array` An array where the first element is a boolean indicating if the program is running,                 and the second element is an array of process IDs if the program is running.
+**Returns:** `Array` An array where the first element is a boolean indicating if the program is running,
+                 and the second element is an array of process IDs if the program is running.
 
 ##### `killProcess(pid)`
 
@@ -5556,7 +5625,8 @@ Transforms a local offset (dx, dy, dz) relative to a specified East, North, Up p
 
 ##### `computeHeadingPitchFromTo(from_cartesian, to_cartesian)`
 
-Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
+Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.
+The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5567,7 +5637,8 @@ Calculates the heading (yaw) and pitch angles from a starting Cartesian point to
 
 ##### `mslToEllipsoidAlt(lat_deg, lon_deg, h_msl_meters)`
 
-Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.
+The conversion can handle single values or arrays of values.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5579,7 +5650,8 @@ Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the
 
 ##### `ellipsoidToMslAlt(lat_deg, lon_deg, h_ellipsoid_meters)`
 
-Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.
+The conversion can handle single values or arrays of values.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5591,7 +5663,8 @@ Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the
 
 ##### `positionToEllipsoid(lat_deg, lon_deg, h_msl_meters)`
 
-Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
+Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.
+The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5799,7 +5872,8 @@ Formats a number to a specified number of decimal places.
 
 ##### `formatFloatDigits(number, [digits])`
 
-Formats a floating-point number to a fixed number of significant digits,automatically adjusting decimal places depending on the integer part length.
+Formats a floating-point number to a fixed number of significant digits,
+automatically adjusting decimal places depending on the integer part length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5937,7 +6011,8 @@ Determines if the provided value is array-like for column-style input.
 
 ##### `ensureUniqueNames(names, [error_factory])`
 
-Ensures that name list contains unique values.Throws when a duplicate name is found.
+Ensures that name list contains unique values.
+Throws when a duplicate name is found.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6270,7 +6345,8 @@ Converts an object to a JSON string if it is an object, otherwise returns the ob
 
 ##### `safeStringify(data, [depth_limit])`
 
-Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.It also escapes strings to prevent HTML injection.
+Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.
+It also escapes strings to prevent HTML injection.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6311,7 +6387,8 @@ Escapes special LaTeX characters in a string to prevent LaTeX injection.
 
 ##### `getUniqueKey(object, key)`
 
-Produces a unique key name inside an object. If `key` already exists,numerical suffixes are appended until uniqueness is achieved.
+Produces a unique key name inside an object. If `key` already exists,
+numerical suffixes are appended until uniqueness is achieved.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6362,7 +6439,8 @@ Checks that an input contains a finite number
 
 ##### `limitedNumberValidator(n, [min], [max])`
 
-Checks that an input contains a finite numberand—if supplied—is within the inclusive range [min, max].
+Checks that an input contains a finite number
+and—if supplied—is within the inclusive range [min, max].
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6434,7 +6512,13 @@ Wraps a string in an HTML <sup> element (superscript).
 
 ##### `tableprint(args)`
 
-Prints a formatted plain-text table and optionally exports a LaTeX table.Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/valuepairs or as a final options object.Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,align, float, caption, label, escapeTeX.
+Prints a formatted plain-text table and optionally exports a LaTeX table.
+
+Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
+pairs or as a final options object.
+
+Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
+align, float, caption, label, escapeTeX.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6446,7 +6530,11 @@ Prints a formatted plain-text table and optionally exports a LaTeX table.Colum
 
 ##### `table(args)`
 
-Creates a table from columns.Usage examples:table(colA, colB, { VariableNames: ['A', 'B'] })table({ A: colA, B: colB })table(colA, colB, 'VariableNames', ['A', 'B'])
+Creates a table from columns.
+Usage examples:
+table(colA, colB, { VariableNames: ['A', 'B'] })
+table({ A: colA, B: colB })
+table(colA, colB, 'VariableNames', ['A', 'B'])
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6456,7 +6544,10 @@ Creates a table from columns.Usage examples:table(colA, colB, { VariableNames:
 
 ##### `timetable(row_times, args)`
 
-Creates a timetable from row times and columns.Usage examples:timetable(times, colA, colB, { VariableNames: ['A', 'B'] })timetable(times, { A: colA, B: colB })
+Creates a timetable from row times and columns.
+Usage examples:
+timetable(times, colA, colB, { VariableNames: ['A', 'B'] })
+timetable(times, { A: colA, B: colB })
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6737,7 +6828,8 @@ Throws for invalid inputs or if the error bound cannot be met.
 
 ##### `pointLineDistance(P, A, i)`
 
-Returns the shortest distance from point P to the line defined by (A, i)and the closest point (P1) on that line.
+Returns the shortest distance from point P to the line defined by (A, i)
+and the closest point (P1) on that line.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6745,11 +6837,16 @@ Returns the shortest distance from point P to the line defined by (A, i)and the
 | `A` | `Array.<number>` | a point on the line |
 | `i` | `Array.<number>` | a unit direction vector of the line |
 
-**Returns:** `Object` d   - shortest distance  P1  - point on the line with the smallest distance to P
+**Returns:** `Object` d   - shortest distance
+  P1  - point on the line with the smallest distance to P
 
 ##### `pointSegmentDistance(p, a, b)`
 
-Computes the shortest distance from a point to a line segment in 2D.The point and segment endpoints are expected as objects with numericproperties {x, y}. The result is the Euclidean distance to the closestpoint on the segment.
+Computes the shortest distance from a point to a line segment in 2D.
+
+The point and segment endpoints are expected as objects with numeric
+properties {x, y}. The result is the Euclidean distance to the closest
+point on the segment.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6761,7 +6858,8 @@ Computes the shortest distance from a point to a line segment in 2D.The point 
 
 ##### `lineCircleIntersection(P, i, O, r)`
 
-Returns the intersection points of a circle (center O, radius r)in a plane with a line passing through point P with direction i.
+Returns the intersection points of a circle (center O, radius r)
+in a plane with a line passing through point P with direction i.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6770,11 +6868,14 @@ Returns the intersection points of a circle (center O, radius r)in a plane with
 | `O` | `Array.<number>` | center of the circle |
 | `r` | `number` | circle radius |
 
-**Returns:** `Object` flag = 0 -> intersection (two points)  flag = 1 -> tangent (one point)  flag = 2 -> no intersection
+**Returns:** `Object` flag = 0 -> intersection (two points)
+  flag = 1 -> tangent (one point)
+  flag = 2 -> no intersection
 
 ##### `planesIntersection(P1, n1, P2, n2)`
 
-Returns the line (point P, direction i) that is the intersectionof two planes, or indicates if they are the same or parallel.
+Returns the line (point P, direction i) that is the intersection
+of two planes, or indicates if they are the same or parallel.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6783,11 +6884,14 @@ Returns the line (point P, direction i) that is the intersectionof two planes, 
 | `P2` | `Array.<number>` | a point in plane 2 |
 | `n2` | `Array.<number>` | normal to plane 2 |
 
-**Returns:** `Object` flag = 0 -> planes intersect  flag = 1 -> planes are the same  flag = 2 -> planes are parallel (no intersection)
+**Returns:** `Object` flag = 0 -> planes intersect
+  flag = 1 -> planes are the same
+  flag = 2 -> planes are parallel (no intersection)
 
 ##### `isPointOnLine(P, A, B)`
 
-Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 otherwise.
+Checks if point P lies on the line segment A-B.
+Returns 1 if on segment, 0 otherwise.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6799,7 +6903,8 @@ Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 other
 
 ##### `linesOverlap(P1, P2, P3, P4)`
 
-Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,or indicates no overlap.
+Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,
+or indicates no overlap.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6819,7 +6924,9 @@ Finds the minimal 3D distance between all pairs of points in two arrays.
 | `P1i` | `Array.<Array.<number>>` | Array of 3D points (e.g. [[x1, y1, z1], [x2, y2, z2], ...]). |
 | `P2i` | `Array.<Array.<number>>` | Another array of 3D points. |
 
-**Returns:** `Object` L  - The minimal distance found.  P1 - The point in P1i corresponding to the minimal distance.  P2 - The point in P2i corresponding to the minimal distance.
+**Returns:** `Object` L  - The minimal distance found.
+  P1 - The point in P1i corresponding to the minimal distance.
+  P2 - The point in P2i corresponding to the minimal distance.
 
 ##### `triangle(p1, p2, p3)`
 
@@ -7096,7 +7203,9 @@ Simulate the time response of a discrete-time linear system.
 | `u` | `Array.<number>` | Input signal array. |
 | `t` | `Array.<number>` | Time vector array. |
 
-**Returns:** `object` An object containing the response:                  - y: Output signal array.                  - t: Time vector array (same as input).
+**Returns:** `object` An object containing the response:
+                  - y: Output signal array.
+                  - t: Time vector array (same as input).
 
 ##### `step(sys, Tfinal)`
 
@@ -7134,9 +7243,15 @@ Minimizes an unconstrained function using a coordinate descent-like Powell algor
 | --- | --- | --- |
 | `fnc` | `function` | Function to be minimized. Accepts an array of size N and returns a scalar. |
 | `x0` | `Array` | Initial guess for the parameters as an array of size N. |
-| `options` | `Object` | Optional parameters:  - eps: Convergence threshold (default: 1e-6)  - alpha: Initial step size scaling factor (default: 0.001)  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000) Optional. |
+| `options` | `Object` | Optional parameters:
+  - eps: Convergence threshold (default: 1e-6)
+  - alpha: Initial step size scaling factor (default: 0.001)
+  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
+  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000) Optional. |
 
-**Returns:** `Object` An object with two fields:  - argument: The parameter array that minimizes the function.  - fncvalue: The function value at the minimized parameters.
+**Returns:** `Object` An object with two fields:
+  - argument: The parameter array that minimizes the function.
+  - fncvalue: The function value at the minimized parameters.
 
 ##### `optimNelderMead(f, x0, [parameters], [parameters.maxIterations], [parameters.nonZeroDelta], [parameters.zeroDelta], [parameters.minErrorDelta], [parameters.minTolerance], [parameters.rho], [parameters.chi], [parameters.psi], [parameters.sigma], [parameters.history])`
 
@@ -7158,7 +7273,9 @@ Performs optimization using the Nelder-Mead algorithm.
 | `parameters.sigma` | `number` | Reduction coefficient. Optional. Default: `0.5`. |
 | `parameters.history` | `Array.<Object>` | Optional array to store the history of simplex states for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.
+**Returns:** `Object` An object containing:
+  - `fx`: The minimum function value found.
+  - `x`: The parameters corresponding to the minimum function value.
 
 ##### `optimConjugateGradient(f, initial, [params], [params.maxIterations], [params.history])`
 
@@ -7172,7 +7289,10 @@ Performs optimization using the Conjugate Gradient method.
 | `params.maxIterations` | `number` | Maximum number of iterations to perform. Optional. Default: `initial.length * 20`. |
 | `params.history` | `Array.<Object>` | Optional array to store the history of optimization steps for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.  - `fxprime`: The gradient of the function at the minimum.
+**Returns:** `Object` An object containing:
+  - `fx`: The minimum function value found.
+  - `x`: The parameters corresponding to the minimum function value.
+  - `fxprime`: The gradient of the function at the minimum.
 
 ##### `optimGradientDescent(f, initial, [params], [params.maxIterations], [params.learnRate], [params.history])`
 
@@ -7187,7 +7307,10 @@ Performs optimization using the Gradient Descent method.
 | `params.learnRate` | `number` | Learning rate or step size for each iteration. Optional. Default: `0.001`. |
 | `params.history` | `Array.<Object>` | Optional array to store the history of optimization steps for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.  - `fxprime`: The gradient of the function at the minimum.
+**Returns:** `Object` An object containing:
+  - `fx`: The minimum function value found.
+  - `x`: The parameters corresponding to the minimum function value.
+  - `fxprime`: The gradient of the function at the minimum.
 
 ##### `optimGradientDescentLineSearch(f, initial, [params], [params.maxIterations], [params.learnRate], [params.c1], [params.c2], [params.history])`
 
@@ -7204,7 +7327,10 @@ Performs optimization using the Gradient Descent method with Wolfe Line Search.
 | `params.c2` | `number` | Parameter for the curvature condition in Wolfe Line Search. Optional. Default: `0.1`. |
 | `params.history` | `Array.<Object>` | Optional array to store the history of optimization steps for analysis, including line search details. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.  - `fxprime`: The gradient of the function at the minimum.
+**Returns:** `Object` An object containing:
+  - `fx`: The minimum function value found.
+  - `x`: The parameters corresponding to the minimum function value.
+  - `fxprime`: The gradient of the function at the minimum.
 
 ##### `optimBisect(f, a, b, [parameters], [parameters.maxIterations], [parameters.tolerance])`
 
@@ -7241,7 +7367,9 @@ Performs search using the Nelder-Mead algorithm.
 | `parameters.sigma` | `number` | Reduction coefficient. Optional. Default: `0.5`. |
 | `parameters.history` | `Array.<Object>` | Optional array to store the history of simplex states for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.
+**Returns:** `Object` An object containing:
+  - `fx`: The minimum function value found.
+  - `x`: The parameters corresponding to the minimum function value.
 
 ##### `fminbnd(func, a, b, [tol])`
 
@@ -7254,7 +7382,9 @@ Finds the minimum of a univariate function within a specified interval using a b
 | `b` | `number` | The upper bound of the interval. |
 | `tol` | `number` | The tolerance for convergence (optional). Optional. Default: `1e-5`. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The x-value where the function attains its minimum within [a, b].
+**Returns:** `Object` An object containing:
+  - `fx`: The minimum function value found.
+  - `x`: The x-value where the function attains its minimum within [a, b].
 
 ##### `rcmiga(problem, opts)`
 
@@ -7269,7 +7399,11 @@ Creates an instance of PRDC_JSLAB_LIB_OPTIM_RCMIGA.
 
 ##### `openPresentation(file_path, type)`
 
-Opens an existing presentation in a new window and returns its context.In the opened presentation, press Ctrl+S to toggle the slide controls.Press F9 to toggle the stopwatch overlay.When the stopwatch is visible, right-click it for Start, Stop, and Reset,drag it to move it, and drag any corner to resize it.
+Opens an existing presentation in a new window and returns its context.
+In the opened presentation, press Ctrl+S to toggle the slide controls.
+Press F9 to toggle the stopwatch overlay.
+When the stopwatch is visible, right-click it for Start, Stop, and Reset,
+drag it to move it, and drag any corner to resize it.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -7280,7 +7414,9 @@ Opens an existing presentation in a new window and returns its context.In the o
 
 ##### `editPresentation(file_path, type)`
 
-Opens the presentation editor for the specified project and returns its context.The preview uses the same runtime controls as openPresentation,including Ctrl+S for slide controls and F9 for the stopwatch.
+Opens the presentation editor for the specified project and returns its context.
+The preview uses the same runtime controls as openPresentation,
+including Ctrl+S for slide controls and F9 for the stopwatch.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -8947,7 +9083,8 @@ Removes the plot from the figure, cleaning up any resources associated with it.
 
 ##### `start(exe, options)`
 
-Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.Attempts to start FreeCAD if it's not running and connects to its TCP server.
+Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.
+Attempts to start FreeCAD if it's not running and connects to its TCP server.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -8956,11 +9093,13 @@ Starts the FreeCAD application and establishes a TCP connection for remote proce
 
 ##### `findServer()`
 
-Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.Checks if the TCP server is reachable by sending a 'PING' command.
+Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.
+Checks if the TCP server is reachable by sending a 'PING' command.
 
 ##### `send(message, timeout)`
 
-Sends a message to the FreeCAD TCP server and waits for a response.Manages the TCP communication by ensuring message integrity and handling timeouts.
+Sends a message to the FreeCAD TCP server and waits for a response.
+Manages the TCP communication by ensuring message integrity and handling timeouts.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -8971,7 +9110,8 @@ Sends a message to the FreeCAD TCP server and waits for a response.Manages the 
 
 ##### `inputParser(message)`
 
-Parses the input from FreeCAD responses to identify errors and data.Splits the message by '|' and checks for error or data messages.
+Parses the input from FreeCAD responses to identify errors and data.
+Splits the message by '|' and checks for error or data messages.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -8981,7 +9121,8 @@ Parses the input from FreeCAD responses to identify errors and data.Splits the 
 
 ##### `showMessage(message)`
 
-Displays a message from FreeCAD in the JSLAB interface.Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
+Displays a message from FreeCAD in the JSLAB interface.
+Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -8989,11 +9130,13 @@ Displays a message from FreeCAD in the JSLAB interface.Parses and displays mess
 
 ##### `quit()`
 
-Closes the FreeCAD application gracefully.Sends a quit command and handles the termination of the TCP connection.
+Closes the FreeCAD application gracefully.
+Sends a quit command and handles the termination of the TCP connection.
 
 ##### `open(filePath, timeout)`
 
-Opens a specified file in FreeCAD.Sends a command to open a file and handles responses to confirm file access.
+Opens a specified file in FreeCAD.
+Sends a command to open a file and handles responses to confirm file access.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9002,7 +9145,8 @@ Opens a specified file in FreeCAD.Sends a command to open a file and handles re
 
 ##### `importFile(filePath, timeout)`
 
-Imports a file into the current FreeCAD document.Sends an import command and handles responses to confirm the import operation.
+Imports a file into the current FreeCAD document.
+Sends an import command and handles responses to confirm the import operation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9011,7 +9155,8 @@ Imports a file into the current FreeCAD document.Sends an import command and ha
 
 ##### `newDocument(filename, timeout)`
 
-Creates a new document in FreeCAD, optionally specifying a filename.Sends a command to create a new document and handles the document creation response.
+Creates a new document in FreeCAD, optionally specifying a filename.
+Sends a command to create a new document and handles the document creation response.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9020,7 +9165,8 @@ Creates a new document in FreeCAD, optionally specifying a filename.Sends a com
 
 ##### `save(timeout)`
 
-Saves the current document in FreeCAD.Sends a save command and handles responses to confirm the save operation.
+Saves the current document in FreeCAD.
+Sends a save command and handles responses to confirm the save operation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9028,7 +9174,8 @@ Saves the current document in FreeCAD.Sends a save command and handles response
 
 ##### `saveAs(filePath, timeout)`
 
-Saves the current document in FreeCAD under a new filename.Sends a save as command and handles responses to confirm the operation.
+Saves the current document in FreeCAD under a new filename.
+Sends a save as command and handles responses to confirm the operation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9037,7 +9184,8 @@ Saves the current document in FreeCAD under a new filename.Sends a save as comm
 
 ##### `close(timeout)`
 
-Closes the current document in FreeCAD.Sends a close command and handles responses to confirm the document closure.
+Closes the current document in FreeCAD.
+Sends a close command and handles responses to confirm the document closure.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9045,7 +9193,8 @@ Closes the current document in FreeCAD.Sends a close command and handles respon
 
 ##### `evaluate(command, timeout)`
 
-Executes a command in FreeCAD and returns the evaluation result.Sends an evaluate command with the specified command string.
+Executes a command in FreeCAD and returns the evaluation result.
+Sends an evaluate command with the specified command string.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9054,7 +9203,8 @@ Executes a command in FreeCAD and returns the evaluation result.Sends an evalua
 
 ##### `callScript(script, param, timeout)`
 
-Runs a script in FreeCAD with optional parameters.Sends a script command along with parameters and handles the script execution response.
+Runs a script in FreeCAD with optional parameters.
+Sends a script command along with parameters and handles the script execution response.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9064,7 +9214,8 @@ Runs a script in FreeCAD with optional parameters.Sends a script command along 
 
 ##### `getArea(timeout)`
 
-Retrieves the area of the selected object in FreeCAD.Sends a measure area command and parses the response to extract the area value.
+Retrieves the area of the selected object in FreeCAD.
+Sends a measure area command and parses the response to extract the area value.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9072,7 +9223,8 @@ Retrieves the area of the selected object in FreeCAD.Sends a measure area comma
 
 ##### `getVolume(timeout)`
 
-Retrieves the volume of the selected object in FreeCAD.Sends a measure volume command and parses the response to extract the volume value.
+Retrieves the volume of the selected object in FreeCAD.
+Sends a measure volume command and parses the response to extract the volume value.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9082,7 +9234,9 @@ Retrieves the volume of the selected object in FreeCAD.Sends a measure volume c
 
 ##### `start(exe)`
 
-Starts the interaction with an external executable by initializing the necessary environment and parameters.Launches the executable with the appropriate command-line arguments for interaction via ZMQ.Waits for a port file to be created to establish the ZMQ communication.
+Starts the interaction with an external executable by initializing the necessary environment and parameters.
+Launches the executable with the appropriate command-line arguments for interaction via ZMQ.
+Waits for a port file to be created to establish the ZMQ communication.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9090,7 +9244,8 @@ Starts the interaction with an external executable by initializing the necessary
 
 ##### `sendExpression(expr)`
 
-Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.Parses the response using a dedicated expression parser.
+Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.
+Parses the response using a dedicated expression parser.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9100,7 +9255,8 @@ Sends an expression to be evaluated by the external executable through the ZMQ c
 
 ##### `ModelicaSystem(filename, modelname, [libraries], [command_line_options])`
 
-Initializes and configures a Modelica system with the specified parameters and libraries.Loads necessary files and prepares the environment for simulation.
+Initializes and configures a Modelica system with the specified parameters and libraries.
+Loads necessary files and prepares the environment for simulation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9319,7 +9475,8 @@ Creates valid variable names by replacing invalid characters and categorizes the
 
 ##### `parseExpression(args)`
 
-Parses a given expression string into structured data based on predefined formats.Handles various formats including single and nested lists, records, and single elements.
+Parses a given expression string into structured data based on predefined formats.
+Handles various formats including single and nested lists, records, and single elements.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9329,7 +9486,8 @@ Parses a given expression string into structured data based on predefined format
 
 ##### `close()`
 
-Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
+Closes the current session safely by cleaning up resources such as temporary files and network connections.
+Terminates any active processes and removes temporary port files.
 
 #### tcp_client
 
@@ -12778,7 +12936,17 @@ Main entry (3D).
 | `dy` | `number` | Fine grid spacing in Y (must be >0). |
 | `dz` | `number` | Fine grid spacing in Z (must be >0). |
 
-**Returns:** `Object` Result object:  - dim: 3  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise  - surfaceCells: number of mixed voxels visited (surface voxel count)  - evalCount: total feasibility evaluations performed  - N: [feasible_points,infeasible_points], each is an array of [x,y,z]  - grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)  - fineBracket: refined fine flip bracket used to start flood-fill  - startVoxel: voxel indices used as flood-fill start
+**Returns:** `Object` Result object:
+  - dim: 3
+  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
+  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
+  - surfaceCells: number of mixed voxels visited (surface voxel count)
+  - evalCount: total feasibility evaluations performed
+  - N: [feasible_points,infeasible_points], each is an array of [x,y,z]
+  - grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics
+  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
+  - fineBracket: refined fine flip bracket used to start flood-fill
+  - startVoxel: voxel indices used as flood-fill start
 
 #### map
 
@@ -12790,7 +12958,8 @@ Opens a window with Leaflet and initializes the map.
 
 ##### `setCenter(lat, lon)`
 
-Sets the center of the map to the specified latitude and longitude.This will update the internal state and move the Leaflet map if it is ready.
+Sets the center of the map to the specified latitude and longitude.
+This will update the internal state and move the Leaflet map if it is ready.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -12799,7 +12968,8 @@ Sets the center of the map to the specified latitude and longitude.This will up
 
 ##### `setZoom(zoom)`
 
-Sets the zoom level of the map.This will update the internal state and adjust the Leaflet map if it is ready.
+Sets the zoom level of the map.
+This will update the internal state and adjust the Leaflet map if it is ready.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -13107,7 +13277,8 @@ Creates a vector from spherical coordinates.
 
 ##### `load()`
 
-Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.Initializes the Python environment for symbolic computations.
+Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
+Initializes the Python environment for symbolic computations.
 
 **Returns:** `Promise.<void>` A promise that resolves when the libraries are loaded.
 

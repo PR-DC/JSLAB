@@ -19,7 +19,7 @@ class PRDC_JSLAB_INFO {
     this.win = win;
     
     // Info logic
-    $('#info-container .app-version').text('version ' + this.win.app.version);
+    $('#info-container .app-version').html('<span lang-str="8">' + language.currentString(8) + '</span> ' + this.win.app.version);
     $('#info-menu').click(function() { obj.win.gui.info(); });
     $('#info-close').click(function() { obj.win.gui.closeInfo(); });
     $('#info-container').on('keydown', function(e) {

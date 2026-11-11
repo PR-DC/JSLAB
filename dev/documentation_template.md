@@ -721,7 +721,7 @@ Enter JavaScript and JSLAB functions at the jslab> prompt. Variables remain avai
 | .cd directory | Change the working directory. |
 | .pwd | Show the working directory. |
 
-Ctrl+C clears unfinished input or interrupts a running operation. Use checkStop; checkpoints in long CPU loops for cooperative interruption. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
+Ctrl+C clears unfinished input or interrupts a running operation. Interruption does not require loop checkpoints and preserves completed workspace assignments. Press Ctrl+C again while the same operation is still running to close the owned runtime. Ctrl+C at an empty prompt and Ctrl+D close the session.
 
 History is stored in JSLAB/cli-history.json under APPDATA on Windows. Use --no-history to disable storage or --history-file to choose another path. Closing the CLI stops its owned runtime; the runtime also exits if the CLI process disappears. Temporary session profiles are removed on normal exit.
 
@@ -893,7 +893,7 @@ Alternatively, use `--session-file` followed by the descriptor's absolute path. 
 | `export_figure` | Export an existing figure using an absolute output path. |
 | `get_help` | Read function documentation by name, `lib.function`, or category. |
 | `get_execution` | Poll an execution or retrieve its completed result. |
-| `interrupt_execution` | Request cooperative interruption of the current execution. |
+| `interrupt_execution` | Interrupt JavaScript and clean up registered resources; preserve workspace values. |
 
 `evaluate_code`, `run_file` and `run_test_file` accept an optional absolute `cwd`. It changes the shared working directory and remains in effect after the call. A script's location does not automatically become its working directory. Script execution uses JSLAB's evaluator, including its code rewriting, workspace persistence and source error handling. Input scripts and code are limited to 512000 bytes or characters respectively.
 
@@ -935,16 +935,52 @@ A response with `status: "running"` means execution continues. Call `get_executi
 
 Only one sandbox operation runs at a time. Overlapping agent operations and GUI code submissions receive a busy response. Session status, execution polling and interruption remain available while code runs. A lost connection or a client timeout does not cancel execution: inspect status before retrying a command with side effects.
 
-Interruption uses JSLAB's existing cooperative stop mechanism. Acknowledgement means the stop was requested, not that execution has finished. Poll until completion. Blocking native calls and uncooperative operations may require the user's existing sandbox reset control. Reset discards the workspace; it is not exposed as an agent tool.
+Ctrl+C and `interrupt_execution` terminate JavaScript through the main-process debugger without loop checkpoints. Acknowledgement means interruption was requested; poll the execution until completion. The workspace and completed assignments survive, while the interrupted function stack is discarded. Interruption does not roll back partially modified objects.
 
-For long CPU loops, include the existing `checkStop` checkpoint so the desktop can request interruption:
+Registered cleanup runs after the interrupted stack has unwound, in a separate evaluation. Timers, animation/idle callbacks, JSLAB workers and registered subprocesses are stopped. Use `jsl.addForCleanup(object, callback)` to register resource cleanup; asynchronous callbacks are awaited, cleanup failures are returned as `cleanup_errors`, and the remaining cleanup still runs. JavaScript `finally` blocks are not a substitute for this registration because V8 termination can bypass them. Arbitrary external operations and promises are not automatically reversible or cancellable. Blocking native calls may delay interruption; sandbox reset is the last resort and discards the workspace.
 
-```javascript
-while(working) {
-  checkStop;
-  // Perform the next bounded calculation step.
-}
-```
+Execution controls are in the debugger panel header below the Editor source. Its existing Run action becomes Pause while code is running and Continue while paused. Compact icons provide Step over (F10), Step into (F11), Step out (Shift+F11), and Stop. The icons appear during execution and disappear when it ends. The call stack opens in a resizable split below the Editor source when execution pauses. The Debugger item in the Editor three-dot menu shows or hides it. Hiding the split does not resume execution or change the selected frame. The three-dot menu beside the panel close button contains exception preferences, child-worker selection when workers exist, live editing, frame restart and browser workspace reset; historical async calls are also collapsed there. User-facing stacks omit JSLAB runtime frames. Finishing a step does not open internal files. While paused, selecting a call frame shows its locals in the existing Workspace. Use the normal Workspace inspection action and variable inspector to inspect or edit those locals; the Command Window also evaluates expressions in that frame. Descriptor previews do not invoke getters. Old inspector controls reject edits after a frame change or resume. Debugging stays inside the existing Editor window on desktop and in the browser. The split uses the existing panel resizer and remembers its height. `debugger;`, `breakpoint;`, `debug;` and `pause;` create real debugger pauses rather than modal dialogs. `stoppoint;` requests interruption. `logpoint;` and `updatepoint;` refresh the workspace without polling interruption flags.
+
+| Debugger tool | Purpose |
+| --- | --- |
+| `get_debug_state` | Read state, stack frames and scope object handles. |
+| `pause_execution` | Request a pause at the next JavaScript statement. |
+| `resume_execution` | Continue, or pass `action: "stepOver"`, `"stepInto"` or `"stepOut"`. |
+| `inspect_debug_object` | Read a scope/object by `object_id` without invoking accessors. |
+| `evaluate_debug_expression` | Evaluate `expression` in `frame_index`; side effects require `allow_side_effects: true`. |
+| `set_breakpoint` | Set an original-source `path` and one-based `line`, optional `condition`, and `enabled` state. |
+| `remove_breakpoint` | Remove a logical breakpoint by returned `id`. |
+| `clear_breakpoints` | Clear line breakpoints and exception stops. |
+| `set_exception_pause` | Choose `none`, `uncaught` by user code, or `all` exceptions. |
+| `select_debug_target` | Select a paused worker `session_id`, or omit it to select the main sandbox. |
+| `update_debug_script` | Validate (`dry_run`) or apply saved/source code while paused; active-frame editing requires `allow_top_frame_editing`. |
+| `restart_debug_frame` | Restart the selected `frame_index`; earlier side effects can execute again. |
+
+Read debugger state after a pause request to confirm suspension. Paused frame and scope handles expire when execution resumes. Worker pauses are coordinated and acknowledged independently; they do not form an instantaneous snapshot. Native calls and external processes are not frozen by a JavaScript pause. Opening sandbox DevTools is allowed while idle; close it to restore JSLAB's debugger controller before running another calculation.
+
+Click a line number to add a source breakpoint. A compact breakpoint gutter appears to the left of the line numbers and disappears after the last breakpoint is removed. Click a marker to remove it; Shift-click opens its condition and enabled-state editor. The paused source opens automatically and its current line is highlighted. Desktop settings survive application restarts; browser settings survive page reloads. A disabled breakpoint remains saved. Conditions are JavaScript expressions evaluated in the breakpoint's scope, and can have side effects.
+
+The command window accepts `dbstop in "file.jsl" at 12 if index === 3`, `dbstop if error`, `dbstop if caught error`, `dbclear all`, `dbclear("file.jsl", 12)`, `dbclear if error`, `dbstatus`, `dbstack`, `dbcont`, `dbstep in`, `dbstep over`, `dbstep out`, `dbup`, `dbdown`, and `dbquit`. These host commands remain available while execution is paused. Script code can use `await dbstop(path, line, condition, enabled)`, `await dbstop('error')`, `await dbstop('caught error')`, `await dbclear(path, line)`, `await dbclear()`, and `await dbstatus()`. `keyboard;` is an alias for a debugger pause.
+
+An exception stop pauses before the instrumented function's scope is released; caught-error mode also stops in user catch handlers. Error reporting after an exception has unwound remains separate from this debugger feature. Browser frames backed by retained lexical closures can be selected for inspection and deliberate modification, including recursive and available async caller frames. Frames without a retained closure are displayed but cannot be inspected. Engine-created async ancestry is not a complete history of all prior calls.
+
+See `examples/exampleInterruption.jsl` and `examples/exampleDebugger.jsl`.
+
+The web edition uses one persistent scientific Worker workspace for commands, editor execution, variable inspection, figures and debugging. Browser objects stay on the responsive UI thread; synchronous references expose DOM properties, methods and constructors to scientific code, while callbacks return asynchronously to their original Worker closures. Browser promises can be awaited. Registered event listeners are removed on interruption without replacing the application document. A callback cannot synchronously return a Worker value to a native browser caller, and delayed event callbacks cannot cancel an event already dispatched. Browser hosting must use HTTPS (or localhost) and send `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. The web build includes an `_headers` file for compatible static hosts; configure these headers explicitly on other servers. Resources loaded from other origins must also satisfy the browser's embedding policy. Without isolation the application explicitly falls back to the legacy iframe runtime, without Worker debugger guarantees.
+
+Browser child Workers have their own initialized scientific runtime and debugger target. Select a target to inspect and modify its retained locals or step its code; Continue resumes suspended targets and Stop terminates owned children. Child message handlers receive user messages separately from private debugger messages.
+
+The web debugger inserts synchronous source checkpoints automatically, including inside otherwise empty loops. User scripts do not call `checkStop`, and ordinary functions stay synchronous. A pause retains the current function's lexical scope for inspection and deliberate console evaluation. Select available caller frames in the stack or use `dbup`/`dbdown`. Object inspection uses bounded own-property descriptors and displays accessors without invoking their getters. Ctrl+C also cancels awaited timers and instrumented background callbacks. Browser native/Wasm calls that do not return to JavaScript require **Reset**, which terminates the Worker and discards that workspace.
+
+For native work that must be cancellable while retaining parent variables, use `await runInterruptible(function, args, options)`. It runs a function in an owned desktop process or browser child Worker and copies arguments/results. The function can use that runtime's scientific commands but must not depend on caller closures. `options.timeout_ms` and `options.signal` provide a timeout and explicit AbortSignal; Ctrl+C also cancels owned jobs. For example, `await runInterruptible(values => new Float64Array(Array.from(values, x => x * 2)), [new Float64Array([1, 2, 3])])`. Hard cancellation discards only the isolated runtime. It cannot roll back files, device effects or other external work already performed. Desktop sessions allow up to four such jobs concurrently.
+
+The Editor debugger areas show bounded asynchronous scheduling ancestry, separately from inspectable live scopes. Desktop captures up to 128 history entries; browser scheduling history is also bounded. Historical locals are unavailable after their frames have disappeared. Desktop **Apply saved source** uses V8 live editing and reports engine restrictions instead of silently restarting execution. **Restart frame** is explicit because side effects can repeat. Browser **Apply saved functions** replaces ordinary function definitions for future calls without rerunning top-level initializers; executing frames retain their original code and locals. Browser frame restart and arbitrary active-code replacement are unavailable through ordinary page APIs.
+
+JSLAB retains its shared source rewriter for persistent workspace properties, `clear`, script/module adaptation and expression results. DevTools' native REPL supports persistent lexical declarations and top-level await, but those declarations do not have JSLAB's deletable workspace-property semantics, and normal web pages cannot access the Chrome debugging protocol. Source maps translate generated locations back to original scripts, including selected-line offsets and functions retained from earlier evaluations.
+
+Failed agent executions include structured `error_details`: `name`, `message`, `kind`, original `location` (`path`, one-based `line` and `column`), `frames`, and `stack`. Nested `run` calls and CommonJS module failures preserve their originating file and caller frames. Syntax errors, awaited rejections and primitive thrown values use the same reporting path. Detached callback/rejection errors are reported independently and do not complete an unrelated evaluation.
+
+Run desktop debugger/error integration checks with `node js/dev/run-debugger-tests.js --sandbox-suite`; this starts an isolated JSLAB desktop session and tests its MCP interface. Run browser checks with `node js/dev/run-web-gui-tests.js`.
 
 Results contain bounded textual previews rather than a lossless serialization of arbitrary objects. Output captures JSLAB display, warning and error methods, including the JSLAB console. Capture ends when the requested operation completes; detached asynchronous work can continue afterward. Output is limited to 200 messages and 64000 characters, and previews to 16000 characters. Inspect selected variables or save large results to files when needed.
 

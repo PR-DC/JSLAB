@@ -1,0 +1,42 @@
+/**
+ * @file Debugger window walkthrough (desktop and isolated web edition).
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ *
+ * 1. Open this file in the Editor and run it. It pauses at debugger; below.
+ * 2. The call stack opens below the Editor. Use the three-dot menu > Debugger to show/hide it.
+ * 3. Workspace shows local_value = 6 and the details object.
+ *    Use the existing Workspace Inspect action to inspect details.
+ * 4. In the Command Window enter: local_value = 10
+ * 5. Select debugWorkflow in the Debugger call stack. Workspace now shows
+ *    its offset = 5. In the Command Window enter: offset = 100
+ * 6. Select debugCalculation again. Use Step over in the Editor to advance
+ *    line by line, then Continue in the Editor. Enter debug_result: expect 119.
+ *
+ * Without any edits, debug_result is 20. Hiding/reopening the debugger
+ * split while paused preserves the selected frame and local values.
+ *
+ * To test ordinary breakpoints, click a line number. A narrow marker gutter
+ * appears to its left. Click a marker to remove it; Shift-click to set a
+ * condition. The extra gutter disappears after removing the last point.
+ *
+ * For Ctrl+C, separately run exampleInterruption.jsl. Stop its infinite loop
+ * using Ctrl+C or Stop; saved_result.value must remain 42 afterwards.
+ */
+function debugWorkflow(input) {
+  let offset = 5;
+  const value = debugCalculation(input);
+  return value + offset;
+}
+
+function debugCalculation(input) {
+  let local_value = input * 2;
+  let details = { input: input, squared: input * input };
+  debugger;
+  local_value += details.squared;
+  return local_value;
+}
+
+var debug_result = debugWorkflow(3);

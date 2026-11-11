@@ -274,7 +274,7 @@ lang {
   color: #2e85c7;
 }
 
-#editor-more-popup {
+:is(#editor-more-popup, #debugger-menu) {
   position: absolute;
   display: block;
   border-radius: 5px;
@@ -286,7 +286,7 @@ lang {
   border-bottom: 1px solid #f7df1e;
 }
 
-#editor-more-popup .popup-triangle {
+:is(#editor-more-popup, #debugger-menu) .popup-triangle {
   position: absolute;
   width: 0;
   height: 0;
@@ -298,7 +298,7 @@ lang {
   transform: rotate(180deg);
 }
 
-#editor-more-popup li {
+:is(#editor-more-popup, #debugger-menu) li {
   margin: 5px;
   border-radius: 5px;
   border: 1px solid #dddddd;
@@ -311,11 +311,11 @@ lang {
   -webkit-transition: background 0.2s linear;
 }
 
-#editor-more-popup li:hover {
+:is(#editor-more-popup, #debugger-menu) li:hover {
   background: #f3f3f3;
 }
 
-#editor-more-popup li img {
+:is(#editor-more-popup, #debugger-menu) li img {
   float: left;
   width: 20px;
   height: 20px;
@@ -763,3 +763,26 @@ html.editor-search-all-open #editor-search-all-resizer {
     display: none;
   }
 }
+
+/* Shared debugger editor markers and condition editor. */
+.jslab-breakpoints { width: 14px; cursor: pointer; }
+.jslab-breakpoint-marker { display: block; width: 10px; height: 10px; margin: 3px 2px; box-sizing: border-box; border: 2px solid #c62828; border-radius: 50%; background: #c62828; }
+.jslab-breakpoint-marker.disabled { background: transparent; }
+.jslab-debug-line { background: #fff2b3 !important; }
+.jslab-breakpoint-dialog { position: fixed; z-index: 100000; top: 20%; left: 20%; width: 60%; padding: 14px; background: white; color: #222; border: 1px solid #888; box-shadow: 0 3px 15px #5558; }
+.jslab-breakpoint-dialog > input[type=text] { width: 95%; margin-bottom: 12px; }
+.jslab-breakpoint-dialog button { margin-left: 12px; }
+
+/* Source navigation and debugger actions share the existing Editor tab toolbar. */
+.tabs { padding-right: 75px; }
+#editor-debugger-controls { display: flex; gap: 3px; -webkit-app-region: no-drag; }
+#editor-debugger-actions { display: flex; gap: 2px; }
+#editor-debugger-actions[hidden] { display: none; }
+#editor-debugger-controls button { display: flex; align-items: center; justify-content: center; width: 25px; height: 25px; padding: 3px; background: transparent; border: 0; border-radius: 3px; cursor: pointer; }
+#editor-debugger-controls button:hover:not(:disabled) { background: #ddd; }
+#editor-debugger-controls button:disabled { opacity: .3; cursor: default; }
+#editor-debugger-controls img { width: 18px; height: 18px; -webkit-user-drag: none; }
+
+#run-menu img[src*="debug-"] { filter: brightness(0) invert(1); }
+
+#editor-debugger-controls[hidden] { display: none; }

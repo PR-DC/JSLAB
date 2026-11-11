@@ -331,7 +331,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
       html += '<button class="jslab-inspector-action" data-action="clear-filter"' + attrs + '>' +
         this.escapeInspectorLocalizedHtml(toolbar.clear_filter_label || '') + '</button>';
     }
-    html += '<button class="jslab-inspector-action" data-action="table-filter-expr"' + attrs + '>' +
+    if(toolbar.allow_filter_expression !== false) html += '<button class="jslab-inspector-action" data-action="table-filter-expr"' + attrs + '>' +
       this.escapeInspectorLocalizedHtml(toolbar.filter_expr_label || '') + '</button>';
     if(toolbar.show_clear_expr) {
       html += '<button class="jslab-inspector-action" data-action="table-clear-filter-expr"' + attrs + '>' +
@@ -457,7 +457,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     var note_parts = model && Array.isArray(model.note_parts) ? model.note_parts : [];
     var content_html = this.renderInspectorContent(model ? model.content : undefined);
 
-    var html = '<div class="jslab-inspector">' +
+    var html = '<div class="jslab-inspector"' + (model.debug_context ? ' data-debug-context="' + this.escapeInspectorAttr(model.debug_context) + '"' : '') + '>' +
       '<div class="jslab-inspector-header">' +
       '<div class="jslab-inspector-title">' + this.escapeInspectorLocalizedHtml(title) + ': <code>' +
       this.escapeInspectorHtml(variable) + '</code></div>' +
@@ -761,6 +761,8 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
    * @param {HTMLElement} el Action element.
    */
   async handleInspectorAction(el) {
+    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
+    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
     if(!el || !el.getAttribute) {
       return;
     }
@@ -774,6 +776,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     var state = this.getInspectorStateFromElement(el);
 
     if(action === 'refresh') {
+      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
       this.runInspectCommand(variable, state);
       return;
     }
@@ -801,12 +804,14 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
       } else {
         delete state.filter;
       }
+      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
       this.runInspectCommand(variable, state);
       return;
     }
 
     if(action === 'clear-filter') {
       delete state.filter;
+      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
       this.runInspectCommand(variable, state);
       return;
     }
@@ -828,6 +833,8 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
    * @param {HTMLElement} el Cell element with data-path and data-default attributes.
    */
   async editInspectorCell(el) {
+    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
+    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
     if(!el || !el.getAttribute) {
       return;
     }
@@ -865,6 +872,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     if(!edit_result) {
       return;
     }
+    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
     var expression = edit_result.values[0];
     expression = expression.trim();
     if(!expression.length) {
