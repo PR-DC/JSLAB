@@ -9400,6 +9400,294 @@ Parses a given expression string into structured data based on predefined format
 
 Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
 
+#### excel_link
+
+##### `start(visible)`
+
+Starts Microsoft Excel.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `visible` | `boolean` | Whether the application window is visible. Default: `true`. |
+
+**Returns:** `Promise.<boolean>` True after Excel starts.
+
+##### `visible(visible)`
+
+Changes Microsoft Excel visibility.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `visible` | `boolean` | Whether the application window is visible. |
+
+##### `close([save])`
+
+Closes the current workbook.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `save` | `boolean` | Whether to save changes before closing. Optional. Default: `true`. |
+
+##### `quit([save])`
+
+Quits Microsoft Excel and closes the link.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `save` | `boolean` | Whether to save changes before quitting. Optional. Default: `true`. |
+
+##### `open(file_path)`
+
+Opens an existing workbook.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | `string` | Absolute or workspace-relative workbook path. |
+
+**Returns:** `Promise.<number>` Number of worksheets in the workbook.
+
+##### `new()`
+
+Creates a new workbook.
+
+**Returns:** `Promise.<number>` Number of worksheets in the new workbook.
+
+##### `addSheet(name)`
+
+Adds a worksheet and returns its one-based index.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Worksheet name. |
+
+**Returns:** `Promise.<number>` One-based index of the new worksheet.
+
+##### `removeSheet(sheet)`
+
+Removes a worksheet selected by its one-based index.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+
+##### `setSheetName(sheet, name)`
+
+Changes a worksheet name.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+| `name` | `string` | New worksheet name. |
+
+##### `write(sheet, column, row, data)`
+
+Writes data to one or more worksheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `data` | `* \| Array.<*>` | One value, a broadcast value, or one value per cell. |
+
+##### `read(sheet, column, row)`
+
+Reads one or more worksheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+
+**Returns:** `Promise.<(Object|Array.<Object>)>` Cell value and formula records.
+
+##### `setColumnWidth(sheet, column, width)`
+
+Changes one or more worksheet column widths.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `width` | `number \| Array.<number>` | Width value or values. |
+
+##### `setRowHeight(sheet, row, height)`
+
+Changes one or more worksheet row heights.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `height` | `number \| Array.<number>` | Height value or values. |
+
+##### `format(sheet, column, row, options)`
+
+Formats one or more worksheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based worksheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `options` | `Object` | Excel formatting properties. |
+
+##### `save()`
+
+Saves the current workbook.
+
+##### `saveAs(file_path)`
+
+Saves the current workbook to a new file.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | `string` | Absolute or workspace-relative workbook path. |
+
+#### calc_link
+
+##### `start([visible])`
+
+Starts LibreOffice Calc.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `visible` | `boolean` | Whether the application window is visible. Optional. Default: `true`. |
+
+##### `visible(visible)`
+
+Changes LibreOffice Calc visibility.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `visible` | `boolean` | Whether the application window is visible. |
+
+##### `close([save])`
+
+Closes the current spreadsheet.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `save` | `boolean` | Whether to save changes before closing. Optional. Default: `true`. |
+
+##### `quit([save])`
+
+Quits LibreOffice Calc and closes the link.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `save` | `boolean` | Whether to save changes before quitting. Optional. Default: `true`. |
+
+##### `open(file_path)`
+
+Opens an existing spreadsheet.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | `string` | Absolute or workspace-relative spreadsheet path. |
+
+**Returns:** `Promise.<number>` Number of sheets in the spreadsheet.
+
+##### `new()`
+
+Creates a new spreadsheet.
+
+**Returns:** `Promise.<number>` Number of sheets in the new spreadsheet.
+
+##### `addSheet(name)`
+
+Adds a sheet and returns its one-based index.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Sheet name. |
+
+**Returns:** `Promise.<number>` One-based index of the new sheet.
+
+##### `removeSheet(sheet)`
+
+Removes a sheet selected by its one-based index.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+
+##### `setSheetName(sheet, name)`
+
+Changes a sheet name.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `name` | `string` | New sheet name. |
+
+##### `write(sheet, column, row, data)`
+
+Writes data to one or more spreadsheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `data` | `* \| Array.<*>` | One value, a broadcast value, or one value per cell. |
+
+##### `read(sheet, column, row)`
+
+Reads one or more spreadsheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+
+**Returns:** `Promise.<(Object|Array.<Object>)>` Cell value, string and formula records.
+
+##### `setColumnWidth(sheet, column, width)`
+
+Changes one or more column widths in millimetres.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `width` | `number \| Array.<number>` | Width value or values in millimetres. |
+
+##### `setRowHeight(sheet, row, height)`
+
+Changes one or more row heights in millimetres.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `height` | `number \| Array.<number>` | Height value or values in millimetres. |
+
+##### `format(sheet, column, row, options)`
+
+Formats one or more spreadsheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `options` | `Object` | LibreOffice formatting properties. |
+
+##### `save()`
+
+Saves the current spreadsheet.
+
+##### `saveAs(file_path)`
+
+Saves the current spreadsheet to a new file.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | `string` | Absolute or workspace-relative spreadsheet path. |
+
 #### tcp_client
 
 ##### `setOnData(callback)`

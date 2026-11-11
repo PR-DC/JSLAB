@@ -12317,6 +12317,386 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 \noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
 
 
+\subsection{excel\_link}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{start(visible)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{visible} \texttt{<boolean>}: Whether the application window is visible.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<boolean>>}: True after Excel starts.
+
+\noindent Starts Microsoft Excel.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{visible(visible)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{visible} \texttt{<boolean>}: Whether the application window is visible.
+\end{itemize}
+
+\noindent Changes Microsoft Excel visibility.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{close([save])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{save} \texttt{<boolean>}: Whether to save changes before closing.
+\end{itemize}
+
+\noindent Closes the current workbook.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{quit([save])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{save} \texttt{<boolean>}: Whether to save changes before quitting.
+\end{itemize}
+
+\noindent Quits Microsoft Excel and closes the link.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{open(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<string>}: Absolute or workspace-relative workbook path.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<number>>}: Number of worksheets in the workbook.
+
+\noindent Opens an existing workbook.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{new()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Promise.<number>>}: Number of worksheets in the new workbook.
+
+\noindent Creates a new workbook.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{addSheet(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: Worksheet name.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<number>>}: One-based index of the new worksheet.
+
+\noindent Adds a worksheet and returns its one-based index.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{removeSheet(sheet)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+\end{itemize}
+
+\noindent Removes a worksheet selected by its one-based index.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setSheetName(sheet, name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+  \item \texttt{name} \texttt{<string>}: New worksheet name.
+\end{itemize}
+
+\noindent Changes a worksheet name.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{write(sheet, column, row, data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+  \item \texttt{data} \texttt{<*>}: One value, a broadcast value, or one value per cell.
+\end{itemize}
+
+\noindent Writes data to one or more worksheet cells.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{read(sheet, column, row)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<(Object|Array.<Object>)>>}: Cell value and formula records.
+
+\noindent Reads one or more worksheet cells.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setColumnWidth(sheet, column, width)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{width} \texttt{<number>}: Width value or values.
+\end{itemize}
+
+\noindent Changes one or more worksheet column widths.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setRowHeight(sheet, row, height)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+  \item \texttt{height} \texttt{<number>}: Height value or values.
+\end{itemize}
+
+\noindent Changes one or more worksheet row heights.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{format(sheet, column, row, options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based worksheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+  \item \texttt{options} \texttt{<Object>}: Excel formatting properties.
+\end{itemize}
+
+\noindent Formats one or more worksheet cells.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{save()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Saves the current workbook.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{saveAs(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<string>}: Absolute or workspace-relative workbook path.
+\end{itemize}
+
+\noindent Saves the current workbook to a new file.
+
+
+\subsection{calc\_link}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{start([visible])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{visible} \texttt{<boolean>}: Whether the application window is visible.
+\end{itemize}
+
+\noindent Starts LibreOffice Calc.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{visible(visible)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{visible} \texttt{<boolean>}: Whether the application window is visible.
+\end{itemize}
+
+\noindent Changes LibreOffice Calc visibility.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{close([save])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{save} \texttt{<boolean>}: Whether to save changes before closing.
+\end{itemize}
+
+\noindent Closes the current spreadsheet.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{quit([save])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{save} \texttt{<boolean>}: Whether to save changes before quitting.
+\end{itemize}
+
+\noindent Quits LibreOffice Calc and closes the link.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{open(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<string>}: Absolute or workspace-relative spreadsheet path.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<number>>}: Number of sheets in the spreadsheet.
+
+\noindent Opens an existing spreadsheet.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{new()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<Promise.<number>>}: Number of sheets in the new spreadsheet.
+
+\noindent Creates a new spreadsheet.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{addSheet(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{name} \texttt{<string>}: Sheet name.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<number>>}: One-based index of the new sheet.
+
+\noindent Adds a sheet and returns its one-based index.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{removeSheet(sheet)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+\end{itemize}
+
+\noindent Removes a sheet selected by its one-based index.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setSheetName(sheet, name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+  \item \texttt{name} \texttt{<string>}: New sheet name.
+\end{itemize}
+
+\noindent Changes a sheet name.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{write(sheet, column, row, data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+  \item \texttt{data} \texttt{<*>}: One value, a broadcast value, or one value per cell.
+\end{itemize}
+
+\noindent Writes data to one or more spreadsheet cells.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{read(sheet, column, row)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<(Object|Array.<Object>)>>}: Cell value, string and formula records.
+
+\noindent Reads one or more spreadsheet cells.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setColumnWidth(sheet, column, width)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{width} \texttt{<number>}: Width value or values in millimetres.
+\end{itemize}
+
+\noindent Changes one or more column widths in millimetres.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{setRowHeight(sheet, row, height)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+  \item \texttt{height} \texttt{<number>}: Height value or values in millimetres.
+\end{itemize}
+
+\noindent Changes one or more row heights in millimetres.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{format(sheet, column, row, options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sheet} \texttt{<number>}: One-based sheet index.
+  \item \texttt{column} \texttt{<number>}: One-based column index or indexes.
+  \item \texttt{row} \texttt{<number>}: One-based row index or indexes.
+  \item \texttt{options} \texttt{<Object>}: LibreOffice formatting properties.
+\end{itemize}
+
+\noindent Formats one or more spreadsheet cells.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{save()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent Saves the current spreadsheet.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{saveAs(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file\_path} \texttt{<string>}: Absolute or workspace-relative spreadsheet path.
+\end{itemize}
+
+\noindent Saves the current spreadsheet to a new file.
+
+
 \subsection{tcp\_client}
 \vspace{5mm}
 \noindent \codeBlock{\texttt{setOnData(callback)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

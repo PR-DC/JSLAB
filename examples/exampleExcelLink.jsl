@@ -1,0 +1,32 @@
+/**
+ * @file Simple example for ExcelLink
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+clear; clc; t = tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+await excel_link.start(true);
+await excel_link.new();
+await excel_link.setSheetName(1, 'Results');
+await excel_link.write(1, [1, 2, 3], [1, 1, 1], ['Name', 'Value', 'Unit']);
+await excel_link.write(1, [1, 2, 3], [2, 2, 2], ['Length', 12.5, 'mm']);
+await excel_link.format(1, [1, 2, 3], [1, 1, 1], {
+  CharBold: true,
+  CharColor: [255, 255, 255],
+  CellInteriorColor: [31, 78, 121],
+  HorizontalAlignment: excel_link.XlHAlign.Center,
+  BottomBorder: [excel_link.XlBorderWeight.Thin, [0, 0, 0],
+    excel_link.XlLineStyle.Continuous]
+});
+await excel_link.setColumnWidth(1, [1, 2, 3], [18, 12, 10]);
+
+disp(await excel_link.read(1, [1, 2, 3], [2, 2, 2]));
+// await excel_link.saveAs(fullfile(pwd, 'excel-link-example.xlsx'));
+// await excel_link.quit(false);
+
+disp(' The program was executed successfully... ');
+disp(' Execution time: ' + num2str(toc(t), 2) + ' seconds');
+disp(' -------------------- ');

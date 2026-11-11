@@ -1,0 +1,31 @@
+/**
+ * @file Simple example for CalcLink
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ * @version 0.0.1
+ */
+clear; clc; t = tic;
+disp(' --- ' + jsl_file_name + ' ---');
+
+await calc_link.start(true);
+await calc_link.new();
+await calc_link.setSheetName(1, 'Results');
+await calc_link.write(1, [1, 2, 3], [1, 1, 1], ['Name', 'Value', 'Unit']);
+await calc_link.write(1, [1, 2, 3], [2, 2, 2], ['Length', 12.5, 'mm']);
+await calc_link.format(1, [1, 2, 3], [1, 1, 1], {
+  CharWeight: calc_link.FontWeight.BOLD,
+  CharColor: [255, 255, 255],
+  CellBackColor: [31, 78, 121],
+  HoriJustify: calc_link.CellHoriJustify.CENTER,
+  BottomBorder: [0.5, 0, 0, 0]
+});
+await calc_link.setColumnWidth(1, [1, 2, 3], [18, 12, 10]);
+
+disp(await calc_link.read(1, [1, 2, 3], [2, 2, 2]));
+// await calc_link.saveAs(fullfile(pwd, 'calc-link-example.ods'));
+// await calc_link.quit(false);
+
+disp(' The program was executed successfully... ');
+disp(' Execution time: ' + num2str(toc(t), 2) + ' seconds');
+disp(' -------------------- ');

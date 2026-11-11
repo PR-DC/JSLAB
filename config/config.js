@@ -96,6 +96,8 @@ class PRDC_APP_CONFIG {
       {name: 'Plot', file: 'figures', class_name: 'PRDC_JSLAB_PLOT'},
       {name: 'freecad_link', file: 'freecad-link', class_name: 'PRDC_JSLAB_FREECAD_LINK'},
       {name: 'om_link', file: 'om-link', class_name: 'PRDC_JSLAB_OPENMODELICA_LINK'},
+      {name: 'excel_link', file: 'excel-link', class_name: 'PRDC_JSLAB_EXCEL_LINK'},
+      {name: 'calc_link', file: 'calc-link', class_name: 'PRDC_JSLAB_CALC_LINK'},
       {name: 'tcp_client', file: 'networking-tcp', class_name: 'PRDC_JSLAB_TCP_CLIENT'},
       {name: 'tcp_server', file: 'networking-tcp', class_name: 'PRDC_JSLAB_TCP_SERVER'},
       {name: 'udp_client', file: 'networking-udp', class_name: 'PRDC_JSLAB_UDP'},

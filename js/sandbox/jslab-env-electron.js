@@ -15,6 +15,8 @@ if(!IS_WORKER_CONTEXT) {
 
 const { PRDC_JSLAB_FREECAD_LINK } = require('./freecad-link');
 const { PRDC_JSLAB_OPENMODELICA_LINK } = require('./om-link');
+const { PRDC_JSLAB_EXCEL_LINK } = require('./excel-link');
+const { PRDC_JSLAB_CALC_LINK } = require('./calc-link');
 const { createNativeModule } = require('./jslab-wasm-native');
 const { createAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
 const { getWasmModules } = require('./jslab-wasm-loader');
@@ -120,6 +122,8 @@ class PRDC_JSLAB_ENV {
     
     this.context.freecad_link = new PRDC_JSLAB_FREECAD_LINK(this.jsl);
     this.context.om_link = new PRDC_JSLAB_OPENMODELICA_LINK(this.jsl);
+    this.context.excel_link = new PRDC_JSLAB_EXCEL_LINK(this.jsl);
+    this.context.calc_link = new PRDC_JSLAB_CALC_LINK(this.jsl);
     
     // On IPC message
     if(!this.is_worker) {

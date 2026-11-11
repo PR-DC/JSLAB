@@ -42,6 +42,12 @@ function loadEnvClass(runtime_scope, records = {}) {
       if(module_path === './om-link') {
         return { PRDC_JSLAB_OPENMODELICA_LINK: class { constructor(jsl) { this.jsl = jsl; } } };
       }
+      if(module_path === './excel-link') {
+        return { PRDC_JSLAB_EXCEL_LINK: class { constructor(jsl) { this.jsl = jsl; } } };
+      }
+      if(module_path === './calc-link') {
+        return { PRDC_JSLAB_CALC_LINK: class { constructor(jsl) { this.jsl = jsl; } } };
+      }
       if(module_path === './jslab-automation') {
         records.automation_loads = (records.automation_loads || 0) + 1;
         return { PRDC_JSLAB_SANDBOX_AUTOMATION: class {
@@ -141,6 +147,8 @@ tests.add('constructor initializes worker-side fields and shared context links',
   assert.equal(env.process_pid, 321);
   assert.ok(runtime_scope.freecad_link);
   assert.ok(runtime_scope.om_link);
+  assert.ok(runtime_scope.excel_link);
+  assert.ok(runtime_scope.calc_link);
   assert.deepEqual(env.exports, ['debug', 'version', 'platform', 'buildShareLink']);
 }, { tags: ['unit', 'jslab-env-electron'] });
 

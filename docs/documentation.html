@@ -32077,6 +32077,1063 @@ await om_link.close();
       ]
     }
   },
+  "excel_link": {
+    "start": {
+      "name": "start",
+      "kind": "function",
+      "description": "Starts Microsoft Excel.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "description": "Whether the application window is visible.",
+          "name": "visible",
+          "defaultvalue": true
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<boolean>"
+            ]
+          },
+          "description": "True after Excel starts."
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 50,
+      "source_range": [
+        1636,
+        1702
+      ]
+    },
+    "visible": {
+      "name": "visible",
+      "kind": "function",
+      "description": "Changes Microsoft Excel visibility.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "description": "Whether the application window is visible.",
+          "name": "visible"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 56,
+      "source_range": [
+        1832,
+        1895
+      ]
+    },
+    "close": {
+      "name": "close",
+      "kind": "function",
+      "description": "Closes the current workbook.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": true,
+          "description": "Whether to save changes before closing.",
+          "name": "save"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 62,
+      "source_range": [
+        2019,
+        2079
+      ]
+    },
+    "quit": {
+      "name": "quit",
+      "kind": "function",
+      "description": "Quits Microsoft Excel and closes the link.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": true,
+          "description": "Whether to save changes before quitting.",
+          "name": "save"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 68,
+      "source_range": [
+        2218,
+        2276
+      ]
+    },
+    "open": {
+      "name": "open",
+      "kind": "function",
+      "description": "Opens an existing workbook.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Absolute or workspace-relative workbook path.",
+          "name": "file_path"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<number>"
+            ]
+          },
+          "description": "Number of worksheets in the workbook."
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 75,
+      "source_range": [
+        2472,
+        2533
+      ]
+    },
+    "new": {
+      "name": "new",
+      "kind": "function",
+      "description": "Creates a new workbook.",
+      "params": [],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<number>"
+            ]
+          },
+          "description": "Number of worksheets in the new workbook."
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 81,
+      "source_range": [
+        2652,
+        2701
+      ]
+    },
+    "addSheet": {
+      "name": "addSheet",
+      "kind": "function",
+      "description": "Adds a worksheet and returns its one-based index.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Worksheet name.",
+          "name": "name"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<number>"
+            ]
+          },
+          "description": "One-based index of the new worksheet."
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 88,
+      "source_range": [
+        2884,
+        2943
+      ]
+    },
+    "removeSheet": {
+      "name": "removeSheet",
+      "kind": "function",
+      "description": "Removes a worksheet selected by its one-based index.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 94,
+      "source_range": [
+        3071,
+        3138
+      ]
+    },
+    "setSheetName": {
+      "name": "setSheetName",
+      "kind": "function",
+      "description": "Changes a worksheet name.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "New worksheet name.",
+          "name": "name"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 101,
+      "source_range": [
+        3285,
+        3366
+      ]
+    },
+    "write": {
+      "name": "write",
+      "kind": "function",
+      "description": "Writes data to one or more worksheet cells.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        },
+        {
+          "type": {
+            "names": [
+              "*",
+              "Array.<*>"
+            ]
+          },
+          "description": "One value, a broadcast value, or one value per cell.",
+          "name": "data"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 110,
+      "source_range": [
+        3716,
+        3815
+      ]
+    },
+    "read": {
+      "name": "read",
+      "kind": "function",
+      "description": "Reads one or more worksheet cells.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<(Object|Array.<Object>)>"
+            ]
+          },
+          "description": "Cell value and formula records."
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 121,
+      "source_range": [
+        4151,
+        4230
+      ]
+    },
+    "setColumnWidth": {
+      "name": "setColumnWidth",
+      "kind": "function",
+      "description": "Changes one or more worksheet column widths.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Width value or values.",
+          "name": "width"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 129,
+      "source_range": [
+        4491,
+        4611
+      ]
+    },
+    "setRowHeight": {
+      "name": "setRowHeight",
+      "kind": "function",
+      "description": "Changes one or more worksheet row heights.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Height value or values.",
+          "name": "height"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 139,
+      "source_range": [
+        4866,
+        4978
+      ]
+    },
+    "format": {
+      "name": "format",
+      "kind": "function",
+      "description": "Formats one or more worksheet cells.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based worksheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "Excel formatting properties.",
+          "name": "options"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 150,
+      "source_range": [
+        5296,
+        5600
+      ]
+    },
+    "save": {
+      "name": "save",
+      "kind": "function",
+      "description": "Saves the current workbook.",
+      "params": [],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 160,
+      "source_range": [
+        5641,
+        5684
+      ]
+    },
+    "saveAs": {
+      "name": "saveAs",
+      "kind": "function",
+      "description": "Saves the current workbook to a new file.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Absolute or workspace-relative workbook path.",
+          "name": "file_path"
+        }
+      ],
+      "async": true,
+      "source_filename": "excel-link.js",
+      "source_lineno": 166,
+      "source_range": [
+        5824,
+        5889
+      ]
+    }
+  },
+  "calc_link": {
+    "start": {
+      "name": "start",
+      "kind": "function",
+      "description": "Starts LibreOffice Calc.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": true,
+          "description": "Whether the application window is visible.",
+          "name": "visible"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 45,
+      "source_range": [
+        1351,
+        1417
+      ]
+    },
+    "visible": {
+      "name": "visible",
+      "kind": "function",
+      "description": "Changes LibreOffice Calc visibility.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "description": "Whether the application window is visible.",
+          "name": "visible"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 51,
+      "source_range": [
+        1548,
+        1611
+      ]
+    },
+    "close": {
+      "name": "close",
+      "kind": "function",
+      "description": "Closes the current spreadsheet.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": true,
+          "description": "Whether to save changes before closing.",
+          "name": "save"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 57,
+      "source_range": [
+        1738,
+        1798
+      ]
+    },
+    "quit": {
+      "name": "quit",
+      "kind": "function",
+      "description": "Quits LibreOffice Calc and closes the link.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "boolean"
+            ]
+          },
+          "optional": true,
+          "defaultvalue": true,
+          "description": "Whether to save changes before quitting.",
+          "name": "save"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 63,
+      "source_range": [
+        1938,
+        1996
+      ]
+    },
+    "open": {
+      "name": "open",
+      "kind": "function",
+      "description": "Opens an existing spreadsheet.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Absolute or workspace-relative spreadsheet path.",
+          "name": "file_path"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<number>"
+            ]
+          },
+          "description": "Number of sheets in the spreadsheet."
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 70,
+      "source_range": [
+        2197,
+        2258
+      ]
+    },
+    "new": {
+      "name": "new",
+      "kind": "function",
+      "description": "Creates a new spreadsheet.",
+      "params": [],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<number>"
+            ]
+          },
+          "description": "Number of sheets in the new spreadsheet."
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 76,
+      "source_range": [
+        2379,
+        2428
+      ]
+    },
+    "addSheet": {
+      "name": "addSheet",
+      "kind": "function",
+      "description": "Adds a sheet and returns its one-based index.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Sheet name.",
+          "name": "name"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<number>"
+            ]
+          },
+          "description": "One-based index of the new sheet."
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 83,
+      "source_range": [
+        2599,
+        2658
+      ]
+    },
+    "removeSheet": {
+      "name": "removeSheet",
+      "kind": "function",
+      "description": "Removes a sheet selected by its one-based index.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 89,
+      "source_range": [
+        2778,
+        2845
+      ]
+    },
+    "setSheetName": {
+      "name": "setSheetName",
+      "kind": "function",
+      "description": "Changes a sheet name.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "New sheet name.",
+          "name": "name"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 96,
+      "source_range": [
+        2980,
+        3061
+      ]
+    },
+    "write": {
+      "name": "write",
+      "kind": "function",
+      "description": "Writes data to one or more spreadsheet cells.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        },
+        {
+          "type": {
+            "names": [
+              "*",
+              "Array.<*>"
+            ]
+          },
+          "description": "One value, a broadcast value, or one value per cell.",
+          "name": "data"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 105,
+      "source_range": [
+        3409,
+        3508
+      ]
+    },
+    "read": {
+      "name": "read",
+      "kind": "function",
+      "description": "Reads one or more spreadsheet cells.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        }
+      ],
+      "returns": [
+        {
+          "type": {
+            "names": [
+              "Promise.<(Object|Array.<Object>)>"
+            ]
+          },
+          "description": "Cell value, string and formula records."
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 116,
+      "source_range": [
+        3850,
+        3929
+      ]
+    },
+    "setColumnWidth": {
+      "name": "setColumnWidth",
+      "kind": "function",
+      "description": "Changes one or more column widths in millimetres.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Width value or values in millimetres.",
+          "name": "width"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 124,
+      "source_range": [
+        4206,
+        4326
+      ]
+    },
+    "setRowHeight": {
+      "name": "setRowHeight",
+      "kind": "function",
+      "description": "Changes one or more row heights in millimetres.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "Height value or values in millimetres.",
+          "name": "height"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 134,
+      "source_range": [
+        4597,
+        4709
+      ]
+    },
+    "format": {
+      "name": "format",
+      "kind": "function",
+      "description": "Formats one or more spreadsheet cells.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "number"
+            ]
+          },
+          "description": "One-based sheet index.",
+          "name": "sheet"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based column index or indexes.",
+          "name": "column"
+        },
+        {
+          "type": {
+            "names": [
+              "number",
+              "Array.<number>"
+            ]
+          },
+          "description": "One-based row index or indexes.",
+          "name": "row"
+        },
+        {
+          "type": {
+            "names": [
+              "Object"
+            ]
+          },
+          "description": "LibreOffice formatting properties.",
+          "name": "options"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 145,
+      "source_range": [
+        5031,
+        5335
+      ]
+    },
+    "save": {
+      "name": "save",
+      "kind": "function",
+      "description": "Saves the current spreadsheet.",
+      "params": [],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 155,
+      "source_range": [
+        5379,
+        5422
+      ]
+    },
+    "saveAs": {
+      "name": "saveAs",
+      "kind": "function",
+      "description": "Saves the current spreadsheet to a new file.",
+      "params": [
+        {
+          "type": {
+            "names": [
+              "string"
+            ]
+          },
+          "description": "Absolute or workspace-relative spreadsheet path.",
+          "name": "file_path"
+        }
+      ],
+      "async": true,
+      "source_filename": "calc-link.js",
+      "source_lineno": 161,
+      "source_range": [
+        5568,
+        5633
+      ]
+    }
+  },
   "tcp_client": {
     "setOnData": {
       "name": "setOnData",
