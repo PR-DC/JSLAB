@@ -241,8 +241,25 @@ class PRDC_JSLAB_ENV {
    */
   disp(...args) {
     if(this.jsl && typeof this.jsl.emitRuntimeMessage == 'function') {
-      this.jsl.emitRuntimeMessage(args.join(' '), 'info');
+      args.forEach((value) => {
+        var structured = value !== null && (typeof value === 'object' || typeof value === 'function');
+        this.jsl.emitRuntimeMessage(structured ? this.jsl.inter.format._consoleValue(value) : String(value),
+          structured ? 'console-value' : 'info');
+      });
     }
+  }
+
+  /** Writes text through the browser or worker UI clipboard bridge. */
+  async copyText(text) {
+    var value = String(text);
+    if(this.jsl.inter.execution?.web_ui) {
+      return this.jsl.inter.execution.web_ui.request({ kind: 'clipboard-write', text: value });
+    }
+    if(globalThis.navigator?.clipboard?.writeText) {
+      await globalThis.navigator.clipboard.writeText(value);
+      return true;
+    }
+    throw new Error('Clipboard is not available in this context.');
   }
 
   /**

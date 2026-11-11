@@ -9,7 +9,7 @@ const RUNTIME_SCOPE = typeof self === 'object' && self ? self : globalThis;
 const IS_WORKER_CONTEXT = !!(RUNTIME_SCOPE && RUNTIME_SCOPE.is_worker);
 
 if(!IS_WORKER_CONTEXT) {
-  var { ipcRenderer, shell } = require('electron');
+  var { ipcRenderer, shell, clipboard } = require('electron');
   var { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('./jslab-automation');
 }
 
@@ -138,7 +138,24 @@ class PRDC_JSLAB_ENV {
             obj.jsl.inter.eval.evalCodeFromMain(...data);
             break;
           case "get-completions":
-            ipcRenderer.send("completions-" + data[0], obj.jsl.inter.basic.getCompletions(data));
+            ipcRenderer.send("completions-" + data.request_id,
+              obj.jsl.inter.basic.getCompletions(data.data));
+            break;
+          case "get-console-properties":
+            ipcRenderer.send("console-properties-" + data.request_id,
+              obj.jsl.inter.format._consoleProperties(data.object_id, data.offset, data.limit));
+            break;
+          case "get-console-accessor":
+            ipcRenderer.send("console-accessor-" + data.request_id,
+              obj.jsl.inter.format._consoleAccessor(data.object_id, data.property));
+            break;
+          case "get-console-preview":
+            ipcRenderer.send("console-preview-" + data.request_id,
+              obj.jsl.inter.basic._getConsolePreview(data.expression));
+            break;
+          case "is-console-expression-complete":
+            ipcRenderer.send("console-expression-complete-" + data.request_id,
+              obj.jsl.inter.basic._isConsoleExpressionComplete(data.code));
             break;
           case "run-last-script":
             obj.jsl.inter.eval.runLast();
@@ -1004,9 +1021,18 @@ class PRDC_JSLAB_ENV {
     if(!this.is_worker) {
       var obj = this;
       args.forEach(function(msg) {
-        ipcRenderer.send("MainWindow", "disp", obj.jsl.inter.format.safeStringify(msg));
+        var structured = msg !== null && (typeof msg === 'object' || typeof msg === 'function');
+        ipcRenderer.send("MainWindow", "disp", structured ?
+          obj.jsl.inter.format._consoleValue(msg) : obj.jsl.inter.format.safeStringify(msg));
       });
     }
+  }
+
+  /** Writes text to the native clipboard. */
+  async copyText(text) {
+    if(this.is_worker || !clipboard) throw new Error('Clipboard is not available in this context.');
+    clipboard.writeText(String(text));
+    return true;
   }
 
   /**

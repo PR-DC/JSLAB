@@ -68,7 +68,7 @@ async function initialize(buffer, options = {}) {
   jsl.current_path = '/workspace/';
   jsl.includes_path = '/includes/';
   jsl.saved_paths = ['/workspace/'];
-  jsl.emitRuntimeMessage = (message, level) => send({ type: 'runtime-log', message: String(message), level: level || 'info' });
+  jsl.emitRuntimeMessage = (message, level) => send({ type: 'runtime-log', message: message, level: level || 'info' });
   jsl.emitUnavailable = message => jsl.emitRuntimeMessage(message, 'warn');
   jsl.onWorkspaceUpdated = () => send({ type: 'workspace', workspace: jsl.getWorkspace() });
   debugger_runtime = new PRDC_JSLAB_WEB_WORKER_DEBUGGER(jsl, buffer);
@@ -77,6 +77,7 @@ async function initialize(buffer, options = {}) {
   jsl.context.require = modules.require.bind(modules);
   jsl.inter.execution.web_modules = modules;
   ui = new PRDC_JSLAB_WEB_WORKER_UI(jsl, files, send);
+  jsl.inter.execution.web_ui = ui;
   if(!remote) ui.install();
   jsl.inter.execution.beforeComplete = async () => {
     if(remote) {
@@ -143,6 +144,14 @@ addEventListener('message', async event => {
       try {
         let result;
         if(request.method === 'completions') result = jsl.inter.basic.getCompletions(request.args.data);
+        else if(request.method === 'console-properties') result = jsl.inter.format._consoleProperties(
+          request.args.object_id, request.args.offset, request.args.limit);
+        else if(request.method === 'console-accessor') result = jsl.inter.format._consoleAccessor(
+          request.args.object_id, request.args.property);
+        else if(request.method === 'console-preview') result = jsl.inter.basic._getConsolePreview(
+          request.args.expression);
+        else if(request.method === 'console-expression-complete') result =
+          jsl.inter.basic._isConsoleExpressionComplete(request.args.code);
         else if(request.method === 'language') {
           globalThis.language.lang = request.args.lang;
           jsl.inter.windows._updateLanguage();

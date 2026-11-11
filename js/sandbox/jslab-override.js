@@ -286,84 +286,101 @@ class PRDC_JSLAB_OVERRIDE {
     /**
      * Custom implementation of console methods to integrate with JSLAB's display and logging mechanisms.
      */
+    this._console_counts = new Map();
+    this._console_timers = new Map();
+    this._console_group_depth = 0;
     this.console = {
       log: function(...arg) {
-        obj.jsl.inter.env.disp(...arg);
+        obj._consoleOutput(arg);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
       warn: function(...arg) {
-        obj.jsl.inter.env.warn(...arg);
+        obj.jsl.inter.env.warn(obj._consoleFormat(arg));
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
       info: function(...arg) {
-        obj.jsl.inter.env.disp(...arg);
+        obj._consoleOutput(arg);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
       error: function(...arg) {
-        obj.jsl.inter.env.error(...arg);
+        obj.jsl.inter.env.error(obj._consoleFormat(arg), false);
         obj.jsl.no_ans = true;
         obj.jsl.ignore_output = true;
       },
-      trace: function() {
-        obj.jsl.notImplemented();
+      trace: function(...arg) {
+        var stack = new Error(obj._consoleFormat(arg) || 'console.trace').stack;
+        obj.jsl.inter.env.dispMonospaced(stack);
       },
-      assert: function(expression, msg) {
+      assert: function(expression, ...arg) {
         if(!expression) {
-          obj.jsl.inter.env.error(msg);
+          obj.jsl.inter.env.error('Assertion failed' + (arg.length ? ': ' + obj._consoleFormat(arg) : ''), false);
           obj.jsl.no_ans = true;
           obj.jsl.ignore_output = true;
         }
       },
-      table: function(...arg) {
-        obj.jsl.notImplemented();
+      table: function(data, columns) {
+        obj.jsl.inter.env.dispMonospaced(obj._consoleTable(data, columns));
+        obj.jsl.no_ans = true;
+        obj.jsl.ignore_output = true;
       },
       clear: function() {
-        obj.jsl.inter.basic._clear();
+        obj.jsl.inter.env.clc();
       },
-      debug: function() {
-        obj.jsl.notImplemented();
+      debug: function(...arg) {
+        obj._consoleOutput(arg);
       },
-      dir: function() {
-        obj.jsl.notImplemented();
+      dir: function(value) {
+        obj.jsl.inter.env.disp(value);
+        obj.jsl.no_ans = true;
+        obj.jsl.ignore_output = true;
       },
-      dirxml: function() {
-        obj.jsl.notImplemented();
+      dirxml: function(value) {
+        obj.jsl.inter.env.disp(value && value.outerHTML ? value.outerHTML : value);
+        obj.jsl.no_ans = true;
+        obj.jsl.ignore_output = true;
       },
-      time: function() {
-        obj.jsl.notImplemented();
+      time: function(label = 'default') {
+        obj._console_timers.set(String(label), performance.now());
       },
-      timeLog: function() {
-        obj.jsl.notImplemented();
+      timeLog: function(label = 'default', ...arg) {
+        obj._consoleTimer(String(label), false, arg);
       },
-      timeEnd: function() {
-        obj.jsl.notImplemented();
+      timeEnd: function(label = 'default') {
+        obj._consoleTimer(String(label), true, []);
       },
-      timeStamp: function() {
-        obj.jsl.notImplemented();
+      timeStamp: function(label = '') {
+        obj.jsl.inter.env.disp('Timestamp' + (label ? ': ' + label : '') + ' ' + new Date().toISOString());
       },
-      count: function() {
-        obj.jsl.notImplemented();
+      count: function(label = 'default') {
+        label = String(label);
+        var count = (obj._console_counts.get(label) || 0) + 1;
+        obj._console_counts.set(label, count);
+        obj.jsl.inter.env.disp(label + ': ' + count);
       },
-      countReset: function() {
-        obj.jsl.notImplemented();
+      countReset: function(label = 'default') {
+        obj._console_counts.delete(String(label));
       },
-      group: function() {
-        obj.jsl.notImplemented();
+      group: function(...arg) {
+        if(arg.length) obj._consoleOutput(arg);
+        obj._console_group_depth++;
       },
-      groupCollapsed: function() {
-        obj.jsl.notImplemented();
+      groupCollapsed: function(...arg) {
+        if(arg.length) obj._consoleOutput(arg);
+        obj._console_group_depth++;
       },
       groupEnd: function() {
-        obj.jsl.notImplemented();
+        obj._console_group_depth = Math.max(0, obj._console_group_depth - 1);
       },
-      profile: function() {
-        obj.jsl.notImplemented();
+      profile: function(label = 'default') {
+        if(typeof obj.jsl._console.profile === 'function') obj.jsl._console.profile(label);
+        else obj.jsl.inter.env.warn('CPU profiling is not available in this runtime.');
       },
-      profileEnd: function() {
-        obj.jsl.notImplemented();
+      profileEnd: function(label = 'default') {
+        if(typeof obj.jsl._console.profileEnd === 'function') obj.jsl._console.profileEnd(label);
+        else obj.jsl.inter.env.warn('CPU profiling is not available in this runtime.');
       }
     };
     
@@ -424,6 +441,93 @@ class PRDC_JSLAB_OVERRIDE {
   }
   
   /** @private Guards callbacks without exposing execution machinery as commands. */
+  /** Formats Console API substitutions without invoking object hooks. @private */
+  _consoleFormat(args) {
+    args = Array.from(args || []);
+    var format = typeof args[0] === 'string' ? args.shift() : '';
+    if(!format) {
+      if(args.length === 0) return '';
+      format = '%o' + Array(Math.max(0, args.length - 1)).fill(' %o').join('');
+    }
+    var index = 0;
+    var text = format.replace(/%([%sdifoOc])/g, (match, type) => {
+      if(type === '%') return '%';
+      if(index >= args.length) return match;
+      var value = args[index++];
+      if(type === 'c') return '';
+      if(type === 's') return String(value);
+      if(type === 'd' || type === 'i') return String(parseInt(value));
+      if(type === 'f') return String(parseFloat(value));
+      return this.jsl.inter.format.safeStringify(value, 4, false);
+    });
+    while(index < args.length) {
+      var value = args[index++];
+      text += ' ' + (typeof value === 'string' ? value : this.jsl.inter.format.safeStringify(value, 4, false));
+    }
+    return text;
+  }
+
+  /** Emits one indented Console API line. @private */
+  _consoleOutput(args) {
+    args = Array.from(args || []);
+    var indent = '  '.repeat(this._console_group_depth);
+    if((args[0] === '%o' || args[0] === '%O') && args.length === 2) {
+      this.jsl.inter.env.disp(args[1]);
+      return;
+    }
+    if(typeof args[0] === 'string' && /%[%sdifoOc]/.test(args[0])) {
+      this.jsl.inter.env.disp(indent + this._consoleFormat(args));
+      return;
+    }
+    if(indent && typeof args[0] === 'string') args[0] = indent + args[0];
+    else if(indent) args.unshift(indent);
+    this.jsl.inter.env.disp(...args);
+  }
+
+  /** Emits or completes a Console API timer. @private */
+  _consoleTimer(label, remove, args) {
+    if(!this._console_timers.has(label)) {
+      this.jsl.inter.env.warn("Timer '" + label + "' does not exist.");
+      return;
+    }
+    var elapsed = performance.now() - this._console_timers.get(label);
+    this._consoleOutput([label + ': ' + elapsed.toFixed(3) + ' ms' +
+      (args.length ? ' ' + this._consoleFormat(args) : '')]);
+    if(remove) this._console_timers.delete(label);
+  }
+
+  /** Builds a bounded plain-text table for console.table(). @private */
+  _consoleTable(data, columns) {
+    var rows;
+    if(Array.isArray(data)) rows = data.map((value, index) => [index, value]);
+    else if(data && typeof data === 'object') rows = Object.keys(data).map(key => [key, data[key]]);
+    else return this._consoleFormat([data]);
+    var column_names = Array.isArray(columns) ? columns.map(String) :
+      (typeof columns === 'string' ? [columns] : []);
+    if(!column_names.length) {
+      var names = new Set();
+      rows.slice(0, 100).forEach(([, value]) => {
+        if(value && typeof value === 'object') Object.keys(value).forEach(key => names.add(key));
+      });
+      column_names = names.size ? [...names] : ['Value'];
+    }
+    var header = ['(index)', ...column_names];
+    var matrix = [header];
+    rows.slice(0, 100).forEach(([index, value]) => {
+      matrix.push([String(index), ...column_names.map(name => {
+        var cell = name === 'Value' ? value : value?.[name];
+        var text = typeof cell === 'string' ? cell : this.jsl.inter.format.safeStringify(cell, 2, false);
+        return text.length > 40 ? text.slice(0, 37) + '...' : text;
+      })]);
+    });
+    var widths = header.map((name, index) => Math.min(40,
+      Math.max(...matrix.map(row => String(row[index] ?? '').length))));
+    return matrix.map((row, row_index) => {
+      var line = row.map((cell, index) => String(cell ?? '').padEnd(widths[index])).join(' | ');
+      return row_index === 0 ? line + '\n' + widths.map(width => '-'.repeat(width)).join('-|-') : line;
+    }).join('\n') + (rows.length > 100 ? '\n... ' + (rows.length - 100) + ' more rows' : '');
+  }
+
   _guardCallback(callback) {
     return this.jsl.inter.execution ? this.jsl.inter.execution.wrap(callback) : callback;
   }

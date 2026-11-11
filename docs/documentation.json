@@ -63,8 +63,8 @@
         "source_filename": "basic.js",
         "source_lineno": 22,
         "source_range": [
-          717,
-          1259
+          738,
+          1284
         ]
       },
       "dbclear": {
@@ -108,8 +108,8 @@
         "source_filename": "basic.js",
         "source_lineno": 33,
         "source_range": [
-          1499,
-          1967
+          1531,
+          2004
         ]
       },
       "dbstatus": {
@@ -131,8 +131,8 @@
         "source_filename": "basic.js",
         "source_lineno": 43,
         "source_range": [
-          2123,
-          2196
+          2165,
+          2238
         ]
       },
       "ans": {
@@ -142,8 +142,8 @@
         "source_filename": "basic.js",
         "source_lineno": 58,
         "source_range": [
-          2606,
-          2614
+          2663,
+          2671
         ]
       },
       "clear": {
@@ -151,21 +151,21 @@
         "kind": "function",
         "description": "Clears all defined variables in the current context.",
         "source_filename": "basic.js",
-        "source_lineno": 60
+        "source_lineno": 93
       },
       "clc": {
         "name": "clc",
         "kind": "function",
         "description": "Clears the console screen.",
         "source_filename": "basic.js",
-        "source_lineno": 68
+        "source_lineno": 101
       },
       "cls": {
         "name": "cls",
         "kind": "function",
         "description": "Clears the console screen. Alias for `clc`.",
         "source_filename": "basic.js",
-        "source_lineno": 76
+        "source_lineno": 109
       },
       "beep": {
         "name": "beep",
@@ -183,10 +183,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1019,
+        "source_lineno": 1052,
         "source_range": [
-          31213,
-          31345
+          34004,
+          34141
         ]
       },
       "version": {
@@ -194,112 +194,112 @@
         "kind": "member",
         "description": "Returns the current version of the JSLAB.",
         "source_filename": "basic.js",
-        "source_lineno": 92
+        "source_lineno": 125
       },
       "platform": {
         "name": "platform",
         "kind": "member",
         "description": "Returns the platform on which JSLAB is running.",
         "source_filename": "basic.js",
-        "source_lineno": 100
+        "source_lineno": 133
       },
       "jsl_file_name": {
         "name": "jsl_file_name",
         "kind": "member",
         "description": "Returns the file name of the current JSLAB script.",
         "source_filename": "basic.js",
-        "source_lineno": 108
+        "source_lineno": 141
       },
       "info": {
         "name": "info",
         "kind": "function",
         "description": "Provides information about the current environment.",
         "source_filename": "basic.js",
-        "source_lineno": 116
+        "source_lineno": 149
       },
       "settings": {
         "name": "settings",
         "kind": "function",
         "description": "Accesses or modifies the user settings for JSLAB.",
         "source_filename": "basic.js",
-        "source_lineno": 124
+        "source_lineno": 157
       },
       "cmd_help": {
         "name": "cmd_help",
         "kind": "function",
         "description": "Provides help information for JSLAB commands.",
         "source_filename": "basic.js",
-        "source_lineno": 132
+        "source_lineno": 165
       },
       "editor": {
         "name": "editor",
         "kind": "function",
         "description": "Accesses the code editor interface within JSLAB.",
         "source_filename": "basic.js",
-        "source_lineno": 140
+        "source_lineno": 173
       },
       "pwd": {
         "name": "pwd",
         "kind": "member",
         "description": "Returns the current working directory.",
         "source_filename": "basic.js",
-        "source_lineno": 148
+        "source_lineno": 181
       },
       "breakpoint": {
         "name": "breakpoint",
         "kind": "function",
         "description": "Sets a breakpoint in the code for debugging.",
         "source_filename": "basic.js",
-        "source_lineno": 156
+        "source_lineno": 189
       },
       "debug_flag": {
         "name": "debug_flag",
         "kind": "member",
         "description": "Returns the current debug flag status.",
         "source_filename": "basic.js",
-        "source_lineno": 165
+        "source_lineno": 198
       },
       "debug": {
         "name": "debug",
         "kind": "member",
         "description": "Enables or disables debug mode.",
         "source_filename": "basic.js",
-        "source_lineno": 173
+        "source_lineno": 206
       },
       "pause": {
         "name": "pause",
         "kind": "function",
         "description": "Pauses the execution of the current script.",
         "source_filename": "basic.js",
-        "source_lineno": 181
+        "source_lineno": 214
       },
       "stoppoint": {
         "name": "stoppoint",
         "kind": "function",
         "description": "Sets a stop point in the script execution.",
         "source_filename": "basic.js",
-        "source_lineno": 189
+        "source_lineno": 222
       },
       "logpoint": {
         "name": "logpoint",
         "kind": "function",
         "description": "Sets a log point to record information during execution.",
         "source_filename": "basic.js",
-        "source_lineno": 197
+        "source_lineno": 230
       },
       "updatepoint": {
         "name": "updatepoint",
         "kind": "function",
         "description": "Updates specific points in the script during execution.",
         "source_filename": "basic.js",
-        "source_lineno": 205
+        "source_lineno": 238
       },
       "endPoint": {
         "name": "endPoint",
         "kind": "function",
         "description": "Marks the endpoint of a script or process.",
         "source_filename": "basic.js",
-        "source_lineno": 213
+        "source_lineno": 246
       },
       "run": {
         "name": "run",
@@ -349,10 +349,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 229,
+        "source_lineno": 262,
         "source_range": [
-          8361,
-          9037
+          10362,
+          11055
         ]
       },
       "jslFileName": {
@@ -371,10 +371,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 252,
+        "source_lineno": 285,
         "source_range": [
-          9176,
-          9230
+          11200,
+          11256
         ]
       },
       "clearStorage": {
@@ -383,10 +383,10 @@
         "description": "Clears the application's local storage.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 259,
+        "source_lineno": 292,
         "source_range": [
-          9291,
-          9357
+          11322,
+          11390
         ]
       },
       "savePath": {
@@ -405,10 +405,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 267,
+        "source_lineno": 300,
         "source_range": [
-          9481,
-          9721
+          11520,
+          11767
         ]
       },
       "removePath": {
@@ -427,16 +427,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 280,
+        "source_lineno": 313,
         "source_range": [
-          9870,
-          10123
+          11922,
+          12182
         ]
       },
       "addpath": {
         "name": "addpath",
         "kind": "function",
-        "description": "Adds one or more paths to the search path list.\nAlias compatible with MATLAB/Octave `addpath`.",
+        "description": "Adds one or more paths to the search path list.\rAlias compatible with MATLAB/Octave `addpath`.",
         "params": [
           {
             "type": {
@@ -461,16 +461,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 579,
+        "source_lineno": 612,
         "source_range": [
-          19169,
-          20149
+          21520,
+          22532
         ]
       },
       "rmpath": {
         "name": "rmpath",
         "kind": "function",
-        "description": "Removes one or more paths from the search path list.\nAlias compatible with MATLAB/Octave `rmpath`.",
+        "description": "Removes one or more paths from the search path list.\rAlias compatible with MATLAB/Octave `rmpath`.",
         "params": [
           {
             "type": {
@@ -495,16 +495,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 619,
+        "source_lineno": 652,
         "source_range": [
-          20397,
-          21378
+          22788,
+          23801
         ]
       },
       "path": {
         "name": "path",
         "kind": "function",
-        "description": "Retrieves or sets the active search path list.\nCompatible with MATLAB/Octave `path`.",
+        "description": "Retrieves or sets the active search path list.\rCompatible with MATLAB/Octave `path`.",
         "params": [
           {
             "type": {
@@ -529,16 +529,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 659,
+        "source_lineno": 692,
         "source_range": [
-          21608,
-          22269
+          24039,
+          24723
         ]
       },
       "ls": {
         "name": "ls",
         "kind": "function",
-        "description": "Lists contents of a folder or wildcard target.\nCompatible with MATLAB/Octave `ls`.",
+        "description": "Lists contents of a folder or wildcard target.\rCompatible with MATLAB/Octave `ls`.",
         "params": [
           {
             "type": {
@@ -562,16 +562,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 690,
+        "source_lineno": 723,
         "source_range": [
-          22478,
-          22761
+          24940,
+          25234
         ]
       },
       "dir": {
         "name": "dir",
         "kind": "function",
-        "description": "Lists directory entries with metadata.\nCompatible with MATLAB/Octave `dir`.",
+        "description": "Lists directory entries with metadata.\rCompatible with MATLAB/Octave `dir`.",
         "params": [
           {
             "type": {
@@ -595,16 +595,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 709,
+        "source_lineno": 742,
         "source_range": [
-          22969,
-          23972
+          25450,
+          26490
         ]
       },
       "isfile": {
         "name": "isfile",
         "kind": "function",
-        "description": "Returns true when the path resolves to a file.\nCompatible with MATLAB `isfile`.",
+        "description": "Returns true when the path resolves to a file.\rCompatible with MATLAB `isfile`.",
         "params": [
           {
             "type": {
@@ -626,16 +626,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 754,
+        "source_lineno": 787,
         "source_range": [
-          24147,
-          24225
+          26673,
+          26753
         ]
       },
       "isfolder": {
         "name": "isfolder",
         "kind": "function",
-        "description": "Returns true when the path resolves to a folder.\nCompatible with MATLAB `isfolder`.",
+        "description": "Returns true when the path resolves to a folder.\rCompatible with MATLAB `isfolder`.",
         "params": [
           {
             "type": {
@@ -657,16 +657,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 764,
+        "source_lineno": 797,
         "source_range": [
-          24411,
-          24496
+          26947,
+          27034
         ]
       },
       "exist": {
         "name": "exist",
         "kind": "function",
-        "description": "Checks existence with MATLAB-compatible return codes.\n`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.\nSupports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.",
+        "description": "Checks existence with MATLAB-compatible return codes.\r`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.\rSupports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.",
         "params": [
           {
             "type": {
@@ -699,16 +699,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 776,
+        "source_lineno": 809,
         "source_range": [
-          24851,
-          25790
+          27399,
+          28364
         ]
       },
       "which": {
         "name": "which",
         "kind": "function",
-        "description": "Resolves a file/module using the active search path.\nCompatible with MATLAB/Octave `which`.",
+        "description": "Resolves a file/module using the active search path.\rCompatible with MATLAB/Octave `which`.",
         "params": [
           {
             "type": {
@@ -732,16 +732,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 810,
+        "source_lineno": 843,
         "source_range": [
-          26032,
-          26898
+          28614,
+          29506
         ]
       },
       "who": {
         "name": "who",
         "kind": "function",
-        "description": "Lists workspace variable names.\nCompatible with MATLAB/Octave `who`.",
+        "description": "Lists workspace variable names.\rCompatible with MATLAB/Octave `who`.",
         "params": [
           {
             "type": {
@@ -765,16 +765,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 844,
+        "source_lineno": 877,
         "source_range": [
-          27095,
-          27711
+          29711,
+          30348
         ]
       },
       "whos": {
         "name": "whos",
         "kind": "function",
-        "description": "Lists workspace variable descriptors (name/type/class).\nCompatible with MATLAB/Octave `whos`.",
+        "description": "Lists workspace variable descriptors (name/type/class).\rCompatible with MATLAB/Octave `whos`.",
         "params": [
           {
             "type": {
@@ -798,10 +798,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 873,
+        "source_lineno": 906,
         "source_range": [
-          27951,
-          28603
+          30596,
+          31271
         ]
       },
       "cd": {
@@ -820,10 +820,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 934,
+        "source_lineno": 967,
         "source_range": [
-          29368,
-          29518
+          32074,
+          32229
         ]
       },
       "workspace": {
@@ -842,10 +842,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 977,
+        "source_lineno": 1010,
         "source_range": [
-          30380,
-          30433
+          33129,
+          33184
         ]
       },
       "updateWorkspace": {
@@ -854,10 +854,10 @@
         "description": "Updates the workspace display based on the current state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 984,
+        "source_lineno": 1017,
         "source_range": [
-          30512,
-          30640
+          33268,
+          33400
         ]
       },
       "updateFileBrowser": {
@@ -866,16 +866,16 @@
         "description": "Updates the file browser display based on the current state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 993,
+        "source_lineno": 1026,
         "source_range": [
-          30724,
-          30856
+          33489,
+          33625
         ]
       },
       "diary": {
         "name": "diary",
         "kind": "function",
-        "description": "Controls command window transcript logging.\n`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,\nand `diary('<file>')` enables logging to the specified file (append mode).",
+        "description": "Controls command window transcript logging.\r`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,\rand `diary('<file>')` enables logging to the specified file (append mode).",
         "params": [
           {
             "type": {
@@ -900,10 +900,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1033,
+        "source_lineno": 1066,
         "source_range": [
-          31701,
-          32998
+          34506,
+          35843
         ]
       },
       "error": {
@@ -922,10 +922,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1079,
+        "source_lineno": 1112,
         "source_range": [
-          33101,
-          33215
+          35952,
+          36070
         ]
       },
       "disp": {
@@ -944,10 +944,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1089,
+        "source_lineno": 1122,
         "source_range": [
-          33313,
-          33446
+          36174,
+          36312
         ]
       },
       "dispMonospaced": {
@@ -966,10 +966,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1100,
+        "source_lineno": 1133,
         "source_range": [
-          33565,
-          33718
+          36437,
+          36595
         ]
       },
       "warn": {
@@ -988,10 +988,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1111,
+        "source_lineno": 1144,
         "source_range": [
-          33826,
-          33938
+          36709,
+          36825
         ]
       },
       "edit": {
@@ -1011,10 +1011,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1175,
+        "source_lineno": 1208,
         "source_range": [
-          35366,
-          35414
+          38313,
+          38363
         ]
       },
       "getExamples": {
@@ -1033,10 +1033,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1183,
+        "source_lineno": 1216,
         "source_range": [
-          35585,
-          35845
+          38540,
+          38805
         ]
       },
       "openExample": {
@@ -1055,10 +1055,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1194,
+        "source_lineno": 1227,
         "source_range": [
-          35987,
-          36164
+          38953,
+          39135
         ]
       },
       "openExamplesFolder": {
@@ -1067,10 +1067,10 @@
         "description": "Opens examples folder in File Explorer",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1204,
+        "source_lineno": 1237,
         "source_range": [
-          36224,
-          36319
+          39200,
+          39297
         ]
       },
       "goToExamplesFolder": {
@@ -1079,10 +1079,10 @@
         "description": "Opens examples folder in File Explorer",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1211,
+        "source_lineno": 1244,
         "source_range": [
-          36379,
-          36466
+          39362,
+          39451
         ]
       },
       "showMessageBox": {
@@ -1111,10 +1111,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1220,
+        "source_lineno": 1253,
         "source_range": [
-          36707,
-          36791
+          39699,
+          39785
         ]
       },
       "saveObject": {
@@ -1154,10 +1154,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1230,
+        "source_lineno": 1263,
         "source_range": [
-          37015,
-          37123
+          40017,
+          40127
         ]
       },
       "loadObject": {
@@ -1198,10 +1198,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1240,
+        "source_lineno": 1273,
         "source_range": [
-          37350,
-          37641
+          40362,
+          40659
         ]
       },
       "loadClass": {
@@ -1240,10 +1240,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1254,
+        "source_lineno": 1287,
         "source_range": [
-          37876,
-          38306
+          40902,
+          41347
         ]
       },
       "save": {
@@ -1272,16 +1272,16 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1276,
+        "source_lineno": 1309,
         "source_range": [
-          38562,
-          39663
+          41610,
+          42739
         ]
       },
       "load": {
         "name": "load",
         "kind": "function",
-        "description": "Loads variables from a specified file into the specified scope or the default script context.\nSupports current JSLAB workspace format and legacy plain JSON object files.",
+        "description": "Loads variables from a specified file into the specified scope or the default script context.\rSupports current JSLAB workspace format and legacy plain JSON object files.",
         "params": [
           {
             "type": {
@@ -1296,10 +1296,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1311,
+        "source_lineno": 1344,
         "source_range": [
-          39967,
-          41607
+          43050,
+          44738
         ]
       },
       "getCompletions": {
@@ -1328,10 +1328,167 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1366,
+        "source_lineno": 1399,
         "source_range": [
-          41869,
-          45752
+          45007,
+          50003
+        ]
+      },
+      "keys": {
+        "name": "keys",
+        "kind": "function",
+        "description": "Returns enumerable own property names, matching the DevTools helper.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1527,
+        "source_range": [
+          50092,
+          50152
+        ]
+      },
+      "values": {
+        "name": "values",
+        "kind": "function",
+        "description": "Returns enumerable own property values, matching the DevTools helper.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1532,
+        "source_range": [
+          50238,
+          50302
+        ]
+      },
+      "copy": {
+        "name": "copy",
+        "kind": "function",
+        "description": "Copies a bounded textual representation to the system clipboard.",
+        "params": [],
+        "async": true,
+        "source_filename": "basic.js",
+        "source_lineno": 1537,
+        "source_range": [
+          50383,
+          50652
+        ]
+      },
+      "inspect": {
+        "name": "inspect",
+        "kind": "function",
+        "description": "Displays a value as an expandable console object.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1546,
+        "source_range": [
+          50718,
+          50992
+        ]
+      },
+      "queryObjects": {
+        "name": "queryObjects",
+        "kind": "function",
+        "description": "Finds reachable workspace objects constructed by the supplied class.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1556,
+        "source_range": [
+          51077,
+          52029
+        ]
+      },
+      "getEventListeners": {
+        "name": "getEventListeners",
+        "kind": "function",
+        "description": "Returns listeners installed through monitorEvents().",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1578,
+        "source_range": [
+          52098,
+          52419
+        ]
+      },
+      "monitorEvents": {
+        "name": "monitorEvents",
+        "kind": "function",
+        "description": "Logs selected EventTarget events until unmonitorEvents() is called.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1588,
+        "source_range": [
+          52503,
+          53570
+        ]
+      },
+      "unmonitorEvents": {
+        "name": "unmonitorEvents",
+        "kind": "function",
+        "description": "Stops event logging installed by monitorEvents().",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1610,
+        "source_range": [
+          53636,
+          54172
+        ]
+      },
+      "dirxml": {
+        "name": "dirxml",
+        "kind": "function",
+        "description": "Displays XML/HTML markup when available.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1624,
+        "source_range": [
+          54229,
+          54332
+        ]
+      },
+      "monitor": {
+        "name": "monitor",
+        "kind": "function",
+        "description": "Logs calls to a function referenced directly by a workspace variable.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1629,
+        "source_range": [
+          54418,
+          54489
+        ]
+      },
+      "unmonitor": {
+        "name": "unmonitor",
+        "kind": "function",
+        "description": "Stops call logging installed by monitor().",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1634,
+        "source_range": [
+          54548,
+          54617
+        ]
+      },
+      "debugFunction": {
+        "name": "debugFunction",
+        "kind": "function",
+        "description": "Breaks when a workspace function is called; `debug` remains JSLAB's debug flag.",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1639,
+        "source_range": [
+          54713,
+          54789
+        ]
+      },
+      "undebug": {
+        "name": "undebug",
+        "kind": "function",
+        "description": "Removes a breakpoint wrapper installed by debugFunction().",
+        "params": [],
+        "source_filename": "basic.js",
+        "source_lineno": 1644,
+        "source_range": [
+          54864,
+          54931
         ]
       },
       "getObjectByProp": {
@@ -1379,10 +1536,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1481,
+        "source_lineno": 1855,
         "source_range": [
-          46099,
-          46275
+          64378,
+          64557
         ]
       },
       "getObjectsByProp": {
@@ -1429,10 +1586,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1493,
+        "source_lineno": 1867,
         "source_range": [
-          46639,
-          46799
+          64930,
+          65093
         ]
       },
       "strcmp": {
@@ -1470,10 +1627,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1504,
+        "source_lineno": 1878,
         "source_range": [
-          46999,
-          47071
+          65301,
+          65375
         ]
       },
       "compareVersions": {
@@ -1511,10 +1668,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1514,
+        "source_lineno": 1888,
         "source_range": [
-          47294,
-          47694
+          65606,
+          66021
         ]
       },
       "checkForUpdate": {
@@ -1534,10 +1691,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1535,
+        "source_lineno": 1909,
         "source_range": [
-          47830,
-          49270
+          66163,
+          67637
         ]
       },
       "unrequire": {
@@ -1556,10 +1713,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1575,
+        "source_lineno": 1949,
         "source_range": [
-          49399,
-          49715
+          67772,
+          68097
         ]
       },
       "resetApp": {
@@ -1568,10 +1725,10 @@
         "description": "Resets app.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1589,
+        "source_lineno": 1963,
         "source_range": [
-          49750,
-          49801
+          68137,
+          68190
         ]
       },
       "resetSandbox": {
@@ -1580,10 +1737,10 @@
         "description": "Resets the sandbox environment to its initial state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1596,
+        "source_lineno": 1970,
         "source_range": [
-          49877,
-          49936
+          68271,
+          68332
         ]
       },
       "openDevTools": {
@@ -1601,10 +1758,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1604,
+        "source_lineno": 1978,
         "source_range": [
-          50056,
-          50122
+          68458,
+          68526
         ]
       },
       "installModule": {
@@ -1634,10 +1791,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1613,
+        "source_lineno": 1987,
         "source_range": [
-          50333,
-          52503
+          68744,
+          70977
         ]
       },
       "addForCleanup": {
@@ -1665,10 +1822,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1683,
+        "source_lineno": 2057,
         "source_range": [
-          52730,
-          52795
+          71211,
+          71278
         ]
       }
     },
@@ -2217,10 +2374,10 @@
           }
         ],
         "source_filename": "inspector.js",
-        "source_lineno": 235,
+        "source_lineno": 242,
         "source_range": [
-          6489,
-          26130
+          7075,
+          26744
         ]
       },
       "inspectSetVariable": {
@@ -2267,10 +2424,10 @@
           }
         ],
         "source_filename": "inspector.js",
-        "source_lineno": 753,
+        "source_lineno": 760,
         "source_range": [
-          26459,
-          29343
+          27073,
+          29957
         ]
       },
       "inspectTableAction": {
@@ -2319,10 +2476,10 @@
           }
         ],
         "source_filename": "inspector.js",
-        "source_lineno": 854,
+        "source_lineno": 861,
         "source_range": [
-          29649,
-          34128
+          30263,
+          34742
         ]
       }
     },
@@ -4328,7 +4485,7 @@
       "runInterruptible": {
         "name": "runInterruptible",
         "kind": "function",
-        "description": "Runs scientific/native work outside the persistent workspace so it can be stopped safely.\nThe function receives copied arguments and must not depend on caller closures.",
+        "description": "Runs scientific/native work outside the persistent workspace so it can be stopped safely.\rThe function receives copied arguments and must not depend on caller closures.",
         "params": [
           {
             "type": {
@@ -4375,8 +4532,8 @@
         "source_filename": "non-blocking.js",
         "source_lineno": 30,
         "source_range": [
-          991,
-          4929
+          1020,
+          5023
         ]
       },
       "nbwhile": {
@@ -4397,8 +4554,8 @@
         "source_filename": "non-blocking.js",
         "source_lineno": 101,
         "source_range": [
-          5101,
-          5233
+          5201,
+          5338
         ]
       },
       "clearIntervalIf": {
@@ -4430,8 +4587,8 @@
         "source_filename": "non-blocking.js",
         "source_lineno": 138,
         "source_range": [
-          6136,
-          6253
+          6273,
+          6395
         ]
       },
       "clearTimeoutIf": {
@@ -4463,8 +4620,8 @@
         "source_filename": "non-blocking.js",
         "source_lineno": 150,
         "source_range": [
-          6436,
-          6551
+          6585,
+          6705
         ]
       },
       "resetTimeout": {
@@ -4513,8 +4670,8 @@
         "source_filename": "non-blocking.js",
         "source_lineno": 164,
         "source_range": [
-          6743,
-          6878
+          6906,
+          7045
         ]
       },
       "initWorker": {
@@ -4545,8 +4702,8 @@
         "source_filename": "non-blocking.js",
         "source_lineno": 175,
         "source_range": [
-          7090,
-          7337
+          7264,
+          7518
         ]
       }
     },
@@ -5048,8 +5205,8 @@
         "source_filename": "windows.js",
         "source_lineno": 26,
         "source_range": [
-          520,
-          538
+          545,
+          563
         ]
       },
       "open_windows": {
@@ -5059,8 +5216,8 @@
         "source_filename": "windows.js",
         "source_lineno": 32,
         "source_range": [
-          616,
-          638
+          647,
+          669
         ]
       },
       "openWindow": {
@@ -5091,8 +5248,8 @@
         "source_filename": "windows.js",
         "source_lineno": 40,
         "source_range": [
-          861,
-          1395
+          900,
+          1451
         ]
       },
       "openWindowDevTools": {
@@ -5123,8 +5280,8 @@
         "source_filename": "windows.js",
         "source_lineno": 64,
         "source_range": [
-          1612,
-          1780
+          1675,
+          1849
         ]
       },
       "getWindowMediaSourceId": {
@@ -5156,8 +5313,8 @@
         "source_filename": "windows.js",
         "source_lineno": 77,
         "source_range": [
-          2000,
-          2176
+          2076,
+          2258
         ]
       },
       "startWindowVideoRecording": {
@@ -5198,8 +5355,8 @@
         "source_filename": "windows.js",
         "source_lineno": 91,
         "source_range": [
-          2415,
-          2607
+          2505,
+          2703
         ]
       },
       "closeWindows": {
@@ -5220,8 +5377,8 @@
         "source_filename": "windows.js",
         "source_lineno": 103,
         "source_range": [
-          2722,
-          2849
+          2824,
+          2955
         ]
       },
       "closeWindow": {
@@ -5242,8 +5399,8 @@
         "source_filename": "windows.js",
         "source_lineno": 113,
         "source_range": [
-          2964,
-          3118
+          3076,
+          3236
         ]
       },
       "getWindow": {
@@ -5275,8 +5432,8 @@
         "source_filename": "windows.js",
         "source_lineno": 126,
         "source_range": [
-          3319,
-          3463
+          3444,
+          3594
         ]
       },
       "getCurrentWindow": {
@@ -5298,8 +5455,8 @@
         "source_filename": "windows.js",
         "source_lineno": 138,
         "source_range": [
-          3602,
-          3780
+          3739,
+          3923
         ]
       },
       "gcw": {
@@ -5321,8 +5478,8 @@
         "source_filename": "windows.js",
         "source_lineno": 150,
         "source_range": [
-          3919,
-          3966
+          4068,
+          4117
         ]
       },
       "showWindow": {
@@ -5354,8 +5511,8 @@
         "source_filename": "windows.js",
         "source_lineno": 159,
         "source_range": [
-          4194,
-          4346
+          4352,
+          4510
         ]
       },
       "hideWindow": {
@@ -5387,8 +5544,8 @@
         "source_filename": "windows.js",
         "source_lineno": 172,
         "source_range": [
-          4576,
-          4728
+          4747,
+          4905
         ]
       },
       "focusWindow": {
@@ -5420,8 +5577,8 @@
         "source_filename": "windows.js",
         "source_lineno": 185,
         "source_range": [
-          4935,
-          5089
+          5119,
+          5279
         ]
       },
       "minimizeWindow": {
@@ -5453,8 +5610,8 @@
         "source_filename": "windows.js",
         "source_lineno": 198,
         "source_range": [
-          5331,
-          5491
+          5528,
+          5694
         ]
       },
       "centerWindow": {
@@ -5486,8 +5643,8 @@
         "source_filename": "windows.js",
         "source_lineno": 211,
         "source_range": [
-          5741,
-          5897
+          5951,
+          6113
         ]
       },
       "moveTopWindow": {
@@ -5519,8 +5676,8 @@
         "source_filename": "windows.js",
         "source_lineno": 224,
         "source_range": [
-          6172,
-          6330
+          6395,
+          6559
         ]
       },
       "setWindowSize": {
@@ -5570,8 +5727,8 @@
         "source_filename": "windows.js",
         "source_lineno": 239,
         "source_range": [
-          6638,
-          6824
+          6876,
+          7068
         ]
       },
       "setWindowPos": {
@@ -5621,8 +5778,8 @@
         "source_filename": "windows.js",
         "source_lineno": 254,
         "source_range": [
-          7146,
-          7322
+          7399,
+          7581
         ]
       },
       "setWindowResizable": {
@@ -5663,8 +5820,8 @@
         "source_filename": "windows.js",
         "source_lineno": 268,
         "source_range": [
-          7642,
-          7822
+          7909,
+          8095
         ]
       },
       "setWindowMovable": {
@@ -5705,8 +5862,8 @@
         "source_filename": "windows.js",
         "source_lineno": 282,
         "source_range": [
-          8138,
-          8332
+          8419,
+          8619
         ]
       },
       "setWindowAspectRatio": {
@@ -5747,8 +5904,8 @@
         "source_filename": "windows.js",
         "source_lineno": 296,
         "source_range": [
-          8659,
-          8875
+          8954,
+          9176
         ]
       },
       "setWindowOpacity": {
@@ -5789,8 +5946,8 @@
         "source_filename": "windows.js",
         "source_lineno": 310,
         "source_range": [
-          9184,
-          9382
+          9493,
+          9697
         ]
       },
       "setWindowFullscreen": {
@@ -5831,8 +5988,8 @@
         "source_filename": "windows.js",
         "source_lineno": 324,
         "source_range": [
-          9686,
-          9886
+          10009,
+          10215
         ]
       },
       "setWindowTitle": {
@@ -5882,8 +6039,8 @@
         "source_filename": "windows.js",
         "source_lineno": 339,
         "source_range": [
-          10208,
-          10380
+          10546,
+          10724
         ]
       },
       "getWindowSize": {
@@ -5915,8 +6072,8 @@
         "source_filename": "windows.js",
         "source_lineno": 352,
         "source_range": [
-          10592,
-          10750
+          10943,
+          11107
         ]
       },
       "getWindowPos": {
@@ -5948,8 +6105,8 @@
         "source_filename": "windows.js",
         "source_lineno": 365,
         "source_range": [
-          10962,
-          11118
+          11326,
+          11488
         ]
       },
       "printWindowToPdf": {
@@ -5989,8 +6146,8 @@
         "source_filename": "windows.js",
         "source_lineno": 379,
         "source_range": [
-          11305,
-          11485
+          11683,
+          11869
         ]
       },
       "openDocumentation": {
@@ -6002,8 +6159,8 @@
         "source_filename": "windows.js",
         "source_lineno": 390,
         "source_range": [
-          11540,
-          11828
+          11929,
+          12225
         ]
       },
       "openDoc": {
@@ -6015,8 +6172,8 @@
         "source_filename": "windows.js",
         "source_lineno": 403,
         "source_range": [
-          11883,
-          11950
+          12285,
+          12354
         ]
       },
       "openDiscourse": {
@@ -6028,8 +6185,8 @@
         "source_filename": "windows.js",
         "source_lineno": 410,
         "source_range": [
-          11999,
-          12208
+          12408,
+          12621
         ]
       },
       "openWebpage": {
@@ -6062,8 +6219,8 @@
         "source_filename": "windows.js",
         "source_lineno": 421,
         "source_range": [
-          12379,
-          12526
+          12799,
+          12950
         ]
       },
       "openWindow3D": {
@@ -6097,8 +6254,8 @@
         "source_filename": "windows.js",
         "source_lineno": 432,
         "source_range": [
-          12803,
-          16981
+          13234,
+          17517
         ]
       },
       "openPlotlyjs": {
@@ -6120,8 +6277,8 @@
         "source_filename": "windows.js",
         "source_lineno": 543,
         "source_range": [
-          17176,
-          17787
+          17718,
+          18345
         ]
       },
       "openCanvas": {
@@ -6143,8 +6300,8 @@
         "source_filename": "windows.js",
         "source_lineno": 565,
         "source_range": [
-          17984,
-          18715
+          18548,
+          19297
         ]
       },
       "openWindowBlank": {
@@ -6166,8 +6323,8 @@
         "source_filename": "windows.js",
         "source_lineno": 589,
         "source_range": [
-          18859,
-          19128
+          19447,
+          19722
         ]
       },
       "showMermaidGraph": {
@@ -6199,8 +6356,8 @@
         "source_filename": "windows.js",
         "source_lineno": 602,
         "source_range": [
-          19370,
-          20321
+          19971,
+          20947
         ]
       }
     },
@@ -6212,8 +6369,8 @@
         "source_filename": "figures.js",
         "source_lineno": 33,
         "source_range": [
-          836,
-          858
+          868,
+          890
         ]
       },
       "active_figure": {
@@ -6223,8 +6380,8 @@
         "source_filename": "figures.js",
         "source_lineno": 39,
         "source_range": [
-          940,
-          963
+          978,
+          1001
         ]
       },
       "figure": {
@@ -6255,8 +6412,8 @@
         "source_filename": "figures.js",
         "source_lineno": 47,
         "source_range": [
-          1161,
-          1597
+          1207,
+          1658
         ]
       },
       "getFigure": {
@@ -6288,8 +6445,8 @@
         "source_filename": "figures.js",
         "source_lineno": 69,
         "source_range": [
-          1836,
-          1980
+          1904,
+          2054
         ]
       },
       "getFigureWindow": {
@@ -6321,8 +6478,8 @@
         "source_filename": "figures.js",
         "source_lineno": 82,
         "source_range": [
-          2233,
-          2387
+          2314,
+          2474
         ]
       },
       "getCurrentFigure": {
@@ -6344,8 +6501,8 @@
         "source_filename": "figures.js",
         "source_lineno": 94,
         "source_range": [
-          2530,
-          2708
+          2623,
+          2807
         ]
       },
       "gcf": {
@@ -6367,8 +6524,8 @@
         "source_filename": "figures.js",
         "source_lineno": 106,
         "source_range": [
-          2849,
-          2896
+          2954,
+          3003
         ]
       },
       "getPlot": {
@@ -6400,8 +6557,8 @@
         "source_filename": "figures.js",
         "source_lineno": 115,
         "source_range": [
-          3136,
-          3314
+          3250,
+          3434
         ]
       },
       "getAxes": {
@@ -6433,8 +6590,8 @@
         "source_filename": "figures.js",
         "source_lineno": 128,
         "source_range": [
-          3554,
-          3602
+          3681,
+          3731
         ]
       },
       "getCurrentPlot": {
@@ -6456,8 +6613,8 @@
         "source_filename": "figures.js",
         "source_lineno": 136,
         "source_range": [
-          3755,
-          3936
+          3890,
+          4077
         ]
       },
       "gcp": {
@@ -6479,8 +6636,8 @@
         "source_filename": "figures.js",
         "source_lineno": 148,
         "source_range": [
-          4087,
-          4132
+          4234,
+          4281
         ]
       },
       "getCurrentAxes": {
@@ -6502,8 +6659,8 @@
         "source_filename": "figures.js",
         "source_lineno": 156,
         "source_range": [
-          4285,
-          4341
+          4440,
+          4498
         ]
       },
       "gca": {
@@ -6525,8 +6682,8 @@
         "source_filename": "figures.js",
         "source_lineno": 164,
         "source_range": [
-          4492,
-          4537
+          4655,
+          4702
         ]
       },
       "focusFigure": {
@@ -6558,8 +6715,8 @@
         "source_filename": "figures.js",
         "source_lineno": 173,
         "source_range": [
-          4744,
-          4898
+          4916,
+          5076
         ]
       },
       "setFigureSize": {
@@ -6609,8 +6766,8 @@
         "source_filename": "figures.js",
         "source_lineno": 188,
         "source_range": [
-          5204,
-          5390
+          5391,
+          5583
         ]
       },
       "setFigurePos": {
@@ -6660,8 +6817,8 @@
         "source_filename": "figures.js",
         "source_lineno": 203,
         "source_range": [
-          5710,
-          5886
+          5912,
+          6094
         ]
       },
       "setFigureTitle": {
@@ -6702,8 +6859,8 @@
         "source_filename": "figures.js",
         "source_lineno": 217,
         "source_range": [
-          6148,
-          6320
+          6364,
+          6542
         ]
       },
       "getFigureSize": {
@@ -6735,8 +6892,8 @@
         "source_filename": "figures.js",
         "source_lineno": 230,
         "source_range": [
-          6537,
-          6695
+          6766,
+          6930
         ]
       },
       "getFigurePos": {
@@ -6768,8 +6925,8 @@
         "source_filename": "figures.js",
         "source_lineno": 243,
         "source_range": [
-          6912,
-          7068
+          7154,
+          7316
         ]
       },
       "getFigureMediaSourceId": {
@@ -6801,8 +6958,8 @@
         "source_filename": "figures.js",
         "source_lineno": 256,
         "source_range": [
-          7288,
-          7464
+          7543,
+          7725
         ]
       },
       "startFigureVideoRecording": {
@@ -6843,8 +7000,8 @@
         "source_filename": "figures.js",
         "source_lineno": 270,
         "source_range": [
-          7718,
-          7910
+          7987,
+          8185
         ]
       },
       "closeFigure": {
@@ -6876,8 +7033,8 @@
         "source_filename": "figures.js",
         "source_lineno": 283,
         "source_range": [
-          8097,
-          8251
+          8379,
+          8539
         ]
       },
       "close": {
@@ -6910,8 +7067,8 @@
         "source_filename": "figures.js",
         "source_lineno": 296,
         "source_range": [
-          8516,
-          8970
+          8811,
+          9280
         ]
       },
       "saveFigureDialog": {
@@ -6933,8 +7090,8 @@
         "source_filename": "figures.js",
         "source_lineno": 317,
         "source_range": [
-          9096,
-          10252
+          9412,
+          10598
         ]
       },
       "saveFigure": {
@@ -6974,8 +7131,8 @@
         "source_filename": "figures.js",
         "source_lineno": 355,
         "source_range": [
-          10548,
-          14098
+          10902,
+          14539
         ]
       },
       "legend": {
@@ -6996,8 +7153,8 @@
         "source_filename": "figures.js",
         "source_lineno": 461,
         "source_range": [
-          14638,
-          14870
+          15098,
+          15336
         ]
       },
       "xlabel": {
@@ -7018,8 +7175,8 @@
         "source_filename": "figures.js",
         "source_lineno": 473,
         "source_range": [
-          15000,
-          15232
+          15472,
+          15710
         ]
       },
       "ylabel": {
@@ -7040,8 +7197,8 @@
         "source_filename": "figures.js",
         "source_lineno": 485,
         "source_range": [
-          15360,
-          15592
+          15844,
+          16082
         ]
       },
       "zlabel": {
@@ -7062,8 +7219,8 @@
         "source_filename": "figures.js",
         "source_lineno": 497,
         "source_range": [
-          15720,
-          15952
+          16216,
+          16454
         ]
       },
       "title": {
@@ -7084,8 +7241,8 @@
         "source_filename": "figures.js",
         "source_lineno": 509,
         "source_range": [
-          16057,
-          16287
+          16565,
+          16801
         ]
       },
       "xlim": {
@@ -7106,8 +7263,8 @@
         "source_filename": "figures.js",
         "source_lineno": 521,
         "source_range": [
-          16381,
-          16605
+          16901,
+          17131
         ]
       },
       "ylim": {
@@ -7128,8 +7285,8 @@
         "source_filename": "figures.js",
         "source_lineno": 533,
         "source_range": [
-          16701,
-          16925
+          17233,
+          17463
         ]
       },
       "zlim": {
@@ -7150,8 +7307,8 @@
         "source_filename": "figures.js",
         "source_lineno": 545,
         "source_range": [
-          17019,
-          17243
+          17563,
+          17793
         ]
       },
       "view": {
@@ -7181,8 +7338,8 @@
         "source_filename": "figures.js",
         "source_lineno": 559,
         "source_range": [
-          17427,
-          17681
+          17985,
+          18245
         ]
       },
       "zoom": {
@@ -7203,8 +7360,8 @@
         "source_filename": "figures.js",
         "source_lineno": 571,
         "source_range": [
-          17788,
-          18018
+          18358,
+          18594
         ]
       },
       "axis": {
@@ -7225,8 +7382,8 @@
         "source_filename": "figures.js",
         "source_lineno": 583,
         "source_range": [
-          18178,
-          18406
+          18760,
+          18994
         ]
       },
       "printFigure": {
@@ -7257,8 +7414,8 @@
         "source_filename": "figures.js",
         "source_lineno": 596,
         "source_range": [
-          18613,
-          18885
+          19208,
+          19486
         ]
       },
       "plot": {
@@ -7298,8 +7455,8 @@
         "source_filename": "figures.js",
         "source_lineno": 610,
         "source_range": [
-          19102,
-          19551
+          19711,
+          20178
         ]
       },
       "updatePlot": {
@@ -7329,8 +7486,8 @@
         "source_filename": "figures.js",
         "source_lineno": 635,
         "source_range": [
-          19773,
-          20014
+          20407,
+          20654
         ]
       },
       "updatePlotById": {
@@ -7352,8 +7509,8 @@
         "source_filename": "figures.js",
         "source_lineno": 647,
         "source_range": [
-          20192,
-          20434
+          20838,
+          21086
         ]
       },
       "hideFigureMenu": {
@@ -7364,8 +7521,8 @@
         "source_filename": "figures.js",
         "source_lineno": 658,
         "source_range": [
-          20476,
-          20657
+          21133,
+          21320
         ]
       },
       "showFigureMenu": {
@@ -7376,8 +7533,8 @@
         "source_filename": "figures.js",
         "source_lineno": 670,
         "source_range": [
-          20702,
-          20883
+          21371,
+          21558
         ]
       },
       "loadJsonFigure": {
@@ -7418,8 +7575,8 @@
         "source_filename": "figures.js",
         "source_lineno": 684,
         "source_range": [
-          21143,
-          22153
+          21826,
+          22863
         ]
       }
     },
@@ -15282,7 +15439,7 @@
         "source_lineno": 142,
         "source_range": [
           4560,
-          4890
+          4897
         ]
       },
       "chooseFile": {
@@ -15314,8 +15471,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 178,
         "source_range": [
-          5982,
-          6823
+          6018,
+          6877
         ]
       },
       "chooseFolder": {
@@ -15347,8 +15504,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 203,
         "source_range": [
-          7073,
-          8007
+          7128,
+          8084
         ]
       },
       "getDefaultPath": {
@@ -15379,8 +15536,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 232,
         "source_range": [
-          8232,
-          8312
+          8310,
+          8390
         ]
       },
       "openFolder": {
@@ -15401,8 +15558,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 240,
         "source_range": [
-          8446,
-          8519
+          8524,
+          8597
         ]
       },
       "makeDirectory": {
@@ -15433,8 +15590,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 250,
         "source_range": [
-          8917,
-          9005
+          8995,
+          9083
         ]
       },
       "mkdir": {
@@ -15465,8 +15622,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 260,
         "source_range": [
-          9430,
-          9510
+          9508,
+          9588
         ]
       },
       "openDir": {
@@ -15487,8 +15644,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 268,
         "source_range": [
-          9676,
-          9743
+          9754,
+          9821
         ]
       },
       "showFolder": {
@@ -15509,8 +15666,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 276,
         "source_range": [
-          9901,
-          9974
+          9979,
+          10052
         ]
       },
       "showDir": {
@@ -15531,8 +15688,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 284,
         "source_range": [
-          10135,
-          10202
+          10213,
+          10280
         ]
       },
       "openProgramFolder": {
@@ -15543,8 +15700,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 291,
         "source_range": [
-          10290,
-          10395
+          10368,
+          10473
         ]
       },
       "showFileInFolder": {
@@ -15565,8 +15722,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 299,
         "source_range": [
-          10555,
-          10640
+          10633,
+          10718
         ]
       },
       "showFileInDir": {
@@ -15587,8 +15744,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 307,
         "source_range": [
-          10832,
-          10911
+          10910,
+          10989
         ]
       },
       "readcsv": {
@@ -15629,8 +15786,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 317,
         "source_range": [
-          11231,
-          12295
+          11309,
+          12373
         ]
       },
       "checkFile": {
@@ -15651,8 +15808,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 349,
         "source_range": [
-          12421,
-          12491
+          12499,
+          12569
         ]
       },
       "existFile": {
@@ -15673,8 +15830,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 357,
         "source_range": [
-          12616,
-          12672
+          12694,
+          12750
         ]
       },
       "checkDirectory": {
@@ -15695,8 +15852,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 365,
         "source_range": [
-          12812,
-          12902
+          12890,
+          12980
         ]
       },
       "existDirectory": {
@@ -15717,8 +15874,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 373,
         "source_range": [
-          13042,
-          13118
+          13120,
+          13196
         ]
       },
       "copyDir": {
@@ -15748,8 +15905,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 382,
         "source_range": [
-          13339,
-          14274
+          13417,
+          14352
         ]
       },
       "copyFolder": {
@@ -15779,8 +15936,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 414,
         "source_range": [
-          14474,
-          14539
+          14552,
+          14617
         ]
       },
       "cp": {
@@ -15810,8 +15967,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 423,
         "source_range": [
-          14746,
-          14803
+          14824,
+          14881
         ]
       },
       "copyDir7z": {
@@ -15841,8 +15998,8 @@
         "source_filename": "file-system.js",
         "source_lineno": 432,
         "source_range": [
-          15050,
-          15453
+          15128,
+          15531
         ]
       }
     },
@@ -17432,10 +17589,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 27,
+        "source_lineno": 33,
         "source_range": [
-          631,
-          3432
+          914,
+          3715
         ]
       },
       "formatBytes": {
@@ -17475,10 +17632,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 117,
+        "source_lineno": 123,
         "source_range": [
-          3724,
-          4093
+          4007,
+          4376
         ]
       },
       "formatBPS": {
@@ -17518,10 +17675,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 135,
+        "source_lineno": 141,
         "source_range": [
-          4412,
-          4778
+          4695,
+          5061
         ]
       },
       "formatPrefix": {
@@ -17561,10 +17718,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 153,
+        "source_lineno": 159,
         "source_range": [
-          5093,
-          5444
+          5376,
+          5727
         ]
       },
       "formatNum": {
@@ -17604,10 +17761,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 170,
+        "source_lineno": 176,
         "source_range": [
-          5700,
-          5784
+          5983,
+          6067
         ]
       },
       "formatFloatDigits": {
@@ -17647,10 +17804,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 182,
+        "source_lineno": 188,
         "source_range": [
-          6171,
-          6398
+          6454,
+          6681
         ]
       },
       "clip": {
@@ -17708,10 +17865,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 198,
+        "source_lineno": 204,
         "source_range": [
-          6821,
-          7036
+          7104,
+          7319
         ]
       },
       "clipHeight": {
@@ -17762,10 +17919,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 212,
+        "source_lineno": 218,
         "source_range": [
-          7334,
-          7576
+          7617,
+          7859
         ]
       },
       "fieldnames": {
@@ -17794,10 +17951,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 229,
+        "source_lineno": 235,
         "source_range": [
-          7793,
-          7845
+          8076,
+          8128
         ]
       },
       "strrep": {
@@ -17844,10 +18001,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 240,
+        "source_lineno": 246,
         "source_range": [
-          8183,
-          8277
+          8466,
+          8560
         ]
       },
       "clipVal": {
@@ -17898,10 +18055,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 251,
+        "source_lineno": 257,
         "source_range": [
-          8563,
-          8802
+          8846,
+          9085
         ]
       },
       "toFixedIf": {
@@ -17939,32 +18096,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 269,
+        "source_lineno": 275,
         "source_range": [
-          9126,
-          9195
-        ]
-      },
-      "getCircularReplacer": {
-        "name": "getCircularReplacer",
-        "kind": "function",
-        "description": "Provides a replacer function for JSON.stringify() to prevent circular references.",
-        "params": [],
-        "returns": [
-          {
-            "type": {
-              "names": [
-                "function"
-              ]
-            },
-            "description": "A replacer function that can be used with JSON.stringify to handle circular references."
-          }
-        ],
-        "source_filename": "format.js",
-        "source_lineno": 277,
-        "source_range": [
-          9417,
-          9695
+          9409,
+          9478
         ]
       },
       "isNaN": {
@@ -17993,10 +18128,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 295,
+        "source_lineno": 284,
         "source_range": [
-          9875,
-          10044
+          9658,
+          9827
         ]
       },
       "isObject": {
@@ -18036,10 +18171,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 309,
+        "source_lineno": 298,
         "source_range": [
-          10327,
-          10496
+          10110,
+          10279
         ]
       },
       "isPlainObject": {
@@ -18068,10 +18203,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 321,
+        "source_lineno": 310,
         "source_range": [
-          10698,
-          10913
+          10481,
+          10696
         ]
       },
       "isTypedArray": {
@@ -18100,10 +18235,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 334,
+        "source_lineno": 323,
         "source_range": [
-          11113,
-          11210
+          10896,
+          10993
         ]
       },
       "isColumnLike": {
@@ -18132,10 +18267,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 343,
+        "source_lineno": 332,
         "source_range": [
-          11423,
-          11511
+          11206,
+          11294
         ]
       },
       "ensureUniqueNames": {
@@ -18174,10 +18309,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 354,
+        "source_lineno": 343,
         "source_range": [
-          11838,
-          12195
+          11621,
+          11978
         ]
       },
       "compareMixedValues": {
@@ -18215,10 +18350,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 374,
+        "source_lineno": 363,
         "source_range": [
-          12375,
-          13307
+          12158,
+          13090
         ]
       },
       "buildSortedIndices": {
@@ -18267,10 +18402,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 428,
+        "source_lineno": 417,
         "source_range": [
-          13575,
-          13985
+          13358,
+          13768
         ]
       },
       "rangeIndices": {
@@ -18299,10 +18434,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 449,
+        "source_lineno": 438,
         "source_range": [
-          14116,
-          14219
+          13899,
+          14002
         ]
       },
       "isMissingValue": {
@@ -18331,10 +18466,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 460,
+        "source_lineno": 449,
         "source_range": [
-          14386,
-          14565
+          14169,
+          14348
         ]
       },
       "valueTypeLabel": {
@@ -18363,10 +18498,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 472,
+        "source_lineno": 461,
         "source_range": [
-          14713,
-          15060
+          14496,
+          14843
         ]
       },
       "csvEscapeCell": {
@@ -18406,10 +18541,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 487,
+        "source_lineno": 476,
         "source_range": [
-          15240,
-          15747
+          15023,
+          15530
         ]
       },
       "parseCsvLine": {
@@ -18449,10 +18584,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 510,
+        "source_lineno": 499,
         "source_range": [
-          15957,
-          16521
+          15740,
+          16304
         ]
       },
       "parseCsvText": {
@@ -18492,10 +18627,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 541,
+        "source_lineno": 530,
         "source_range": [
-          16720,
-          17682
+          16503,
+          17465
         ]
       },
       "detectDelimiter": {
@@ -18535,10 +18670,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 587,
+        "source_lineno": 576,
         "source_range": [
-          17905,
-          18462
+          17688,
+          18245
         ]
       },
       "parseCsvScalar": {
@@ -18578,10 +18713,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 616,
+        "source_lineno": 605,
         "source_range": [
-          18667,
-          19537
+          18450,
+          19320
         ]
       },
       "aggregateValues": {
@@ -18619,10 +18754,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 661,
+        "source_lineno": 650,
         "source_range": [
-          19741,
-          21026
+          19524,
+          20809
         ]
       },
       "isNumber": {
@@ -18651,10 +18786,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 716,
+        "source_lineno": 705,
         "source_range": [
-          21218,
-          21279
+          21001,
+          21062
         ]
       },
       "isString": {
@@ -18683,10 +18818,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 725,
+        "source_lineno": 714,
         "source_range": [
-          21471,
-          21532
+          21254,
+          21315
         ]
       },
       "isEmptyString": {
@@ -18715,10 +18850,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 734,
+        "source_lineno": 723,
         "source_range": [
-          21767,
-          21856
+          21550,
+          21639
         ]
       },
       "isEmptyObject": {
@@ -18747,10 +18882,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 743,
+        "source_lineno": 732,
         "source_range": [
-          22035,
-          22140
+          21818,
+          21923
         ]
       },
       "isFunction": {
@@ -18779,10 +18914,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 752,
+        "source_lineno": 741,
         "source_range": [
-          22335,
-          22400
+          22118,
+          22183
         ]
       },
       "isArray": {
@@ -18811,10 +18946,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 761,
+        "source_lineno": 750,
         "source_range": [
-          22592,
-          22685
+          22375,
+          22468
         ]
       },
       "isNull": {
@@ -18843,10 +18978,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 770,
+        "source_lineno": 759,
         "source_range": [
-          22869,
-          22917
+          22652,
+          22700
         ]
       },
       "isEmpty": {
@@ -18875,10 +19010,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 779,
+        "source_lineno": 768,
         "source_range": [
-          23091,
-          23174
+          22874,
+          22957
         ]
       },
       "isInfinity": {
@@ -18909,10 +19044,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 788,
+        "source_lineno": 777,
         "source_range": [
-          23452,
-          23653
+          23235,
+          23436
         ]
       },
       "isNumeric": {
@@ -18941,10 +19076,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 801,
+        "source_lineno": 790,
         "source_range": [
-          23840,
-          23930
+          23623,
+          23713
         ]
       },
       "hasKey": {
@@ -18982,10 +19117,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 811,
+        "source_lineno": 800,
         "source_range": [
-          24226,
-          24292
+          24009,
+          24075
         ]
       },
       "isUndefined": {
@@ -19014,10 +19149,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 820,
+        "source_lineno": 809,
         "source_range": [
-          24484,
-          24551
+          24267,
+          24334
         ]
       },
       "isUUID": {
@@ -19046,10 +19181,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 829,
+        "source_lineno": 818,
         "source_range": [
-          24740,
-          24897
+          24523,
+          24680
         ]
       },
       "normalizeAngle": {
@@ -19078,10 +19213,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 839,
+        "source_lineno": 828,
         "source_range": [
-          25080,
-          25161
+          24863,
+          24944
         ]
       },
       "normalizeAngle360": {
@@ -19110,10 +19245,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 848,
+        "source_lineno": 837,
         "source_range": [
-          25341,
-          25412
+          25124,
+          25195
         ]
       },
       "normalizeLat": {
@@ -19151,10 +19286,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 858,
+        "source_lineno": 847,
         "source_range": [
-          25697,
-          25821
+          25480,
+          25604
         ]
       },
       "normalizeLon": {
@@ -19192,10 +19327,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 868,
+        "source_lineno": 857,
         "source_range": [
-          26112,
-          26230
+          25895,
+          26013
         ]
       },
       "checkUndefined": {
@@ -19224,10 +19359,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 877,
+        "source_lineno": 866,
         "source_range": [
-          26488,
-          26600
+          26271,
+          26383
         ]
       },
       "prettyPrint": {
@@ -19256,10 +19391,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 890,
+        "source_lineno": 879,
         "source_range": [
-          26930,
-          27549
+          26713,
+          27430
         ]
       },
       "stringify": {
@@ -19289,10 +19424,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 912,
+        "source_lineno": 1175,
         "source_range": [
-          27830,
-          27991
+          39533,
+          39922
         ]
       },
       "safeStringify": {
@@ -19319,6 +19454,17 @@
             "defaultvalue": 3,
             "description": "The maximum depth to traverse in the object, beyond which the traversal is stopped.",
             "name": "depth_limit"
+          },
+          {
+            "type": {
+              "names": [
+                "boolean"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": true,
+            "description": "Whether to escape the resulting display text for HTML.",
+            "name": "escape_html"
           }
         ],
         "returns": [
@@ -19328,14 +19474,14 @@
                 "string"
               ]
             },
-            "description": "A JSON string representation of the object, with special handling for deep objects, circular references, and HTML escaping of strings."
+            "description": "A bounded representation with cycles and accessors identified."
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 926,
+        "source_lineno": 1198,
         "source_range": [
-          28531,
-          31036
+          40487,
+          41414
         ]
       },
       "escapeHTML": {
@@ -19364,10 +19510,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1014,
+        "source_lineno": 1250,
         "source_range": [
-          31264,
-          31601
+          42452,
+          42789
         ]
       },
       "escapeHTMLAttr": {
@@ -19396,10 +19542,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1036,
+        "source_lineno": 1272,
         "source_range": [
-          31767,
-          31879
+          42955,
+          43067
         ]
       },
       "escapeLatex": {
@@ -19428,10 +19574,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1045,
+        "source_lineno": 1281,
         "source_range": [
-          32108,
-          32603
+          43296,
+          43791
         ]
       },
       "getUniqueKey": {
@@ -19469,10 +19615,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1071,
+        "source_lineno": 1307,
         "source_range": [
-          32967,
-          33162
+          44155,
+          44350
         ]
       },
       "randomString": {
@@ -19501,10 +19647,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1086,
+        "source_lineno": 1322,
         "source_range": [
-          33353,
-          33432
+          44541,
+          44620
         ]
       },
       "countDecimalPlaces": {
@@ -19533,10 +19679,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1095,
+        "source_lineno": 1331,
         "source_range": [
-          33618,
-          33737
+          44806,
+          44925
         ]
       },
       "replaceEditorLinks": {
@@ -19565,10 +19711,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1104,
+        "source_lineno": 1340,
         "source_range": [
-          33960,
-          34255
+          45148,
+          45443
         ]
       },
       "numberValidator": {
@@ -19597,10 +19743,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1117,
+        "source_lineno": 1353,
         "source_range": [
-          34441,
-          34573
+          45629,
+          45761
         ]
       },
       "limitedNumberValidator": {
@@ -19649,10 +19795,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1131,
+        "source_lineno": 1367,
         "source_range": [
-          34971,
-          35257
+          46159,
+          46445
         ]
       },
       "bold": {
@@ -19681,10 +19827,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1145,
+        "source_lineno": 1381,
         "source_range": [
-          35442,
-          35483
+          46630,
+          46671
         ]
       },
       "italic": {
@@ -19713,10 +19859,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1154,
+        "source_lineno": 1390,
         "source_range": [
-          35672,
-          35715
+          46860,
+          46903
         ]
       },
       "underline": {
@@ -19745,10 +19891,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1163,
+        "source_lineno": 1399,
         "source_range": [
-          35910,
-          35956
+          47098,
+          47144
         ]
       },
       "strike": {
@@ -19777,10 +19923,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1172,
+        "source_lineno": 1408,
         "source_range": [
-          36149,
-          36192
+          47337,
+          47380
         ]
       },
       "sub": {
@@ -19809,10 +19955,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1181,
+        "source_lineno": 1417,
         "source_range": [
-          36368,
-          36412
+          47556,
+          47600
         ]
       },
       "sup": {
@@ -19841,10 +19987,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1190,
+        "source_lineno": 1426,
         "source_range": [
-          36592,
-          36636
+          47780,
+          47824
         ]
       },
       "tableprint": {
@@ -19877,10 +20023,10 @@
           }
         ],
         "source_filename": "format.js",
-        "source_lineno": 1206,
+        "source_lineno": 1442,
         "source_range": [
-          37198,
-          46495
+          48386,
+          57683
         ]
       }
     },
@@ -27967,8 +28113,8 @@
         "source_filename": "windows.js",
         "source_lineno": 712,
         "source_range": [
-          22407,
-          23036
+          23118,
+          23763
         ]
       },
       "show": {
@@ -27990,8 +28136,8 @@
         "source_filename": "windows.js",
         "source_lineno": 734,
         "source_range": [
-          23219,
-          23337
+          23952,
+          24073
         ]
       },
       "hide": {
@@ -28013,8 +28159,8 @@
         "source_filename": "windows.js",
         "source_lineno": 743,
         "source_range": [
-          23519,
-          23637
+          24261,
+          24382
         ]
       },
       "focus": {
@@ -28036,8 +28182,8 @@
         "source_filename": "windows.js",
         "source_lineno": 752,
         "source_range": [
-          23756,
-          23876
+          24507,
+          24630
         ]
       },
       "minimize": {
@@ -28059,8 +28205,8 @@
         "source_filename": "windows.js",
         "source_lineno": 761,
         "source_range": [
-          24065,
-          24191
+          24825,
+          24954
         ]
       },
       "center": {
@@ -28082,8 +28228,8 @@
         "source_filename": "windows.js",
         "source_lineno": 770,
         "source_range": [
-          24383,
-          24505
+          25152,
+          25277
         ]
       },
       "moveTop": {
@@ -28105,8 +28251,8 @@
         "source_filename": "windows.js",
         "source_lineno": 779,
         "source_range": [
-          24728,
-          24852
+          25506,
+          25633
         ]
       },
       "setSize": {
@@ -28147,8 +28293,8 @@
         "source_filename": "windows.js",
         "source_lineno": 790,
         "source_range": [
-          25102,
-          25254
+          25891,
+          26046
         ]
       },
       "setPos": {
@@ -28189,8 +28335,8 @@
         "source_filename": "windows.js",
         "source_lineno": 801,
         "source_range": [
-          25522,
-          25664
+          26322,
+          26467
         ]
       },
       "setResizable": {
@@ -28222,8 +28368,8 @@
         "source_filename": "windows.js",
         "source_lineno": 811,
         "source_range": [
-          25970,
-          26116
+          26780,
+          26929
         ]
       },
       "setMovable": {
@@ -28255,8 +28401,8 @@
         "source_filename": "windows.js",
         "source_lineno": 821,
         "source_range": [
-          26416,
-          26558
+          27236,
+          27381
         ]
       },
       "setAspectRatio": {
@@ -28288,8 +28434,8 @@
         "source_filename": "windows.js",
         "source_lineno": 831,
         "source_range": [
-          26865,
-          27029
+          27695,
+          27862
         ]
       },
       "setOpacity": {
@@ -28321,8 +28467,8 @@
         "source_filename": "windows.js",
         "source_lineno": 841,
         "source_range": [
-          27360,
-          27506
+          28200,
+          28349
         ]
       },
       "setFullscreen": {
@@ -28354,8 +28500,8 @@
         "source_filename": "windows.js",
         "source_lineno": 851,
         "source_range": [
-          27761,
-          27909
+          28611,
+          28762
         ]
       },
       "setTitle": {
@@ -28387,8 +28533,8 @@
         "source_filename": "windows.js",
         "source_lineno": 861,
         "source_range": [
-          28103,
-          28241
+          28963,
+          29104
         ]
       },
       "printToPdf": {
@@ -28420,8 +28566,8 @@
         "source_filename": "windows.js",
         "source_lineno": 871,
         "source_range": [
-          28392,
-          28538
+          29262,
+          29411
         ]
       },
       "getSize": {
@@ -28443,8 +28589,8 @@
         "source_filename": "windows.js",
         "source_lineno": 880,
         "source_range": [
-          28676,
-          28800
+          29555,
+          29682
         ]
       },
       "getPos": {
@@ -28466,8 +28612,8 @@
         "source_filename": "windows.js",
         "source_lineno": 889,
         "source_range": [
-          28938,
-          29060
+          29826,
+          29951
         ]
       },
       "close": {
@@ -28489,8 +28635,8 @@
         "source_filename": "windows.js",
         "source_lineno": 898,
         "source_range": [
-          29172,
-          29245
+          30069,
+          30144
         ]
       },
       "openDevTools": {
@@ -28512,8 +28658,8 @@
         "source_filename": "windows.js",
         "source_lineno": 906,
         "source_range": [
-          29425,
-          29559
+          30330,
+          30467
         ]
       },
       "getMediaSourceId": {
@@ -28536,8 +28682,8 @@
         "source_filename": "windows.js",
         "source_lineno": 915,
         "source_range": [
-          29706,
-          29848
+          30620,
+          30765
         ]
       },
       "startVideoRecording": {
@@ -28570,8 +28716,8 @@
         "source_filename": "windows.js",
         "source_lineno": 925,
         "source_range": [
-          30009,
-          30214
+          30933,
+          31141
         ]
       },
       "addScript": {
@@ -28592,8 +28738,8 @@
         "source_filename": "windows.js",
         "source_lineno": 934,
         "source_range": [
-          30327,
-          30893
+          31260,
+          31837
         ]
       },
       "addLinkStylesheet": {
@@ -28614,8 +28760,8 @@
         "source_filename": "windows.js",
         "source_lineno": 951,
         "source_range": [
-          31021,
-          31235
+          31971,
+          32190
         ]
       },
       "addUI": {
@@ -28626,8 +28772,8 @@
         "source_filename": "windows.js",
         "source_lineno": 961,
         "source_range": [
-          31279,
-          31380
+          32239,
+          32343
         ]
       }
     },
@@ -28641,8 +28787,8 @@
         "source_filename": "figures.js",
         "source_lineno": 898,
         "source_range": [
-          27289,
-          27643
+          28186,
+          28550
         ]
       },
       "focus": {
@@ -28654,8 +28800,8 @@
         "source_filename": "figures.js",
         "source_lineno": 913,
         "source_range": [
-          27710,
-          27849
+          28622,
+          28764
         ]
       },
       "setSize": {
@@ -28696,8 +28842,8 @@
         "source_filename": "figures.js",
         "source_lineno": 924,
         "source_range": [
-          28089,
-          28258
+          29012,
+          29184
         ]
       },
       "setPos": {
@@ -28738,8 +28884,8 @@
         "source_filename": "figures.js",
         "source_lineno": 935,
         "source_range": [
-          28518,
-          28677
+          29452,
+          29614
         ]
       },
       "setTitle": {
@@ -28771,8 +28917,8 @@
         "source_filename": "figures.js",
         "source_lineno": 945,
         "source_range": [
-          28871,
-          29026
+          29815,
+          29973
         ]
       },
       "getSize": {
@@ -28794,8 +28940,8 @@
         "source_filename": "figures.js",
         "source_lineno": 954,
         "source_range": [
-          29156,
-          29299
+          30109,
+          30255
         ]
       },
       "getPos": {
@@ -28817,8 +28963,8 @@
         "source_filename": "figures.js",
         "source_lineno": 963,
         "source_range": [
-          29429,
-          29570
+          30391,
+          30535
         ]
       },
       "getMediaSourceId": {
@@ -28840,8 +28986,8 @@
         "source_filename": "figures.js",
         "source_lineno": 972,
         "source_range": [
-          29678,
-          29839
+          30649,
+          30813
         ]
       },
       "startVideoRecording": {
@@ -28874,8 +29020,8 @@
         "source_filename": "figures.js",
         "source_lineno": 982,
         "source_range": [
-          29999,
-          30174
+          30980,
+          31158
         ]
       },
       "close": {
@@ -28897,8 +29043,8 @@
         "source_filename": "figures.js",
         "source_lineno": 991,
         "source_range": [
-          30278,
-          30403
+          31268,
+          31396
         ]
       },
       "hideMenu": {
@@ -28909,8 +29055,8 @@
         "source_filename": "figures.js",
         "source_lineno": 999,
         "source_range": [
-          30445,
-          30641
+          31443,
+          31644
         ]
       },
       "showMenu": {
@@ -28921,8 +29067,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1009,
         "source_range": [
-          30683,
-          30873
+          31691,
+          31886
         ]
       }
     },
@@ -28945,8 +29091,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1241,
         "source_range": [
-          37563,
-          37707
+          38803,
+          38952
         ]
       },
       "xlabel": {
@@ -28967,8 +29113,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1252,
         "source_range": [
-          37827,
-          37965
+          39078,
+          39221
         ]
       },
       "ylabel": {
@@ -28989,8 +29135,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1263,
         "source_range": [
-          38083,
-          38221
+          39345,
+          39488
         ]
       },
       "zlabel": {
@@ -29011,8 +29157,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1274,
         "source_range": [
-          38339,
-          38477
+          39612,
+          39755
         ]
       },
       "title": {
@@ -29033,8 +29179,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1285,
         "source_range": [
-          38580,
-          38716
+          39864,
+          40005
         ]
       },
       "xlim": {
@@ -29055,8 +29201,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1296,
         "source_range": [
-          38831,
-          38989
+          40126,
+          40290
         ]
       },
       "ylim": {
@@ -29077,8 +29223,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1308,
         "source_range": [
-          39104,
-          39262
+          40411,
+          40575
         ]
       },
       "zlim": {
@@ -29099,8 +29245,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1320,
         "source_range": [
-          39377,
-          39535
+          40696,
+          40860
         ]
       },
       "view": {
@@ -29130,8 +29276,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1333,
         "source_range": [
-          39718,
-          39880
+          41050,
+          41217
         ]
       },
       "zoom": {
@@ -29152,8 +29298,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1344,
         "source_range": [
-          39984,
-          40120
+          41327,
+          41468
         ]
       },
       "axis": {
@@ -29174,8 +29320,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1355,
         "source_range": [
-          40293,
-          40433
+          41647,
+          41792
         ]
       },
       "fromJSON": {
@@ -29196,8 +29342,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1366,
         "source_range": [
-          40530,
-          40654
+          41895,
+          42024
         ]
       },
       "print": {
@@ -29228,8 +29374,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1378,
         "source_range": [
-          40867,
-          41215
+          42244,
+          42605
         ]
       },
       "update": {
@@ -29259,8 +29405,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1398,
         "source_range": [
-          41443,
-          41527
+          42840,
+          42926
         ]
       },
       "updateById": {
@@ -29282,8 +29428,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1406,
         "source_range": [
-          41691,
-          41773
+          43096,
+          43180
         ]
       },
       "remove": {
@@ -29294,8 +29440,8 @@
         "source_filename": "figures.js",
         "source_lineno": 1413,
         "source_range": [
-          41876,
-          41970
+          43288,
+          43386
         ]
       }
     },
@@ -41908,14 +42054,14 @@
         "source_filename": "geography-map.js",
         "source_lineno": 69,
         "source_range": [
-          2412,
-          3377
+          2480,
+          3468
         ]
       },
       "setCenter": {
         "name": "setCenter",
         "kind": "function",
-        "description": "Sets the center of the map to the specified latitude and longitude.\nThis will update the internal state and move the Leaflet map if it is ready.",
+        "description": "Sets the center of the map to the specified latitude and longitude.\rThis will update the internal state and move the Leaflet map if it is ready.",
         "params": [
           {
             "type": {
@@ -41939,14 +42085,14 @@
         "source_filename": "geography-map.js",
         "source_lineno": 100,
         "source_range": [
-          3625,
-          3792
+          3724,
+          3897
         ]
       },
       "setZoom": {
         "name": "setZoom",
         "kind": "function",
-        "description": "Sets the zoom level of the map.\nThis will update the internal state and adjust the Leaflet map if it is ready.",
+        "description": "Sets the zoom level of the map.\rThis will update the internal state and adjust the Leaflet map if it is ready.",
         "params": [
           {
             "type": {
@@ -41961,8 +42107,8 @@
         "source_filename": "geography-map.js",
         "source_lineno": 113,
         "source_range": [
-          3975,
-          4101
+          4087,
+          4218
         ]
       },
       "addMarker": {
@@ -42003,8 +42149,8 @@
         "source_filename": "geography-map.js",
         "source_lineno": 126,
         "source_range": [
-          4369,
-          4468
+          4494,
+          4595
         ]
       }
     },
@@ -42027,8 +42173,8 @@
         "source_filename": "geography-map-3d.js",
         "source_lineno": 36,
         "source_range": [
-          775,
-          2004
+          810,
+          2072
         ]
       },
       "setView": {
@@ -42089,8 +42235,8 @@
         "source_filename": "geography-map-3d.js",
         "source_lineno": 79,
         "source_range": [
-          2329,
-          2865
+          2407,
+          2960
         ]
       },
       "addEntity": {
@@ -42121,8 +42267,8 @@
         "source_filename": "geography-map-3d.js",
         "source_lineno": 103,
         "source_range": [
-          3071,
-          3165
+          3173,
+          3269
         ]
       },
       "removeAllEntities": {
@@ -42133,8 +42279,8 @@
         "source_filename": "geography-map-3d.js",
         "source_lineno": 110,
         "source_range": [
-          3233,
-          3296
+          3342,
+          3407
         ]
       },
       "flyTo": {
@@ -42155,8 +42301,8 @@
         "source_filename": "geography-map-3d.js",
         "source_lineno": 118,
         "source_range": [
-          3423,
-          3545
+          3540,
+          3666
         ]
       }
     },
@@ -42261,8 +42407,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 29,
         "source_range": [
-          662,
-          740
+          690,
+          770
         ]
       },
       "workerFunction": {
@@ -42306,8 +42452,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 39,
         "source_range": [
-          1063,
-          2170
+          1101,
+          2242
         ]
       },
       "init": {
@@ -42350,8 +42496,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 81,
         "source_range": [
-          2505,
-          3500
+          2585,
+          3612
         ]
       },
       "assignTasksToWorkers": {
@@ -42362,8 +42508,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 118,
         "source_range": [
-          3572,
-          4769
+          3689,
+          4928
         ]
       },
       "run": {
@@ -42435,8 +42581,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 171,
         "source_range": [
-          5298,
-          6103
+          5468,
+          6298
         ]
       },
       "parfor": {
@@ -42540,8 +42686,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 211,
         "source_range": [
-          6956,
-          9125
+          7166,
+          9402
         ]
       },
       "terminate": {
@@ -42552,8 +42698,8 @@
         "source_filename": "parallel.js",
         "source_lineno": 283,
         "source_range": [
-          9197,
-          9376
+          9479,
+          9665
         ]
       }
     },

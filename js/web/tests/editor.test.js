@@ -96,6 +96,23 @@ webTest(tests, 'web editor search, replace, case/regex options and symbol button
   var key = t.q('.editor-symbol-key', doc), before = cm.getValue(); key.click(); t.ok(cm.getValue().length > before.length);
 });
 
+webTest(tests, 'web editor Ctrl+Space requests completions without auto-inserting one match', async function() {
+  var t = GUI, w = await t.editor(), doc = w.document;
+  var cm = [...doc.querySelectorAll('.CodeMirror')].find(el => w.getComputedStyle(el).display !== 'none').CodeMirror;
+  var original = w.CodeMirror.commands.autocomplete, received;
+  w.CodeMirror.commands.autocomplete = function(editor, hint, options) {
+    received = { editor: editor, hint: hint, options: options };
+  };
+  try {
+    w.CodeMirror.keyMap.default['Ctrl-Space'](cm);
+    t.eq(received.editor, cm);
+    t.eq(received.hint, null);
+    t.eq(received.options.completeSingle, false);
+  } finally {
+    w.CodeMirror.commands.autocomplete = original;
+  }
+});
+
 webTest(tests, 'web editor open action opens workspace dialog and Save As cancellation retains text', async function() {
   var t = GUI, w = await t.editor(), doc = w.document;
   var before_picker = t.app.runtime_info.supports_open_picker, picker_clicks = 0;

@@ -175,6 +175,12 @@
       el.className = entry.class;
       el.setAttribute('data-log-index', String(index));
       el.innerHTML = '<span class="timestamp">' + entry.timestamp + '</span>' + entry.html;
+      if(entry.repeat_count > 1) {
+        var repeat = document.createElement('span');
+        repeat.className = 'jslab-console-repeat';
+        repeat.textContent = String(entry.repeat_count);
+        el.insertBefore(repeat, el.firstChild);
+      }
       return el;
     }
 
@@ -384,8 +390,17 @@
         msg_class === this.last_class &&
         merge_messages &&
         (t - this.last_tic) <= merge_interval_ms;
+      var last_entry = this.log[this.log.length - 1];
+      var can_group = !can_merge && data && msg_class === 'data-in' && last_entry &&
+        last_entry.class === msg_class && last_entry.data === raw;
 
-      if(can_merge) {
+      if(can_group) {
+        var grouped_index = this.log.length - 1;
+        last_entry.repeat_count = (last_entry.repeat_count || 1) + 1;
+        this.last_tic = t;
+        this.renderMessageWindow();
+        el = this.getRenderedElementByIndex(grouped_index);
+      } else if(can_merge) {
         var last_index = this.log.length - 1;
         this.last_tic = t;
         this.log[last_index].html += data;
@@ -404,7 +419,8 @@
           'class': msg_class,
           'timestamp': ts,
           'data': raw,
-          'html': data
+          'html': data,
+          'repeat_count': 1
         });
 
         var new_index = this.log.length - 1;

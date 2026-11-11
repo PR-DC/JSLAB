@@ -56,6 +56,39 @@ class PRDC_JSLAB_LIB_BASIC {
      * @type {any}
      */
     this.ans;
+    this._monitored_functions = new WeakMap();
+    this._monitored_events = new WeakMap();
+    this._inspected_objects = [];
+    Object.defineProperty(this.jsl.context, '$_', {
+      configurable: true,
+      get: function() { return obj.jsl.context.ans; }
+    });
+    var document_ref = this.jsl.context.document;
+    if(document_ref && typeof document_ref.querySelector === 'function') {
+      if(typeof this.jsl.context.$ === 'undefined') this.jsl.context.$ =
+        function(selector, start = document_ref) { return start.querySelector(selector); };
+      if(typeof this.jsl.context.$$ === 'undefined') this.jsl.context.$$ =
+        function(selector, start = document_ref) { return Array.from(start.querySelectorAll(selector)); };
+      if(typeof this.jsl.context.$x === 'undefined') this.jsl.context.$x = function(path, start = document_ref) {
+        var result = document_ref.evaluate(path, start, null,
+          document_ref.defaultView.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        return Array.from({ length: result.snapshotLength }, function(_value, index) {
+          return result.snapshotItem(index);
+        });
+      };
+    }
+    for(let inspected_index = 0; inspected_index < 5; inspected_index++) {
+      Object.defineProperty(this.jsl.context, '$' + inspected_index, {
+        configurable: true,
+        get: function() { return obj._inspected_objects[inspected_index]; }
+      });
+    }
+    if(Array.isArray(this.jsl.builtin_workspace)) {
+      ['$_', '$0', '$1', '$2', '$3', '$4', '$', '$$', '$x'].forEach(function(name) {
+        if(Object.prototype.hasOwnProperty.call(obj.jsl.context, name) &&
+            !obj.jsl.builtin_workspace.includes(name)) obj.jsl.builtin_workspace.push(name);
+      });
+    }
     
     /**
      * Clears all defined variables in the current context.
@@ -1364,9 +1397,12 @@ class PRDC_JSLAB_LIB_BASIC {
    * @return {Array<string>} An array of completion suggestions.
    */
   getCompletions(data) {
-    var start = data[0];
-    var context = data[1];
-    var keywords = data[2];  
+    var request = Array.isArray(data) ? {
+      start: data[0], context: data[1], keywords: data[2]
+    } : (data || {});
+    var start = request.start;
+    var context = request.context;
+    var keywords = request.keywords || [];
     var found = [];
     var root_scope = this.jsl.context;
     var seen = Object.create(null);
@@ -1376,35 +1412,18 @@ class PRDC_JSLAB_LIB_BASIC {
     function getMatchScore(str) {
       var candidate = String(str);
       if(!start_str.length) {
-        // No query: keep deterministic order by length and alphabet later.
-        return 1000;
+        return 10;
       }
 
       var candidate_lower = candidate.toLowerCase();
-      var idx_ci = candidate_lower.indexOf(start_lower);
-      if(idx_ci < 0) {
-        return Infinity;
-      }
-
-      var idx_cs = candidate.indexOf(start_str);
-      var is_exact_cs = candidate === start_str;
-      var is_exact_ci = !is_exact_cs && candidate_lower === start_lower;
-      var is_prefix_cs = idx_cs === 0;
-      var is_prefix_ci = idx_ci === 0;
-      var boundary_ci = idx_ci > 0 && /[\._\$]/.test(candidate.charAt(idx_ci - 1));
-      var boundary_cs = idx_cs > 0 && /[\._\$]/.test(candidate.charAt(idx_cs - 1));
-
-      if(is_exact_cs) return 0;
-      if(is_exact_ci) return 1;
-      if(is_prefix_cs) return 2;
-      if(is_prefix_ci) return 3;
-      if(boundary_cs) return 10 + idx_cs;
-      if(boundary_ci) return 20 + idx_ci;
-      if(idx_cs >= 0) return 30 + idx_cs;
-      return 40 + idx_ci;
+      if(candidate === start_str) return 0;
+      if(candidate_lower === start_lower) return 1;
+      if(candidate.startsWith(start_str)) return 2;
+      if(candidate_lower.startsWith(start_lower)) return 3;
+      return Infinity;
     }
 
-    function maybeAdd(str) {
+    function maybeAdd(str, inherited) {
       if(str == null) {
         return;
       }
@@ -1417,59 +1436,489 @@ class PRDC_JSLAB_LIB_BASIC {
         return;
       }
       seen[str] = true;
-      found.push({ value: str, score: score });
+      found.push({ value: str, score: score, inherited: !!inherited });
     }
     function gatherCompletions(obj) {
-      if(typeof obj == "string") ("charAt charCodeAt indexOf lastIndexOf substring substr slice trim trimLeft trimRight " +
-        "toUpperCase toLowerCase split concat match replace search").split(" ").forEach(maybeAdd);
-      else if(obj instanceof Array) ("length concat join splice push pop shift unshift slice reverse sort indexOf " +
-        "lastIndexOf every some filter forEach map reduce reduceRight ").split(" ").forEach(maybeAdd);
-      else if(obj instanceof Function) "prototype apply call bind".split(" ").forEach(maybeAdd);
+      if(obj === null || obj === undefined) return;
+      if(typeof obj !== 'object' && typeof obj !== 'function') obj = Object(obj);
       if(!Object.getOwnPropertyNames || !Object.getPrototypeOf) {
         for(var name in obj) maybeAdd(name);
       } else {
-        for(var o = obj; o; o = Object.getPrototypeOf(o))
-          Object.getOwnPropertyNames(o).forEach(maybeAdd);
+        var inherited = false;
+        for(var o = obj; o; o = Object.getPrototypeOf(o)) {
+          Object.getOwnPropertyNames(o).forEach(function(name) {
+            maybeAdd(name, inherited);
+          });
+          inherited = true;
+        }
       }
     }
 
-    if(context && context.length) {
-      context = JSON.parse(context);
+    if(request.expression) {
+      var expression_result = this._resolveConsoleExpression(request.expression);
+      if(expression_result.success) gatherCompletions(expression_result.value);
+    } else if(context && context.length) {
+      context = typeof context === 'string' ? JSON.parse(context) : context;
       // If this is a property, see if it belongs to some object we can
       // find in the current environment.
       var obj = context.pop(), base;
       if(obj.type && obj.type.indexOf("variable") === 0) {
-        base = base || root_scope[obj.string];
+        var root_property = this._getConsoleDataProperty(root_scope, obj.string);
+        if(root_property.success) base = root_property.value;
       } else if(obj.type == "string") {
         base = "";
       } else if(obj.type == "atom") {
         base = 1;
       } else if(obj.type == "function") {
-        if(root_scope.jQuery != null && (obj.string == '$' || obj.string == 'jQuery') &&
-            (typeof root_scope.jQuery == 'function')) {
-            base = root_scope.jQuery();
-          } else if(root_scope._ != null && (obj.string == '_') && (typeof root_scope._ == 'function')) {
-            base = root_scope._();
-          }
+        var function_property = this._getConsoleDataProperty(root_scope, obj.string);
+        if(function_property.success) base = function_property.value;
       }
-      while(base != null && context.length)
-        base = base[context.pop().string]; // switch base to variable
+      while(base != null && context.length) {
+        var resolved = this._getConsoleDataProperty(base, context.pop().string);
+        if(!resolved.success) {
+          base = undefined;
+          break;
+        }
+        base = resolved.value;
+      }
       if(base != null) gatherCompletions(base);
     } else {
       gatherCompletions(root_scope);
       keywords.forEach(maybeAdd);
     }
     if(found.length) {
+      var natural = new Intl.Collator(undefined, { numeric: true, sensitivity: 'variant' });
       found.sort(function(a, b) {
         return a.score - b.score ||
-          a.value.length - b.value.length ||
-          a.value.localeCompare(b.value);
+          Number(a.inherited) - Number(b.inherited) ||
+          Number(a.value.startsWith('_')) - Number(b.value.startsWith('_')) ||
+          natural.compare(a.value, b.value);
       });
     }
-    return found.map(function(entry) {
+    var items = found.map(function(entry) {
       return entry.value;
     });
+    var map_match = /([A-Za-z_$][\w$]*(?:\s*(?:\.\s*[A-Za-z_$][\w$]*|\[\s*(?:"[^"]*"|'[^']*'|\d+)\s*\]))*)\s*\.\s*(?:get|set|delete)\s*\(\s*$/.exec(String(request.input || ''));
+    if(map_match) {
+      var map_result = this._resolveConsoleExpression(map_match[1]);
+      if(map_result.success && map_result.value instanceof Map) {
+        items = Array.from(map_result.value.keys()).slice(0, 1000).map(function(key) {
+          if(typeof key === 'string') return JSON.stringify(key);
+          if(['number', 'bigint', 'boolean'].includes(typeof key) || key === null) return String(key);
+          return null;
+        }).filter(function(key) { return key !== null; });
+      }
+    }
+    if(Array.isArray(request.history) && request.input) {
+      var input = String(request.input).trimStart();
+      var history_seen = new Set();
+      request.history.slice(0, 1000).forEach(function(command) {
+        command = String(command || '');
+        if(command && command.startsWith(input) && command !== input &&
+            !history_seen.has(command) && history_seen.size < 50) {
+          history_seen.add(command);
+          items.push({ text: command, displayText: '> ' + command,
+            className: 'jslab-console-history-hint', history: true });
+        }
+      });
+    }
+    if(Array.isArray(data)) return items;
+    return { items: items, argument_hint: this._getConsoleArgumentHint(request.input || '') };
   }    
+
+  /** Returns enumerable own property names, matching the DevTools helper. */
+  keys(object) {
+    return Object.keys(Object(object));
+  }
+
+  /** Returns enumerable own property values, matching the DevTools helper. */
+  values(object) {
+    return Object.values(Object(object));
+  }
+
+  /** Copies a bounded textual representation to the system clipboard. */
+  async copy(object) {
+    var text = typeof object === 'string' ? object : this.jsl.inter.format.safeStringify(object, 20, false);
+    await this.jsl.inter.env.copyText(text);
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    return undefined;
+  }
+
+  /** Displays a value as an expandable console object. */
+  inspect(object) {
+    this._inspected_objects.unshift(object);
+    this._inspected_objects.length = Math.min(5, this._inspected_objects.length);
+    this.jsl.inter.env.disp(object);
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    return object;
+  }
+
+  /** Finds reachable workspace objects constructed by the supplied class. */
+  queryObjects(constructor) {
+    if(typeof constructor !== 'function') throw new TypeError('Expected a constructor.');
+    var found = [];
+    var seen = new WeakSet();
+    var queue = [this.jsl.context];
+    var remaining = 10000;
+    while(queue.length && remaining-- > 0) {
+      var value = queue.shift();
+      if(value === null || (typeof value !== 'object' && typeof value !== 'function') || seen.has(value)) continue;
+      seen.add(value);
+      try { if(value instanceof constructor && value !== constructor.prototype) found.push(value); } catch(err) {}
+      var descriptors;
+      try { descriptors = Object.getOwnPropertyDescriptors(value); } catch(err) { continue; }
+      Reflect.ownKeys(descriptors).forEach(function(key) {
+        var descriptor = descriptors[key];
+        if(descriptor && Object.prototype.hasOwnProperty.call(descriptor, 'value')) queue.push(descriptor.value);
+      });
+    }
+    return found;
+  }
+
+  /** Returns listeners installed through monitorEvents(). */
+  getEventListeners(object) {
+    var listeners = this._monitored_events.get(object) || [];
+    return listeners.reduce(function(result, listener) {
+      (result[listener.type] ||= []).push({ listener: listener.handler, useCapture: false,
+        passive: false, once: false });
+      return result;
+    }, {});
+  }
+
+  /** Logs selected EventTarget events until unmonitorEvents() is called. */
+  monitorEvents(object, events) {
+    if(!object || typeof object.addEventListener !== 'function') throw new TypeError('Expected an EventTarget.');
+    var groups = {
+      mouse: ['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'mouseover', 'mouseout', 'wheel'],
+      key: ['keydown', 'keyup', 'keypress', 'input'],
+      touch: ['touchstart', 'touchmove', 'touchend', 'touchcancel'],
+      control: ['resize', 'scroll', 'focus', 'blur', 'select', 'change', 'submit', 'reset']
+    };
+    var types = events === undefined ? Object.values(groups).flat() :
+      (Array.isArray(events) ? events : [events]).flatMap(type => groups[type] || [type]);
+    var records = this._monitored_events.get(object) || [];
+    types.forEach((type) => {
+      if(records.some(record => record.type === type)) return;
+      var handler = event => this.jsl.inter.env.disp(event);
+      object.addEventListener(type, handler);
+      records.push({ type: type, handler: handler });
+    });
+    this._monitored_events.set(object, records);
+    return object;
+  }
+
+  /** Stops event logging installed by monitorEvents(). */
+  unmonitorEvents(object, events) {
+    var records = this._monitored_events.get(object) || [];
+    var types = events === undefined ? null : new Set(Array.isArray(events) ? events : [events]);
+    records = records.filter(function(record) {
+      if(types && !types.has(record.type)) return true;
+      object.removeEventListener(record.type, record.handler);
+      return false;
+    });
+    if(records.length) this._monitored_events.set(object, records);
+    else this._monitored_events.delete(object);
+    return object;
+  }
+
+  /** Displays XML/HTML markup when available. */
+  dirxml(object) {
+    return this.inspect(object && object.outerHTML ? object.outerHTML : object);
+  }
+
+  /** Logs calls to a function referenced directly by a workspace variable. */
+  monitor(func) {
+    return this._setFunctionMonitor(func, false);
+  }
+
+  /** Stops call logging installed by monitor(). */
+  unmonitor(func) {
+    return this._removeFunctionMonitor(func);
+  }
+
+  /** Breaks when a workspace function is called; `debug` remains JSLAB's debug flag. */
+  debugFunction(func) {
+    return this._setFunctionMonitor(func, true);
+  }
+
+  /** Removes a breakpoint wrapper installed by debugFunction(). */
+  undebug(func) {
+    return this._removeFunctionMonitor(func);
+  }
+
+  /** @private */
+  _setFunctionMonitor(func, break_on_call) {
+    if(typeof func !== 'function') throw new TypeError('Expected a function.');
+    if(this._monitored_functions.has(func)) return func;
+    var obj = this;
+    var wrapper = function(...args) {
+      if(break_on_call) debugger;
+      else obj.jsl.inter.env.disp((func.name || 'function') + ' called with', args);
+      if(new.target) return Reflect.construct(func, args, new.target);
+      return Reflect.apply(func, this, args);
+    };
+    var replaced = [];
+    var descriptors = Object.getOwnPropertyDescriptors(this.jsl.context);
+    Reflect.ownKeys(descriptors).forEach((key) => {
+      var descriptor = descriptors[key];
+      if(descriptor && descriptor.value === func && descriptor.writable) {
+        this.jsl.context[key] = wrapper;
+        replaced.push(key);
+      }
+    });
+    if(!replaced.length) throw new Error('Function must be assigned to a writable workspace variable.');
+    var record = { original: func, wrapper: wrapper, properties: replaced };
+    this._monitored_functions.set(func, record);
+    this._monitored_functions.set(wrapper, record);
+    return wrapper;
+  }
+
+  /** @private */
+  _removeFunctionMonitor(func) {
+    var record = this._monitored_functions.get(func);
+    if(!record) return false;
+    record.properties.forEach((key) => {
+      if(this.jsl.context[key] === record.wrapper) this.jsl.context[key] = record.original;
+    });
+    this._monitored_functions.delete(record.original);
+    this._monitored_functions.delete(record.wrapper);
+    return true;
+  }
+
+  /**
+   * Resolves a console expression without invoking functions, getters or proxy
+   * traps. This is intentionally conservative and is shared by completion and
+   * eager preview.
+   * @param {string} expression Expression text.
+   * @returns {Object} Resolution result with success, value and reason fields.
+   * @private
+   */
+  _resolveConsoleExpression(expression) {
+    var ast;
+    try {
+      ast = this.jsl.inter.env.babel_parser.parseExpression(String(expression).trim().replace(/;+\s*$/, ''), {
+        sourceType: 'script', allowAwaitOutsideFunction: true
+      });
+    } catch(err) {
+      return { success: false, reason: 'syntax' };
+    }
+    var obj = this;
+    function evaluate(node) {
+      if(!node) return { success: false, reason: 'unsupported' };
+      if(['StringLiteral', 'NumericLiteral', 'BooleanLiteral', 'BigIntLiteral'].includes(node.type)) {
+        return { success: true, value: node.type === 'BigIntLiteral' ? BigInt(node.value) : node.value };
+      }
+      if(node.type === 'NullLiteral') return { success: true, value: null };
+      if(node.type === 'Identifier') {
+        if(node.name === 'undefined') return { success: true, value: undefined };
+        return obj._getConsoleDataProperty(obj.jsl.context, node.name);
+      }
+      if(node.type === 'ThisExpression') return { success: true, value: obj.jsl.context };
+      if(node.type === 'MemberExpression' || node.type === 'OptionalMemberExpression') {
+        var owner = evaluate(node.object);
+        if(!owner.success || owner.value == null) return { success: false, reason: 'unresolved' };
+        var property;
+        if(node.computed) {
+          var key = evaluate(node.property);
+          if(!key.success || !['string', 'number', 'symbol'].includes(typeof key.value)) {
+            return { success: false, reason: 'computed' };
+          }
+          property = key.value;
+        } else {
+          property = node.property.name;
+        }
+        return obj._getConsoleDataProperty(owner.value, property);
+      }
+      if(node.type === 'UnaryExpression' && ['+', '-', '!', '~', 'typeof', 'void'].includes(node.operator)) {
+        var argument = evaluate(node.argument);
+        if(!argument.success) return argument;
+        try {
+          switch(node.operator) {
+            case '+': return { success: true, value: +argument.value };
+            case '-': return { success: true, value: -argument.value };
+            case '!': return { success: true, value: !argument.value };
+            case '~': return { success: true, value: ~argument.value };
+            case 'typeof': return { success: true, value: typeof argument.value };
+            case 'void': return { success: true, value: undefined };
+          }
+        } catch(err) { return { success: false, reason: 'operation' }; }
+      }
+      if(node.type === 'ArrayExpression') {
+        var array = [];
+        for(const element of node.elements) {
+          if(element === null) { array.length++; continue; }
+          var array_value = evaluate(element);
+          if(!array_value.success) return array_value;
+          array.push(array_value.value);
+        }
+        return { success: true, value: array };
+      }
+      if(node.type === 'ObjectExpression') {
+        var result = Object.create(null);
+        for(const property_node of node.properties) {
+          if(property_node.type !== 'ObjectProperty' || property_node.computed || property_node.method) {
+            return { success: false, reason: 'object-property' };
+          }
+          var object_value = evaluate(property_node.value);
+          if(!object_value.success) return object_value;
+          var object_key = property_node.key.name !== undefined ? property_node.key.name : property_node.key.value;
+          Object.defineProperty(result, object_key, { value: object_value.value, enumerable: true,
+            configurable: true, writable: true });
+        }
+        return { success: true, value: result };
+      }
+      if(node.type === 'TemplateLiteral' && node.expressions.length === 0) {
+        return { success: true, value: node.quasis[0]?.value?.cooked || '' };
+      }
+      if(node.type === 'TemplateLiteral') {
+        var template = node.quasis[0]?.value?.cooked || '';
+        for(var template_i = 0; template_i < node.expressions.length; template_i++) {
+          var template_value = evaluate(node.expressions[template_i]);
+          if(!template_value.success || (template_value.value !== null &&
+              !['undefined', 'string', 'number', 'bigint', 'boolean'].includes(typeof template_value.value))) {
+            return { success: false, reason: 'template-expression' };
+          }
+          template += String(template_value.value) +
+            (node.quasis[template_i + 1]?.value?.cooked || '');
+        }
+        return { success: true, value: template };
+      }
+      if(node.type === 'RegExpLiteral') {
+        try { return { success: true, value: new RegExp(node.pattern, node.flags) }; }
+        catch(err) { return { success: false, reason: 'regexp' }; }
+      }
+      if(node.type === 'BinaryExpression') {
+        var left = evaluate(node.left);
+        var right = evaluate(node.right);
+        if(!left.success || !right.success) return { success: false, reason: 'operand' };
+        var allowed_types = ['undefined', 'string', 'number', 'bigint', 'boolean'];
+        if((left.value !== null && !allowed_types.includes(typeof left.value)) ||
+            (right.value !== null && !allowed_types.includes(typeof right.value))) {
+          return { success: false, reason: 'object-operation' };
+        }
+        try {
+          switch(node.operator) {
+            case '+': return { success: true, value: left.value + right.value };
+            case '-': return { success: true, value: left.value - right.value };
+            case '*': return { success: true, value: left.value * right.value };
+            case '/': return { success: true, value: left.value / right.value };
+            case '%': return { success: true, value: left.value % right.value };
+            case '**': return { success: true, value: left.value ** right.value };
+            case '<<': return { success: true, value: left.value << right.value };
+            case '>>': return { success: true, value: left.value >> right.value };
+            case '>>>': return { success: true, value: left.value >>> right.value };
+            case '|': return { success: true, value: left.value | right.value };
+            case '&': return { success: true, value: left.value & right.value };
+            case '^': return { success: true, value: left.value ^ right.value };
+            case '==': return { success: true, value: left.value == right.value };
+            case '!=': return { success: true, value: left.value != right.value };
+            case '===': return { success: true, value: left.value === right.value };
+            case '!==': return { success: true, value: left.value !== right.value };
+            case '<': return { success: true, value: left.value < right.value };
+            case '<=': return { success: true, value: left.value <= right.value };
+            case '>': return { success: true, value: left.value > right.value };
+            case '>=': return { success: true, value: left.value >= right.value };
+          }
+        } catch(err) { return { success: false, reason: 'operation' }; }
+      }
+      if(node.type === 'LogicalExpression') {
+        var logical_left = evaluate(node.left);
+        if(!logical_left.success) return logical_left;
+        if(node.operator === '&&' && !logical_left.value) return logical_left;
+        if(node.operator === '||' && logical_left.value) return logical_left;
+        if(node.operator === '??' && logical_left.value !== null && logical_left.value !== undefined) return logical_left;
+        return evaluate(node.right);
+      }
+      if(node.type === 'ConditionalExpression') {
+        var test = evaluate(node.test);
+        if(!test.success) return test;
+        return evaluate(test.value ? node.consequent : node.alternate);
+      }
+      if(node.type === 'SequenceExpression') {
+        var sequence_value = { success: true, value: undefined };
+        for(const expression_node of node.expressions) {
+          sequence_value = evaluate(expression_node);
+          if(!sequence_value.success) return sequence_value;
+        }
+        return sequence_value;
+      }
+      return { success: false, reason: 'side-effect' };
+    }
+    return evaluate(ast);
+  }
+
+  /** Returns a data property without invoking an accessor. @private */
+  _getConsoleDataProperty(value, property) {
+    if(value == null) return { success: false, reason: 'null' };
+    var target;
+    try { target = Object(value); } catch(err) { return { success: false, reason: 'object' }; }
+    try {
+      for(var current = target; current; current = Object.getPrototypeOf(current)) {
+        var descriptor = Object.getOwnPropertyDescriptor(current, property);
+        if(!descriptor) continue;
+        if(!Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
+          return { success: false, reason: 'accessor' };
+        }
+        return { success: true, value: descriptor.value };
+      }
+    } catch(err) {}
+    return { success: false, reason: 'missing' };
+  }
+
+  /** Returns a side-effect-free eager preview descriptor. @private */
+  _getConsolePreview(expression) {
+    var result = this._resolveConsoleExpression(expression);
+    if(!result.success) return { success: false, reason: result.reason };
+    return { success: true, value: this.jsl.inter.format._consoleValue(result.value) };
+  }
+
+  /** Reports whether Enter should execute the current prompt. @private */
+  _isConsoleExpressionComplete(code) {
+    var source = String(code || '');
+    if(!source.trim()) return true;
+    try {
+      this.jsl.inter.env.babel_parser.parse(source, { sourceType: 'script',
+        allowAwaitOutsideFunction: true, allowReturnOutsideFunction: true });
+      return true;
+    } catch(err) {
+      return !(err.pos >= source.trimEnd().length ||
+        ['UnterminatedTemplate', 'UnterminatedComment'].includes(err.reasonCode));
+    }
+  }
+
+  /** Builds a conservative function signature for the active call. @private */
+  _getConsoleArgumentHint(input) {
+    var text = String(input || '');
+    var depth = 0;
+    var open = -1;
+    for(var i = text.length - 1; i >= 0; i--) {
+      if(text[i] === ')') depth++;
+      else if(text[i] === '(') {
+        if(depth === 0) { open = i; break; }
+        depth--;
+      }
+    }
+    if(open < 0) return null;
+    var match = /([A-Za-z_$][\w$]*(?:\s*(?:\.\s*[A-Za-z_$][\w$]*|\[\s*(?:"[^"]*"|'[^']*')\s*\]))*)\s*$/.exec(text.slice(0, open));
+    if(!match) return null;
+    var resolved = this._resolveConsoleExpression(match[1]);
+    if(!resolved.success || typeof resolved.value !== 'function') return null;
+    var source;
+    try { source = Function.prototype.toString.call(resolved.value); } catch(err) { return null; }
+    var params = /^\s*(?:async\s*)?(?:function\s*)?[^\(]*\(([^)]*)\)/.exec(source) ||
+      /^\s*(?:async\s*)?([^=()]*)=>/.exec(source);
+    if(!params) return resolved.value.name ? resolved.value.name + '(...)' : null;
+    var name = resolved.value.name || match[1].split('.').pop();
+    var arguments_text = params[1].trim();
+    if(!arguments_text && resolved.value.length > 0 && source.includes('[native code]')) {
+      arguments_text = Array.from({ length: resolved.value.length }, function(_value, index) {
+        return 'arg' + (index + 1);
+      }).join(', ');
+    }
+    return name + '(' + arguments_text + ')';
+  }
 
   /**
    * Retrieves an object by matching a specific property value.

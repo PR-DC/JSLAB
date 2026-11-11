@@ -405,9 +405,9 @@
     "rsc": "Заврши тренутну команду из историје команди"
   },
   "82": {
-    "en": "Focus command input",
-    "rs": "Fokusiraj na unos komandi",
-    "rsc": "Фокусирај на унос команди"
+    "en": "Search console",
+    "rs": "Pretraži konzolu",
+    "rsc": "Претражи конзолу"
   },
   "83": {
     "en": "Open help",
@@ -3138,5 +3138,110 @@
     "en": "Finish the current function and pause in its caller.",
     "rs": "Završi trenutnu funkciju i pauziraj u pozivaocu.",
     "rsc": "Заврши тренутну функцију и паузирај у позиваоцу."
+  },
+  "630": {
+    "en": "Console object is no longer available.",
+    "rs": "Objekat konzole više nije dostupan.",
+    "rsc": "Објекат конзоле више није доступан."
+  },
+  "631": {
+    "en": "Unable to inspect value.",
+    "rs": "Nije moguće pregledati vrednost.",
+    "rsc": "Није могуће прегледати вредност."
+  },
+  "632": {
+    "en": "Sandbox is not ready.",
+    "rs": "Sandbox nije spreman.",
+    "rsc": "Sandbox није спреман."
+  },
+  "634": {
+    "en": "Getter is not available.",
+    "rs": "Getter nije dostupan.",
+    "rsc": "Getter није доступан."
+  },
+  "635": {
+    "en": "Add live expression",
+    "rs": "Dodaj aktivni izraz",
+    "rsc": "Додај активни израз"
+  },
+  "636": {
+    "en": "Remove live expression",
+    "rs": "Ukloni aktivni izraz",
+    "rsc": "Уклони активни израз"
+  },
+  "637": {
+    "en": "Live expressions",
+    "rs": "Aktivni izrazi",
+    "rsc": "Активни изрази"
+  },
+  "638": {
+    "en": "Filter console",
+    "rs": "Filtriraj konzolu",
+    "rsc": "Филтрирај конзолу"
+  },
+  "639": {
+    "en": "All levels",
+    "rs": "Svi nivoi",
+    "rsc": "Сви нивои"
+  },
+  "640": {
+    "en": "Expand all",
+    "rs": "Proširi sve",
+    "rsc": "Прошири све"
+  },
+  "641": {
+    "en": "Collapse all",
+    "rs": "Skupi sve",
+    "rsc": "Скупи све"
+  },
+  "642": {
+    "en": "Copy console",
+    "rs": "Kopiraj konzolu",
+    "rsc": "Копирај конзолу"
+  },
+  "643": {
+    "en": "Info",
+    "rs": "Informacije",
+    "rsc": "Информације"
+  },
+  "644": {
+    "en": "Warnings",
+    "rs": "Upozorenja",
+    "rsc": "Упозорења"
+  },
+  "645": {
+    "en": "Errors",
+    "rs": "Greške",
+    "rsc": "Грешке"
+  },
+  "646": {
+    "en": "Try it online",
+    "rs": "Probaj onlajn",
+    "rsc": "Пробај онлајн"
+  },
+  "647": {
+    "en": "Windows CLI",
+    "rs": "Windows komandna linija",
+    "rsc": "Windows командна линија"
+  },
+  "648": {
+    "en": "AI agents and MCP",
+    "rs": "AI agenti i MCP",
+    "rsc": "AI агенти и MCP"
+  },
+  "649": {
+    "en": "Clear console output",
+    "rs": "Obriši izlaz konzole",
+    "rsc": "Обриши излаз конзоле"
+  },
+  "650": {
+    "en": "Show completion suggestions",
+    "rs": "Prikaži predloge za dovršavanje",
+    "rsc": "Прикажи предлоге за довршавање"
+  },
+  "633": {
+    "en": "{count} more",
+    "rs": "još {count}",
+    "rsc": "још {count}"
   }
 }

@@ -4,6 +4,10 @@
   right: 8px;
 }
 
+#command-window {
+  position: relative;
+}
+
 #command-window-options.options .options-right {
   float: right;
 }
@@ -30,6 +34,10 @@
 
 #command-window-options.options i.to-bottom {
   background: url(../img/to-bottom.svg) no-repeat center;
+}
+
+#command-window-options.options i.console-filter {
+  background: url(../img/search.svg) no-repeat center;
 }
 
 #command-window-options.options i {
@@ -63,6 +71,221 @@
   background-size: 15px;
   background-repeat: no-repeat;
   padding-right: 45px;
+}
+
+.jslab-console-eager-preview {
+  min-height: 0;
+  margin-top: 5px;
+  color: #777;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.jslab-console-eager-preview:not(:empty)::before {
+  content: '\2039';
+  padding-right: 6px;
+  color: #999;
+}
+
+.jslab-argument-hint {
+  position: absolute;
+  z-index: 30;
+  max-width: calc(100% - 20px);
+  padding: 4px 7px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+  color: #333;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.CodeMirror-hint.jslab-console-history-hint {
+  color: #666;
+  font-style: italic;
+}
+
+.jslab-console-accessor {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #2e85c7;
+  font: inherit;
+}
+
+button.jslab-console-accessor:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.jslab-live-expressions:empty {
+  display: none;
+}
+
+.jslab-live-expressions {
+  padding: 7px 10px 3px 25px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #fafafa;
+}
+
+.jslab-live-expression {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 26px;
+}
+
+.jslab-live-expression input {
+  width: min(45%, 420px);
+  border: 0;
+  border-bottom: 1px solid #ccc;
+  background: transparent;
+  font-family: monospace;
+}
+
+.jslab-live-expression-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #666;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.jslab-live-expression button,
+.jslab-live-expression-add {
+  border: 0;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+}
+
+.jslab-console-tools {
+  display: block;
+  font-family: Roboto;
+  font-size: 16px;
+  position: absolute;
+  z-index: 35;
+  top: 0;
+  right: 15px;
+  padding: 10px;
+  border-radius: 0 0 5px 5px;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 10px #00000026;
+}
+
+.jslab-console-tools[hidden] {
+  display: none;
+}
+
+.jslab-console-tools .CodeMirror-search-find {
+  width: 240px;
+  margin: 0 10px 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 3px 5px;
+  display: block;
+  float: left;
+  font-size: 16px;
+  font-weight: 100;
+}
+
+.jslab-console-tools .CodeMirror-search-find::placeholder {
+  color: #999;
+  font-weight: 100;
+}
+
+.jslab-console-tools .CodeMirror-search-find:focus {
+  border: 1px solid #f7df1e;
+}
+
+.jslab-console-tools .CodeMirror-search-find.invalid {
+  border-color: #d33;
+}
+
+.jslab-console-tools .CodeMirror-search-find-prev-btn,
+.jslab-console-tools .CodeMirror-search-find-next-btn,
+.jslab-console-tools .CodeMirror-search-case-btn,
+.jslab-console-tools .CodeMirror-search-regex-btn {
+  cursor: pointer;
+  background-size: 20px;
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  display: block;
+  float: left;
+}
+
+.jslab-console-tools .CodeMirror-search-find-prev-btn,
+.jslab-console-tools .CodeMirror-search-find-next-btn {
+  margin-top: 3px;
+}
+
+.jslab-console-tools .CodeMirror-search-find-prev-btn:hover,
+.jslab-console-tools .CodeMirror-search-find-next-btn:hover,
+.jslab-console-tools .CodeMirror-search-case-btn:hover,
+.jslab-console-tools .CodeMirror-search-regex-btn:hover,
+.jslab-console-tools .CodeMirror-search-close-btn:hover {
+  opacity: 1;
+}
+
+.jslab-console-tools .CodeMirror-search-find-prev-btn {
+  margin-right: 10px;
+  background-image: url(../img/arrow.svg);
+  transform: rotate(90deg);
+}
+
+.jslab-console-tools .CodeMirror-search-find-next-btn {
+  background-image: url(../img/arrow.svg);
+  transform: rotate(-90deg);
+}
+
+.jslab-console-tools .CodeMirror-search-case-btn {
+  margin-left: 5px;
+  margin-right: 10px;
+  background-image: url(../img/match-case.svg);
+}
+
+.jslab-console-tools .CodeMirror-search-regex-btn {
+  background-image: url(../img/regex.svg);
+}
+
+.jslab-console-tools .CodeMirror-search-case-btn.active,
+.jslab-console-tools .CodeMirror-search-regex-btn.active {
+  opacity: 1;
+}
+
+.jslab-console-tools .CodeMirror-search-bottom-right {
+  float: right;
+  margin-top: 5px;
+  color: #999;
+  font-weight: 100;
+}
+
+.jslab-console-tools .CodeMirror-search-close-btn {
+  cursor: pointer;
+  background-image: url(../img/close.svg);
+  background-size: 15px;
+  height: 15px;
+  width: 15px;
+  opacity: 0.4;
+  display: block;
+  float: right;
+  margin-left: 10px;
+}
+
+#command-window-messages > .jslab-console-filter-current {
+  outline: 1px solid #f7df1e;
+  outline-offset: -1px;
+}
+
+.jslab-live-expression-add {
+  width: 26px;
+  height: 24px;
+  font-size: 18px;
 }
 
 #command-window-input {
@@ -140,6 +363,19 @@
   min-height: 32px;
 }
 
+.jslab-console-repeat {
+  display: inline-block;
+  min-width: 15px;
+  margin-right: 6px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #777;
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+  text-align: center;
+}
+
 #command-window-messages.messages.no-timestamp > div {
   padding-left: 25px;
 }
@@ -199,6 +435,89 @@
 }
 #command-window-messages.messages:hover div:hover {
   filter: none;
+}
+
+#command-window-messages .jslab-console-value {
+  font-family: Consolas, "Courier New", monospace;
+  white-space: normal;
+}
+
+#command-window-messages .jslab-console-toggle,
+#command-window-messages .jslab-console-more {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  margin: 0;
+  padding: 0 3px 0 0;
+}
+
+#command-window-messages .jslab-console-toggle {
+  position: relative;
+  width: 12px;
+  height: 14px;
+  margin-right: 2px;
+  padding: 0;
+  vertical-align: -2px;
+}
+
+#command-window-messages .jslab-console-toggle::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid #777;
+  transform-origin: 3px 4px;
+}
+
+#command-window-messages .jslab-console-value.open > .jslab-console-toggle::before {
+  transform: rotate(90deg);
+}
+
+#command-window-messages .jslab-console-children {
+  display: none;
+  margin-left: 15px;
+}
+
+#command-window-messages .jslab-console-value.open > .jslab-console-children {
+  display: block;
+}
+
+#command-window-messages .jslab-console-property,
+#command-window-messages .jslab-console-error {
+  display: block;
+  min-height: 18px;
+}
+
+#command-window-messages .jslab-console-property-name {
+  color: #881391;
+}
+
+#command-window-messages .jslab-console-type-string .jslab-console-description {
+  color: #c41a16;
+}
+
+#command-window-messages .jslab-console-type-number .jslab-console-description,
+#command-window-messages .jslab-console-type-bigint .jslab-console-description,
+#command-window-messages .jslab-console-type-boolean .jslab-console-description {
+  color: #1c00cf;
+}
+
+#command-window-messages .jslab-console-accessor,
+#command-window-messages .jslab-console-property.internal,
+#command-window-messages .jslab-console-more {
+  color: #777;
+  font-style: italic;
+}
+
+#command-window-messages .jslab-console-error {
+  color: #c00;
 }
 
 #command-window-messages .jslab-inspector {

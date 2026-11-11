@@ -89,6 +89,23 @@ guiTest(tests, 'editor', 'Ctrl+Shift+F opens search all using selected text', []
   assert.equal(f.visible('#editor-search-all-panel'), true);
 });
 
+guiTest(tests, 'editor', 'Ctrl+Space requests editor completions without auto-inserting one match', [], function(assert, f, c) {
+  var cm = c.script_manager.scripts[0].code_editor;
+  var original = f.window.CodeMirror.commands.autocomplete;
+  var received;
+  f.window.CodeMirror.commands.autocomplete = function(editor, hint, options) {
+    received = { editor: editor, hint: hint, options: options };
+  };
+  try {
+    f.window.CodeMirror.keyMap.default['Ctrl-Space'](cm);
+    assert.equal(received.editor, cm);
+    assert.equal(received.hint, null);
+    assert.equal(received.options.completeSingle, false);
+  } finally {
+    f.window.CodeMirror.commands.autocomplete = original;
+  }
+});
+
 function findSetup(f, c) {
   var cm = c.script_manager.scripts[0].code_editor;
   cm.setValue('one two one'); cm.setCursor(0, 0);

@@ -78,7 +78,6 @@ class PRDC_JSLAB_LIB {
     } catch {
       this.context[this.internal_jsl_identifier] = this;
     }
-    this.setDepthSafeStringify(this.context, 1);
     this.context._ = Symbol('_');
     this.eval = new PRDC_JSLAB_EVAL(this);
     this.inter = this._createBootstrapInter();
@@ -94,6 +93,9 @@ class PRDC_JSLAB_LIB {
     this.plotter = new PRDC_JSLAB_PLOTTER(this);
     
     this.override = new PRDC_JSLAB_OVERRIDE(this);
+    // The formatter is registered by the override loader, so depth metadata
+    // cannot be attached before submodules have finished bootstrapping.
+    this.setDepthSafeStringify(this.context, 1);
     this._createInternalReferences();
     
     this.ready = true;
@@ -971,7 +973,10 @@ class PRDC_JSLAB_LIB {
    * @returns {Object} The modified data object with the set depth.
    */
   setDepthSafeStringify(data, depth) {
-    data._safeStringifyDepth = depth;
+    var formatter = this.inter && this.inter.format;
+    if(formatter && typeof formatter._setSafeStringifyDepth === 'function') {
+      return formatter._setSafeStringifyDepth(data, depth);
+    }
     return data;
   }
 

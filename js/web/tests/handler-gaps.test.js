@@ -21,14 +21,14 @@ webTest(tests, 'web tab-strip double-click creates a usable document and present
   t.eq(pd.querySelectorAll('.tab').length, total);
 });
 
-webTest(tests, 'web CodeMirror keypress, drop and scrolling invoke editor and terminal handlers', async function() {
+webTest(tests, 'web CodeMirror input, drop and scrolling invoke editor and terminal handlers', async function() {
   var t = GUI, w = await t.editor(), doc = w.document;
   var cm = [...doc.querySelectorAll('.CodeMirror')].find(el => w.getComputedStyle(el).display !== 'none').CodeMirror;
-  w.CodeMirror.signal(cm, 'keypress', cm, new w.KeyboardEvent('keypress', { key: ';' }));
+  w.CodeMirror.signal(cm, 'inputRead', cm, { origin: '+input', text: [';'] });
   var drop = new w.Event('drop', { cancelable: true }); w.CodeMirror.signal(cm, 'drop', cm, drop); t.eq(drop.defaultPrevented, true);
   cm.getWrapperElement().dispatchEvent(new w.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 20 }));
   w.CodeMirror.signal(cm, 'scroll', cm); t.eq(t.visible('#editor-context-menu', doc), false);
-  CodeMirror.signal(t.app.code_input, 'keypress', t.app.code_input, new KeyboardEvent('keypress', { key: ';' }));
+  CodeMirror.signal(t.app.code_input, 'inputRead', t.app.code_input, { origin: '+input', text: [';'] });
   CodeMirror.signal(t.app.code_input, 'keydown', t.app.code_input, new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
   t.eq(t.app.code_input.getValue(), '');
   w.dispatchEvent(new w.Event('resize'));

@@ -8,6 +8,7 @@
 /**
  * Returns a human-readable type name.
  * @param {Object} jsl JSL context.
+ * @param {Object} jsl JSL context.
  * @param {*} value Input value.
  * @returns {string}
  */
@@ -52,6 +53,16 @@ function inspectorTrimText(text, limit) {
  * @returns {string}
  */
 function inspectorPreviewValue(jsl, value, max_chars = 120) {
+  if(jsl.inter.format && typeof jsl.inter.format._consoleValue === 'function') {
+    var remote = jsl.inter.format._consoleValue(value);
+    var remote_text = remote.description;
+    if(remote.preview && remote.preview.properties && remote.preview.properties.length) {
+      var array_like = remote.subtype === 'array' || remote.subtype === 'typedarray';
+      remote_text += (array_like ? ' [' : ' {') + remote.preview.properties.join(', ') +
+        (remote.preview.overflow ? ', …' : '') + (array_like ? ']' : '}');
+    }
+    return inspectorTrimText(remote_text, max_chars);
+  }
   var text;
   var value_type = typeof value;
 
@@ -97,7 +108,7 @@ function inspectorPreviewValue(jsl, value, max_chars = 120) {
  * @param {*} value Input value.
  * @returns {string}
  */
-function inspectorSearchValue(value) {
+function inspectorSearchValue(jsl, value) {
   if(value === null) {
     return 'null';
   }
@@ -105,11 +116,7 @@ function inspectorSearchValue(value) {
     return 'undefined';
   }
   if(typeof value === 'object') {
-    try {
-      return JSON.stringify(value).toLowerCase();
-    } catch(err) {
-      return String(value).toLowerCase();
-    }
+    return String(jsl.inter.format.safeStringify(value, 3, false)).toLowerCase();
   }
   return String(value).toLowerCase();
 }
@@ -318,7 +325,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
 
     var getTypeName = (value) => inspectorTypeName(this.jsl, value);
     var previewValue = (value) => inspectorPreviewValue(this.jsl, value, max_chars);
-    var searchValue = inspectorSearchValue;
+    var searchValue = (value) => inspectorSearchValue(this.jsl, value);
     var toInspectable = (value) => inspectorToInspectable(this.jsl, value);
     var isRowArray = (value) => inspectorIsRowArray(this.jsl, value);
     var toExpression = inspectorToExpression;

@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 
-const { BigJsonViewerDom } = require('big-json-viewer');
+const { safeStringify } = require('../shared/value-serializer');
 
 class PRDC_JSLAB_COMMAND_WINDOW_MESSAGES {
 
@@ -69,9 +69,11 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
         '<p>' + language.string(135) + ' <a href="https://pr-dc.com/jslab">pr-dc.com/jslab</a></p>' +
         '<p>' + language.string(249) + ': ' +
           '<a href="https://pr-dc.com/jslab/">' + language.string(250) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/web/">' + language.string(646) + '</a> &bull; ' +
           '<a href="https://discourse.jsl.pr-dc.com/">' + language.string(251) + '</a> &bull; ' +
           '<a href="https://pr-dc.com/jslab/doc/">' + language.string(252) + '</a> &bull; ' +
-          '<a href="https://github.com/PR-DC/JSLAB/">' + language.string(253) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/#command-line-interface">' + language.string(647) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/#mcp-server">' + language.string(648) + '</a> &bull; ' +
           '<a href="https://github.com/PR-DC/JSLAB/releases">' + language.string(254) + '</a> &bull; ' +
           '<a href="https://github.com/PR-DC/JSLAB/tree/master/examples">' + language.string(255) + '</a>' +
         '</p>' +
@@ -190,8 +192,16 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    * @param {Array|string} data The data to be highlighted and displayed.
    */
   highlightAnsMessage(data) {
-    var obj = this;
     if(data[1]) {
+      if(data[0] && data[0].__jslab_console_value__) {
+        var remote_raw = 'ans = ' + data[0].description;
+        var remote_el = this.message('ans = ', remote_raw);
+        if(remote_el && remote_el.length) {
+          remote_el[0].appendChild(this.createConsoleValueElement(data[0]));
+          this.syncLogEntryHtmlFromElement(remote_el);
+        }
+        return;
+      }
       var raw = 'ans = ' + data[0];
       try {
         var parsed_data = typeof data[0] === 'string' ? JSON.parse(data[0]) : data[0];
@@ -203,18 +213,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
           return;
         }
 
-        var el = this.message('ans = ', raw);
-        BigJsonViewerDom.fromObject(json_data).then(function(viewer) {
-          if(!el || !el.length) {
-            return;
-          }
-          const node = viewer.getRootElement();
-          el[0].appendChild(node);
-          node.openAll(1);
-          obj.syncLogEntryHtmlFromElement(el);
-        }).catch(function(err) {
-          console.log(err);
-        });
+        this.message(this.highlightCode('ans = ' + JSON.stringify(json_data, null, 2)), raw);
       } catch(err) {
         console.log(err);
         this.message(this.highlightCode(raw), raw);
@@ -222,6 +221,181 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
     } else {
       this.message(this.highlightCode('ans = ' + data[0]), 'ans = ' + data[0]);
     }
+  },
+
+  /** Binds lazy remote-object expansion in the command window. */
+  initConsoleValueHandlers() {
+    var obj = this;
+    $(document.body).on('click', '#command-window .jslab-console-toggle', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var recursive = !!e.altKey;
+      var value_el = this.closest('.jslab-console-value');
+      if(!value_el) return;
+      var children = value_el.querySelector(':scope > .jslab-console-children');
+      if(!children) return;
+      if(value_el.classList.contains('open')) {
+        value_el.classList.remove('open');
+        this.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      value_el.classList.add('open');
+      this.setAttribute('aria-expanded', 'true');
+      if(recursive && !value_el.dataset.consoleExpandPath) {
+        value_el.dataset.consoleExpandPath = JSON.stringify([value_el.dataset.objectId]);
+      }
+      if(children.dataset.loaded === 'true') {
+        if(recursive) obj.expandConsoleDescendants(value_el);
+        return;
+      }
+      children.textContent = '...';
+      var result = await ipcRenderer.invoke('get-console-properties', {
+        object_id: value_el.dataset.objectId,
+        offset: 0,
+        limit: 100
+      });
+      obj.renderConsolePropertyPage(children, result, false);
+      obj.syncConsoleValueLog(value_el);
+      if(recursive) obj.expandConsoleDescendants(value_el);
+    });
+    $(document.body).on('click', '#command-window .jslab-console-more', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var button = this;
+      var children = button.closest('.jslab-console-children');
+      var value_el = button.closest('.jslab-console-value');
+      if(!children || !value_el) return;
+      button.disabled = true;
+      var result = await ipcRenderer.invoke('get-console-properties', {
+        object_id: value_el.dataset.objectId,
+        offset: Number(button.dataset.offset) || 0,
+        limit: 100
+      });
+      button.remove();
+      obj.renderConsolePropertyPage(children, result, true);
+      obj.syncConsoleValueLog(value_el);
+    });
+    $(document.body).on('click', '#command-window .jslab-console-accessor', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var button = this;
+      var value_el = button.closest('.jslab-console-value');
+      if(!value_el || button.dataset.loading === 'true') return;
+      button.dataset.loading = 'true';
+      var result = await ipcRenderer.invoke('get-console-accessor', {
+        object_id: value_el.dataset.objectId,
+        property: button.dataset.property
+      });
+      button.dataset.loading = 'false';
+      if(result && result.success) button.replaceWith(obj.createConsoleValueElement(result.value));
+      else button.textContent = result?.error || language.string(631);
+      obj.syncConsoleValueLog(value_el);
+    });
+  },
+
+  /** Recursively expands loaded descendants for DevTools-style Alt-click. */
+  expandConsoleDescendants(value_el) {
+    var path;
+    try { path = JSON.parse(value_el.dataset.consoleExpandPath || '[]'); }
+    catch(err) { path = []; }
+    if(path.length >= 8) return;
+    var children = value_el.querySelector(':scope > .jslab-console-children');
+    if(!children) return;
+    children.querySelectorAll('.jslab-console-value').forEach(function(child) {
+      if(child.closest('.jslab-console-children') !== children) return;
+      var object_id = child.dataset.objectId;
+      var toggle = child.querySelector(':scope > .jslab-console-toggle');
+      if(!object_id || !toggle || path.includes(object_id)) return;
+      child.dataset.consoleExpandPath = JSON.stringify(path.concat(object_id));
+      if(!child.classList.contains('open')) {
+        toggle.dispatchEvent(new MouseEvent('click', { bubbles: true, altKey: true }));
+      }
+    });
+  },
+
+  /** Creates one safe DOM representation of a remote console value. */
+  createConsoleValueElement(value) {
+    var root = document.createElement('span');
+    root.className = 'jslab-console-value jslab-console-type-' + String(value.type || 'object');
+    if(value.object_id) {
+      root.dataset.objectId = value.object_id;
+      var toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'jslab-console-toggle';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.title = language.currentString(640);
+      root.appendChild(toggle);
+    }
+    var label = document.createElement('span');
+    label.className = 'jslab-console-description';
+    var description = value.description || '';
+    if(value.preview && value.preview.properties && value.preview.properties.length) {
+      var left = value.subtype === 'array' || value.subtype === 'typedarray' ? ' [' : ' {';
+      var right = value.subtype === 'array' || value.subtype === 'typedarray' ? ']' : '}';
+      description += left + value.preview.properties.join(', ') +
+        (value.preview.overflow ? ', …' : '') + right;
+    }
+    label.textContent = description;
+    root.appendChild(label);
+    if(value.object_id) {
+      var children = document.createElement('span');
+      children.className = 'jslab-console-children';
+      root.appendChild(children);
+    }
+    return root;
+  },
+
+  /** Appends a lazy property page without evaluating accessors. */
+  renderConsolePropertyPage(container, result, append) {
+    if(!append) container.replaceChildren();
+    container.dataset.loaded = 'true';
+    if(!result || result.success === false) {
+      var error = document.createElement('span');
+      error.className = 'jslab-console-error';
+      error.textContent = result?.error || language.string(631);
+      container.appendChild(error);
+      return;
+    }
+    var items = result.properties || result.entries || [];
+    items.forEach((property) => {
+      var row = document.createElement('span');
+      row.className = 'jslab-console-property' + (property.internal ? ' internal' : '');
+      var name = document.createElement('span');
+      name.className = 'jslab-console-property-name';
+      name.textContent = property.name;
+      row.appendChild(name);
+      row.appendChild(document.createTextNode(': '));
+      if(property.key) {
+        row.appendChild(this.createConsoleValueElement(property.key));
+        row.appendChild(document.createTextNode(' => '));
+      }
+      if(property.accessor) {
+        var accessor = document.createElement(property.getter && property.property !== undefined ? 'button' : 'span');
+        accessor.className = 'jslab-console-accessor';
+        accessor.textContent = '(...)';
+        if(property.property !== undefined) accessor.dataset.property = property.property;
+        row.appendChild(accessor);
+      } else {
+        row.appendChild(this.createConsoleValueElement(property.value));
+      }
+      container.appendChild(row);
+    });
+    if(result.next_offset !== undefined) {
+      var more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'jslab-console-more';
+      more.dataset.offset = result.next_offset;
+      more.textContent = '… ' + language.formatLang(633, {
+        count: Math.max(0, result.total - result.next_offset)
+      });
+      container.appendChild(more);
+    }
+  },
+
+  /** Persists expanded markup in the virtualized terminal log. */
+  syncConsoleValueLog(value_el) {
+    var message_el = value_el.closest('.message');
+    if(message_el) this.syncLogEntryHtmlFromElement($(message_el));
   },
 
   /**
@@ -386,6 +560,14 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   message(msg, raw) {
     this.win.workspace.updateWorkspace();
+    if(msg && msg.__jslab_console_value__) {
+      var remote_el = this.addMessage('data-in', '', msg.description);
+      if(remote_el && remote_el.length) {
+        remote_el[0].appendChild(this.createConsoleValueElement(msg));
+        this.syncLogEntryHtmlFromElement(remote_el);
+      }
+      return remote_el;
+    }
     return this.addMessage('data-in', this.prettyPrint(msg), raw);
   },
 
@@ -475,6 +657,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       this.log[this.log.length - 1].timestamp :
       this.getTimestamp();
     this.writeDiaryEntry(msg_class, raw, entry_timestamp);
+    if(typeof this.applyConsoleFilter === 'function') this.applyConsoleFilter();
     return el ? $(el) : $();
   },
 
@@ -506,23 +689,6 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
   },
 
   /**
-   * Provides a function to replace circular references while stringifying an object. Useful for logging objects with circular references.
-   * @returns {Function} A replacer function for JSON.stringify.
-   */
-  getCircularReplacer() {
-    const seen = new WeakSet();
-    return function(key, value) {
-      if(typeof value === 'object' && value !== null) {
-        if(seen.has(value)) {
-          return;
-        }
-        seen.add(value);
-      }
-      return value;
-    };
-  },
-
-  /**
    * Formats and pretty-prints data for display in the command window.
    * @param {object|string} data The data to format.
    * @returns {string} The formatted data as a string.
@@ -530,19 +696,19 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
   prettyPrint(data) {
     if(typeof data == 'string') {
       return data.replace(/\n/g, '<br/>');
-    } else if(typeof data == 'object') {
-      if(!Object.keys(data).length){
-        if(data.constructor.name == 'Error') {
-          return data.stack.toString();
-        } else {
-          return data.toString();
-        }
-      } else {
-        return JSON.stringify(data, this.getCircularReplacer(), 2);
-      }
-    } else {
-      return String(data);
     }
+    if(data instanceof Error) return String(data.stack || data).replace(/\n/g, '<br/>');
+    if(data !== null && (typeof data === 'object' || typeof data === 'function')) {
+      return safeStringify(data, {
+        max_depth: 5,
+        max_properties: 1000,
+        max_array_length: 1000,
+        max_string_length: Number(config.MAX_JSON_STRING_LENGTH) || 1000,
+        escape_html: true,
+        indent: 2
+      });
+    }
+    return String(data);
   },
 
   /**

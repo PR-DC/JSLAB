@@ -24,7 +24,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - ~~Add symbol input support in the editor (virtual keyboard).~~
 
-- Expand values from objects to view further details (possibly retain everything in the main window until the command window is reset).
+- ~~Expand values from objects to view further details (possibly retain everything in the main window until the command window is reset).~~
 
 - Adjust plot legend width to work better with Latin Modern Math font.
 

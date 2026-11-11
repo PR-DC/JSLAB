@@ -22,14 +22,24 @@ function setup(c) {
   return c.command_window.code_input;
 }
 
-guiTest(tests, 'main', 'terminal arrow and page keys recall commands and Escape clears input', ['.CodeMirror textarea'], function(assert, f, c) {
+guiTest(tests, 'main', 'terminal history preserves drafts and Escape clears input', ['.CodeMirror textarea'], function(assert, f, c) {
   var cm = setup(c);
+  cm.setValue('draft'); cm.setCursor(0, 2);
   key(f, cm, 'ArrowUp'); assert.equal(cm.getValue(), 'newer');
   key(f, cm, 'ArrowUp'); assert.equal(cm.getValue(), 'older');
   key(f, cm, 'ArrowDown'); assert.equal(cm.getValue(), 'newer');
+  key(f, cm, 'ArrowDown'); assert.equal(cm.getValue(), 'draft');
   key(f, cm, 'PageUp'); assert.equal(cm.getValue(), 'older');
   key(f, cm, 'PageDown'); assert.equal(cm.getValue(), 'newer');
-  key(f, cm, 'Escape'); assert.equal(cm.getValue(), ''); assert.equal(c.command_window.i_history, -1);
+  key(f, cm, 'Escape'); assert.equal(cm.getValue(), '');
+  assert.equal(c.command_window.i_history, -1);
+});
+guiTest(tests, 'main', 'terminal Ctrl+p and Ctrl+n navigate history and restore the draft', [], function(assert, f, c) {
+  var cm = setup(c); cm.setValue('draft');
+  key(f, cm, 'p', { ctrlKey: true }); assert.equal(cm.getValue(), 'newer');
+  key(f, cm, 'p', { ctrlKey: true }); assert.equal(cm.getValue(), 'older');
+  key(f, cm, 'n', { ctrlKey: true }); assert.equal(cm.getValue(), 'newer');
+  key(f, cm, 'n', { ctrlKey: true }); assert.equal(cm.getValue(), 'draft');
 });
 for(const close of ['button', 'escape', 'enter']) {
   guiTest(tests, 'main', 'F7 history dialog selection and ' + close, ['#command-window-history .history-close'], function(assert, f, c) {
@@ -58,10 +68,18 @@ guiTest(tests, 'main', 'F3 repeats the newest command and Alt+F7 clears recall h
   assert.equal(sent(assert, f, 'SandboxWindow', 'eval-code')[0], 'newer');
   key(f, cm, 'F7', { altKey: true }); assert.equal(c.command_history.history.length, 0);
 });
-for(const [name, container] of [['s', 'settings'], ['l', 'log']]) {
+for(const [name, container, options] of [['s', 'settings', {}], ['l', 'log', { shiftKey: true }]]) {
   guiTest(tests, 'main', 'terminal Ctrl+' + name + ' opens its dialog', [], function(assert, f, c) {
-    var cm = setup(c); key(f, cm, name, { ctrlKey: true });
+    var cm = setup(c); key(f, cm, name, { ctrlKey: true, ...options });
     assert.equal(f.visible('#command-window-' + container), true);
+  });
+}
+for(const name of ['l', 'k']) {
+  guiTest(tests, 'main', 'terminal Ctrl+' + name + ' clears output without clearing input', [], function(assert, f, c) {
+    var cm = setup(c); cm.setValue('draft'); c.command_window.message('remove me');
+    key(f, cm, name, { ctrlKey: true });
+    assert.equal(f.query('#command-window-messages').textContent.includes('remove me'), false);
+    assert.equal(cm.getValue(), 'draft');
   });
 }
 guiTest(tests, 'main', 'message snippets and script links dispatch their actions', [], function(assert, f, c) {

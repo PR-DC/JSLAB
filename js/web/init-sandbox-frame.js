@@ -241,6 +241,22 @@ async function bootSandbox() {
     return [];
   }
 
+  function getConsoleProperties(request) {
+    return jsl.inter.format._consoleProperties(request.object_id, request.offset, request.limit);
+  }
+
+  function getConsoleAccessor(request) {
+    return jsl.inter.format._consoleAccessor(request.object_id, request.property);
+  }
+
+  function getConsolePreview(expression) {
+    return jsl.inter.basic._getConsolePreview(expression);
+  }
+
+  function isConsoleExpressionComplete(code) {
+    return jsl.inter.basic._isConsoleExpressionComplete(code);
+  }
+
   const worker_plots = new Map();
   const { FIGURE_COMMANDS, PLOT_COMMANDS } = require('./worker-ui');
   async function workerUI(operation) {
@@ -294,6 +310,10 @@ async function bootSandbox() {
     setLanguage: setLanguage,
     clearWorkspace: clearWorkspace,
     getCompletions: getCompletions,
+    getConsoleProperties: getConsoleProperties,
+    getConsoleAccessor: getConsoleAccessor,
+    getConsolePreview: getConsolePreview,
+    isConsoleExpressionComplete: isConsoleExpressionComplete,
     notifyWindowClosed: notifyWindowClosed
   };
 }

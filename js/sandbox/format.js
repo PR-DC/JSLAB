@@ -4,6 +4,8 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
+
+const { safeStringify: sharedSafeStringify } = require('../shared/value-serializer');
  
 /**
  * Class for JSLAB format submodule.
@@ -15,8 +17,12 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @param {Object} jsl Reference to the main JSLAB object.
    */
   constructor(jsl) {
-    var obj = this;
     this.jsl = jsl;
+    this._console_objects = new Map();
+    this._console_object_ids = new WeakMap();
+    this._console_object_serial = 0;
+    this._console_object_limit = 1000;
+    this._safe_stringify_depths = new WeakMap();
   }
 
   /**
@@ -268,23 +274,6 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   toFixedIf(value, p) {
     return +parseFloat(value).toFixed(p);
-  }
-
-  /**
-   * Provides a replacer function for JSON.stringify() to prevent circular references.
-   * @returns {Function} A replacer function that can be used with JSON.stringify to handle circular references.
-   */
-  getCircularReplacer() {
-    const seen = new WeakSet();
-    return function(key, value) {
-      if(typeof value === 'object' && value !== null) {
-        if(seen.has(value)) {
-          return;
-        }
-        seen.add(value);
-      }
-      return value;
-    };
   }
 
   /**
@@ -889,17 +878,291 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   prettyPrint(data) {
     if(Array.isArray(data)) {
-      return [this.safeStringify(data, 5), true];
-    } else if(typeof data == 'object' && typeof data.toPrettyString == 'function') {
-      return [data.toPrettyString(), false];
-    } else if(typeof data == 'object' && typeof data.toSafeJSON == 'function') {
-      return [this.safeStringify(data), true];
+      return [this._consoleValue(data), true];
+    }
+    var pretty_method = this._getFormattingMethod(data, 'toPrettyString');
+    var safe_json_method = this._getFormattingMethod(data, 'toSafeJSON');
+    if(pretty_method) {
+      return [pretty_method.call(data), false];
+    } else if(safe_json_method) {
+      return [this._consoleValue(data), true];
     } else if(typeof data == 'string') {
       return ["'"+data.replace(/\n/g, '<br/>')+"'", false];
-    } else if(typeof data == 'object') {
-      return [this.safeStringify(data), true];
+    } else if((data !== null && typeof data == 'object') || typeof data == 'function') {
+      return [this._consoleValue(data), true];
     } else {
       return [String(data), false];
+    }
+  }
+
+  /**
+   * Creates a JSON-safe DevTools-style remote value without traversing nested objects.
+   * Object identities are retained so properties can be requested only when expanded.
+   * @param {*} value Runtime value.
+   * @returns {Object} Remote value descriptor.
+   */
+  _consoleValue(value) {
+    var type = typeof value;
+    var descriptor = {
+      __jslab_console_value__: true,
+      type: type,
+      description: this._consoleValueDescription(value)
+    };
+
+    if(value === null) {
+      descriptor.type = 'object';
+      descriptor.subtype = 'null';
+      return descriptor;
+    }
+    if(type !== 'object' && type !== 'function') {
+      return descriptor;
+    }
+
+    var id = this._console_object_ids.get(value);
+    if(!id || !this._console_objects.has(id)) {
+      id = String(++this._console_object_serial);
+      this._console_object_ids.set(value, id);
+      this._console_objects.set(id, value);
+      while(this._console_objects.size > this._console_object_limit) {
+        this._console_objects.delete(this._console_objects.keys().next().value);
+      }
+    }
+    descriptor.object_id = id;
+    descriptor.subtype = this._consoleValueSubtype(value);
+    descriptor.class_name = this._consoleValueClassName(value);
+    descriptor.preview = this._consoleValuePreview(value);
+    return descriptor;
+  }
+
+  /** @private */
+  _consoleValueClassName(value) {
+    try {
+      return value?.constructor?.name || (typeof value === 'function' ? 'Function' : 'Object');
+    } catch(err) {
+      return typeof value === 'function' ? 'Function' : 'Object';
+    }
+  }
+
+  /** @private */
+  _consoleValueSubtype(value) {
+    if(Array.isArray(value)) return 'array';
+    if(value instanceof Date) return 'date';
+    if(value instanceof RegExp) return 'regexp';
+    if(value instanceof Map) return 'map';
+    if(value instanceof Set) return 'set';
+    if(value instanceof WeakMap) return 'weakmap';
+    if(value instanceof WeakSet) return 'weakset';
+    if(value instanceof Error) return 'error';
+    if(ArrayBuffer.isView(value)) return 'typedarray';
+    if(value instanceof ArrayBuffer) return 'arraybuffer';
+    if(value instanceof Promise) return 'promise';
+    return undefined;
+  }
+
+  /** @private */
+  _consoleValueDescription(value) {
+    if(value === null) return 'null';
+    var type = typeof value;
+    if(type === 'undefined') return 'undefined';
+    if(type === 'string') return JSON.stringify(value);
+    if(type === 'bigint') return String(value) + 'n';
+    if(type === 'symbol') return String(value);
+    if(type === 'number') {
+      if(Object.is(value, -0)) return '-0';
+      return String(value);
+    }
+    if(type === 'function') {
+      var name = value.name || '';
+      return 'ƒ ' + name + '()';
+    }
+    if(value instanceof Date) {
+      try { return value.toISOString(); } catch(err) { return String(value); }
+    }
+    if(value instanceof RegExp || value instanceof Error) return String(value);
+    var class_name = this._consoleValueClassName(value);
+    if(Array.isArray(value) || ArrayBuffer.isView(value)) return class_name + '(' + value.length + ')';
+    if(value instanceof Map || value instanceof Set) return class_name + '(' + value.size + ')';
+    return class_name;
+  }
+
+  /** @private */
+  _consoleValuePreview(value) {
+    var parts = [];
+    var overflow = false;
+    var max_properties = 5;
+    try {
+      if(value instanceof Map) {
+        var map_index = 0;
+        for(const entry of value) {
+          if(map_index++ >= max_properties) { overflow = true; break; }
+          parts.push(this._consolePreviewText(entry[0]) + ' => ' + this._consolePreviewText(entry[1]));
+        }
+      } else if(value instanceof Set) {
+        var set_index = 0;
+        for(const entry of value) {
+          if(set_index++ >= max_properties) { overflow = true; break; }
+          parts.push(this._consolePreviewText(entry));
+        }
+      } else if(Array.isArray(value) || ArrayBuffer.isView(value)) {
+        var preview_length = Math.min(value.length, max_properties);
+        for(var preview_i = 0; preview_i < preview_length; preview_i++) {
+          var indexed = Object.getOwnPropertyDescriptor(value, String(preview_i));
+          parts.push(indexed && 'value' in indexed ? this._consolePreviewText(indexed.value) : 'empty');
+        }
+        overflow = value.length > max_properties;
+      } else {
+        var descriptors = Object.getOwnPropertyDescriptors(value);
+        var keys = Reflect.ownKeys(descriptors).filter(function(key) {
+          var descriptor = descriptors[key];
+          return typeof key !== 'symbol' && descriptor && descriptor.enumerable;
+        });
+        overflow = keys.length > max_properties;
+        keys.slice(0, max_properties).forEach((key) => {
+          var property = descriptors[key];
+          parts.push((Array.isArray(value) ? '' : key + ': ') +
+            ('value' in property ? this._consolePreviewText(property.value) : '(...)'));
+        });
+      }
+    } catch(err) {
+      overflow = true;
+    }
+    return { properties: parts, overflow: overflow };
+  }
+
+  /** @private */
+  _consolePreviewText(value) {
+    if(value === null || (typeof value !== 'object' && typeof value !== 'function')) {
+      var text = this._consoleValueDescription(value);
+      return text.length > 80 ? text.slice(0, 77) + '...' : text;
+    }
+    return this._consoleValueDescription(value);
+  }
+
+  /**
+   * Returns one page of own property descriptors for an expandable console value.
+   * Accessors are reported without invoking getters.
+   * @param {string} object_id Remote object identifier.
+   * @param {number} [offset=0] First property index.
+   * @param {number} [limit=100] Maximum properties in this page.
+   * @returns {Object} Property page.
+   */
+  _consoleProperties(object_id, offset = 0, limit = 100) {
+    var value = this._console_objects.get(String(object_id));
+    if(value === undefined) return { success: false, error: this.jsl?.inter?.lang?.string(630) ||
+      'Console object is no longer available.' /* lang-fixed */ };
+    offset = Math.max(0, Number(offset) || 0);
+    limit = Math.min(200, Math.max(1, Number(limit) || 100));
+    var properties = [];
+    var entries = [];
+    try {
+      if(value instanceof Map) {
+        var map_total = value.size;
+        var map_i = 0;
+        for(const [entry_key, entry_value] of Map.prototype.entries.call(value)) {
+          if(map_i >= offset) {
+            entries.push({ name: String(map_i), key: this._consoleValue(entry_key), value: this._consoleValue(entry_value) });
+          }
+          map_i++;
+          if(map_i >= offset + limit) break;
+        }
+        return { success: true, entries: entries, total: map_total,
+          next_offset: offset + entries.length < map_total ? offset + entries.length : undefined };
+      }
+      if(value instanceof Set) {
+        var set_total = value.size;
+        var set_i = 0;
+        for(const entry_value of Set.prototype.values.call(value)) {
+          if(set_i >= offset) entries.push({ name: String(set_i), value: this._consoleValue(entry_value) });
+          set_i++;
+          if(set_i >= offset + limit) break;
+        }
+        return { success: true, entries: entries, total: set_total,
+          next_offset: offset + entries.length < set_total ? offset + entries.length : undefined };
+      }
+      if(Array.isArray(value) || ArrayBuffer.isView(value)) {
+        var indexed_total = value.length + 1;
+        var indexed_end = Math.min(value.length, offset + limit);
+        for(var indexed_i = offset; indexed_i < indexed_end; indexed_i++) {
+          var indexed_descriptor = Object.getOwnPropertyDescriptor(value, String(indexed_i));
+          if(indexed_descriptor) {
+            properties.push({ name: String(indexed_i), enumerable: true,
+              configurable: !!indexed_descriptor.configurable,
+              writable: !!indexed_descriptor.writable,
+              value: this._consoleValue(indexed_descriptor.value) });
+          }
+        }
+        if(offset <= value.length && offset + limit > value.length) {
+          properties.push({ name: 'length', enumerable: false, configurable: false,
+            writable: Array.isArray(value), value: this._consoleValue(value.length) });
+        }
+        var indexed_next = offset + limit < indexed_total ? offset + limit : undefined;
+        if(indexed_next === undefined) {
+          var indexed_prototype = Object.getPrototypeOf(value);
+          if(indexed_prototype !== null) properties.push({ name: '[[Prototype]]', internal: true,
+            value: this._consoleValue(indexed_prototype) });
+        }
+        return { success: true, properties: properties, total: indexed_total,
+          next_offset: indexed_next };
+      }
+      var descriptors = Object.getOwnPropertyDescriptors(value);
+      var keys = Reflect.ownKeys(descriptors);
+      var property_order = new Intl.Collator(undefined, { numeric: true, sensitivity: 'variant' });
+      keys.sort(function(a, b) {
+        if(typeof a === 'symbol') return typeof b === 'symbol' ?
+          property_order.compare(String(a), String(b)) : 1;
+        if(typeof b === 'symbol') return -1;
+        return property_order.compare(String(a), String(b));
+      });
+      keys.slice(offset, offset + limit).forEach((key) => {
+        var property = descriptors[key];
+        var item = {
+          name: typeof key === 'symbol' ? '[' + String(key) + ']' : String(key),
+          property: typeof key === 'symbol' ? undefined : String(key),
+          enumerable: !!property.enumerable,
+          configurable: !!property.configurable
+        };
+        if('value' in property) {
+          item.value = this._consoleValue(property.value);
+          item.writable = !!property.writable;
+        } else {
+          item.accessor = true;
+          item.getter = typeof property.get === 'function';
+          item.setter = typeof property.set === 'function';
+        }
+        properties.push(item);
+      });
+      if(offset + properties.length >= keys.length) {
+        var prototype = Object.getPrototypeOf(value);
+        if(prototype !== null) properties.push({ name: '[[Prototype]]', internal: true, value: this._consoleValue(prototype) });
+      }
+      return { success: true, properties: properties, total: keys.length,
+        next_offset: offset + Math.min(limit, properties.length) < keys.length ? offset + limit : undefined };
+    } catch(err) {
+      return { success: false, error: err && err.message ? err.message : String(err) };
+    }
+  }
+
+  /**
+   * Explicitly evaluates an accessor selected by the user in the console.
+   * Ordinary previews and expansion never call this method.
+   * @param {string} object_id Remote object identifier.
+   * @param {string} property Property name.
+   * @returns {Object} Remote value result.
+   * @private
+   */
+  _consoleAccessor(object_id, property) {
+    var value = this._console_objects.get(String(object_id));
+    if(value === undefined) return { success: false, error: this.jsl?.inter?.lang?.string(630) ||
+      'Console object is no longer available.' /* lang-fixed */ };
+    try {
+      var descriptor = Object.getOwnPropertyDescriptor(value, String(property));
+      if(!descriptor || typeof descriptor.get !== 'function') {
+        return { success: false, error: this.jsl?.inter?.lang?.string(634) ||
+          'Getter is not available.' /* lang-fixed */ };
+      }
+      return { success: true, value: this._consoleValue(descriptor.get.call(value)) };
+    } catch(err) {
+      return { success: false, error: err && err.message ? err.message : String(err) };
     }
   }
 
@@ -910,10 +1173,18 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {string|*} The JSON string representation of the object or the object itself if not an object.
    */
   stringify(object) {
-    if(typeof object.toPrettyString === 'function') {
-      return object.toPrettyString();
+    var pretty_method = this._getFormattingMethod(object, 'toPrettyString');
+    if(pretty_method) {
+      return pretty_method.call(object);
     }
-    return JSON.stringify(object);
+    return sharedSafeStringify(object, {
+      max_depth: 20,
+      max_properties: 10000,
+      max_array_length: 10000,
+      max_string_length: 100000,
+      escape_html: false,
+      indent: 0
+    });
   }
   
   /**
@@ -921,89 +1192,54 @@ class PRDC_JSLAB_LIB_FORMAT {
    * It also escapes strings to prevent HTML injection.
    * @param {Object} data - The object to stringify.
    * @param {number} [depth_limit=3] - The maximum depth to traverse in the object, beyond which the traversal is stopped.
-   * @returns {string} A JSON string representation of the object, with special handling for deep objects, circular references, and HTML escaping of strings.
+   * @param {boolean} [escape_html=true] Whether to escape the resulting display text for HTML.
+   * @returns {string} A bounded representation with cycles and accessors identified.
    */
-  safeStringify(data, depth_limit = 3) {
+  safeStringify(data, depth_limit = 3, escape_html = true) {
     if(data == null || typeof data != 'object') {
       return data;
     }
-    if(typeof data.toPrettyString === 'function') {
-      return data.toPrettyString();
+    var pretty_method = this._getFormattingMethod(data, 'toPrettyString');
+    var safe_json_method = this._getFormattingMethod(data, 'toSafeJSON');
+    if(pretty_method) {
+      return pretty_method.call(data);
     }
-    if(typeof data.toSafeJSON === 'function') {
-      return data.toSafeJSON();
+    if(safe_json_method) {
+      var safe_value = safe_json_method.call(data);
+      if(typeof safe_value === 'string') return safe_value;
+      data = safe_value;
     }
-    if(data.hasOwnProperty('_safeStringifyDepth')) {
-      depth_limit = data._safeStringifyDepth;
-      delete data._safeStringifyDepth;
+    if(this._safe_stringify_depths.has(data)) {
+      depth_limit = this._safe_stringify_depths.get(data);
+      this._safe_stringify_depths.delete(data);
     }
-    
-    const seen = new WeakSet();
+    return sharedSafeStringify(data, {
+      max_depth: depth_limit,
+      max_properties: 1000,
+      max_array_length: 1000,
+      max_string_length: 10000,
+      escape_html: escape_html,
+      indent: 2
+    });
+  }
 
-    function escapeString(str) {
-      return str.replace(/[&<>"'`=\/]/g, function (s) {
-        return ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;',
-          '`': '&#x60;',
-          '=': '&#x3D;',
-          '/': '&#x2F;'
-        })[s];
-      });
-    }
-
-    function helper(value, depth, path) {
-      if(depth > depth_limit) {
-        return '{...}';
+  /** Finds a formatting data method without invoking getters. */
+  _getFormattingMethod(value, name) {
+    if(value === null || (typeof value !== 'object' && typeof value !== 'function')) return;
+    try {
+      for(var current = value; current; current = Object.getPrototypeOf(current)) {
+        var descriptor = Object.getOwnPropertyDescriptor(current, name);
+        if(descriptor) return typeof descriptor.value === 'function' ? descriptor.value : undefined;
       }
+    } catch(err) {}
+  }
 
-      if(value !== null && typeof value === 'object') {
-        if(seen.has(value)) {
-          return '[Circular Reference]';
-        }
-        seen.add(value);
-
-        // Handle arrays separately
-        if(Array.isArray(value)) {
-          return value.map((item, index) => helper(item, depth + 1, path.concat(index)));
-        }
-
-        const result = {};
-
-        // Retrieve property descriptors without invoking getters
-        const descriptors = Object.getOwnPropertyDescriptors(value);
-        const keys = Reflect.ownKeys(descriptors); // Includes symbol properties
-
-        for(const key of keys) {
-          const descriptor = descriptors[key];
-          const newPath = path.concat(key); // Build the full path
-
-          try {
-            if('value' in descriptor) {
-              // Data property; process the value
-              result[key] = helper(descriptor.value, depth + 1, newPath);
-            } else if(typeof descriptor.get === 'function') {
-              // Accessor property with a getter
-              result[key] = '[Getter]';
-            } else {
-              result[key] = '[Unknown Property]';
-            }
-          } catch(err) {
-            result[key] = `[Error: ${escapeString(err.message)}]`;
-          }
-        }
-        return result;
-      } else if(typeof value === 'string') {
-        // Escape strings to prevent HTML injection
-        return escapeString(value);
-      }
-      return value;
+  /** Stores a one-shot legacy stringify depth without modifying the inspected value. */
+  _setSafeStringifyDepth(data, depth) {
+    if(data !== null && (typeof data === 'object' || typeof data === 'function')) {
+      this._safe_stringify_depths.set(data, depth);
     }
-
-    return JSON.stringify(helper(data, 0, []), null, 2);
+    return data;
   }
   
   /**

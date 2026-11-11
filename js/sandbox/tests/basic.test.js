@@ -319,6 +319,81 @@ tests.add('getCompletions prioritizes exact match and includes context symbols',
   assert.ok(completions.includes('customKeyword2'));
 }, { tags: ['unit', 'basic'] });
 
+tests.add('getCompletions uses DevTools-style prefix filtering and property ordering', function(assert) {
+  var harness = createBasicCompletionsHarness();
+  var prototype = { prop10: true, prop2: true, _private: true };
+  var value = Object.create(prototype);
+  value.prop1 = true;
+  value.unrelatedProp = true;
+  harness.jsl.context.value = value;
+  var context = JSON.stringify([{ type: 'variable', string: 'value' }]);
+
+  var completions = harness.basic.getCompletions(['prop', context, []]);
+
+  assert.deepEqual(completions.slice(0, 3), ['prop1', 'prop2', 'prop10']);
+  assert.equal(completions.includes('unrelatedProp'), false);
+}, { tags: ['unit', 'basic'] });
+
+tests.add('console completion and eager preview do not invoke accessors', function(assert) {
+  var harness = createBasicCompletionsHarness();
+  var getter_calls = 0;
+  var value = { alpha: 1 };
+  Object.defineProperty(value, 'computed', {
+    enumerable: true,
+    get: function() { getter_calls++; return 2; }
+  });
+  harness.jsl.context.value = value;
+  harness.jsl.inter = {
+    env: {
+      babel_parser: {
+        parseExpression: function(source) {
+          assert.equal(source, 'value');
+          return { type: 'Identifier', name: 'value' };
+        }
+      }
+    },
+    format: {
+      _consoleValue: function(result) { return { description: result === value ? 'Object' : String(result) }; }
+    }
+  };
+
+  var completions = harness.basic.getCompletions({
+    start: '', expression: 'value', input: 'value.', keywords: []
+  });
+  assert.equal(completions.items.includes('computed'), true);
+  assert.equal(harness.basic._getConsolePreview('value').success, true);
+  assert.equal(getter_calls, 0);
+}, { tags: ['unit', 'basic', 'console'] });
+
+tests.add('console eager preview safely evaluates primitive expressions', function(assert) {
+  var harness = createBasicCompletionsHarness();
+  var getter_calls = 0;
+  Object.defineProperty(harness.jsl.context, 'dangerous', {
+    configurable: true,
+    get: function() { getter_calls++; return 99; }
+  });
+  harness.jsl.inter = {
+    env: { babel_parser: require('@babel/parser') },
+    format: { _consoleValue: function(value) { return { description: String(value), value: value }; } }
+  };
+
+  assert.equal(harness.basic._getConsolePreview('1 + 2 * 3').value.value, 7);
+  assert.equal(harness.basic._getConsolePreview('`value ${2 + 3}`').value.value, 'value 5');
+  assert.equal(harness.basic._getConsolePreview('false && dangerous').value.value, false);
+  assert.equal(harness.basic._getConsolePreview('true ? 4 : dangerous').value.value, 4);
+  assert.equal(harness.basic._getConsolePreview('dangerous + 1').success, false);
+  assert.equal(getter_calls, 0);
+}, { tags: ['unit', 'basic', 'console'] });
+
+tests.add('console history completions are ordered and deduplicated', function(assert) {
+  var harness = createBasicCompletionsHarness();
+  var completions = harness.basic.getCompletions({
+    start: 'pri', input: 'pri', keywords: [], history: ['print(1)', 'print(1)', 'print(2)']
+  });
+  var history = completions.items.filter(function(item) { return item && item.history; });
+  assert.deepEqual(history.map(function(item) { return item.text; }), ['print(1)', 'print(2)']);
+}, { tags: ['unit', 'basic', 'console'] });
+
 function createBasicMatlabPathHarness() {
   var save_path_calls = [];
   var remove_path_calls = [];

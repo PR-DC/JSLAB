@@ -145,10 +145,11 @@ guiTest(tests, 'main', 'scroll to bottom restores command input focus', ['#comma
 
 for(const submit of ['button', 'enter']) {
   guiTest(tests, 'main', 'command input submits with ' + submit,
-    ['#command-window-input', '#command-window-input-submit-cont'], function(assert, f, c) {
+    ['#command-window-input', '#command-window-input-submit-cont'], async function(assert, f, c) {
       c.command_window.code_input.setValue('2 + 3');
       if(submit === 'button') f.click('#command-window-input-submit-cont');
       else c.command_window.code_input.getOption('extraKeys').Enter(c.command_window.code_input);
+      await f.tick();
       assert.equal(sent(assert, f, 'SandboxWindow', 'eval-code')[0], '2 + 3');
       assert.equal(c.command_window.code_input.getValue(), '');
       assert.equal(c.command_history.history[0], '2 + 3');

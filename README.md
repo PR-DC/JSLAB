@@ -16,54 +16,9 @@ The program was developed to fulfill the need for performing calculations in a p
 
 `JSLAB` offers a streamlined, dual-window interface designed to boost productivity and foster innovation. The main window combines a versatile workspace with a sandbox terminal, allowing users to run, test, and iterate on code in real time. The dedicated editor window introduces the **.JSL file format**—a plain text format tailored for `JSLAB` scripts. With advanced linting and intelligent autocompletion, the editor makes it easy to write precise, reusable code with minimal errors.
 
-## Desktop, web and command-line versions
-
-JSLAB is available as an **Electron desktop application**, a **web application** that runs in your browser, and a **Windows command-line interface**. They share the JSLAB runtime and compiled WebAssembly computational backend. The desktop and CLI provide local files, processes and device integrations; browser capabilities depend on browser permissions and APIs.
-
-| Version | Start here |
-| --- | --- |
-| Electron desktop | Download a [desktop release](https://github.com/PR-DC/JSLAB/releases), or run `npm start` from source. |
-| Web | [Open JSLAB in your browser](https://pr-dc.com/jslab/web/), or build with `npm run dist-web`. |
-| Windows CLI | Run `jslab` in PowerShell or Command Prompt after installation. From source, use `npm run cli`. |
-
-## Windows command line
-
-The Windows installer adds the installation directory to PATH for the selected installation scope. Open a new terminal and type:
-
-```powershell
-jslab
-jslab .\analysis.jsl
-jslab .\analysis.jsl -- "input data.csv"
-jslab --batch .\analysis.jsl
-jslab -e "trapz([0, 1, 2])"
-jslab --json -e "roots([1, 0, -1])"
-```
-
-Running `jslab` opens the REPL. Running `jslab script.jsl` in a terminal executes the script and then opens the same REPL with its variables and figures preserved. The prompt supports multiline JavaScript, `await`, history and Ctrl+C interruption. Type `.help` for terminal commands. Arguments after `--` are available as `argv`. Use `--batch`, `--json` or `-e` for execution that exits without a REPL; redirected input also runs in batch mode.
-
-Plots open in real, interactive JSLAB figure windows while the main and editor windows stay hidden. For example, enter `plot([0, 1, 2], [0, 1, 4]);` at the prompt or in your startup script. Figure windows stay available while you work in the REPL and close when the CLI exits. In batch mode, export figures before execution ends.
-
-The packaged CLI includes its runtime and does not require a separate Node.js installation. For a portable or unpacked release, run the generated `jslab.cmd` from its directory or add that directory to PATH. From source, use `npm run cli`, `npm run cli -- -e "6 * 7"`, or `npm link --ignore-scripts` to register the `jslab` command.
-
-See [Command-line interface](docs/documentation.md#command-line-interface) for all options, exit codes and scripting behavior.
-
 ## Try it online
 
 Use JSLAB directly in your browser: [https://pr-dc.com/jslab/web/](https://pr-dc.com/jslab/web/)
-
-## AI agents and MCP
-
-JSLAB includes a local Model Context Protocol (MCP) server for AI agents. Agents can execute `.jsl` scripts and JavaScript in the desktop workspace, inspect variables, check code, run assertion-based test scripts, read function documentation and export figures.
-
-Start the desktop with agent access enabled:
-
-```powershell
-npm start -- --mcp
-```
-
-Configure your MCP client to launch `node` with the absolute path to `js/mcp/server.js`. Node.js 18 or later is required for the adapter. Access is disabled by default and code runs with the desktop user's existing permissions.
-
-See the [MCP setup and tool guide](docs/documentation.md#mcp-server) for client configuration, session selection and execution control. [AGENTS.md](AGENTS.md) provides guidance for agents using JSLAB and working on this repository.
 
 ## Why Choose JSLAB?
 
@@ -518,6 +473,51 @@ Comprehensive documentation is available in the root directory of this repositor
 Code references and function details are also accessible directly within `JSLAB` by using the `help()` function.
 
 Documentation is also available at: [https://pr-dc.com/jslab/doc/](https://pr-dc.com/jslab/doc/)
+
+## AI agents and MCP
+
+JSLAB includes a local Model Context Protocol (MCP) server for AI agents. Agents can execute `.jsl` scripts and JavaScript in the desktop workspace, inspect variables, check code, run assertion-based test scripts, read function documentation and export figures.
+
+Start the desktop with agent access enabled:
+
+```powershell
+npm start -- --mcp
+```
+
+Configure your MCP client to launch `node` with the absolute path to `js/mcp/server.js`. Node.js 18 or later is required for the adapter. Access is disabled by default and code runs with the desktop user's existing permissions.
+
+See the [MCP setup and tool guide](docs/documentation.md#mcp-server) for client configuration, session selection and execution control. [AGENTS.md](AGENTS.md) provides guidance for agents using JSLAB and working on this repository.
+
+## Desktop, web and command-line versions
+
+JSLAB is available as an **Electron desktop application**, a **web application** that runs in your browser, and a **Windows command-line interface**. They share the JSLAB runtime and compiled WebAssembly computational backend. The desktop and CLI provide local files, processes and device integrations; browser capabilities depend on browser permissions and APIs.
+
+| Version | Start here |
+| --- | --- |
+| Electron desktop | Download a [desktop release](https://github.com/PR-DC/JSLAB/releases), or run `npm start` from source. |
+| Web | [Open JSLAB in your browser](https://pr-dc.com/jslab/web/), or build with `npm run dist-web`. |
+| Windows CLI | Run `jslab` in PowerShell or Command Prompt after installation. From source, use `npm run cli`. |
+
+## Windows command line
+
+The Windows installer adds the installation directory to PATH for the selected installation scope. Open a new terminal and type:
+
+```powershell
+jslab
+jslab .\analysis.jsl
+jslab .\analysis.jsl -- "input data.csv"
+jslab --batch .\analysis.jsl
+jslab -e "trapz([0, 1, 2])"
+jslab --json -e "roots([1, 0, -1])"
+```
+
+Running `jslab` opens the REPL. Running `jslab script.jsl` in a terminal executes the script and then opens the same REPL with its variables and figures preserved. The prompt supports multiline JavaScript, `await`, history and Ctrl+C interruption. Type `.help` for terminal commands. Arguments after `--` are available as `argv`. Use `--batch`, `--json` or `-e` for execution that exits without a REPL; redirected input also runs in batch mode.
+
+Plots open in real, interactive JSLAB figure windows while the main and editor windows stay hidden. For example, enter `plot([0, 1, 2], [0, 1, 4]);` at the prompt or in your startup script. Figure windows stay available while you work in the REPL and close when the CLI exits. In batch mode, export figures before execution ends.
+
+The packaged CLI includes its runtime and does not require a separate Node.js installation. For a portable or unpacked release, run the generated `jslab.cmd` from its directory or add that directory to PATH. From source, use `npm run cli`, `npm run cli -- -e "6 * 7"`, or `npm link --ignore-scripts` to register the `jslab` command.
+
+See [Command-line interface](docs/documentation.md#command-line-interface) for all options, exit codes and scripting behavior.
 
 ## Citation
 

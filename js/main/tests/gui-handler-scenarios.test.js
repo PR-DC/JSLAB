@@ -55,11 +55,10 @@ guiTest(tests, 'main', 'optional developer-tools menu binds its expected action'
 });
 
 for(const type of ['main', 'editor']) {
-  guiTest(tests, type, type + ' CodeMirror keypress/drop/scroll events retain usable input', [], function(assert, f, c) {
+  guiTest(tests, type, type + ' CodeMirror input/drop/scroll events retain usable input', [], function(assert, f, c) {
     var cm = type === 'main' ? c.command_window.code_input : c.script_manager.scripts[0].code_editor;
     cm.setValue('value'); cm.setCursor(0, 5);
-    var key = new f.window.KeyboardEvent('keypress', { key: ';', bubbles: true });
-    f.window.CodeMirror.signal(cm, 'keypress', cm, key);
+    f.window.CodeMirror.signal(cm, 'inputRead', cm, { origin: '+input', text: [';'] });
     if(type === 'editor') {
       var drop = new f.window.Event('drop', { cancelable: true });
       f.window.CodeMirror.signal(cm, 'drop', cm, drop); assert.equal(drop.defaultPrevented, true);

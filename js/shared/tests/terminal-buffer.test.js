@@ -70,6 +70,20 @@ tests.add('clear resets log and rendered state counters', function(assert) {
   assert.equal(buffer.N_messages, 0);
 }, { tags: ['unit', 'shared', 'terminal-buffer'] });
 
+tests.add('identical consecutive console messages are grouped', function(assert) {
+  var buffer = new PRDC_TERMINAL_BUFFER({
+    get_timestamp: function() { return '00:00:00'; },
+    is_autoscroll: function() { return false; }
+  });
+  buffer.addMessage('data-in', 'same', 'same');
+  buffer.addMessage('data-in', 'same', 'same');
+  assert.equal(buffer.log.length, 1);
+  assert.equal(buffer.log[0].repeat_count, 2);
+  buffer.addMessage('data-out', 'same', 'same');
+  buffer.addMessage('data-out', 'same', 'same');
+  assert.equal(buffer.log.length, 3);
+}, { tags: ['unit', 'shared', 'terminal-buffer'] });
+
 tests.add('destroy removes scroll listener when scroll container is provided', function(assert) {
   var add_calls = 0;
   var remove_calls = 0;

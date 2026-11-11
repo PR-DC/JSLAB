@@ -5,6 +5,7 @@
  * info@pr-dc.com
  */
 const { isInternalDebugFrame } = require('../shared/debugger-frames');
+const { safeStringify } = require('../shared/value-serializer');
 
 const { PRDC_JSLAB_DEBUGGER_INSPECTOR } = require('../shared/debugger-inspector');
 var { parseDebuggerCommand, executeDebuggerCommand } = require('../shared/debugger-commands');
@@ -152,6 +153,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     this._bindWorkspaceFilter();
     this._bindDialogs();
     this._bindInspectorHandlers();
+    this._bindConsoleValueHandlers();
     this._bindStatusPopup();
     this._bindHistory();
 
@@ -234,6 +236,30 @@ class PRDC_JSLAB_WEB_APP_SHELL {
           return obj.sandbox_api.getCompletions(data);
         }
         return [];
+      },
+      getConsoleProperties: function(request) {
+        if(obj.sandbox_api && typeof obj.sandbox_api.getConsoleProperties == 'function') {
+          return obj.sandbox_api.getConsoleProperties(request);
+        }
+        return { success: false, error: obj.language.string(632) };
+      },
+      getConsoleAccessor: function(request) {
+        if(obj.sandbox_api && typeof obj.sandbox_api.getConsoleAccessor == 'function') {
+          return obj.sandbox_api.getConsoleAccessor(request);
+        }
+        return { success: false, error: obj.language.string(632) };
+      },
+      getConsolePreview: function(expression) {
+        if(obj.sandbox_api && typeof obj.sandbox_api.getConsolePreview == 'function') {
+          return obj.sandbox_api.getConsolePreview(expression);
+        }
+        return { success: false };
+      },
+      isConsoleExpressionComplete: function(code) {
+        if(obj.sandbox_api && typeof obj.sandbox_api.isConsoleExpressionComplete == 'function') {
+          return obj.sandbox_api.isConsoleExpressionComplete(code);
+        }
+        return true;
       },
       openEditorFile: function(file_path, lineno) {
         return obj._openEditorWindow(file_path, lineno);
@@ -483,6 +509,10 @@ class PRDC_JSLAB_WEB_APP_SHELL {
           return { ...result, ok: true };
         },
         getCompletions: async data => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('completions', { data }); },
+        getConsoleProperties: async request => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('console-properties', request); },
+        getConsoleAccessor: async request => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('console-accessor', request); },
+        getConsolePreview: async expression => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('console-preview', { expression }); },
+        isConsoleExpressionComplete: async code => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('console-expression-complete', { code }); },
         clearWorkspace: async () => { await shell._startWorkerDebugger(); return shell.worker_debugger.operation('clear'); },
         setLanguage: lang => shell.worker_debugger?.operation('language', { lang }),
         notifyWindowClosed: wid => shell.worker_debugger?.operation('window-closed', { wid }),
@@ -607,8 +637,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
 
     document.addEventListener('keydown', (event) => {
       if(event.ctrlKey && event.key.toLowerCase() == 'f') {
-        this._scrollConsoleToBottom();
-        this._focusCommandInput();
+        this._openConsoleTools();
         event.preventDefault();
         event.stopPropagation();
       }
@@ -651,8 +680,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
 
     if(event.ctrlKey && !event.altKey && !event.shiftKey) {
       if(key == 'f') {
-        this._scrollConsoleToBottom();
-        this._focusCommandInput();
+        this._openConsoleTools();
         event.preventDefault();
         event.stopImmediatePropagation();
         return;
@@ -1750,8 +1778,243 @@ class PRDC_JSLAB_WEB_APP_SHELL {
   /**
    * Runs the current command input in the worker.
    */
-  async _runCommand() {
-    return this._evaluateCommand(this.code_input ? this.code_input.getValue() : '');
+  async _runCommand(force) {
+    var code = this.code_input ? this.code_input.getValue() : '';
+    if(!force && code.trim() && !await this.bridge.isConsoleExpressionComplete(code)) {
+      this.code_input.replaceSelection('\n', 'end', '+input');
+      this.code_input.execCommand('indentAuto');
+      return;
+    }
+    return this._evaluateCommand(code);
+  }
+
+  /** Schedules a conservative, side-effect-free preview below the prompt. */
+  _scheduleConsolePreview() {
+    clearTimeout(this.console_preview_timer);
+    var request_id = this.console_preview_request_id =
+      (this.console_preview_request_id || 0) + 1;
+    if(this.console_preview) this.console_preview.replaceChildren();
+    if(!this.code_input || !this.code_input.getValue().trim()) return;
+    this.console_preview_timer = setTimeout(async () => {
+      if(!this.console_preview || !this.code_input) return;
+      if(this.worker_debugger && this.worker_debugger.state !== 'idle') return;
+      var expression = this.code_input.getValue().trim();
+      if(!expression) return;
+      var result = await this.bridge.getConsolePreview(expression);
+      if(request_id !== this.console_preview_request_id) return;
+      if(result?.success) this.console_preview.appendChild(this._createConsoleValueElement(result.value));
+    }, 150);
+  }
+
+  /** Initializes persistent live expressions. */
+  _initLiveExpressions() {
+    try {
+      this.live_expressions = JSON.parse(localStorage.getItem('jslab-live-expressions') || '[]');
+      if(!Array.isArray(this.live_expressions)) this.live_expressions = [];
+    } catch(err) { this.live_expressions = []; }
+    this.live_expressions_el = document.createElement('div');
+    this.live_expressions_el.className = 'jslab-live-expressions';
+    this.live_expressions_el.setAttribute('aria-label', this.language.currentString(637));
+    this.console_messages.parentNode.insertBefore(this.live_expressions_el, this.console_messages);
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'jslab-live-expression-add';
+    add.textContent = '+';
+    add.title = this.language.currentString(635);
+    add.addEventListener('click', () => {
+      this.live_expressions.push(this.code_input.getValue().trim());
+      this._renderLiveExpressions();
+    });
+    document.querySelector('#command-window-options .options-right').prepend(add);
+    this._renderLiveExpressions();
+    this.live_expression_timer = setInterval(() => this._updateLiveExpressions(), 500);
+  }
+
+  _renderLiveExpressions() {
+    this.live_expressions_el.replaceChildren();
+    this.live_expressions.forEach((expression, index) => {
+      var row = document.createElement('div');
+      row.className = 'jslab-live-expression';
+      var input = document.createElement('input');
+      input.type = 'text'; input.value = expression; input.spellcheck = false;
+      input.addEventListener('input', () => {
+        this.live_expressions[index] = input.value;
+        this._saveLiveExpressions(); this._updateLiveExpressions();
+      });
+      var output = document.createElement('span');
+      output.className = 'jslab-live-expression-value';
+      var remove = document.createElement('button');
+      remove.type = 'button'; remove.textContent = '\u00D7';
+      remove.title = this.language.currentString(636);
+      remove.addEventListener('click', () => {
+        this.live_expressions.splice(index, 1); this._renderLiveExpressions();
+      });
+      row.append(input, output, remove);
+      this.live_expressions_el.appendChild(row);
+    });
+    this._saveLiveExpressions();
+    this._updateLiveExpressions();
+  }
+
+  _saveLiveExpressions() {
+    try { localStorage.setItem('jslab-live-expressions', JSON.stringify(this.live_expressions)); } catch(err) {}
+  }
+
+  async _updateLiveExpressions() {
+    if(this.live_expression_updating ||
+        (this.worker_debugger && this.worker_debugger.state !== 'idle')) return;
+    this.live_expression_updating = true;
+    try {
+      var rows = this.live_expressions_el.querySelectorAll('.jslab-live-expression');
+      for(var i = 0; i < rows.length; i++) {
+        var output = rows[i].querySelector('.jslab-live-expression-value');
+        var expression = String(this.live_expressions[i] || '').trim();
+        output.replaceChildren();
+        if(!expression) continue;
+        var result = await this.bridge.getConsolePreview(expression);
+        if(result?.success) output.appendChild(this._createConsoleValueElement(result.value));
+        else output.textContent = result?.reason || '';
+      }
+    } finally { this.live_expression_updating = false; }
+  }
+
+  _initConsoleTools() {
+    var tools = document.createElement('div');
+    tools.className = 'jslab-console-tools';
+    tools.hidden = true;
+    tools.setAttribute('role', 'search');
+    var filter = document.createElement('input');
+    filter.type = 'text'; filter.className = 'CodeMirror-search-find';
+    filter.placeholder = this.language.currentString(336);
+    filter.title = this.language.currentString(336);
+    filter.autocomplete = 'off'; filter.spellcheck = false;
+    var previous = document.createElement('i');
+    previous.className = 'CodeMirror-search-find-prev-btn';
+    previous.title = this.language.currentString(337);
+    var next = document.createElement('i');
+    next.className = 'CodeMirror-search-find-next-btn';
+    next.title = this.language.currentString(338);
+    var clear_top = document.createElement('br'); clear_top.className = 'clear';
+    var match_case = document.createElement('i');
+    match_case.className = 'CodeMirror-search-case-btn';
+    match_case.title = this.language.currentString(341);
+    var regex = document.createElement('i');
+    regex.className = 'CodeMirror-search-regex-btn';
+    regex.title = this.language.currentString(342);
+    var counter = document.createElement('div');
+    counter.className = 'CodeMirror-search-bottom-right';
+    var current = document.createElement('span'); current.className = 'CodeMirror-search-current-match';
+    current.textContent = '0';
+    var total = document.createElement('span'); total.className = 'CodeMirror-search-total-matchs';
+    total.textContent = '0';
+    var close = document.createElement('i');
+    close.className = 'CodeMirror-search-close-btn';
+    close.title = this.language.currentString(344);
+    counter.append(current, ' ' + this.language.currentString(343) + ' ', total, close);
+    var clear_bottom = document.createElement('br'); clear_bottom.className = 'clear';
+    tools.append(filter, previous, next, clear_top, match_case, regex, counter, clear_bottom);
+    this.console_messages.parentNode.insertBefore(tools, this.console_messages);
+    this.console_filter_input = filter;
+    this.console_filter_current = current; this.console_filter_total = total;
+    this.console_filter_match_case = false; this.console_filter_regex = false;
+    this.console_filter_index = -1;
+    this.console_tools = tools;
+    document.getElementById('command-window-filter-button').addEventListener('click',
+      () => this._toggleConsoleTools());
+    close.addEventListener('click', () => this._closeConsoleTools());
+    filter.addEventListener('keydown', event => {
+      if(event.key === 'Escape') {
+        this._closeConsoleTools();
+      } else if(event.key === 'Enter') {
+        this._navigateConsoleFilter(event.shiftKey ? -1 : 1);
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    });
+    document.addEventListener('mousedown', event => {
+      var button = document.getElementById('command-window-filter-button');
+      if(!tools.hidden && !tools.contains(event.target) && event.target !== button) {
+        this._closeConsoleTools();
+      }
+    });
+    filter.addEventListener('input', () => this._applyConsoleFilter(true));
+    previous.addEventListener('click', () => this._navigateConsoleFilter(-1));
+    next.addEventListener('click', () => this._navigateConsoleFilter(1));
+    match_case.addEventListener('click', () => {
+      this.console_filter_match_case = !this.console_filter_match_case;
+      match_case.classList.toggle('active', this.console_filter_match_case);
+      this._applyConsoleFilter(true);
+    });
+    regex.addEventListener('click', () => {
+      this.console_filter_regex = !this.console_filter_regex;
+      regex.classList.toggle('active', this.console_filter_regex);
+      this._applyConsoleFilter(true);
+    });
+  }
+
+  /** Opens the console filter popup and selects its current query. */
+  _openConsoleTools() {
+    if(!this.console_tools) return;
+    this.console_tools.hidden = false;
+    this.console_filter_input.focus();
+    this.console_filter_input.select();
+  }
+
+  /** Closes the console filter popup and returns focus to the prompt. */
+  _closeConsoleTools() {
+    if(!this.console_tools) return;
+    this.console_tools.hidden = true;
+    this._focusCommandInput();
+  }
+
+  /** Toggles the console filter popup. */
+  _toggleConsoleTools() {
+    if(this.console_tools && this.console_tools.hidden) this._openConsoleTools();
+    else this._closeConsoleTools();
+  }
+
+  _applyConsoleFilter(reset_index) {
+    if(!this.console_filter_input) return;
+    var query = this.console_filter_input.value;
+    var expression = null, invalid = false;
+    if(query && this.console_filter_regex) {
+      try { expression = new RegExp(query, this.console_filter_match_case ? '' : 'i'); }
+      catch(err) { invalid = true; }
+    }
+    this.console_filter_input.classList.toggle('invalid', invalid);
+    var matches = [];
+    this.console_messages.querySelectorAll(':scope > div').forEach(node => {
+      node.classList.remove('jslab-console-filter-current');
+      var text = node.textContent;
+      var matches_text = !query || (!invalid && (expression ? expression.test(text) :
+        (this.console_filter_match_case ? text.includes(query) :
+          text.toLowerCase().includes(query.toLowerCase()))));
+      node.style.display = matches_text ? '' : 'none';
+      if(query && matches_text) matches.push(node);
+    });
+    this.console_filter_matches = matches;
+    if(reset_index) this.console_filter_index = matches.length ? 0 : -1;
+    else if(this.console_filter_index >= matches.length) this.console_filter_index = matches.length - 1;
+    this._focusConsoleFilterMatch();
+  }
+
+  _navigateConsoleFilter(direction) {
+    var matches = this.console_filter_matches || [];
+    if(!matches.length) return;
+    this.console_filter_index = (this.console_filter_index + direction + matches.length) % matches.length;
+    this._focusConsoleFilterMatch();
+  }
+
+  _focusConsoleFilterMatch() {
+    var matches = this.console_filter_matches || [];
+    matches.forEach(node => node.classList.remove('jslab-console-filter-current'));
+    var selected = this.console_filter_index >= 0 ? matches[this.console_filter_index] : null;
+    if(selected) {
+      selected.classList.add('jslab-console-filter-current');
+      if(typeof selected.scrollIntoView === 'function') selected.scrollIntoView({ block: 'nearest' });
+    }
+    if(this.console_filter_current) this.console_filter_current.textContent = selected ? this.console_filter_index + 1 : 0;
+    if(this.console_filter_total) this.console_filter_total.textContent = matches.length;
   }
 
   /**
@@ -3006,6 +3269,11 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       this._appendAnsMessage(message);
       return;
     }
+    if(level == 'console-value' && message?.__jslab_console_value__) {
+      var remote_entry = this._appendCommandWindowMessage('data-in', '', message.description);
+      remote_entry.appendChild(this._createConsoleValueElement(message));
+      return;
+    }
     var text = String(message || '');
     if(level == 'latex') {
       this._appendLatexMessage(text);
@@ -3288,28 +3556,34 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       highlightSelectionMatches: { annotateScrollbar: true },
       viewportMargin: Infinity,
       extraKeys: {
-        Enter: () => {
-          this._runCommand();
-        }
+        Enter: () => { this._runCommand(false); },
+        'Ctrl-Enter': () => { this._runCommand(true); },
+        'Shift-Enter': 'newlineAndIndent'
       }
     });
 
     globalThis.CodeMirror.keyMap.default['Shift-Tab'] = 'indentLess';
     globalThis.CodeMirror.keyMap.default.Tab = 'indentMore';
 
-    this.code_input.on('keypress', function(cm, event) {
-      if(!cm.state.completionActive &&
-          !event.ctrlKey &&
-          event.key != 'Enter' &&
-          event.key != ';' &&
-          event.key != ' ' &&
-          event.key != '{' &&
-          event.key != '}') {
+    this.code_input.on('inputRead', (cm, change) => {
+      var inserted = change && Array.isArray(change.text) ? change.text.join('\n') : '';
+      if(!cm.state.completionActive && change.origin === '+input' &&
+          inserted.length && !/[;\s{}]$/.test(inserted)) {
         if(typeof globalThis.CodeMirror.commands.autocomplete == 'function') {
-          globalThis.CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+          globalThis.CodeMirror.commands.autocomplete(cm, null, {
+            completeSingle: false,
+            history: this._getCommandHistory()
+          });
         }
       }
     });
+    this.code_input.on('change', () => this._scheduleConsolePreview());
+
+    this.console_preview = document.createElement('div');
+    this.console_preview.className = 'jslab-console-eager-preview';
+    document.getElementById('command-window-input-container').appendChild(this.console_preview);
+    this._initLiveExpressions();
+    this._initConsoleTools();
 
     this.code_input.on('keydown', async (_cm, event) => {
       await this._handleCommandInputKeyDown(event);
@@ -3345,10 +3619,9 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    */
   async _handleCommandInputKeyDown(event) {
     var commands = this._getCommandHistory();
-    if(event.key == 'Escape' && !this.code_input.state.completionActive) {
-      this.code_input.setValue('');
+    if(event.key == 'Escape') {
+      this._setCommandInputValue('');
       this._resetHistoryIndex();
-      this._scrollConsoleToBottom();
       event.preventDefault();
       event.stopPropagation();
       return;
@@ -3356,10 +3629,9 @@ class PRDC_JSLAB_WEB_APP_SHELL {
 
     if(event.key == 'ArrowUp' && !this.code_input.state.completionActive) {
       var cursor_up = this.code_input.getCursor();
-      var last_line_up = this.code_input.lineCount() - 1;
-      var last_pos_up = this.code_input.getLine(last_line_up).length;
-      if(cursor_up.line == 0 && (cursor_up.ch == last_pos_up || cursor_up.ch == 0)) {
+      if(!this.code_input.somethingSelected() && cursor_up.line == 0) {
         if(this.command_history_index < commands.length - 1) {
+          if(this.command_history_index === -1) this.console_history_draft = this.code_input.getValue();
           this.command_history_index += 1;
           this._setCommandInputValue(commands[this.command_history_index]);
           this._scrollConsoleToBottom();
@@ -3373,15 +3645,37 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     if(event.key == 'ArrowDown' && !this.code_input.state.completionActive) {
       var cursor_down = this.code_input.getCursor();
       var last_line_down = this.code_input.lineCount() - 1;
-      var last_pos_down = this.code_input.getLine(last_line_down).length;
-      if(cursor_down.line == last_line_down && (cursor_down.ch == last_pos_down || cursor_down.ch == 0)) {
+      if(!this.code_input.somethingSelected() && cursor_down.line == last_line_down) {
         if(this.command_history_index > 0) {
           this.command_history_index -= 1;
           this._setCommandInputValue(commands[this.command_history_index]);
+        } else if(this.command_history_index === 0) {
+          this.command_history_index = -1;
+          this._setCommandInputValue(this.console_history_draft || '');
         }
         event.preventDefault();
         event.stopPropagation();
       }
+      return;
+    }
+
+    if(event.ctrlKey && !event.altKey && !event.metaKey &&
+        ['p', 'n'].includes(event.key.toLowerCase())) {
+      if(event.key.toLowerCase() == 'p' && this.command_history_index < commands.length - 1) {
+        if(this.command_history_index === -1) this.console_history_draft = this.code_input.getValue();
+        this.command_history_index += 1;
+        this._setCommandInputValue(commands[this.command_history_index]);
+      } else if(event.key.toLowerCase() == 'n') {
+        if(this.command_history_index > 0) {
+          this.command_history_index -= 1;
+          this._setCommandInputValue(commands[this.command_history_index]);
+        } else if(this.command_history_index === 0) {
+          this.command_history_index = -1;
+          this._setCommandInputValue(this.console_history_draft || '');
+        }
+      }
+      event.preventDefault();
+      event.stopPropagation();
       return;
     }
 
@@ -3475,11 +3769,29 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       return;
     }
 
-    if(event.ctrlKey && event.key.toLowerCase() == 'l') {
+    if(event.ctrlKey && event.shiftKey && event.key.toLowerCase() == 'l') {
       this._openTerminalDialog(this.command_log_dialog);
       event.preventDefault();
       event.stopPropagation();
       return;
+    }
+
+    if(event.ctrlKey && !event.shiftKey && ['l', 'k'].includes(event.key.toLowerCase())) {
+      this._clearConsole();
+      this.code_input.focus();
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if(event.ctrlKey && event.key == ' ' &&
+        typeof globalThis.CodeMirror.commands.autocomplete == 'function') {
+      globalThis.CodeMirror.commands.autocomplete(this.code_input, null, {
+        completeSingle: false,
+        history: commands
+      });
+      event.preventDefault();
+      event.stopPropagation();
     }
   }
 
@@ -3498,6 +3810,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    */
   _resetHistoryIndex() {
     this.command_history_index = -1;
+    this.console_history_draft = '';
   }
 
   /**
@@ -3688,35 +4001,18 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     if(typeof data == 'string') {
       return data.replace(/\n/g, '<br/>');
     }
-    if(typeof data == 'object' && data !== null) {
-      try {
-        if(!Object.keys(data).length) {
-          if(data.constructor && data.constructor.name == 'Error' && data.stack) {
-            return String(data.stack).replace(/\n/g, '<br/>');
-          }
-          return String(data);
-        }
-        return JSON.stringify(data, this._getCircularReplacer(), 2);
-      } catch {}
+    if(data instanceof Error) return String(data.stack || data).replace(/\n/g, '<br/>');
+    if(data !== null && (typeof data === 'object' || typeof data === 'function')) {
+      return safeStringify(data, {
+        max_depth: 5,
+        max_properties: 1000,
+        max_array_length: 1000,
+        max_string_length: Number(app_config.MAX_JSON_STRING_LENGTH) || 1000,
+        escape_html: true,
+        indent: 2
+      });
     }
     return String(data);
-  }
-
-  /**
-   * Provides a JSON.stringify replacer that drops circular references.
-   * @returns {Function}
-   */
-  _getCircularReplacer() {
-    var seen = new WeakSet();
-    return function(_key, value) {
-      if(typeof value == 'object' && value !== null) {
-        if(seen.has(value)) {
-          return;
-        }
-        seen.add(value);
-      }
-      return value;
-    };
   }
 
   /**
@@ -3740,19 +4036,36 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    * @param {string} [raw]
    */
   _appendCommandWindowMessage(message_class, html, raw) {
+    var raw_text = typeof raw == 'string' ? raw : String(raw || '');
+    var last = this.command_log[this.command_log.length - 1];
+    var last_element = this.console_messages.lastElementChild;
+    if(html && message_class === 'data-in' && last && last.class === message_class &&
+        last.raw === raw_text && last_element) {
+      last.repeat_count = (last.repeat_count || 1) + 1;
+      var badge = last_element.querySelector('.jslab-console-repeat');
+      if(!badge) {
+        badge = document.createElement('span');
+        badge.className = 'jslab-console-repeat';
+        last_element.insertBefore(badge, last_element.firstChild);
+      }
+      badge.textContent = String(last.repeat_count);
+      return last_element;
+    }
     var entry = document.createElement('div');
     entry.className = message_class;
     entry.innerHTML = '<span class="timestamp">' + this._getTimestamp() + '</span>' + html;
     this.console_messages.appendChild(entry);
     this.command_log.push({
       class: message_class,
-      raw: typeof raw == 'string' ? raw : String(raw || ''),
-      timestamp: this._getTimestamp()
+      raw: raw_text,
+      timestamp: this._getTimestamp(),
+      repeat_count: 1
     });
     this._trimConsoleLog();
     if(this.autoscroll) {
       this._scrollConsoleToBottom();
     }
+    this._applyConsoleFilter();
     return entry;
   }
 
@@ -3968,6 +4281,12 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    */
   _appendAnsMessage(data) {
     if(Array.isArray(data) && data.length >= 2) {
+      if(data[1] && data[0] && data[0].__jslab_console_value__) {
+        var remote_raw = 'ans = ' + data[0].description;
+        var remote_entry = this._appendCommandWindowMessage('data-in', 'ans = ', remote_raw);
+        remote_entry.appendChild(this._createConsoleValueElement(data[0]));
+        return;
+      }
       var raw = 'ans = ' + data[0];
       if(data[1]) {
         try {
@@ -4026,6 +4345,156 @@ class PRDC_JSLAB_WEB_APP_SHELL {
     this._appendCommandWindowMessage('data-in', this._highlightCode(raw), raw);
   }
 
+  _bindConsoleValueHandlers() {
+    this.command_panel.addEventListener('click', async (event) => {
+      var toggle = event.target.closest('.jslab-console-toggle');
+      var more = event.target.closest('.jslab-console-more');
+      var accessor = event.target.closest('.jslab-console-accessor');
+      if(!toggle && !more && !accessor) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var value_el = event.target.closest('.jslab-console-value');
+      var children = value_el?.querySelector(':scope > .jslab-console-children');
+      if(!value_el || !children) return;
+      if(accessor) {
+        if(accessor.dataset.loading === 'true') return;
+        accessor.dataset.loading = 'true';
+        var accessor_result = await this.bridge.getConsoleAccessor({
+          object_id: value_el.dataset.objectId,
+          property: accessor.dataset.property
+        });
+        accessor.dataset.loading = 'false';
+        if(accessor_result?.success) accessor.replaceWith(this._createConsoleValueElement(accessor_result.value));
+        else accessor.textContent = accessor_result?.error || this.language.currentString(631);
+        return;
+      }
+      if(toggle) {
+        var recursive = !!event.altKey;
+        if(value_el.classList.contains('open')) {
+          value_el.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        value_el.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+        if(recursive && !value_el.dataset.consoleExpandPath) {
+          value_el.dataset.consoleExpandPath = JSON.stringify([value_el.dataset.objectId]);
+        }
+        if(children.dataset.loaded === 'true') {
+          if(recursive) this._expandConsoleDescendants(value_el);
+          return;
+        }
+        children.textContent = '...';
+      } else {
+        more.disabled = true;
+      }
+      var result = await this.bridge.getConsoleProperties({
+        object_id: value_el.dataset.objectId,
+        offset: more ? Number(more.dataset.offset) || 0 : 0,
+        limit: 100
+      });
+      if(more) more.remove();
+      this._renderConsolePropertyPage(children, result, !!more);
+      if(toggle && recursive) this._expandConsoleDescendants(value_el);
+    });
+  }
+
+  /** Recursively expands loaded descendants for DevTools-style Alt-click. */
+  _expandConsoleDescendants(value_el) {
+    var path;
+    try { path = JSON.parse(value_el.dataset.consoleExpandPath || '[]'); }
+    catch(err) { path = []; }
+    if(path.length >= 8) return;
+    var children = value_el.querySelector(':scope > .jslab-console-children');
+    if(!children) return;
+    children.querySelectorAll('.jslab-console-value').forEach(function(child) {
+      if(child.closest('.jslab-console-children') !== children) return;
+      var object_id = child.dataset.objectId;
+      var toggle = child.querySelector(':scope > .jslab-console-toggle');
+      if(!object_id || !toggle || path.includes(object_id)) return;
+      child.dataset.consoleExpandPath = JSON.stringify(path.concat(object_id));
+      if(!child.classList.contains('open')) {
+        toggle.dispatchEvent(new MouseEvent('click', { bubbles: true, altKey: true }));
+      }
+    });
+  }
+
+  _createConsoleValueElement(value) {
+    var root = document.createElement('span');
+    root.className = 'jslab-console-value jslab-console-type-' + String(value.type || 'object');
+    if(value.object_id) {
+      root.dataset.objectId = value.object_id;
+      var toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'jslab-console-toggle';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.title = this.language.currentString(640);
+      root.appendChild(toggle);
+    }
+    var label = document.createElement('span');
+    label.className = 'jslab-console-description';
+    var description = value.description || '';
+    if(value.preview?.properties?.length) {
+      var array_like = value.subtype === 'array' || value.subtype === 'typedarray';
+      description += (array_like ? ' [' : ' {') + value.preview.properties.join(', ') +
+        (value.preview.overflow ? ', …' : '') + (array_like ? ']' : '}');
+    }
+    label.textContent = description;
+    root.appendChild(label);
+    if(value.object_id) {
+      var children = document.createElement('span');
+      children.className = 'jslab-console-children';
+      root.appendChild(children);
+    }
+    return root;
+  }
+
+  _renderConsolePropertyPage(container, result, append) {
+    if(!append) container.replaceChildren();
+    container.dataset.loaded = 'true';
+    if(!result || result.success === false) {
+      var error = document.createElement('span');
+      error.className = 'jslab-console-error';
+      error.textContent = result?.error || this.language.string(631);
+      container.appendChild(error);
+      return;
+    }
+    var items = result.properties || result.entries || [];
+    items.forEach((property) => {
+      var row = document.createElement('span');
+      row.className = 'jslab-console-property' + (property.internal ? ' internal' : '');
+      var name = document.createElement('span');
+      name.className = 'jslab-console-property-name';
+      name.textContent = property.name;
+      row.appendChild(name);
+      row.appendChild(document.createTextNode(': '));
+      if(property.key) {
+        row.appendChild(this._createConsoleValueElement(property.key));
+        row.appendChild(document.createTextNode(' => '));
+      }
+      if(property.accessor) {
+        var accessor = document.createElement(property.getter && property.property !== undefined ? 'button' : 'span');
+        accessor.className = 'jslab-console-accessor';
+        accessor.textContent = '(...)';
+        if(property.property !== undefined) accessor.dataset.property = property.property;
+        row.appendChild(accessor);
+      } else {
+        row.appendChild(this._createConsoleValueElement(property.value));
+      }
+      container.appendChild(row);
+    });
+    if(result.next_offset !== undefined) {
+      var more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'jslab-console-more';
+      more.dataset.offset = result.next_offset;
+      more.textContent = '… ' + this.language.formatLang(633, {
+        count: Math.max(0, result.total - result.next_offset)
+      });
+      container.appendChild(more);
+    }
+  }
+
   /**
    * Enforces the configured message limit.
    */
@@ -4053,19 +4522,21 @@ class PRDC_JSLAB_WEB_APP_SHELL {
         '<img class="app-logo" src="./img/JSLAB.svg">' +
         '<img class="company-logo" src="./img/PR-DC_icon.svg">' +
         '<div class="clear"></div>' +
-        '<p><span lang-fixed>JSLAB</span>, ' + escapeHtml(this.language.string(8)) + ' ' + escapeHtml(version) + '</p>' +
-        '<p>' + escapeHtml(this.language.string(136)) + ' ' + new Date().getFullYear() + ' &copy; <span lang-fixed>PR-DC</span> <span lang-fixed>info@pr-dc.com</span></p>' +
-        '<p>' + escapeHtml(this.language.string(137)) + '</p>' +
-        '<p>' + escapeHtml(this.language.string(138)) + '</p>' +
-        '<p>' + escapeHtml(this.language.string(139)) + ' <span lang-fixed>cmd_help</span></p>' +
-        '<p>' + escapeHtml(this.language.string(135)) + ' <a href="https://pr-dc.com/jslab" target="_blank" rel="noopener" lang-fixed>pr-dc.com/jslab</a></p>' +
-        '<p>' + escapeHtml(this.language.string(249)) + ': ' +
-          '<a href="https://pr-dc.com/jslab/" target="_blank" rel="noopener">' + escapeHtml(this.language.string(250)) + '</a> &bull; ' +
-          '<a href="https://discourse.jsl.pr-dc.com/" target="_blank" rel="noopener">' + escapeHtml(this.language.string(251)) + '</a> &bull; ' +
-          '<a href="https://pr-dc.com/jslab/doc/" target="_blank" rel="noopener">' + escapeHtml(this.language.string(252)) + '</a> &bull; ' +
-          '<a href="https://github.com/PR-DC/JSLAB/" target="_blank" rel="noopener">' + escapeHtml(this.language.string(253)) + '</a> &bull; ' +
-          '<a href="https://github.com/PR-DC/JSLAB/releases" target="_blank" rel="noopener">' + escapeHtml(this.language.string(254)) + '</a> &bull; ' +
-          '<a href="https://github.com/PR-DC/JSLAB/tree/master/examples" target="_blank" rel="noopener">' + escapeHtml(this.language.string(255)) + '</a>' +
+        '<p><span lang-fixed>JSLAB</span>, ' + escapeHtml(this.language.currentString(8)) + ' ' + escapeHtml(version) + '</p>' +
+        '<p>' + escapeHtml(this.language.currentString(136)) + ' ' + new Date().getFullYear() + ' &copy; <span lang-fixed>PR-DC</span> <span lang-fixed>info@pr-dc.com</span></p>' +
+        '<p>' + escapeHtml(this.language.currentString(137)) + '</p>' +
+        '<p>' + escapeHtml(this.language.currentString(138)) + '</p>' +
+        '<p>' + escapeHtml(this.language.currentString(139)) + ' <span lang-fixed>cmd_help</span></p>' +
+        '<p>' + escapeHtml(this.language.currentString(135)) + ' <a href="https://pr-dc.com/jslab" target="_blank" rel="noopener" lang-fixed>pr-dc.com/jslab</a></p>' +
+        '<p>' + escapeHtml(this.language.currentString(249)) + ': ' +
+          '<a href="https://pr-dc.com/jslab/" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(250)) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/web/" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(646)) + '</a> &bull; ' +
+          '<a href="https://discourse.jsl.pr-dc.com/" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(251)) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(252)) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/#command-line-interface" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(647)) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/#mcp-server" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(648)) + '</a> &bull; ' +
+          '<a href="https://github.com/PR-DC/JSLAB/releases" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(254)) + '</a> &bull; ' +
+          '<a href="https://github.com/PR-DC/JSLAB/tree/master/examples" target="_blank" rel="noopener">' + escapeHtml(this.language.currentString(255)) + '</a>' +
         '</p>' +
       '</div>';
   }
@@ -4109,6 +4580,7 @@ class PRDC_JSLAB_WEB_APP_SHELL {
       ui: operation => {
         if(operation.kind === 'write-bytes') { this.fs.writeBytesSync(operation.path, operation.bytes); return true; }
         if(operation.kind === 'write-text') { this.fs.writeTextFileSync(operation.path, operation.text); return true; }
+        if(operation.kind === 'clipboard-write') return this._copyText(operation.text);
         return this.sandbox_api.workerUI(operation);
       },
       settings: settings => {

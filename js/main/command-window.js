@@ -162,6 +162,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     this.N_messages = this.message_buffer.N_messages;
 
     this.messages_submodule.renderWelcomeMessage();
+    this.messages_submodule.initConsoleValueHandlers();
     this.input_submodule.initHistoryDialog();
     this.input_submodule.initSettingsDialog();
     this.input_submodule.initLogDialog();

@@ -112,6 +112,54 @@ tests.add('custom-javascript-hint registers javascript helper and requests compl
   assert.equal(run.records.ipc_calls[0].channel, 'get-completions');
 }, { tags: ['unit', 'code', 'codemirror'] });
 
+tests.add('custom-javascript-hint does not suggest globals for numeric literals', async function(assert) {
+  var run = runCodeMirrorModule('custom-javascript-hint.js');
+  var helper = run.records.helpers.find(function(entry) {
+    return entry.kind === 'hint' && entry.name === 'javascript';
+  });
+  var editor = {
+    getCursor: function() { return { line: 0, ch: 2 }; },
+    getTokenAt: function() {
+      return { start: 0, end: 2, string: '12', state: {}, type: 'number' };
+    },
+    getMode: function() { return {}; }
+  };
+
+  var out = await helper.fn(editor, null, {});
+
+  assert.equal(out, undefined);
+  assert.equal(run.records.ipc_calls.length, 0);
+}, { tags: ['unit', 'code', 'codemirror'] });
+
+tests.add('custom-javascript-hint removes exact no-op completions', async function(assert) {
+  var run = runCodeMirrorModule('custom-javascript-hint.js');
+  var helper = run.records.helpers.find(function(entry) {
+    return entry.kind === 'hint' && entry.name === 'javascript';
+  });
+  run.context.ipcRenderer.invoke = function(channel, payload) {
+    run.records.ipc_calls.push({ channel: channel, payload: payload });
+    return Promise.resolve({ items: ['ans'] });
+  };
+  var editor = {
+    getCursor: function() { return { line: 0, ch: 3 }; },
+    getTokenAt: function() {
+      return { start: 0, end: 3, string: 'ans', state: {}, type: 'variable' };
+    },
+    getMode: function() { return {}; }
+  };
+
+  var out = await helper.fn(editor, null, {});
+
+  assert.equal(out.list.length, 0);
+
+  run.context.ipcRenderer.invoke = function() {
+    return Promise.resolve({ items: ['ans', { text: 'answer' }] });
+  };
+  out = await helper.fn(editor, null, {});
+  assert.equal(out.list.length, 2);
+  assert.equal(out.list[0], 'ans');
+}, { tags: ['unit', 'code', 'codemirror'] });
+
 tests.add('custom-javascript-hint falls back to web bridge completions', async function(assert) {
   var source = fs.readFileSync(path.join(__dirname, '..', 'custom-javascript-hint.js'), 'utf8');
   var records = {

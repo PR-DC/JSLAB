@@ -54,6 +54,7 @@ class PRDC_JSLAB_CLI_SESSION {
     });
     this.bridge = new PRDC_JSLAB_BRIDGE_CLIENT({ pid: this.child.pid });
     var deadline = Date.now() + 45000;
+    var last_status;
     while(Date.now() < deadline) {
       if(this.start_error) throw this.start_error;
       if(this.child.exitCode !== null || this.child.signalCode !== null) {
@@ -61,11 +62,13 @@ class PRDC_JSLAB_CLI_SESSION {
       }
       try {
         var status = await this.bridge.call('get_session_status');
+        last_status = status;
         if(status.ready) return;
       } catch(err) {}
       await new Promise(function(resolve) { setTimeout(resolve, 100); });
     }
-    throw new Error('JSLAB runtime did not become ready within 45 seconds.\n' + this.diagnostics);
+    throw new Error('JSLAB runtime did not become ready within 45 seconds.' +
+      (last_status ? '\nLast status: ' + JSON.stringify(last_status) : '') + '\n' + this.diagnostics);
   }
 
   /**

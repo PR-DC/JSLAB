@@ -106,17 +106,15 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     CodeMirror.keyMap.default['Shift-Ctrl-F'] = 'replace';
     CodeMirror.keyMap.default['Shift-Ctrl-R'] = 'replaceAll';
     CodeMirror.keyMap.default['Ctrl-/'] = 'toggleComment';
+    CodeMirror.keyMap.default['Ctrl-Space'] = function(cm) {
+      CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+    };
     
-    // Keypress events
-    this.code_editor.on("keypress", function (cm, event) {
-      if(
-        !cm.state.completionActive &&
-        !event.ctrlKey &&
-        event.key != "Enter" &&
-        event.key != ";" &&
-        event.key != " " &&
-        (event.key != "{") & (event.key != "}")
-      ) {
+    // Request completion after CodeMirror has applied typed input.
+    this.code_editor.on("inputRead", function(cm, change) {
+      var inserted = change && Array.isArray(change.text) ? change.text.join("\n") : "";
+      if(!cm.state.completionActive && change.origin === "+input" &&
+          inserted.length && !/[;\s{}]$/.test(inserted)) {
         CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
       }
     });

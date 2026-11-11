@@ -399,6 +399,7 @@ class PRDC_JSLAB_MAIN {
     if(this.automation) {
       this.win_sandbox.webContents.on('console-message', function(event, level, message) {
         obj.automation.captureConsole(level, message);
+        if(obj.cli_mode && level >= 2) console.error('[sandbox console] ' + message);
       });
       this.win_sandbox.webContents.on('did-start-loading', function() {
         obj.automation.reset();
@@ -677,12 +678,63 @@ class PRDC_JSLAB_MAIN {
     };
     
     // For MainProcess 
+    var console_request_serial = 0;
     ipcMain.handle('get-completions', function(e, data) {
-      obj.win_sandbox.send('SandboxWindow', 'get-completions', data);
+      var request_id = String(Date.now()) + '-' + (++console_request_serial);
+      obj.win_sandbox.send('SandboxWindow', 'get-completions', {
+        request_id: request_id,
+        data: data
+      });
       return new Promise(function(resolve) {
-        ipcMain.once('completions-'+data[0], function(e, data) {
-          resolve(data);
+        ipcMain.once('completions-' + request_id, function(event, result) {
+          resolve(result);
         });
+      });
+    });
+
+    var console_properties_serial = 0;
+    ipcMain.handle('get-console-properties', function(e, request) {
+      var request_id = String(Date.now()) + '-' + (++console_properties_serial);
+      obj.win_sandbox.send('SandboxWindow', 'get-console-properties', {
+        request_id: request_id,
+        object_id: request.object_id,
+        offset: request.offset,
+        limit: request.limit
+      });
+      return new Promise(function(resolve) {
+        ipcMain.once('console-properties-' + request_id, function(event, result) {
+          resolve(result);
+        });
+      });
+    });
+
+    ipcMain.handle('get-console-accessor', function(e, request) {
+      var request_id = String(Date.now()) + '-' + (++console_request_serial);
+      obj.win_sandbox.send('SandboxWindow', 'get-console-accessor', Object.assign({}, request, {
+        request_id: request_id
+      }));
+      return new Promise(function(resolve) {
+        ipcMain.once('console-accessor-' + request_id, function(event, result) { resolve(result); });
+      });
+    });
+
+    ipcMain.handle('get-console-preview', function(e, expression) {
+      var request_id = String(Date.now()) + '-' + (++console_request_serial);
+      obj.win_sandbox.send('SandboxWindow', 'get-console-preview', {
+        request_id: request_id, expression: expression
+      });
+      return new Promise(function(resolve) {
+        ipcMain.once('console-preview-' + request_id, function(event, result) { resolve(result); });
+      });
+    });
+
+    ipcMain.handle('is-console-expression-complete', function(e, code) {
+      var request_id = String(Date.now()) + '-' + (++console_request_serial);
+      obj.win_sandbox.send('SandboxWindow', 'is-console-expression-complete', {
+        request_id: request_id, code: code
+      });
+      return new Promise(function(resolve) {
+        ipcMain.once('console-expression-complete-' + request_id, function(event, result) { resolve(result); });
       });
     });
     
@@ -1071,6 +1123,7 @@ class PRDC_JSLAB_MAIN {
     ipcMain.on('JSLAB_SANDBOX_FAILED', function(e, error) {
       if(e.sender === obj.win_sandbox.webContents) {
         if(obj.automation) obj.automation.reset();
+        if(obj.cli_mode) console.error('[sandbox] ' + error);
         obj.win_main.send('MainWindow', 'error', error);
       }
     });

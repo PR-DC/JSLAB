@@ -45,6 +45,173 @@ guiTest(tests, 'main', 'workspace inspect preserves command input and dismisses 
   assert.equal(c.command_window.code_input.getValue(), 'unfinished command');
   assert.equal(f.visible('#workspace-context-menu'), false);
 });
+guiTest(tests, 'main', 'command output renders remote object previews without JSON serialization', [], function(assert, f, c) {
+  c.command_window.highlightAnsMessage([{
+    __jslab_console_value__: true,
+    type: 'object',
+    object_id: 'fixture-object',
+    description: 'Object',
+    preview: { properties: ['self: Object'], overflow: false }
+  }, true]);
+  var value = f.query('#command-window-messages .jslab-console-value');
+  assert.ok(!!value);
+  assert.equal(value.dataset.objectId, 'fixture-object');
+  assert.ok(value.textContent.includes('self: Object'));
+  var toggle = value.querySelector('.jslab-console-toggle');
+  assert.equal(toggle.textContent, '');
+  assert.equal(f.window.getComputedStyle(toggle).width, '12px');
+});
+guiTest(tests, 'main', 'console live expressions and editor-style find controls update their views',
+  ['.jslab-live-expression-add', '.jslab-console-tools', '.console-filter'], async function(assert, f, c) {
+    assert.equal(c.command_window.console_tools.hidden, true);
+    f.click('#command-window-options .console-filter');
+    assert.equal(c.command_window.console_tools.hidden, false);
+    assert.equal(c.command_window.console_filter_input.placeholder, f.window.language.currentString(336));
+    assert.equal(c.command_window.console_filter_input.placeholder.includes('<lang'), false);
+    assert.equal(f.document.querySelectorAll('.jslab-console-tools select, .jslab-console-tools button').length, 0);
+    c.command_window.code_input.setValue('alpha');
+    f.click('.jslab-live-expression-add');
+    assert.equal(f.document.querySelectorAll('.jslab-live-expression').length, 1);
+    f.input('.jslab-live-expression input', 'beta');
+    assert.equal(c.command_window.live_expressions[0], 'beta');
+    c.command_window.message('visible value');
+    c.command_window.message('visible value again');
+    f.input('.jslab-console-tools input', 'missing value');
+    assert.equal(f.query('#command-window-messages .data-in').style.display, 'none');
+    f.input('.jslab-console-tools input', 'visible');
+    assert.equal(f.query('#command-window-messages .data-in').style.display, '');
+    assert.equal(c.command_window.console_filter_total.textContent, '2');
+    f.click('.CodeMirror-search-find-next-btn');
+    assert.equal(c.command_window.console_filter_current.textContent, '2');
+    f.click('.CodeMirror-search-find-prev-btn');
+    assert.equal(c.command_window.console_filter_current.textContent, '1');
+    f.input('.jslab-console-tools input', 'VISIBLE');
+    f.click('.jslab-console-tools .CodeMirror-search-case-btn');
+    assert.equal(c.command_window.console_filter_total.textContent, '0');
+    f.click('.jslab-console-tools .CodeMirror-search-case-btn');
+    f.input('.jslab-console-tools input', 'visible.*value');
+    f.click('.jslab-console-tools .CodeMirror-search-regex-btn');
+    assert.equal(c.command_window.console_filter_total.textContent, '2');
+    f.click('.jslab-console-tools .CodeMirror-search-regex-btn');
+    f.input('.jslab-console-tools input', 'visible');
+    f.click('.jslab-console-tools .CodeMirror-search-close-btn');
+    assert.equal(c.command_window.console_tools.hidden, true);
+    f.key(null, 'f', { ctrlKey: true });
+    assert.equal(c.command_window.console_tools.hidden, false);
+    f.key('.jslab-console-tools input', 'Escape');
+    assert.equal(c.command_window.console_tools.hidden, true);
+    f.click('#command-window-options .console-filter');
+    f.document.body.dispatchEvent(new f.window.MouseEvent('mousedown', { bubbles: true }));
+    assert.equal(c.command_window.console_tools.hidden, true);
+    f.click('.jslab-live-expression button');
+    assert.equal(f.document.querySelectorAll('.jslab-live-expression').length, 0);
+    await f.tick();
+  });
+guiTest(tests, 'main', 'console preview clears immediately and ignores a late result', [], async function(assert, f, c) {
+  var original = f.window.ipcRenderer.invoke;
+  var release;
+  f.window.ipcRenderer.invoke = function(channel) {
+    if(channel === 'get-console-preview') {
+      return new Promise(function(resolve) { release = resolve; });
+    }
+    return original.apply(this, arguments);
+  };
+  try {
+    c.command_window.code_input.setValue('1 + 2');
+    await new Promise(function(resolve) { setTimeout(resolve, 180); });
+    assert.equal(typeof release, 'function');
+    c.command_window.code_input.setValue('');
+    assert.equal(c.command_window.console_preview.childElementCount, 0);
+    release({ success: true, value: { type: 'number', description: '3' } });
+    await f.tick();
+    assert.equal(c.command_window.console_preview.childElementCount, 0);
+  } finally {
+    f.window.ipcRenderer.invoke = original;
+  }
+});
+guiTest(tests, 'main', 'welcome quick links match the README destinations and order', [], function(assert, f) {
+  var links = Array.from(f.document.querySelectorAll('.welcome-message p:last-child a'));
+  var expected = [
+    'https://pr-dc.com/jslab/',
+    'https://pr-dc.com/jslab/web/',
+    'https://discourse.jsl.pr-dc.com/',
+    'https://pr-dc.com/jslab/doc/',
+    'https://pr-dc.com/jslab/doc/#command-line-interface',
+    'https://pr-dc.com/jslab/doc/#mcp-server',
+    'https://github.com/PR-DC/JSLAB/releases',
+    'https://github.com/PR-DC/JSLAB/tree/master/examples'
+  ];
+  assert.deepEqual(links.map(function(link) { return link.href; }), expected);
+});
+guiTest(tests, 'main', 'remote console values lazily expand page and evaluate accessors', [], async function(assert, f, c) {
+  var property_page = 0;
+  f.window.ipcRenderer.invoke = async function(channel, request) {
+    f.calls.push([channel, request]);
+    if(channel === 'get-console-properties' && property_page++ === 0) {
+      return {
+        success: true,
+        properties: [{ name: 'lazy', accessor: true, getter: true, property: 'lazy' }],
+        next_offset: 1,
+        total: 2
+      };
+    }
+    if(channel === 'get-console-properties') {
+      return {
+        success: true,
+        properties: [{ name: 'tail', value: { type: 'number', description: '2' } }],
+        total: 2
+      };
+    }
+    if(channel === 'get-console-accessor') {
+      return { success: true, value: { type: 'number', description: '7' } };
+    }
+    if(channel === 'get-console-preview') return { success: false, reason: '' };
+    if(channel === 'is-console-expression-complete') return true;
+    return { canceled: true, filePaths: [] };
+  };
+  c.command_window.highlightAnsMessage([{
+    __jslab_console_value__: true,
+    type: 'object',
+    object_id: 'lazy-object',
+    description: 'Object',
+    preview: { properties: [], overflow: false }
+  }, true]);
+  f.click('#command-window-messages .jslab-console-toggle');
+  await f.tick();
+  assert.equal(f.document.querySelectorAll('.jslab-console-property').length, 1);
+  f.click('#command-window-messages .jslab-console-more');
+  await f.tick();
+  assert.equal(f.document.querySelectorAll('.jslab-console-property').length, 2);
+  f.click('#command-window-messages .jslab-console-accessor');
+  await f.tick();
+  assert.ok(f.query('#command-window-messages').textContent.includes('7'));
+});
+guiTest(tests, 'main', 'Alt-click recursively expands remote console values without cycling', [], async function(assert, f, c) {
+  f.window.ipcRenderer.invoke = async function(channel, request) {
+    f.calls.push([channel, request]);
+    if(channel === 'get-console-properties' && request.object_id === 'recursive-root') {
+      return { success: true, properties: [{ name: 'child', value: {
+        type: 'object', object_id: 'recursive-child', description: 'Object',
+        preview: { properties: [], overflow: false }
+      } }], total: 1 };
+    }
+    if(channel === 'get-console-properties' && request.object_id === 'recursive-child') {
+      return { success: true, properties: [
+        { name: 'parent', value: { type: 'object', object_id: 'recursive-root', description: 'Object' } },
+        { name: 'leaf', value: { type: 'number', description: '42' } }
+      ], total: 2 };
+    }
+    return { success: false };
+  };
+  c.command_window.highlightAnsMessage([{
+    __jslab_console_value__: true, type: 'object', object_id: 'recursive-root',
+    description: 'Object', preview: { properties: [], overflow: false }
+  }, true]);
+  f.mouse(f.query('#command-window-messages .jslab-console-toggle'), 'click', 1, 1, { altKey: true });
+  await f.tick(); await f.tick();
+  assert.equal(f.document.querySelectorAll('#command-window-messages .jslab-console-value.open').length, 2);
+  assert.ok(f.query('#command-window-messages').textContent.includes('42'));
+});
 for(const method of ['escape', 'outside', 'scroll']) {
   guiTest(tests, 'main', 'workspace context menu dismisses on ' + method, [], function(assert, f, c) {
     c.workspace.openContextMenu('alpha', 10, 10);

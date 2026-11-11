@@ -183,5 +183,8 @@
     "usb": "2.15.0",
     "zeromq": "6.0.0-beta.20",
     "zod": "3.25.76"
+  },
+  "overrides": {
+    "is-any-array": "2.0.1"
   }
 }
