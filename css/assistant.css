@@ -1,0 +1,185 @@
+#assistant-chat {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#assistant-options {
+  flex: 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+  padding: 3px 10px;
+  border-bottom: 1px solid #f7df1e;
+  background: #fff;
+}
+
+#assistant-options-title {
+  color: #666;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+#assistant-options-actions {
+  height: 24px;
+}
+
+#assistant-options-actions button {
+  float: left;
+  display: block;
+  width: 26px;
+  height: 24px;
+  padding: 3px 5px;
+  border: 0;
+  opacity: .3;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+#assistant-options-actions button:hover { opacity: 1; }
+#assistant-options-actions button.active { opacity: .8; }
+#assistant-timestamp { background-image: url(../img/timestamp.svg); }
+#assistant-autoscroll { background-image: url(../img/autoscroll.svg); }
+#assistant-clear { background-image: url(../img/clear.svg); }
+#assistant-save { background-image: url(../img/save-log.svg); }
+#assistant-to-bottom { background-image: url(../img/to-bottom.svg); }
+
+#assistant-messages {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding-top: 10px;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.assistant-message {
+  position: relative;
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 12px 5px 130px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.assistant-message::before {
+  position: absolute;
+  top: 8px;
+  left: 5px;
+  width: 14px;
+  height: 14px;
+  background: url(../img/console-out.svg) no-repeat center;
+  background-size: 14px;
+  content: '';
+}
+
+.assistant-message.user::before {
+  background-image: url(../img/console-in.svg);
+}
+
+#assistant-messages.no-timestamp .assistant-message {
+  padding-left: 25px;
+}
+
+#assistant-messages.no-timestamp .assistant-timestamp {
+  display: none;
+}
+
+.assistant-timestamp {
+  position: absolute;
+  left: 25px;
+  color: #999;
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.assistant-message:hover {
+  background-color: #f9f9f9;
+}
+
+.assistant-message.error {
+  color: #cf000f;
+}
+
+.assistant-message.status {
+  color: #777;
+  font-style: italic;
+}
+
+#assistant-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 10px 50px 10px 16px;
+  border-top: 1px solid #ccc;
+  background: #eee;
+}
+
+#assistant-input {
+  min-height: 40px;
+  max-height: 160px;
+  width: 100%;
+  resize: none;
+  padding: 9px 11px;
+  border: 1px solid #aaa;
+  border-radius: 2px;
+  outline: none;
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+#assistant-input:focus {
+  border-color: #f7df1e;
+  box-shadow: 0 0 0 1px #f7df1e;
+}
+
+#assistant-input:disabled {
+  background: #ddd;
+}
+
+#assistant-input-container button {
+  position: absolute;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f7df1e;
+  cursor: pointer;
+}
+
+#assistant-input-container button[hidden] {
+  display: none;
+}
+
+#assistant-input-container button:hover {
+  opacity: .6;
+}
+
+#assistant-input-container button img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  padding: 6px;
+}
+
+#assistant-stop {
+  background: #cf000f !important;
+}
+
+#assistant-stop img {
+  filter: brightness(0) invert(1);
+}
+
+#assistant-input-container button:disabled {
+  opacity: .5;
+  cursor: default;
+}

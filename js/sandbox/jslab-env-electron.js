@@ -60,6 +60,7 @@ class PRDC_JSLAB_ENV {
     this.runtime_scope = RUNTIME_SCOPE;
     this.is_worker = IS_WORKER_CONTEXT;
     this._subprocesses = new Set();
+    this._terminal_listeners = new Map();
     this._automation = this.is_worker ? null : new PRDC_JSLAB_SANDBOX_AUTOMATION(this.jsl);
     const internal_app_path = this.jsl.app_path;
     const wasm = getWasmModules();
@@ -84,6 +85,18 @@ class PRDC_JSLAB_ENV {
       this.context.addEventListener('offline', onOnlineChange);
       ipcRenderer.on('pty', (e, data) => {
         obj.jsl.inter.system._onPtyData(data);
+      });
+      ipcRenderer.on('TerminalWindowEvent', function(e, data) {
+        var listeners = data && obj._terminal_listeners.get(Number(data.id));
+        if(!listeners) return;
+        var callbacks = data.type === 'data' ? listeners.data :
+          data.type === 'exit' ? listeners.exit : listeners.state;
+        if(callbacks) {
+          callbacks.forEach(function(callback) {
+            try { callback(data.type === 'data' ? data.data : data); }
+            catch(error) { obj.error(error); }
+          });
+        }
       });
     } else {
       this.context = this.runtime_scope;
@@ -1014,6 +1027,49 @@ class PRDC_JSLAB_ENV {
         ipcRenderer.send("EditorWindow", "open-script", [filename, lineno]);
       }
     }
+  }
+
+  /** Opens the Assistant chat window. */
+  assistant() {
+    if(!this.is_worker) ipcRenderer.send('MainProcess', 'show-assistant');
+  }
+
+  /** Creates or controls PTY-backed system Terminal windows. */
+  terminal(action, data) {
+    if(!this.is_worker) {
+      return ipcRenderer.sendSync('sync-message', 'terminal-window', {
+        action: action,
+        data: data
+      });
+    }
+    return false;
+  }
+
+  /** Registers a live event listener for a Terminal window. */
+  terminalOn(id, type, callback) {
+    if(this.is_worker || typeof callback !== 'function') return false;
+    id = Number(id);
+    var listeners = this._terminal_listeners.get(id);
+    if(!listeners) {
+      listeners = { data: new Set(), exit: new Set(), state: new Set() };
+      this._terminal_listeners.set(id, listeners);
+    }
+    var set = listeners[type];
+    if(!set) return false;
+    var wrapped = this.jsl.inter.execution.wrap(callback);
+    set.add(wrapped);
+    return wrapped;
+  }
+
+  /** Removes a previously registered Terminal window listener. */
+  terminalOff(id, type, callback) {
+    var listeners = this._terminal_listeners.get(Number(id));
+    if(!listeners || !listeners[type]) return false;
+    var removed = listeners[type].delete(callback);
+    if(!listeners.data.size && !listeners.exit.size && !listeners.state.size) {
+      this._terminal_listeners.delete(Number(id));
+    }
+    return removed;
   }
 
   /**

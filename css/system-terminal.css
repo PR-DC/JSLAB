@@ -1,0 +1,15 @@
+#terminal-container {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  padding: 6px 4px 4px 8px;
+  background: #0c0c0c;
+}
+
+#terminal-container .xterm {
+  height: 100%;
+}
+
+#terminal-container .xterm-viewport {
+  scrollbar-color: #666 #1c1c1c;
+}

@@ -456,28 +456,29 @@ button.jslab-console-accessor:hover {
 
 #command-window-messages .jslab-console-toggle {
   position: relative;
+  display: inline-block;
   width: 12px;
-  height: 14px;
+  height: 1em;
   margin-right: 2px;
   padding: 0;
-  vertical-align: -2px;
+  vertical-align: middle;
 }
 
 #command-window-messages .jslab-console-toggle::before {
   content: "";
   position: absolute;
-  top: 3px;
+  top: 50%;
   left: 2px;
-  width: 0;
-  height: 0;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 6px solid #777;
-  transform-origin: 3px 4px;
+  width: 6px;
+  height: 8px;
+  background: #777;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform: translateY(-50%);
+  transform-origin: 50% 50%;
 }
 
 #command-window-messages .jslab-console-value.open > .jslab-console-toggle::before {
-  transform: rotate(90deg);
+  transform: translateY(-50%) rotate(90deg);
 }
 
 #command-window-messages .jslab-console-children {

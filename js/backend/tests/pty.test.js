@@ -17,6 +17,7 @@ function loadPtyClass(records) {
     module: { exports: {} },
     exports: null,
     Buffer: Buffer,
+    process: process,
     require: function(module_path) {
       if(module_path === '@lydell/node-pty') {
         return {

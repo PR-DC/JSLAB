@@ -114,7 +114,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     this.code_editor.on("inputRead", function(cm, change) {
       var inserted = change && Array.isArray(change.text) ? change.text.join("\n") : "";
       if(!cm.state.completionActive && change.origin === "+input" &&
-          inserted.length && !/[;\s{}]$/.test(inserted)) {
+          inserted.length && !/[;\s{}\)\]]$/.test(inserted)) {
         CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
       }
     });

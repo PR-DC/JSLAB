@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title str="660"></title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self';">
+    <link rel="stylesheet" type="text/css" href="../css/app-window.css">
+    <link rel="stylesheet" type="text/css" href="../css/assistant.css">
+    <link rel="stylesheet" type="text/css" href="../font/roboto.css">
+    <link rel="stylesheet" type="text/css" href="../font/RobotoMono.css">
+  </head>
+  <body>
+    <main id="assistant-chat">
+      <div id="assistant-options" role="toolbar" aria-label-str="651">
+        <span id="assistant-options-title"><str sid="651"></str></span>
+        <div id="assistant-options-actions">
+          <button id="assistant-timestamp" type="button" title-str="41" aria-label-str="41"></button>
+          <button id="assistant-autoscroll" class="active" type="button" title-str="42" aria-label-str="42"></button>
+          <button id="assistant-clear" type="button" title-str="656" aria-label-str="656"></button>
+          <button id="assistant-save" type="button" title-str="672" aria-label-str="672"></button>
+          <button id="assistant-to-bottom" type="button" title-str="45" aria-label-str="45"></button>
+        </div>
+      </div>
+      <div id="assistant-messages" class="no-timestamp" aria-live="polite"></div>
+      <div id="assistant-input-container">
+        <textarea id="assistant-input" rows="1" str="657" aria-label-str="657"></textarea>
+        <button id="assistant-stop" type="button" aria-label-str="655" title-str="655" hidden><img src="../img/debug-stop.svg" alt=""></button>
+        <button id="assistant-send" type="button" aria-label-str="654" title-str="654"><img src="../img/enter.svg" alt=""></button>
+      </div>
+    </main>
+    <script type="text/javascript" src="../js/assistant/init-assistant.js"></script>
+  </body>
+</html>

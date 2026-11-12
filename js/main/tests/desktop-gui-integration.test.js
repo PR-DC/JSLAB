@@ -18,7 +18,7 @@ tests.add('desktop command button updates actual sandbox workspace and history v
   });
   await gui_desktop.main.waitFor(() => !win_main.evaluating && document.getElementById('workspace').textContent.includes('gui_desktop_value'), 'sandbox IPC result');
   assert.equal(await gui_desktop.main.evaluate(() => win_main.command_history.history.includes('var gui_desktop_value = 31;')), true);
-}, { tags: ['gui', 'electron', 'integration'] });
+}, { tags: ['gui', 'electron', 'integration'], timeout_ms: 30000 });
 
 tests.add('desktop editor opens through IPC, saves to disk and runs through the sandbox', async function(assert) {
   var filename = path.join(gui_desktop_profile, 'gui-integration.jsl'); fs.writeFileSync(filename, '');
@@ -44,6 +44,123 @@ tests.add('desktop settings persist to the isolated native electron-store', asyn
   var config = JSON.parse(fs.readFileSync(path.join(gui_desktop_profile, 'config.json'), 'utf8'));
   assert.equal(Number(config.N_history_max), 37);
 }, { tags: ['gui', 'electron', 'integration'] });
+
+tests.add('desktop Assistant window, encrypted token setting and terminal command integrate', async function(assert) {
+  var ui = await gui_desktop.assistant.evaluate(() => ({
+    title: document.title,
+    heading: document.querySelector('#assistant-options-title lang.en').textContent.trim(),
+    input: !!document.getElementById('assistant-input'),
+    send: !!document.getElementById('assistant-send')
+  }));
+  assert.equal(ui.heading, 'Assistant');
+  assert.equal(ui.input, true);
+  assert.equal(ui.send, true);
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    !document.getElementById('app-menu-container') && !!document.getElementById('assistant-options')), true);
+  await gui_desktop.main.evaluate(() => {
+    document.getElementById('settings-menu').click();
+    document.querySelector('#settings-container .openai-api-key').value = 'sk-gui-secret';
+    document.querySelector('#settings-container .change-settings').click();
+  });
+  await gui_desktop.main.waitFor(() =>
+    document.querySelector('#settings-container .openai-api-key').value === '', 'Assistant token clearing');
+  var config = JSON.parse(fs.readFileSync(path.join(gui_desktop_profile, 'config.json'), 'utf8'));
+  assert.equal(typeof config['openai-api-key-encrypted'], 'string');
+  assert.equal(config['openai-api-key-encrypted'].includes('sk-gui-secret'), false);
+  var command = await gui_desktop.sandbox.evaluate(() => {
+    assistant();
+    return { no_ans: jsl.no_ans, ignore_output: jsl.ignore_output };
+  });
+  assert.equal(command.no_ans, true);
+  assert.equal(command.ignore_output, true);
+  await gui_desktop.main.evaluate(async () => {
+    await ipcRenderer.invoke('JSLAB_ASSISTANT_SETTINGS_SET', { clear: true });
+  });
+  await gui_desktop.assistant.evaluate(() => {
+    document.getElementById('assistant-input').value = 'Hello';
+    document.getElementById('assistant-send').click();
+  });
+  await gui_desktop.assistant.waitFor(() =>
+    document.querySelector('.assistant-message.error'), 'Assistant missing-key error');
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    document.querySelector('.assistant-message.error').textContent.includes('OpenAI API key')), true);
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    document.querySelector('.assistant-message.error').textContent.includes('<lang')), false);
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    document.querySelector('.assistant-message.error').textContent.includes('Error invoking remote method')), false);
+  await gui_desktop.assistant.click('#assistant-timestamp');
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    !document.getElementById('assistant-messages').classList.contains('no-timestamp')), true);
+  await gui_desktop.assistant.click('#assistant-autoscroll');
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    !document.getElementById('assistant-autoscroll').classList.contains('active')), true);
+  await gui_desktop.assistant.click('#assistant-to-bottom');
+  await gui_desktop.assistant.evaluate(() => document.getElementById('assistant-clear').click());
+  assert.equal(await gui_desktop.assistant.evaluate(() =>
+    document.getElementById('assistant-messages').children.length), 0);
+}, { tags: ['gui', 'electron', 'integration'], timeout_ms: 30000 });
+
+tests.add('desktop Terminal opens from its command and runs a real CMD command', async function(assert) {
+  var command = await gui_desktop.sandbox.evaluate(() => {
+    globalThis.gui_controlled_terminal = terminal('Controlled Terminal');
+    gui_controlled_terminal.writeln('echo CONTROLLED_TERMINAL').setName('Renamed Terminal');
+    return {
+      id: gui_controlled_terminal.id,
+      open: gui_controlled_terminal.isOpen(),
+      no_ans: jsl.no_ans,
+      ignore_output: jsl.ignore_output
+    };
+  });
+  assert.equal(Number.isInteger(command.id), true);
+  assert.equal(command.open, true);
+  assert.equal(command.no_ans, true);
+  assert.equal(command.ignore_output, true);
+  await gui_desktop.terminal.waitFor(() => document.visibilityState === 'visible', 'visible Terminal window');
+  await gui_desktop.sandbox.evaluate(() => {
+    gui_primary_terminal.writeln('echo JSLAB_TERMINAL_OK');
+    return true;
+  });
+  await gui_desktop.terminal.waitFor(() => {
+    for(var i = 0; i < terminal.buffer.active.length; i++) {
+      var line = terminal.buffer.active.getLine(i);
+      if(line && line.translateToString(true).includes('JSLAB_TERMINAL_OK')) return true;
+    }
+    return false;
+  }, 'CMD output in Terminal');
+  var captured = await gui_desktop.sandbox.evaluate(() => ({
+    full: gui_primary_terminal.read(),
+    fresh: gui_primary_terminal.readNew(),
+    empty: gui_primary_terminal.readNew(),
+    status: gui_primary_terminal.status()
+  }));
+  assert.equal(captured.full.includes('JSLAB_TERMINAL_OK'), true);
+  assert.equal(captured.fresh.includes('JSLAB_TERMINAL_OK'), true);
+  assert.equal(captured.empty, '');
+  assert.equal(captured.status.open, true);
+  assert.equal(captured.status.running, true);
+  assert.equal(await gui_desktop.sandbox.evaluate(async () => {
+    gui_primary_terminal.writeln('echo TERMINAL_WAIT_OK');
+    return (await gui_primary_terminal.waitFor('TERMINAL_WAIT_OK', 5000)).includes('TERMINAL_WAIT_OK');
+  }), true);
+  assert.equal(await gui_desktop.sandbox.evaluate(async () => {
+    var exit_terminal = terminal('Exit test', { args: ['/d', '/c', 'exit 7'] });
+    var event = await exit_terminal.waitForExit(5000);
+    var code = event.exitCode;
+    exit_terminal.close();
+    return code;
+  }), 7);
+  assert.equal(await gui_desktop.terminal.evaluate(() => pty_id !== null && terminal.cols > 0 && terminal.rows > 0), true);
+  assert.deepEqual(await gui_desktop.terminal.evaluate(() => ({
+    title: document.title.trim(),
+    new_button: !!document.getElementById('terminal-new'),
+    clear_button: !!document.getElementById('terminal-clear')
+  })), { title: 'Terminal', new_button: false, clear_button: false });
+  var terminal_windows = await gui_desktop.main.evaluate(() =>
+    ipcRenderer.sendSync('sync-message', 'terminal-window', { action: 'list', data: {} }));
+  assert.equal(terminal_windows.length >= 2, true);
+  assert.equal(terminal_windows.some(function(entry) { return entry.name === 'Renamed Terminal'; }), true);
+  assert.equal(await gui_desktop.sandbox.evaluate(() => gui_controlled_terminal.close()), true);
+}, { tags: ['gui', 'electron', 'integration'], timeout_ms: 30000 });
 
 tests.add('desktop language selector updates actual editor and sandbox through IPC', async function(assert) {
   await gui_desktop.main.evaluate(() => { $('#settings-container .set-language').val('rs').trigger('change'); });

@@ -13,7 +13,8 @@ var tests = new PRDC_JSLAB_TESTS();
 if(!globalThis.__JSLAB_GUI_COMPONENT__) { exports.MODULE_TESTS = tests; return; }
 
 for(const [selector, action] of [
-  ['#editor-menu', 'show-editor'], ['#win-close', 'close-app'], ['#win-minimize', 'minimize-win']
+  ['#editor-menu', 'show-editor'], ['#assistant-menu', 'show-assistant'],
+  ['#win-close', 'close-app'], ['#win-minimize', 'minimize-win']
 ]) {
   guiTest(tests, 'main', selector + ' sends ' + action, [selector], function(assert, f) {
     f.click(selector); sent(assert, f, 'MainProcess', action);
@@ -56,6 +57,8 @@ guiTest(tests, 'main', 'language selector broadcasts the selected language', ['#
   assert.equal(f.window.language.lang, 'rs');
   assert.equal(sent(assert, f, 'EditorWindow', 'set-language'), 'rs');
   assert.equal(sent(assert, f, 'SandboxWindow', 'set-language'), 'rs');
+  assert.equal(sent(assert, f, 'AssistantWindow', 'set-language'), 'rs');
+  assert.equal(sent(assert, f, 'TerminalWindow', 'set-language'), 'rs');
 });
 
 guiTest(tests, 'main', 'history limit setting clamps low values and persists',
@@ -65,6 +68,26 @@ guiTest(tests, 'main', 'history limit setting clamps low values and persists',
     assert.equal(Number(c.command_history.N_history_max), 5);
     assert.equal(Number(f.data.get('N_history_max')), 5);
     assert.equal(f.visible('#settings-container'), false);
+  });
+
+guiTest(tests, 'main', 'Assistant API key setting saves and clears without retaining input text',
+  ['#settings-container .openai-api-key', '#settings-container .change-settings',
+    '#settings-container .clear-openai-api-key'], async function(assert, f) {
+    f.setDialogResult({ has_api_key: true });
+    f.input('#settings-container .openai-api-key', 'sk-test');
+    f.click('#settings-container .change-settings');
+    await f.tick();
+    var save = f.calls.find(function(call) {
+      return call[0] === 'JSLAB_ASSISTANT_SETTINGS_SET' && call[1] && call[1].api_key;
+    });
+    assert.equal(save[1].api_key, 'sk-test');
+    assert.equal(f.query('#settings-container .openai-api-key').value, '');
+    f.click('#settings-container .clear-openai-api-key');
+    await f.tick();
+    var clear = f.calls.find(function(call) {
+      return call[0] === 'JSLAB_ASSISTANT_SETTINGS_SET' && call[1] && call[1].clear;
+    });
+    assert.equal(clear[1].clear, true);
   });
 
 for(const [suffix, expected] of [['change-dir', 'set-current-path'], ['save', 'set-saved-paths'], ['run', null]]) {

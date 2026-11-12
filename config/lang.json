@@ -3239,6 +3239,116 @@
     "rs": "Prikaži predloge za dovršavanje",
     "rsc": "Прикажи предлоге за довршавање"
   },
+  "651": {
+    "en": "Assistant",
+    "rs": "Asistent",
+    "rsc": "Асистент"
+  },
+  "652": {
+    "en": "OpenAI API key",
+    "rs": "OpenAI API ključ",
+    "rsc": "OpenAI API кључ"
+  },
+  "653": {
+    "en": "API key saved",
+    "rs": "API ključ je sačuvan",
+    "rsc": "API кључ је сачуван"
+  },
+  "654": {
+    "en": "Send",
+    "rs": "Pošalji",
+    "rsc": "Пошаљи"
+  },
+  "655": {
+    "en": "Stop",
+    "rs": "Zaustavi",
+    "rsc": "Заустави"
+  },
+  "656": {
+    "en": "Clear conversation",
+    "rs": "Obriši razgovor",
+    "rsc": "Обриши разговор"
+  },
+  "657": {
+    "en": "Ask Assistant...",
+    "rs": "Pitaj Asistenta...",
+    "rsc": "Питај Асистента..."
+  },
+  "658": {
+    "en": "Configure an OpenAI API key in Settings.",
+    "rs": "Podesite OpenAI API ključ u Podešavanjima.",
+    "rsc": "Подесите OpenAI API кључ у Подешавањима."
+  },
+  "659": {
+    "en": "New conversation",
+    "rs": "Novi razgovor",
+    "rsc": "Нови разговор"
+  },
+  "660": {
+    "en": "Assistant | JSLAB",
+    "rs": "Asistent | JSLAB",
+    "rsc": "Асистент | JSLAB"
+  },
+  "661": {
+    "en": "Allow Assistant to replace the selected Editor text?",
+    "rs": "Dozvoliti Asistentu da zameni izabrani tekst u Editoru?",
+    "rsc": "Дозволити Асистенту да замени изабрани текст у Едитору?"
+  },
+  "662": {
+    "en": "Apply",
+    "rs": "Primeni",
+    "rsc": "Примени"
+  },
+  "663": {
+    "en": "Clear API key",
+    "rs": "Obriši API ključ",
+    "rsc": "Обриши API кључ"
+  },
+  "664": {
+    "en": "The API key is stored securely on this device.",
+    "rs": "API ključ je bezbedno sačuvan na ovom uređaju.",
+    "rsc": "API кључ је безбедно сачуван на овом уређају."
+  },
+  "665": {
+    "en": "Thinking...",
+    "rs": "Razmišljam...",
+    "rsc": "Размишљам..."
+  },
+  "666": {
+    "en": "You",
+    "rs": "Vi",
+    "rsc": "Ви"
+  },
+  "667": {
+    "en": "Terminal",
+    "rs": "Terminal",
+    "rsc": "Терминал"
+  },
+  "668": {
+    "en": "New terminal",
+    "rs": "Novi terminal",
+    "rsc": "Нови терминал"
+  },
+  "669": {
+    "en": "Clear terminal",
+    "rs": "Obriši terminal",
+    "rsc": "Обриши терминал"
+  },
+  "670": {
+    "en": "Terminal | JSLAB",
+    "rs": "Terminal | JSLAB",
+    "rsc": "Терминал | JSLAB"
+  },
+  "671": {
+    "en": "Process exited with code {code}",
+    "rs": "Proces je završen kodom {code}",
+    "rsc": "Процес је завршен кодом {code}"
+  },
+  "672": {
+    "en": "Save conversation",
+    "rs": "Sačuvaj razgovor",
+    "rsc": "Сачувај разговор"
+  },
   "633": {
     "en": "{count} more",
     "rs": "još {count}",

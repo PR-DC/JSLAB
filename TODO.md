@@ -8,7 +8,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - ~~Ensure file opening happens in only one instance of the program~~
 
-- Assistant - Create a ChatGPT API-based chatbot to assist with programming by answering questions about which function to use for specific tasks (Custom GPT).
+- ~~Assistant - Create a ChatGPT API-based chatbot to assist with programming by answering questions about which function to use for specific tasks (Custom GPT).~~
 
 - ~~Implement `openSerialTerminal` with window from `openTerminal` that includes a message window and a data input area. It should allow us to pass an encoder and decoder to use SCBP or other protocols.~~
 
@@ -26,7 +26,7 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 
 - ~~Expand values from objects to view further details (possibly retain everything in the main window until the command window is reset).~~
 
-- Adjust plot legend width to work better with Latin Modern Math font.
+- ~~Adjust plot legend width to work better with Latin Modern Math font.~~
 
 - ~~Utilize Arduino CLI.~~
 

@@ -1210,6 +1210,37 @@ class PRDC_JSLAB_LIB_BASIC {
   }
 
   /**
+   * Opens the Assistant chat window.
+   */
+  assistant() {
+    this.jsl.inter.env.assistant();
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+  }
+
+  /**
+   * Opens an independently controllable PTY-backed system Terminal window.
+   * @param {string|Object} [name] Window name or options object.
+   * @param {Object} [options] Shell, arguments, working directory and environment.
+   * @returns {PRDC_JSLAB_TERMINAL_WINDOW|false} Terminal control handle.
+   */
+  terminal(name, options) {
+    if(name && typeof name === 'object') {
+      options = name;
+      name = options.name;
+    }
+    options = options && typeof options === 'object' ? options : {};
+    var info = this.jsl.inter.env.terminal('create', {
+      name: typeof name === 'string' ? name : options.name,
+      options: options
+    });
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    if(!info || !info.id) return false;
+    return new PRDC_JSLAB_TERMINAL_WINDOW(this.jsl, info);
+  }
+
+  /**
    * Returns a list of all example scripts available within a predefined directory.
    * @return {Array<string>} An array of paths to the example scripts.
    */
@@ -2131,6 +2162,189 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   addForCleanup(...args) {
     this.jsl.addForCleanup(...args);
+  }
+}
+
+/** Controllable handle for one visible system Terminal window. */
+class PRDC_JSLAB_TERMINAL_WINDOW {
+  constructor(jsl, info) {
+    Object.defineProperty(this, '_jsl', { value: jsl, enumerable: false });
+    Object.defineProperty(this, '_listeners', {
+      value: { data: new Map(), exit: new Map() }, enumerable: false
+    });
+    this.id = info.id;
+    this.name = info.name;
+  }
+
+  /** Writes text exactly as if it were typed into the terminal. */
+  write(data) {
+    this._jsl.inter.env.terminal('write', { id: this.id, value: String(data) });
+    return this;
+  }
+
+  /** Writes text followed by Enter. */
+  writeln(data = '') {
+    return this.write(String(data) + '\r');
+  }
+
+  /** Returns the bounded output currently captured for this terminal. */
+  read() {
+    var output = this._jsl.inter.env.terminal('read', { id: this.id });
+    return output === false ? '' : output;
+  }
+
+  /** Returns only output received since the previous readNew call. */
+  readNew() {
+    var output = this._jsl.inter.env.terminal('read-new', { id: this.id });
+    return output === false ? '' : output;
+  }
+
+  /** Clears captured output without changing the visible terminal screen. */
+  clearOutput() {
+    this._jsl.inter.env.terminal('clear-output', { id: this.id });
+    return this;
+  }
+
+  /** Returns window and shell lifecycle information. */
+  status() {
+    return this._jsl.inter.env.terminal('status', { id: this.id }) || {
+      id: this.id, name: this.name, open: false, running: false
+    };
+  }
+
+  /** Registers a callback invoked for every new raw output chunk. */
+  onData(callback) {
+    if(typeof callback !== 'function') return this;
+    var wrapped = this._jsl.inter.env.terminalOn(this.id, 'data', callback);
+    if(wrapped) this._listeners.data.set(callback, wrapped);
+    return this;
+  }
+
+  /** Removes a data callback registered with onData. */
+  offData(callback) {
+    var wrapped = this._listeners.data.get(callback);
+    if(wrapped) {
+      this._jsl.inter.env.terminalOff(this.id, 'data', wrapped);
+      this._listeners.data.delete(callback);
+    }
+    return this;
+  }
+
+  /** Registers a callback invoked when the shell exits. */
+  onExit(callback) {
+    if(typeof callback !== 'function') return this;
+    var wrapped = this._jsl.inter.env.terminalOn(this.id, 'exit', callback);
+    if(wrapped) this._listeners.exit.set(callback, wrapped);
+    return this;
+  }
+
+  /** Removes an exit callback registered with onExit. */
+  offExit(callback) {
+    var wrapped = this._listeners.exit.get(callback);
+    if(wrapped) {
+      this._jsl.inter.env.terminalOff(this.id, 'exit', wrapped);
+      this._listeners.exit.delete(callback);
+    }
+    return this;
+  }
+
+  /** Waits until captured output contains a string or matches a RegExp. */
+  waitFor(pattern, timeout = 10000) {
+    var obj = this;
+    return new Promise(function(resolve, reject) {
+      var matches = function(output) {
+        if(pattern instanceof RegExp) {
+          pattern.lastIndex = 0;
+          return pattern.test(output);
+        }
+        return output.includes(String(pattern));
+      };
+      var output = obj.read();
+      if(matches(output)) { resolve(output); return; }
+      var timer;
+      var listener = function(chunk) {
+        output += chunk;
+        if(matches(output)) {
+          obj.offData(listener);
+          obj._jsl.context.clearTimeout(timer);
+          resolve(output);
+        }
+      };
+      obj.onData(listener);
+      timer = obj._jsl.context.setTimeout(function() {
+        obj.offData(listener);
+        reject(new Error('Terminal output wait timed out.'));
+      }, Math.max(0, Number(timeout) || 0));
+    });
+  }
+
+  /** Waits for the current shell process to exit. */
+  waitForExit(timeout = 10000) {
+    var obj = this;
+    var state = this.status();
+    if(!state.running) return Promise.resolve(state);
+    return new Promise(function(resolve, reject) {
+      var timer;
+      var listener = function(event) {
+        obj.offExit(listener);
+        obj._jsl.context.clearTimeout(timer);
+        resolve(event);
+      };
+      obj.onExit(listener);
+      timer = obj._jsl.context.setTimeout(function() {
+        obj.offExit(listener);
+        reject(new Error('Terminal exit wait timed out.'));
+      }, Math.max(0, Number(timeout) || 0));
+    });
+  }
+
+  /** Clears the visible terminal scrollback. */
+  clear() {
+    this._jsl.inter.env.terminal('clear', { id: this.id });
+    return this;
+  }
+
+  /** Brings the terminal window to the foreground. */
+  focus() {
+    this._jsl.inter.env.terminal('focus', { id: this.id });
+    return this;
+  }
+
+  /** Restarts the configured shell in this window. */
+  restart() {
+    this._jsl.inter.env.terminal('restart', { id: this.id });
+    return this;
+  }
+
+  /** Changes the native window title. */
+  setName(name) {
+    if(this._jsl.inter.env.terminal('set-name', { id: this.id, name: name })) {
+      this.name = String(name);
+    }
+    return this;
+  }
+
+  /** Alias for setName, matching native window terminology. */
+  setTitle(name) {
+    return this.setName(name);
+  }
+
+  /** Hides the window without terminating its shell. */
+  hide() {
+    this._jsl.inter.env.terminal('hide', { id: this.id });
+    return this;
+  }
+
+  /** Reports whether the window still exists. */
+  isOpen() {
+    return this._jsl.inter.env.terminal('is-open', { id: this.id });
+  }
+
+  /** Closes the window and its owned shell process. */
+  close() {
+    for(const callback of this._listeners.data.keys()) this.offData(callback);
+    for(const callback of this._listeners.exit.keys()) this.offExit(callback);
+    return this._jsl.inter.env.terminal('close', { id: this.id });
   }
 }
 

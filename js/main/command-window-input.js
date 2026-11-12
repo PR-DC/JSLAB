@@ -230,7 +230,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     this.code_input.on('inputRead', function(cm, change) {
       var inserted = change && Array.isArray(change.text) ? change.text.join('\n') : '';
       if(!cm.state.completionActive && change.origin === '+input' &&
-          inserted.length && !/[;\s{}]$/.test(inserted)) {
+          inserted.length && !/[;\s{}\)\]]$/.test(inserted)) {
         CodeMirror.commands.autocomplete(cm, null,
           {completeSingle: false, history: obj.win.command_history.history.slice()});
       }

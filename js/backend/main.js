@@ -6,7 +6,7 @@
  */
 
 const { app, BrowserWindow, ipcMain, dialog, powerSaveBlocker, shell,
-  Menu, MenuItem, desktopCapturer, screen, webContents } = require('electron');
+  Menu, MenuItem, desktopCapturer, screen, webContents, safeStorage } = require('electron');
 
 const contextMenu = require('electron-context-menu');
 const fs = require('fs');
@@ -20,6 +20,8 @@ const { PRDC_JSLAB_PTY } = require('./pty.js');
 const { PRDC_JSLAB_BACKEND_LANGUAGE } = require('./backend-language');
 const { PRDC_JSLAB_SCRIPT_OPENER } = require('./script-opener');
 const { PRDC_JSLAB_INSTANCE_ROUTER } = require('./instance-router');
+const { PRDC_JSLAB_ASSISTANT } = require('./assistant');
+const { PRDC_JSLAB_AUTOMATION } = require('./automation');
 
 /**
  * Class for main app.
@@ -49,6 +51,9 @@ class PRDC_JSLAB_MAIN {
     this.heartbeat_interval;
     this.win_main;
     this.win_editor;
+    this.win_assistant;
+    this.terminal_windows = new Map();
+    this.terminal_window_id = 0;
     this.win_sandbox;
     this.win_opacity = 0;
     this.editor_close_ready = false;
@@ -64,12 +69,14 @@ class PRDC_JSLAB_MAIN {
     });
     this.startup_script_paths = this.instance_router.getStartupScriptPaths(process.argv);
     this.cli_mode = process.argv.includes('--cli-runtime');
-    this.automation = null;
-    if(process.argv.includes('--mcp') || this.cli_mode) {
-      const { PRDC_JSLAB_AUTOMATION } = require('./automation');
-      this.automation = new PRDC_JSLAB_AUTOMATION(this);
-      this.automation_version = app.getVersion();
-    }
+    this.automation_external = process.argv.includes('--mcp') || this.cli_mode;
+    this.automation = new PRDC_JSLAB_AUTOMATION(this);
+    this.automation_version = app.getVersion();
+    this.assistant = new PRDC_JSLAB_ASSISTANT({
+      store: this.store,
+      safe_storage: safeStorage,
+      call_tool: this.callAssistantTool.bind(this)
+    });
     
     this.app_icon = app_path + '/icons/icon.ico'; // png to ico https://icoconvert.com/
     this.is_app_quitting = false;
@@ -211,7 +218,9 @@ class PRDC_JSLAB_MAIN {
     });
 
     app.on('before-quit', function() {
+      obj.is_app_quitting = true;
       obj.instance_router.stop();
+      if(obj.assistant) obj.assistant.cancel();
       if(obj.automation) obj.automation.stop();
     });
     if(this.cli_mode) {
@@ -256,6 +265,9 @@ class PRDC_JSLAB_MAIN {
     // Create the editor window
     this.createEditorWindow();
 
+    // Create the Assistant window
+    this.createAssistantWindow();
+
     // Start inter-instance bridge
     if(!this.cli_mode) {
       this.instance_router.start();
@@ -267,7 +279,7 @@ class PRDC_JSLAB_MAIN {
     
     // Handle IPC messages
     this.handleMessages();
-    if(this.automation && !this.automation.server) {
+    if(this.automation_external && this.automation && !this.automation.server) {
       this.automation.start().catch(function(err) {
         console.error('[automation] ' + err.message);
       });
@@ -651,6 +663,198 @@ class PRDC_JSLAB_MAIN {
     });
   }
 
+  /** Creates the Assistant chat window. */
+  createAssistantWindow() {
+    var obj = this;
+    var options = {
+      title: this.backend_language.currentString(651),
+      width: 760,
+      height: 680,
+      minWidth: 520,
+      minHeight: 420,
+      icon: this.app_icon,
+      show: false,
+      backgroundColor: '#ffffff',
+      opacity: this.win_opacity,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        backgroundThrottling: false
+      }
+    };
+    options = this.getWindowBounds('assistantWinBounds', options);
+    this.win_assistant = new BrowserWindow(options);
+    this.bindAttentionReset(this.win_assistant);
+    this.win_assistant.setMenu(null);
+    this.win_assistant.loadFile(app_path + '/html/assistant.html');
+    if(options.maximize) this.win_assistant.maximize();
+    this.win_assistant.on('resize', function() {
+      obj.saveWindowBounds(obj.win_assistant, 'assistantWinBounds');
+    });
+    this.win_assistant.on('move', function() {
+      obj.saveWindowBounds(obj.win_assistant, 'assistantWinBounds');
+    });
+    this.win_assistant.on('maximize', function() {
+      obj.saveWindowBounds(obj.win_assistant, 'assistantWinBounds');
+    });
+    this.win_assistant.on('unmaximize', function() {
+      obj.saveWindowBounds(obj.win_assistant, 'assistantWinBounds');
+    });
+    if(!this.cli_mode) this.instance_router.trackWindowActivity(this.win_assistant);
+    this.win_assistant.on('close', function(event) {
+      if(!obj.is_app_quitting) {
+        event.preventDefault();
+        obj.win_assistant.hide();
+      }
+    });
+  }
+
+  /** Creates the PTY-backed system Terminal window. */
+  createTerminalWindow(params = {}) {
+    var obj = this;
+    var id = ++this.terminal_window_id;
+    var name = typeof params.name === 'string' && params.name.trim().length ?
+      params.name.trim().slice(0, 200) : this.backend_language.currentString(667);
+    var terminal_options = params.options && typeof params.options === 'object' ? params.options : {};
+    var options = {
+      title: name,
+      width: 900,
+      height: 620,
+      minWidth: 520,
+      minHeight: 320,
+      icon: this.app_icon,
+      show: false,
+      backgroundColor: '#0c0c0c',
+      opacity: this.win_opacity,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        backgroundThrottling: false,
+        additionalArguments: [
+          '--terminal-window-id=' + id,
+          '--terminal-window-options=' + Buffer.from(JSON.stringify({
+            name: name,
+            shell: terminal_options.shell,
+            args: terminal_options.args,
+            cwd: terminal_options.cwd,
+            env: terminal_options.env
+          }), 'utf8').toString('base64')
+        ]
+      }
+    };
+    options = this.getWindowBounds('terminalWinBounds', options);
+    if(Number.isFinite(options.x)) options.x += (id - 1) % 8 * 24;
+    if(Number.isFinite(options.y)) options.y += (id - 1) % 8 * 24;
+    var win = new BrowserWindow(options);
+    var record = {
+      id: id,
+      name: name,
+      win: win,
+      ready: false,
+      pending: [],
+      output: '',
+      read_offset: 0,
+      running: true,
+      exit_code: null,
+      signal: null
+    };
+    this.terminal_windows.set(id, record);
+    this.bindAttentionReset(win);
+    win.setMenu(null);
+    win.loadFile(app_path + '/html/terminal.html');
+    if(options.maximize) win.maximize();
+    ['resize', 'move', 'maximize', 'unmaximize'].forEach(function(event_name) {
+      win.on(event_name, function() {
+        obj.saveWindowBounds(win, 'terminalWinBounds');
+      });
+    });
+    win.webContents.on('did-finish-load', function() {
+      if(win.isDestroyed()) return;
+      record.ready = true;
+      win.setTitle(record.name);
+      win.show();
+      win.focus();
+      obj.fadeWindowIn(win, 0.1, 10);
+      win.send('TerminalWindow', 'focus');
+      record.pending.splice(0).forEach(function(entry) {
+        win.send('TerminalWindow', entry.action, entry.data);
+      });
+    });
+    if(!this.cli_mode) this.instance_router.trackWindowActivity(win);
+    win.on('closed', function() {
+      var current = obj.terminal_windows.get(id);
+      if(current && current.win === win) {
+        obj.terminal_windows.delete(id);
+      }
+    });
+    return { id: id, name: name };
+  }
+
+  /** Controls one of the independently owned system Terminal windows. */
+  controlTerminalWindow(action, data = {}) {
+    if(action === 'create') return this.createTerminalWindow(data);
+    if(action === 'list') {
+      return Array.from(this.terminal_windows.values()).map(function(record) {
+        return { id: record.id, name: record.name };
+      });
+    }
+    var id = Number(data.id);
+    var record = this.terminal_windows.get(id);
+    if(!record || record.win.isDestroyed()) return false;
+    if(action === 'is-open') return true;
+    if(action === 'read') return record.output;
+    if(action === 'read-new') {
+      var output = record.output.slice(record.read_offset);
+      record.read_offset = record.output.length;
+      return output;
+    }
+    if(action === 'status') {
+      return {
+        id: record.id,
+        name: record.name,
+        open: true,
+        running: record.running,
+        exitCode: record.exit_code,
+        signal: record.signal,
+        outputLength: record.output.length
+      };
+    }
+    if(action === 'clear-output') {
+      record.output = '';
+      record.read_offset = 0;
+      return true;
+    }
+    if(action === 'set-name') {
+      var name = String(data.name || '').trim().slice(0, 200);
+      if(!name.length) return false;
+      record.name = name;
+      record.win.setTitle(name);
+      if(record.ready) record.win.send('TerminalWindow', 'set-name', name);
+      else record.pending.push({ action: 'set-name', data: name });
+      return true;
+    }
+    if(action === 'close') {
+      record.win.destroy();
+      return true;
+    }
+    if(action === 'focus') {
+      record.win.show();
+      record.win.focus();
+    }
+    if(action === 'hide') {
+      record.win.hide();
+      return true;
+    }
+    if(!['write', 'clear', 'restart', 'focus'].includes(action)) return false;
+    if(action === 'clear') {
+      record.output = '';
+      record.read_offset = 0;
+    }
+    if(record.ready) record.win.send('TerminalWindow', action, data.value);
+    else record.pending.push({ action: action, data: data.value });
+    return true;
+  }
+
   /**
    * Handle IPC messages
    */
@@ -749,6 +953,34 @@ class PRDC_JSLAB_MAIN {
     ipcMain.handle('print-to-pdf', async function(e, options) {
       return await e.sender.printToPDF(options);
     });
+
+    ipcMain.handle('JSLAB_ASSISTANT_SETTINGS_GET', function() {
+      return { has_api_key: obj.assistant.hasApiKey() };
+    });
+    ipcMain.handle('JSLAB_ASSISTANT_SETTINGS_SET', function(event, settings) {
+      if(event.sender !== obj.win_main.webContents) throw new Error('Expected the main window.');
+      if(settings && settings.clear) return obj.assistant.clearApiKey();
+      return obj.assistant.setApiKey(settings && settings.api_key);
+    });
+    ipcMain.handle('JSLAB_ASSISTANT_CHAT', async function(event, message) {
+      if(event.sender !== obj.win_assistant.webContents) throw new Error('Expected the Assistant window.');
+      try {
+        return { result: await obj.assistant.chat(message) };
+      } catch(error) {
+        return { error: error && error.message ? error.message : String(error) };
+      }
+    });
+    ipcMain.on('JSLAB_ASSISTANT_CANCEL', function(event) {
+      if(event.sender === obj.win_assistant.webContents) {
+        obj.assistant.cancel();
+        if(obj.assistant_execution_id && obj.automation.active_id === obj.assistant_execution_id) {
+          obj.debugger.interrupt().catch(function() {});
+        }
+      }
+    });
+    ipcMain.on('JSLAB_ASSISTANT_RESET', function(event) {
+      if(event.sender === obj.win_assistant.webContents) obj.assistant.resetConversation();
+    });
     
     ipcMain.handle('print-sub-win-to-pdf', async function(e, wid, options) {
       return await obj.sandbox_sub_wins[wid].webContents.printToPDF(options);
@@ -843,6 +1075,9 @@ class PRDC_JSLAB_MAIN {
         case 'pty':
           retval = obj.pty[data.action](e, data.data);
           break;
+        case 'terminal-window':
+          retval = obj.controlTerminalWindow(data.action, data.data);
+          break;
         default:
           retval = true;
           break;
@@ -884,13 +1119,20 @@ class PRDC_JSLAB_MAIN {
           if(!e.sender.isDestroyed()) e.sender.destroy();
           break;
         case 'close-app':
+          obj.is_app_quitting = true;
           if(obj.win_main !== undefined && !obj.win_main.isDestroyed()) {
             obj.win_main.destroy();
           }
           if(obj.win_editor !== undefined && !obj.win_editor.isDestroyed()) {
-            obj.is_app_quitting = true;
             obj.win_editor.send('EditorWindow','close-all');
           }
+          if(obj.win_assistant !== undefined && !obj.win_assistant.isDestroyed()) {
+            obj.win_assistant.destroy();
+          }
+          for(const record of obj.terminal_windows.values()) {
+            if(!record.win.isDestroyed()) record.win.destroy();
+          }
+          obj.terminal_windows.clear();
           if(obj.win_sandbox !== undefined && !obj.win_sandbox.isDestroyed()) {
             obj.win_sandbox.destroy();
           }
@@ -908,9 +1150,28 @@ class PRDC_JSLAB_MAIN {
         case 'minimize-win':
           BrowserWindow.fromWebContents(e.sender).minimize();
           break;
+        case 'toggle-maximize-win': {
+          var target_win = BrowserWindow.fromWebContents(e.sender);
+          if(target_win.isMaximized()) target_win.restore();
+          else target_win.maximize();
+          break;
+        }
         case 'show-editor':
           // Show editor
           obj.showEditor();
+          break;
+        case 'show-assistant':
+          obj.showAssistant();
+          break;
+        case 'hide-assistant':
+          if(obj.win_assistant && !obj.win_assistant.isDestroyed()) obj.win_assistant.hide();
+          break;
+        case 'show-terminal':
+          obj.showTerminal();
+          break;
+        case 'hide-terminal':
+          var terminal_win = BrowserWindow.fromWebContents(e.sender);
+          if(terminal_win) terminal_win.close();
           break;
         case 'close-editor':
           // Close editor
@@ -1014,7 +1275,7 @@ class PRDC_JSLAB_MAIN {
       if(e.sender === obj.win_sandbox.webContents && action === 'code-evaluated') {
         obj.debugger.finish(data && data.execution_id);
       }
-      if(obj.automation && e.sender === obj.win_sandbox.webContents) {
+      if(obj.automation && obj.automation_external && e.sender === obj.win_sandbox.webContents) {
         if(action === 'code-evaluating') obj.automation.busy = true;
         if(action === 'code-evaluated' && obj.automation.active_id) return;
         if(action === 'code-evaluated' && !obj.automation.active_id) {
@@ -1048,6 +1309,56 @@ class PRDC_JSLAB_MAIN {
           break;
       }
     });
+
+    ipcMain.on('AssistantWindow', function(e, action, data) {
+      if(action === 'show') obj.showAssistant();
+      else if(obj.win_assistant && !obj.win_assistant.isDestroyed()) {
+        obj.win_assistant.send('AssistantWindow', action, data);
+      }
+    });
+
+    ipcMain.on('TerminalWindow', function(e, action, data) {
+      if(action === 'show') obj.showTerminal();
+      else {
+        for(const record of obj.terminal_windows.values()) {
+          if(record.ready && !record.win.isDestroyed()) {
+            record.win.send('TerminalWindow', action, data);
+          }
+        }
+      }
+    });
+
+    ipcMain.on('TerminalWindowEvent', function(e, data) {
+      var record = data && obj.terminal_windows.get(Number(data.id));
+      if(!record || record.win.isDestroyed() || e.sender !== record.win.webContents) return;
+      var event_data = { id: record.id, type: data.type };
+      if(data.type === 'data') {
+        var chunk = String(data.data || '');
+        record.output += chunk;
+        var max_output = 1024 * 1024;
+        if(record.output.length > max_output) {
+          var removed = record.output.length - max_output;
+          record.output = record.output.slice(removed);
+          record.read_offset = Math.max(0, record.read_offset - removed);
+        }
+        event_data.data = chunk;
+      } else if(data.type === 'started') {
+        record.running = true;
+        record.exit_code = null;
+        record.signal = null;
+      } else if(data.type === 'exit') {
+        record.running = false;
+        record.exit_code = typeof data.exitCode === 'number' ? data.exitCode : null;
+        record.signal = data.signal;
+        event_data.exitCode = record.exit_code;
+        event_data.signal = record.signal;
+      } else {
+        return;
+      }
+      if(obj.win_sandbox && !obj.win_sandbox.isDestroyed()) {
+        obj.win_sandbox.send('TerminalWindowEvent', event_data);
+      }
+    });
     
     // For SandboxWindow
     ipcMain.on('SandboxWindow', function(e, action, data) {
@@ -1056,7 +1367,8 @@ class PRDC_JSLAB_MAIN {
         if(obj.debugger.state === 'unavailable') obj.win_main.send('MainWindow', 'code-evaluated', {});
         return;
       }
-      if(obj.automation && (action === 'eval-code' || action === 'run-last-script')) {
+      if(obj.automation && (obj.automation_external || obj.automation.active_id) &&
+          (action === 'eval-code' || action === 'run-last-script')) {
         if(obj.automation.busy || obj.automation.active_id) {
           obj.win_main.send('MainWindow', 'code-evaluating');
           obj.win_main.send('MainWindow', 'warn', 'JSLAB is busy. Wait for the active execution to finish.');
@@ -1174,6 +1486,107 @@ class PRDC_JSLAB_MAIN {
     }
   }
 
+  /** Shows and focuses the Assistant window. */
+  showAssistant() {
+    if(this.cli_mode || !this.win_assistant || this.win_assistant.isDestroyed()) return false;
+    this.win_assistant.show();
+    this.win_assistant.focus();
+    this.fadeWindowIn(this.win_assistant, 0.1, 10);
+    this.win_assistant.send('AssistantWindow', 'focus-input');
+    return true;
+  }
+
+  /** Shows and focuses the system Terminal window. */
+  showTerminal(name, options) {
+    if(this.cli_mode) return false;
+    return this.createTerminalWindow({ name: name, options: options });
+  }
+
+  /** Waits for a sandbox automation job used by Assistant tools. */
+  async runAssistantAutomation(method, args) {
+    var job = await this.automation.dispatch(method, args || {});
+    if(!job || job.status !== 'running') return job;
+    this.assistant_execution_id = job.execution_id;
+    try {
+      var deadline = Date.now() + 120000;
+      while(job.status === 'running' && Date.now() < deadline) {
+        await new Promise(function(resolve) { setTimeout(resolve, 25); });
+      }
+      if(job.status === 'running') {
+        this.debugger.interrupt().catch(function() {});
+        throw new Error('JSLAB operation timed out.');
+      }
+      if(!job.result || job.result.success === false) {
+        throw new Error(job.result && job.result.error || 'JSLAB operation failed.');
+      }
+      return job.result;
+    } finally {
+      if(this.assistant_execution_id === job.execution_id) this.assistant_execution_id = null;
+    }
+  }
+
+  /** Collects bounded main-window and Editor context for Assistant. */
+  async getAssistantContext() {
+    var main_context = await this.win_main.webContents.executeJavaScript(`(() => ({
+      current_path: win_main.folder_navigation.current_path,
+      command_input: win_main.command_window.code_input.getValue().slice(0, 8000),
+      workspace: win_main.workspace.data.slice(0, 200)
+    }))()`);
+    var editor_context = await this.win_editor.webContents.executeJavaScript(`(() => {
+      var manager = win_editor.script_manager;
+      var pair = manager.getScriptByTab(manager.active_tab);
+      var script = pair && pair[0];
+      if(!script) return null;
+      return {
+        path: script.path || null,
+        selection: script.code_editor.getSelection().slice(0, 16000),
+        code: script.code_editor.getValue().slice(0, 32000),
+        cursor: script.code_editor.getCursor()
+      };
+    })()`);
+    return { main: main_context, editor: editor_context };
+  }
+
+  /** Executes one model-requested Assistant tool. */
+  async callAssistantTool(name, args) {
+    if(name === 'get_application_context') return await this.getAssistantContext();
+    if(name === 'evaluate_code') {
+      return await this.runAssistantAutomation('evaluate_code', { code: args.code });
+    }
+    if(name === 'get_help') {
+      return await this.runAssistantAutomation('get_help', {
+        name: args.query, type: args.type === 'category' ? 'category' : undefined
+      });
+    }
+    if(name === 'open_editor') {
+      this.showEditor();
+      if(args.path) {
+        if(typeof args.path !== 'string' || !fs.existsSync(args.path)) throw new Error('Editor file does not exist.');
+        this.win_editor.send('EditorWindow', 'open-script', [args.path]);
+      }
+      return true;
+    }
+    if(name === 'replace_editor_selection') {
+      var confirmation = await dialog.showMessageBox(this.win_assistant, {
+        type: 'question', buttons: [this.backend_language.currentString(662),
+          this.backend_language.currentString(52)], defaultId: 1, cancelId: 1,
+        message: this.backend_language.currentString(661)
+      });
+      if(confirmation.response !== 0) return { applied: false };
+      var text = JSON.stringify(String(args.text || ''));
+      await this.win_editor.webContents.executeJavaScript(`(() => {
+        var manager = win_editor.script_manager;
+        var script = manager.getScriptByTab(manager.active_tab)[0];
+        if(!script) throw new Error('No active Editor document.');
+        script.code_editor.replaceSelection(${text}, 'around', '+assistant');
+        script.code_editor.focus();
+      })()`);
+      this.showEditor();
+      return { applied: true };
+    }
+    throw new Error('Unknown Assistant tool.');
+  }
+
   /**
    * Get window bounds
    * @param {string} store_key - key used for storage.
@@ -1262,7 +1675,11 @@ class PRDC_JSLAB_MAIN {
    */
   getAppWindows() {
     var sub_windows = Object.values(this.sandbox_sub_wins || {});
-    return [this.win_main, this.win_editor, this.win_sandbox].concat(sub_windows)
+    var terminal_windows = Array.from((this.terminal_windows || new Map()).values()).map(function(record) {
+      return record.win;
+    });
+    return [this.win_main, this.win_editor, this.win_assistant, this.win_sandbox]
+      .concat(terminal_windows, sub_windows)
       .filter(function(win) {
         return win && typeof win.isDestroyed === 'function' && !win.isDestroyed();
       });

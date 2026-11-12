@@ -169,6 +169,18 @@ lang {
   margin-right: 5px;
 }
 
+#openai-api-key-status {
+  display: none;
+  margin: -2px 0 10px;
+  color: #4b7f31;
+  font-size: 12px;
+}
+
+#settings-container .clear-openai-api-key {
+  display: none;
+  margin-right: 8px;
+}
+
 #paths-container li {
   padding-bottom: 5px;
   padding-top: 5px;

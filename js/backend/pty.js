@@ -123,6 +123,9 @@ class PRDC_JSLAB_PTY {
   kill(event, data) {
     const s = this.sessions.get(data.id);
     if(!s) return false;
+    if(process.platform === 'win32') {
+      try { execSync('taskkill /pid ' + s.pid + ' /T /F'); } catch(error) {}
+    }
     try { s.term.kill(); } catch {}
     this._dispose(undefined, {id: data.id});
     return true;
@@ -137,12 +140,15 @@ class PRDC_JSLAB_PTY {
   killAll(event, data) {
     const ids = Array.from(this.sessions.keys());
     let killed = 0;
+    const kill_tree = !data || data.tree !== false;
 
     for(const id of ids) {
       const s = this.sessions.get(id);
       if(!s) continue;
       
-      execSync('taskkill /pid ' + s.pid + ' /T /F');
+      if(kill_tree && process.platform === 'win32') {
+        try { execSync('taskkill /pid ' + s.pid + ' /T /F'); } catch(error) {}
+      }
       
       try { s.term.kill(); } catch {}
       this._dispose(undefined, { id });

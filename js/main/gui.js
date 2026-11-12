@@ -65,7 +65,15 @@ class PRDC_JSLAB_GUI {
         ipc.send('MainProcess', 'show-editor');
       }
     });
-            
+
+    // On assistant-menu click
+    $('#assistant-menu').click(function() {
+      var ipc = getIpcRenderer();
+      if(ipc && typeof ipc.send === 'function') {
+        ipc.send('MainProcess', 'show-assistant');
+      }
+    });
+
     $("#script-path-dialog-change-dir").click(function() { obj.win.eval.scriptDirDialogButton(2); });
     $("#script-path-dialog-save").click(function() { obj.win.eval.scriptDirDialogButton(1); });
     $("#script-path-dialog-run").click(function() { obj.win.eval.scriptDirDialogButton(0); });
@@ -304,6 +312,8 @@ class PRDC_JSLAB_GUI {
     if(ipc && typeof ipc.send === 'function') {
       ipc.send('EditorWindow', 'set-language', id);
       ipc.send('SandboxWindow', 'set-language', id);
+      ipc.send('AssistantWindow', 'set-language', id);
+      ipc.send('TerminalWindow', 'set-language', id);
     }
   }
 }

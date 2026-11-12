@@ -57,8 +57,17 @@ guiTest(tests, 'main', 'optional developer-tools menu binds its expected action'
 for(const type of ['main', 'editor']) {
   guiTest(tests, type, type + ' CodeMirror input/drop/scroll events retain usable input', [], function(assert, f, c) {
     var cm = type === 'main' ? c.command_window.code_input : c.script_manager.scripts[0].code_editor;
-    cm.setValue('value'); cm.setCursor(0, 5);
+    var original_autocomplete = f.window.CodeMirror.commands.autocomplete;
+    var autocomplete_calls = 0;
+    f.window.CodeMirror.commands.autocomplete = function() { autocomplete_calls++; };
+    cm.setValue('terminal()'); cm.setCursor(0, 10);
     f.window.CodeMirror.signal(cm, 'inputRead', cm, { origin: '+input', text: [';'] });
+    f.window.CodeMirror.signal(cm, 'inputRead', cm, { origin: '+input', text: [')'] });
+    assert.equal(autocomplete_calls, 0);
+    cm.setValue('value'); cm.setCursor(0, 5);
+    f.window.CodeMirror.signal(cm, 'inputRead', cm, { origin: '+input', text: ['e'] });
+    assert.equal(autocomplete_calls, 1);
+    f.window.CodeMirror.commands.autocomplete = original_autocomplete;
     if(type === 'editor') {
       var drop = new f.window.Event('drop', { cancelable: true });
       f.window.CodeMirror.signal(cm, 'drop', cm, drop); assert.equal(drop.defaultPrevented, true);

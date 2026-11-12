@@ -4,7 +4,7 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
-const { app } = require('electron');
+const { app, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -36,4 +36,7 @@ var parent_timer = setInterval(function() {
   try { process.kill(parent_pid, 0); } catch(err) { app.exit(0); }
 }, 1000);
 parent_timer.unref();
+ipcMain.on('JSLAB_DESKTOP_GUI_TEST_EXIT', function() {
+  process.exit(0);
+});
 require('../../init');

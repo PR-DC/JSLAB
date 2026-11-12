@@ -75,6 +75,12 @@ function loadMainClass(screen_area, out) {
       if(module_path === './instance-router') {
         return { PRDC_JSLAB_INSTANCE_ROUTER: class {} };
       }
+      if(module_path === './automation') {
+        return { PRDC_JSLAB_AUTOMATION: class {} };
+      }
+      if(module_path === './assistant') {
+        return { PRDC_JSLAB_ASSISTANT: class {} };
+      }
       if(module_path === '@bugsnag/electron') {
         return { start: function() {} };
       }
@@ -316,6 +322,7 @@ tests.add('automation blocks overlapping GUI commands and accepts replies only f
   main.sandbox_sub_wins = {};
   var replies = [];
   main.automation = { busy: true, active_id: 'agent', complete: function(data) { replies.push(data); } };
+  main.automation_external = true;
   main.handleMessages();
   handlers.SandboxWindow({}, 'eval-code', ['1']);
   assert.equal(forwarded.length, 0);
@@ -349,6 +356,35 @@ tests.add('closed sandbox windows are released once without deleting replacement
   main._destroyClosedSandboxWindow(2, old_window);
   assert.equal(main.sandbox_sub_wins[2], undefined);
 }, { tags: ['unit', 'backend', 'windows'] });
+
+tests.add('Terminal windows are independently named, controlled and closed', function(assert) {
+  var MainClass = loadMainClass();
+  var main = Object.create(MainClass.prototype);
+  var sent = [];
+  var destroyed = false;
+  var win = {
+    isDestroyed: function() { return destroyed; },
+    send: function() { sent.push(Array.from(arguments)); },
+    setTitle: function(name) { this.title = name; },
+    show: function() {},
+    focus: function() {},
+    destroy: function() { destroyed = true; }
+  };
+  main.terminal_windows = new Map([[4, {
+    id: 4, name: 'First', win: win, ready: true, pending: []
+  }]]);
+  assert.equal(main.controlTerminalWindow('write', { id: 4, value: 'echo ok\r' }), true);
+  assert.equal(main.controlTerminalWindow('set-name', { id: 4, name: 'Build' }), true);
+  assert.deepEqual(main.controlTerminalWindow('list'), [{ id: 4, name: 'Build' }]);
+  assert.deepEqual(sent, [
+    ['TerminalWindow', 'write', 'echo ok\r'],
+    ['TerminalWindow', 'set-name', 'Build']
+  ]);
+  assert.equal(win.title, 'Build');
+  assert.equal(main.controlTerminalWindow('is-open', { id: 4 }), true);
+  assert.equal(main.controlTerminalWindow('close', { id: 4 }), true);
+  assert.equal(destroyed, true);
+}, { tags: ['unit', 'backend', 'terminal'] });
 
 tests.add('Editor call-stack selection validates pause revisions and updates the existing console frame', async function(assert) {
   const MainClass = loadMainClass(); const main = Object.create(MainClass.prototype); const calls = [];

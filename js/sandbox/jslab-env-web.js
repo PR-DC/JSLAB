@@ -154,6 +154,27 @@ class PRDC_JSLAB_ENV {
     });
   }
 
+  /** Opens Assistant when the browser host provides a secure server integration. */
+  assistant() {
+    if(this.bridge && typeof this.bridge.openAssistant == 'function') {
+      return this.bridge.openAssistant();
+    }
+    return false;
+  }
+
+  /** System terminals are available only in the desktop application. */
+  terminal(action, data) {
+    return false;
+  }
+
+  terminalOn(id, type, callback) {
+    return false;
+  }
+
+  terminalOff(id, type, callback) {
+    return false;
+  }
+
   /**
    * Loads the Pyodide bootstrap only when symbolic math is requested.
    * @param {Object} [options] Pyodide initialization options.

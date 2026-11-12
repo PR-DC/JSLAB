@@ -98,6 +98,40 @@ tests.add('diary without args toggles logging through environment bridge', funct
   assert.equal(harness.jsl.ignore_output, true);
 }, { tags: ['unit', 'basic'] });
 
+tests.add('assistant command opens the Assistant window without producing ans', function(assert) {
+  var harness = createBasicDiaryHarness();
+  var calls = 0;
+  harness.jsl.inter.env.assistant = function() { calls++; };
+  harness.basic.assistant();
+  assert.equal(calls, 1);
+  assert.equal(harness.jsl.no_ans, true);
+  assert.equal(harness.jsl.ignore_output, true);
+}, { tags: ['unit', 'basic', 'assistant'] });
+
+tests.add('terminal command returns an independently controllable window handle', function(assert) {
+  var harness = createBasicDiaryHarness();
+  var calls = [];
+  harness.jsl.inter.env.terminal = function(action, data) {
+    calls.push({ action: action, data: data });
+    if(action === 'create') return { id: 7, name: data.name };
+    return true;
+  };
+  var terminal_window = harness.basic.terminal('Codex', { cwd: 'C:\\work' });
+  terminal_window.writeln('codex').clear().focus().restart().setName('Agent');
+  assert.equal(terminal_window.id, 7);
+  assert.equal(terminal_window.name, 'Agent');
+  assert.deepEqual(Object.keys(terminal_window), ['id', 'name']);
+  assert.deepEqual(calls.map(function(call) { return call.action; }),
+    ['create', 'write', 'clear', 'focus', 'restart', 'set-name']);
+  assert.equal(calls[0].data.name, 'Codex');
+  assert.equal(calls[0].data.options.cwd, 'C:\\work');
+  assert.equal(calls[1].data.value, 'codex\r');
+  assert.equal(terminal_window.isOpen(), true);
+  assert.equal(terminal_window.close(), true);
+  assert.equal(harness.jsl.no_ans, true);
+  assert.equal(harness.jsl.ignore_output, true);
+}, { tags: ['unit', 'basic', 'terminal'] });
+
 tests.add('diary accepts explicit on/off tokens', function(assert) {
   var harness = createBasicDiaryHarness();
   harness.basic.diary('on');
