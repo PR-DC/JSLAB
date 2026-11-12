@@ -17,7 +17,8 @@ tests.add('web page reload restores settings and actual OPFS document content', 
   });
   gui_hit_archive.push(...await gui_browser.evaluate(() => globalThis.__JSLAB_GUI_HITS__));
   await gui_browser.send('Page.reload', { ignoreCache: true });
-  await gui_browser.waitFor(() => document.body.dataset.jslabWebReady === 'true', 'reload bootstrap');
+  await gui_browser.waitFor(() => document.body &&
+    document.body.dataset.jslabWebReady === 'true', 'reload bootstrap');
   var state = await gui_browser.evaluate(() => ({
     history: jslab_web.history_max,
     text: jslab_web.fs.readTextFileSync('/workspace/gui-persistence.jsl')

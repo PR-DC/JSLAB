@@ -122,9 +122,38 @@ class PRDC_JSLAB_WEB_SANDBOX_LANGUAGE {
 }
 
 async function bootSandbox() {
-  const { initializeWasm } = require('../sandbox/jslab-wasm-loader');
-  await initializeWasm(globalThis.PRDC_JSLAB_NATIVE_MODULE_FACTORY,
-    globalThis.PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY);
+  const { configureWasm, prepareWasmForCode } = require('../sandbox/jslab-wasm-loader');
+  var wasm_info = globalThis.parent && globalThis.parent.__JSLAB_WEB_NATIVE_WASM__
+    ? globalThis.parent.__JSLAB_WEB_NATIVE_WASM__
+    : {};
+  function lazyWasmFactory(global_name, entry) {
+    return async function() {
+      if(typeof globalThis[global_name] != 'function') {
+        var base_url = globalThis.parent && globalThis.parent.location
+          ? globalThis.parent.location.href
+          : globalThis.document.baseURI;
+        var version = wasm_info.version ? '?v='+encodeURIComponent(wasm_info.version) : '';
+        var url = new URL('./lib/native-wasm/'+entry+version, base_url).href;
+        await new Promise(function(resolve, reject) {
+          var script = document.createElement('script');
+          script.src = url;
+          script.onload = resolve;
+          script.onerror = function() { reject(new Error('Unable to load WebAssembly backend: '+url)); };
+          document.head.appendChild(script);
+        });
+      }
+      if(typeof globalThis[global_name] != 'function') {
+        throw new Error('WebAssembly backend factory is unavailable: '+global_name);
+      }
+      return await globalThis[global_name]();
+    };
+  }
+  configureWasm(
+    lazyWasmFactory('PRDC_JSLAB_NATIVE_MODULE_FACTORY',
+      wasm_info.native_module && wasm_info.native_module.entry || 'native_module.js'),
+    lazyWasmFactory('PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY',
+      wasm_info.alpha_shape_3d && wasm_info.alpha_shape_3d.entry || 'alpha_shape_3d.js')
+  );
   var bridge = getBridge();
   var language = bridge && typeof bridge.getLanguage == 'function'
     ? bridge.getLanguage()
@@ -186,6 +215,7 @@ async function bootSandbox() {
   }
 
   async function evaluate(code) {
+    await prepareWasmForCode(code);
     const result = await jsl.inter.eval.evalCodeFromMain(String(code || ''), true, 'jslcmdwindow');
     if(!result.success) throw Object.assign(new Error(result.error), { error_details: result.error_details });
     return { ok: true, value: result.value, preview: previewValue(result.value), workspace: snapshotWorkspace() };

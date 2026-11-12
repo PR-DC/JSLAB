@@ -11,9 +11,9 @@ var seedrandom = require('seedrandom');
 var { PolynomialRegression } = require('ml-regression-polynomial');
 var egm96 = require('egm96-universal');
 var { PRDC_JSLAB_WEB_SERIAL_PORT } = require('../web/web-serial-port');
-var { createNativeModule } = require('./jslab-wasm-native');
-var { createAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
-var { getWasmModules } = require('./jslab-wasm-loader');
+var { createLazyNativeModule } = require('./jslab-wasm-native');
+var { createLazyAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
+var { getWasmModule } = require('./jslab-wasm-loader');
 
 const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
 class PRDC_JSLAB_WEB_SOURCE_MAP {
@@ -50,7 +50,10 @@ class PRDC_JSLAB_ENV {
     this.SourceMapConsumer = PRDC_JSLAB_WEB_SOURCE_MAP;
     this.math = null;
     this.fmin = null;
-    this.exports = ['debug', 'version', 'platform', 'web', 'buildShareLink'];
+    this.exports = ['debug', 'version', 'platform', 'web', 'buildShareLink', 'loadPyodide'];
+    this._pyodide_loader = null;
+    this._pyodide_factory = null;
+    this.loadPyodide = this._loadPyodide.bind(this);
     this.bridge = this.is_worker ? globalThis.__JSLAB_WEB_BRIDGE__ || null : null;
     if(!this.is_worker) {
       try {
@@ -64,9 +67,12 @@ class PRDC_JSLAB_ENV {
     }
     this.runtime_info = this._getRuntimeInfo();
     this.web = Object.freeze(Object.assign({}, this.runtime_info));
-    var wasm = getWasmModules();
-    this.native_module = createNativeModule(wasm.native);
-    this.AlphaShape3D = createAlphaShape3DClass(wasm.alpha, this);
+    this.native_module = createLazyNativeModule(function() {
+      return getWasmModule('native');
+    });
+    this.AlphaShape3D = createLazyAlphaShape3DClass(function() {
+      return getWasmModule('alpha');
+    }, this);
     this.Cesium = this.context.Cesium || {};
     this.egm96 = egm96;
     this.seedRandom = seedrandom;
@@ -146,6 +152,70 @@ class PRDC_JSLAB_ENV {
     return Object.assign({}, this.capabilities, {
       web: this.getRuntimeInfo()
     });
+  }
+
+  /**
+   * Loads the Pyodide bootstrap only when symbolic math is requested.
+   * @param {Object} [options] Pyodide initialization options.
+   * @returns {Promise<Object>} Initialized Pyodide runtime.
+   */
+  async _loadPyodide(options = {}) {
+    var normalized_options = Object.assign({}, options);
+    var app_location;
+    try {
+      app_location = typeof globalThis.importScripts == 'function'
+        ? new URL('../', globalThis.location.href).href
+        : globalThis.parent && globalThis.parent.location
+        ? globalThis.parent.location.href
+        : globalThis.location.href;
+    } catch {
+      app_location = globalThis.location.href;
+    }
+    var index_url = String(normalized_options.indexURL || './lib/sympy-0.26.2/');
+    if(index_url.startsWith('/lib/')) index_url = '.'+index_url;
+    index_url = new URL(index_url, app_location).href;
+    if(!index_url.endsWith('/')) index_url += '/';
+    normalized_options.indexURL = index_url;
+
+    if(!this._pyodide_factory) {
+      if(!this._pyodide_loader) {
+        this._pyodide_loader = new Promise((resolve, reject) => {
+          if(typeof globalThis.importScripts == 'function') {
+            try {
+              globalThis.importScripts(new URL('pyodide.js', index_url).href);
+              var worker_factory = globalThis.loadPyodide;
+              if(typeof worker_factory != 'function' || worker_factory === this.loadPyodide) {
+                throw new Error('Pyodide loaded without exposing its runtime factory.');
+              }
+              this._pyodide_factory = worker_factory;
+              resolve(worker_factory);
+            } catch(error) {
+              reject(error);
+            }
+            return;
+          }
+          var script = globalThis.document.createElement('script');
+          script.src = new URL('pyodide.js', index_url).href;
+          script.async = true;
+          script.onload = () => {
+            var factory = globalThis.loadPyodide;
+            if(typeof factory != 'function' || factory === this.loadPyodide) {
+              reject(new Error('Pyodide loaded without exposing its runtime factory.'));
+              return;
+            }
+            this._pyodide_factory = factory;
+            resolve(factory);
+          };
+          script.onerror = () => reject(new Error('Unable to load Pyodide from '+index_url));
+          (globalThis.document.head || globalThis.document.documentElement).appendChild(script);
+        }).catch((error) => {
+          this._pyodide_loader = null;
+          throw error;
+        });
+      }
+      await this._pyodide_loader;
+    }
+    return await this._pyodide_factory(normalized_options);
   }
 
   /**

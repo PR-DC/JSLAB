@@ -595,6 +595,17 @@ class PRDC_JSLAB_LIB {
    * @returns {string} - The worker initialization script as a string.
    */
   getWorkerInit() {
+    if(this.env.platform == 'web') {
+      return `
+        global.is_worker = true;
+        global.debug = ${this.env.debug};
+        global.version = '${this.env.version}';
+        global.platform = 'web';
+
+        const internal_app_path = ${JSON.stringify(this.app_path)};
+        const internal_packed = ${JSON.stringify(this.packed)};
+      `;
+    }
     return `
       global.is_worker = true;
       global.debug = ${this.env.debug};

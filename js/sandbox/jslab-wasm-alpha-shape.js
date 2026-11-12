@@ -227,4 +227,23 @@ function createAlphaShape3DClass(wasm, env) {
   return PRDC_JSLAB_WASM_ALPHA_SHAPE_3D;
 }
 
+/**
+ * Creates an AlphaShape constructor that initializes geometry WASM on first use.
+ * @param {Function} get_wasm Returns the compiled geometry backend.
+ * @param {Object} env Host environment.
+ * @returns {Function} Lazy AlphaShape constructor.
+ */
+function createLazyAlphaShape3DClass(get_wasm, env) {
+  var AlphaShape3D = null;
+  class PRDC_JSLAB_LAZY_ALPHA_SHAPE_3D {
+    constructor(...args) {
+      if(!AlphaShape3D) AlphaShape3D = createAlphaShape3DClass(get_wasm(), env);
+      return new AlphaShape3D(...args);
+    }
+  }
+  PRDC_JSLAB_LAZY_ALPHA_SHAPE_3D.available = true;
+  return PRDC_JSLAB_LAZY_ALPHA_SHAPE_3D;
+}
+
 exports.createAlphaShape3DClass = createAlphaShape3DClass;
+exports.createLazyAlphaShape3DClass = createLazyAlphaShape3DClass;

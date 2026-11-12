@@ -14,7 +14,8 @@ globalThis.requestIdleCallback = callback => setTimeout(() => callback({ timeRem
 globalThis.cancelIdleCallback = clearTimeout;
 require('../shared/init-config');
 const { PRDC_JSLAB_LIB } = require('../sandbox/jslab');
-const { initializeWasm } = require('../sandbox/jslab-wasm-loader');
+const { configureWasm, prepareWasmForCode } = require('../sandbox/jslab-wasm-loader');
+const wasm_manifest = require('../../lib/native-wasm/manifest.json');
 const { PRDC_JSLAB_WEB_WORKER_DEBUGGER } = require('./worker-debugger-runtime');
 const { createWorkerClass } = require('./worker-children');
 const { PRDC_JSLAB_REMOTE_UI_CLIENT } = require('./remote-ui');
@@ -38,11 +39,20 @@ async function initialize(buffer, options = {}) {
     globalThis.window = remote.root('window');
     globalThis.document = remote.root('document');
   }
-  importScripts(new URL('../lib/native-wasm/native_module.js', location.href).href,
-    new URL('../lib/native-wasm/alpha_shape_3d.js', location.href).href);
   const locateFile = name => new URL('../lib/native-wasm/' + name, location.href).href;
-  await initializeWasm(() => globalThis.PRDC_JSLAB_NATIVE_MODULE_FACTORY({ locateFile }),
-    () => globalThis.PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY({ locateFile }));
+  function lazyWorkerWasmFactory(global_name, entry) {
+    return function() {
+      if(typeof globalThis[global_name] != 'function') {
+        var version = wasm_manifest.version ? '?v='+encodeURIComponent(wasm_manifest.version) : '';
+        importScripts(new URL('../lib/native-wasm/'+entry+version, location.href).href);
+      }
+      return globalThis[global_name]({ locateFile });
+    };
+  }
+  configureWasm(
+    lazyWorkerWasmFactory('PRDC_JSLAB_NATIVE_MODULE_FACTORY', 'native_module.js'),
+    lazyWorkerWasmFactory('PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY', 'alpha_shape_3d.js')
+  );
   globalThis.language = { s: strings, lang: options.lang || 'en',
     string: id => strings[id]?.[globalThis.language.lang] || strings[id]?.en || String(id),
     currentString: id => globalThis.language.string(id) };
@@ -108,6 +118,7 @@ async function initialize(buffer, options = {}) {
     globalThis.postMessage = (data, transfer) => send({ type: 'target-user-message', data }, transfer || []);
     debugger_runtime.begin(options);
     debugger_runtime.active = true;
+    await prepareWasmForCode(options.child_source);
     const result = await jsl.inter.eval.evalCodeFromMain(options.child_source, false, options.path || 'child-worker.jsl');
     debugger_runtime.active = false;
     if(!result.success) throw Object.assign(Error(result.error), { error_details: result.error_details });
@@ -189,6 +200,7 @@ addEventListener('message', async event => {
       debugger_runtime.begin({ breakpoints: request.breakpoints, pause_on_exceptions: request.pause_on_exceptions });
       debugger_runtime.active = true;
       ui.tasks = [];
+      await prepareWasmForCode(request.code);
       const result = await jsl.inter.eval.evalCodeFromMain(request.code, true, request.path || 'jslcmdwindow');
       debugger_runtime.active = false;
       if(result.interrupted) {

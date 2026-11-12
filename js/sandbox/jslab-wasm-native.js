@@ -138,4 +138,27 @@ function createNativeModule(wasm) {
   };
 }
 
+/**
+ * Creates synchronous bindings that initialize numerical WASM on first use.
+ * @param {Function} get_wasm Returns the compiled numerical backend.
+ * @returns {Object} Lazy numerical operations.
+ */
+function createLazyNativeModule(get_wasm) {
+  var native_module = null;
+  function getNativeModule() {
+    if(!native_module) native_module = createNativeModule(get_wasm());
+    return native_module;
+  }
+  return {
+    wasm: true,
+    minDisksDistance3D: function(...args) {
+      return getNativeModule().minDisksDistance3D(...args);
+    },
+    roots: function(...args) { return getNativeModule().roots(...args); },
+    cumtrapz: function(...args) { return getNativeModule().cumtrapz(...args); },
+    trapz: function(...args) { return getNativeModule().trapz(...args); }
+  };
+}
+
 exports.createNativeModule = createNativeModule;
+exports.createLazyNativeModule = createLazyNativeModule;

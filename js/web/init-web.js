@@ -7,10 +7,27 @@
 
 var { PRDC_JSLAB_WEB_APP_SHELL } = require('./app-shell');
 
+/** Registers persistent caching for versioned browser libraries. */
+async function registerLibraryCache() {
+  if(!globalThis.navigator || !globalThis.navigator.serviceWorker ||
+      !globalThis.location || !/^https?:$/.test(globalThis.location.protocol)) {
+    return false;
+  }
+  try {
+    await globalThis.navigator.serviceWorker.register('./service-worker.js', { scope: './' });
+    await globalThis.navigator.serviceWorker.ready;
+    return true;
+  } catch(error) {
+    console.warn('Unable to enable the JSLAB web library cache.', error);
+    return false;
+  }
+}
+
 /**
  * Boots the browser shell when the DOM is ready.
  */
 async function bootWebShell() {
+  await registerLibraryCache();
   var shell = new PRDC_JSLAB_WEB_APP_SHELL();
   globalThis.jslab_web = shell;
   await shell.start();

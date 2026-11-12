@@ -59,4 +59,28 @@ tests.add('WASM initialization reports missing bundles and permits retry after f
   assert.equal(loader.getWasmModules(), initialized);
 }, { tags: ['unit', 'wasm'] });
 
+tests.add('configured WASM factories initialize each backend only before matching code runs', async function(assert) {
+  var loader = createLoader();
+  var native_calls = 0;
+  var alpha_calls = 0;
+  loader.configureWasm(function() {
+    native_calls++;
+    return { name: 'native' };
+  }, function() {
+    alpha_calls++;
+    return { name: 'alpha' };
+  });
+  assert.equal(native_calls, 0);
+  assert.equal(alpha_calls, 0);
+  assert.throws(function() { loader.getWasmModule('native'); }, /Prepare the native/);
+  await loader.prepareWasmForCode('roots([1, 2]);');
+  assert.equal(loader.getWasmModule('native').name, 'native');
+  assert.equal(native_calls, 1);
+  assert.equal(alpha_calls, 0);
+  await loader.prepareWasmForCode('boundary3D(points);');
+  assert.equal(loader.getWasmModule('alpha').name, 'alpha');
+  assert.equal(alpha_calls, 1);
+  assert.throws(function() { loader.getWasmModule('other'); }, /Unknown WebAssembly/);
+}, { tags: ['unit', 'wasm', 'lazy'] });
+
 exports.MODULE_TESTS = tests;

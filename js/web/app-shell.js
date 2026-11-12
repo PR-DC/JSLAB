@@ -18,6 +18,7 @@ var { PRDC_JSLAB_WEB_IMPORT_EXPORT } = require('./storage/import-export');
 var { PRDC_JSLAB_WEB_PANELS } = require('./panels');
 var { PRDC_JSLAB_WEB_LANGUAGE } = require('./language');
 var { createCodeMirrorLintOptions } = require('./eslint');
+var { loadScripts } = require('./asset-loader');
 var { PRDC_JSLAB_CODE_DOC_HOVER } = require('../code/doc-hover');
 var { BigJsonViewerDom } = require('big-json-viewer');
 var { PRDC_APP_CONFIG } = require('../../config/config');
@@ -3072,6 +3073,22 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    * @returns {Promise<Uint8Array|false>}
    */
   async _svgToPdf(svg_data, width, height, fonts) {
+    var optional_assets = globalThis.__JSLAB_WEB_OPTIONAL_ASSETS__ || {};
+    try {
+      await loadScripts([
+        {
+          source: optional_assets.pdfkit || './lib/pdfkit/pdfkit.standalone.js',
+          available: function() { return typeof globalThis.PDFDocument == 'function'; }
+        },
+        {
+          source: optional_assets.svg_to_pdfkit || './lib/svg-to-pdfkit/source.js',
+          available: function() { return typeof globalThis.SVGtoPDF == 'function'; }
+        }
+      ]);
+    } catch(err) {
+      console.warn(err);
+      return false;
+    }
     if(typeof globalThis.PDFDocument != 'function' ||
         typeof globalThis.SVGtoPDF != 'function') {
       return false;
@@ -4075,17 +4092,27 @@ class PRDC_JSLAB_WEB_APP_SHELL {
    */
   _appendLatexMessage(text) {
     var entry = this._appendCommandWindowMessage('data-in', '\\(' + text + '\\)', text);
-    if(typeof MathJax != 'undefined' && typeof MathJax.typesetPromise == 'function') {
-      MathJax.typesetPromise([entry]).catch(function(err) {
-        console.error(err);
-      });
-    } else if(typeof MathJax != 'undefined' && typeof MathJax.typeset == 'function') {
-      try {
-        MathJax.typeset([entry]);
-      } catch(err) {
-        console.error(err);
+    var optional_assets = globalThis.__JSLAB_WEB_OPTIONAL_ASSETS__ || {};
+    loadScripts([
+      {
+        source: optional_assets.mathjax_config || './js/windows/mathjax-config.js'
+      },
+      {
+        source: optional_assets.mathjax || './lib/MathJax-3.2.0/tex-mml-chtml.js',
+        available: function() {
+          return typeof globalThis.MathJax != 'undefined' &&
+            (typeof globalThis.MathJax.typesetPromise == 'function' ||
+              typeof globalThis.MathJax.typeset == 'function');
+        }
       }
-    }
+    ]).then(function() {
+      if(typeof globalThis.MathJax.typesetPromise == 'function') {
+        return globalThis.MathJax.typesetPromise([entry]);
+      }
+      globalThis.MathJax.typeset([entry]);
+    }).catch(function(err) {
+      console.error(err);
+    });
   }
 
   /**
