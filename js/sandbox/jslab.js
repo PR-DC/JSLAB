@@ -164,6 +164,7 @@ class PRDC_JSLAB_LIB {
    */
   _createInternalReferences() {
     const inter = Object.create(null);
+    this._initial_function_descriptors = new Map();
     const raw_module_names = new Set(['figures']);
     const snapshot_names = Array.isArray(this.initial_workspace)
       ? this.initial_workspace
@@ -186,6 +187,9 @@ class PRDC_JSLAB_LIB {
       // while building the internal snapshot.
       if(descriptor.get || descriptor.set) {
         continue;
+      }
+      if(typeof descriptor.value === 'function') {
+        this._initial_function_descriptors.set(name, descriptor);
       }
       inter[name] = descriptor.value;
     }
@@ -276,6 +280,13 @@ class PRDC_JSLAB_LIB {
    */
   _createInternalModuleView(target) {
     const proxy_cache = new WeakMap();
+    // Binding with Function.bind drops static members on library constructors.
+    // An apply trap preserves their properties, prototype and construction.
+    const bindFunction = (func, receiver) => new Proxy(func, {
+      apply(target_func, this_arg, args) {
+        return Reflect.apply(target_func, receiver, args);
+      }
+    });
 
     const createView = (module_target) => {
       if(module_target === null ||
@@ -327,7 +338,7 @@ class PRDC_JSLAB_LIB {
             continue;
           }
           if(descriptor && typeof descriptor.value === 'function') {
-            bound_methods.set(key, descriptor.value.bind(receiver));
+            bound_methods.set(key, bindFunction(descriptor.value, receiver));
           }
         }
       };
@@ -374,7 +385,7 @@ class PRDC_JSLAB_LIB {
             return undefined;
           }
           if(typeof value === 'function') {
-            const bound_value = value.bind(target_obj);
+            const bound_value = bindFunction(value, target_obj);
             bound_methods.set(prop, bound_value);
             return bound_value;
           }
@@ -523,7 +534,12 @@ class PRDC_JSLAB_LIB {
     this.onStatsChange();
 
     for(const property of this.getWorkspaceProperties()) {
-      delete this.context[property];
+      const original = this._initial_function_descriptors?.get(property);
+      if(original) {
+        Object.defineProperty(this.context, property, original);
+      } else {
+        delete this.context[property];
+      }
     }
     this.previous_properties = [];
     this.previous_workspace = {};
@@ -540,17 +556,27 @@ class PRDC_JSLAB_LIB {
   }
   
   /**
-   * Retrieves a list of custom properties added to the global context since the initial load of the library.
-   * @returns {Array} A list of property names that have been added to the global context.
+   * Retrieves user globals, including values that replace initial functions.
+   * Compares descriptors without invoking getters.
+   * @returns {Array} User variable and shadowed function names.
    */
   getWorkspaceProperties() {
     var initial_props = this.initial_workspace;
+    // Timer registration can refresh the workspace before bootstrap records
+    // the initial globals. There are no user variables to publish yet.
+    if(!Array.isArray(initial_props)) {
+      return [];
+    }
     var current_prop_list = Object.getOwnPropertyNames(this.context);
     var workspace = [];
 
     for(var i = 0, l = current_prop_list.length; i < l; ++i) {
       var prop_name = current_prop_list[i];
-      if(initial_props.indexOf(prop_name) === -1) {
+      const original = this._initial_function_descriptors?.get(prop_name);
+      const current = original && Object.getOwnPropertyDescriptor(this.context, prop_name);
+      if(initial_props.indexOf(prop_name) === -1 ||
+          (original && current && (!Object.prototype.hasOwnProperty.call(current, 'value') ||
+            current.value !== original.value))) {
         workspace.push(prop_name);
       }
     }
@@ -562,28 +588,25 @@ class PRDC_JSLAB_LIB {
    * @returns {Array} An array of arrays, each containing the name, type, and constructor name (if applicable) of each property.
    */
   getWorkspace() {
-    var initial_props = this.initial_workspace;
-    var current_prop_list = Object.getOwnPropertyNames(this.context);
+    var current_prop_list = this.getWorkspaceProperties();
     var workspace = [];
 
     for(var i = 0, l = current_prop_list.length; i < l; ++i) {
       var prop_name = current_prop_list[i];
-      if(initial_props && initial_props.indexOf(prop_name) === -1) {
-        try {
-          const descriptor = Object.getOwnPropertyDescriptor(this.context, prop_name);
-          if(!descriptor) continue;
-          if(descriptor.get || descriptor.set) {
-            workspace.push([prop_name, 'accessor', '/']);
-            continue;
-          }
-          const value = descriptor.value;
-          const prototype = value != null ? Object.getPrototypeOf(value) : null;
-          const constructor = prototype && Object.getOwnPropertyDescriptor(prototype, 'constructor');
-          const name = typeof constructor?.value === 'function' ? constructor.value.name : '/';
-          workspace.push([prop_name, typeof value, name]);
-        } catch(error) {
-          workspace.push([prop_name, 'unavailable', '/']);
+      try {
+        const descriptor = Object.getOwnPropertyDescriptor(this.context, prop_name);
+        if(!descriptor) continue;
+        if(descriptor.get || descriptor.set) {
+          workspace.push([prop_name, 'accessor', '/']);
+          continue;
         }
+        const value = descriptor.value;
+        const prototype = value != null ? Object.getPrototypeOf(value) : null;
+        const constructor = prototype && Object.getOwnPropertyDescriptor(prototype, 'constructor');
+        const name = typeof constructor?.value === 'function' ? constructor.value.name : '/';
+        workspace.push([prop_name, typeof value, name]);
+      } catch(error) {
+        workspace.push([prop_name, 'unavailable', '/']);
       }
     }
 

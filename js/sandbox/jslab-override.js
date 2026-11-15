@@ -168,6 +168,11 @@ class PRDC_JSLAB_OVERRIDE {
     setTimeout(function() {
       obj.jsl.context.Promise = obj.Promise;
       obj.jsl.context.console = obj.console;
+      // This delayed runtime replacement is the builtin, not a user shadow.
+      if(obj.jsl._initial_function_descriptors) {
+        obj.jsl._initial_function_descriptors.set('Promise',
+          Object.getOwnPropertyDescriptor(obj.jsl.context, 'Promise'));
+      }
     }, 500);
 
     if(this.is_web_runtime && typeof this.jsl.context.require != 'function') {
