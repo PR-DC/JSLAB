@@ -5,33 +5,45 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_GEOGRAPHY_MAP } = require('../geography-map');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for geography map test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_TEST_HELPER {
 
-function createMapHarness(tileset) {
-  var jsl = {
-    inter: {
-      format: {
-        hasKey: function(obj, key) {
-          return Object.prototype.hasOwnProperty.call(obj, key);
+  /**
+   * Creates map harness.
+   * @param {*} tileset Tileset.
+   */
+  static createMapHarness(tileset) {
+    var jsl = {
+      inter: {
+        format: {
+          hasKey: function(obj, key) {
+            return Object.prototype.hasOwnProperty.call(obj, key);
+          }
         }
       }
-    }
-  };
-  var map = new PRDC_JSLAB_GEOGRAPHY_MAP(jsl, tileset);
-  return { map };
+    };
+    var map = new PRDC_JSLAB_GEOGRAPHY_MAP(jsl, tileset);
+    return { map };
+  }
 }
 
+
+const { PRDC_JSLAB_GEOGRAPHY_MAP } = require('../geography-map');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('constructor resolves known tile source and keeps custom URL', function(assert) {
-  var known = createMapHarness('OpenStreetMap').map;
-  var custom = createMapHarness('https://tiles/{z}/{x}/{y}.png').map;
+  var known = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_TEST_HELPER.createMapHarness('OpenStreetMap').map;
+  var custom = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_TEST_HELPER.createMapHarness('https://tiles/{z}/{x}/{y}.png').map;
   assert.ok(String(known.tileset_url).includes('openstreetmap.org'));
   assert.equal(custom.tileset_url, 'https://tiles/{z}/{x}/{y}.png');
 }, { tags: ['unit', 'geography-map'] });
 
 tests.add('setCenter/setZoom update state and delegate to leaflet object when ready', function(assert) {
-  var harness = createMapHarness('OpenStreetMap');
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_TEST_HELPER.createMapHarness('OpenStreetMap');
   var records = {};
   harness.map.ready = true;
   harness.map.leaflet_obj = {
@@ -55,7 +67,7 @@ tests.add('setCenter/setZoom update state and delegate to leaflet object when re
 }, { tags: ['unit', 'geography-map'] });
 
 tests.add('addMarker returns marker object and marker methods call leaflet APIs', function(assert) {
-  var harness = createMapHarness('OpenStreetMap');
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_TEST_HELPER.createMapHarness('OpenStreetMap');
   var records = {};
   harness.map.ready = true;
   harness.map.leaflet_obj = {};
@@ -105,4 +117,3 @@ tests.add('addMarker returns marker object and marker methods call leaflet APIs'
 }, { tags: ['unit', 'geography-map'] });
 
 exports.MODULE_TESTS = tests;
-

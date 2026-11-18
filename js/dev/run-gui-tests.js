@@ -8,26 +8,64 @@
 const path = require('path');
 
 if(!process.versions.electron) {
+
+  /**
+   * Maintains the isolated profile used by the GUI test launcher.
+   */
+  class PRDC_JSLAB_DEV_RUN_GUI_TESTS_LAUNCHER {
+
+    /**
+     * Cleans up.
+     */
+    static cleanup() {
+      const target = path.resolve(profile);
+      if(path.dirname(target) !== temp_root || !path.basename(target).startsWith('jslab-gui-tests-')) {
+        throw new Error('Unexpected GUI test profile path.');
+      }
+      fs.rmSync(target, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    }
+  }
+
   const { spawn } = require('child_process');
   const fs = require('fs');
   const os = require('os');
   const temp_root = path.resolve(os.tmpdir());
   const profile = fs.mkdtempSync(path.join(temp_root, 'jslab-gui-tests-'));
-  function cleanup() {
-    const target = path.resolve(profile);
-    if(path.dirname(target) !== temp_root || !path.basename(target).startsWith('jslab-gui-tests-')) {
-      throw new Error('Unexpected GUI test profile path.');
-    }
-    fs.rmSync(target, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
-  }
+
   const env = { ...process.env };
   delete env.ELECTRON_RUN_AS_NODE;
   const child = spawn(require('electron'), [__filename, '--gui-profile=' + profile, ...process.argv.slice(2)], {
     env, stdio: 'inherit', windowsHide: true
   });
-  child.on('error', function(err) { console.error(err); cleanup(); process.exitCode = 1; });
-  child.on('exit', function(code) { cleanup(); process.exit(code === null ? 1 : code); });
+  child.on('error', function(err) {
+    console.error(err);
+    PRDC_JSLAB_DEV_RUN_GUI_TESTS_LAUNCHER.cleanup();
+    process.exitCode = 1;
+  });
+  child.on('exit', function(code) {
+    PRDC_JSLAB_DEV_RUN_GUI_TESTS_LAUNCHER.cleanup();
+    process.exit(code === null ? 1 : code);
+  });
 } else {
+
+  /**
+   * Completes the GUI test host without issuing duplicate exits.
+   */
+  class PRDC_JSLAB_DEV_RUN_GUI_TESTS_HOST {
+
+    /**
+     * Handles finish.
+     * @param {string} code Code.
+     */
+    static finish(code) {
+      if(finished) {
+        return;
+      }
+      finished = true;
+      app.exit(code);
+    }
+  }
+
   const { app, BrowserWindow, ipcMain } = require('electron');
   const fs = require('fs');
   const os = require('os');
@@ -39,20 +77,18 @@ if(!process.versions.electron) {
     fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-gui-tests-')));
   app.commandLine.appendSwitch('disable-background-timer-throttling');
   var finished = false;
-  function finish(code) {
-    if(finished) return;
-    finished = true;
-    app.exit(code);
-  }
+
   const watchdog = setTimeout(function() {
     console.error('GUI suite timed out.');
-    finish(1);
+    PRDC_JSLAB_DEV_RUN_GUI_TESTS_HOST.finish(1);
   }, 600000);
-  ipcMain.on('gui-test-progress', function(_event, message) { console.log(message); });
+  ipcMain.on('gui-test-progress', function(_event, message) {
+    console.log(message);
+  });
   ipcMain.on('gui-test-result', function(_event, result) {
     clearTimeout(watchdog);
     console.log(result.output);
-    finish(result.failed || result.error ? 1 : 0);
+    PRDC_JSLAB_DEV_RUN_GUI_TESTS_HOST.finish(result.failed || result.error ? 1 : 0);
   });
   app.whenReady().then(async function() {
     const win = new BrowserWindow({
@@ -60,12 +96,16 @@ if(!process.versions.electron) {
       webPreferences: { nodeIntegration: true, contextIsolation: false, backgroundThrottling: false, offscreen: true }
     });
     win.webContents.on('render-process-gone', function(_event, details) {
-      console.error(details); finish(1);
+      console.error(details);
+      PRDC_JSLAB_DEV_RUN_GUI_TESTS_HOST.finish(1);
     });
     await win.loadFile(path.join(root, 'html', 'blank.html'));
     await win.webContents.executeJavaScript(`
       require(${JSON.stringify(path.join(root, 'js', 'dev', 'run-gui-tests-renderer.js'))}).run(
         ${JSON.stringify(process.argv.filter(arg => arg.startsWith('--test-')))})
     `);
-  }).catch(function(err) { console.error(err); finish(1); });
+  }).catch(function(err) {
+    console.error(err);
+    PRDC_JSLAB_DEV_RUN_GUI_TESTS_HOST.finish(1);
+  });
 }

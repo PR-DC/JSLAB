@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title str="519" lang-fixed>JSLAB | PR-DC</title>
+    <title str="518" lang-fixed>JSLAB | PR-DC</title>
     <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;" />
     <link rel="stylesheet" type="text/css" href="../css/codemirror-notepadpp-theme.css">
     <link rel="stylesheet" type="text/css" href="../css/highlight-notepadpp-theme.css">
@@ -26,7 +26,8 @@
         <img id="company-logo" src="../img/PR-DC_icon.svg"/>
         <ul id="main-menu">
           <li id="editor-menu"><img src="../img/editor.svg"/><str sid="1"></str></li>
-          <li id="assistant-menu"><img src="../img/assistant.svg"/><str sid="651"></str></li>
+          <li id="simulate-menu"><img src="../img/simulate.svg"/><str sid="672"></str></li>
+          <li id="assistant-menu"><img src="../img/assistant.svg"/><str sid="650"></str></li>
           <li id="help-menu"><img src="../img/help.svg"/><str sid="2"></str></li>
           <li id="info-menu"><img src="../img/info.svg"/><str sid="3"></str></li>
           <li id="settings-menu"><img src="../img/settings-menu.svg"/><str sid="9"></str></li>
@@ -36,7 +37,7 @@
           <li id="win-restore"><img src="../img/win-restore.svg"></li>
           <li id="win-close"><img src="../img/win-close.svg"></li>
         </ul>
-        <div id="app-title"><str sid="506"></str></div>
+        <div id="app-title"><str sid="505"></str></div>
         <div class="clear"></div>
       </div>
     </div>
@@ -53,7 +54,7 @@
         <div class="current-address-cont">
           <div class="current-address-wrap">
             <div class="current-address">
-              <span class="folder"><str sid="596"></str></span>
+              <span class="folder"><str sid="595"></str></span>
               <i class="i-next-folder"></i>
               <span class="folder" lang-fixed>Electron</span>
               <i class="i-next-folder"></i>
@@ -141,7 +142,7 @@
 
             <div id="command-window-options" class="options">
               <div class="options-right">
-                <i class="console-filter" title-str="638"></i>
+                <i class="console-filter" title-str="637"></i>
                 <i class="settings" title-str="40"></i>
                 <i class="timestamp" title-str="41"></i>
                 <i class="autoscroll active" title-str="42"></i>
@@ -168,7 +169,7 @@
                 <img class="options-close" src="../img/close.svg" title-str="46">
                </div>
                <div class="float-input" title-str="17">
-                <input autocomplete="off" type="text" name="N-messages-max" class="N-messages-max" str="510" value="">
+                <input autocomplete="off" type="text" name="N-messages-max" class="N-messages-max" str="509" value="">
                 <label class="float-label" for="N-messages-max"><str sid="17"></str></label>
                </div>
                <button class="change-settings"><str sid="57"></str></button>
@@ -197,6 +198,10 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div id="file-browser-context-menu" class="app-context-menu">
+      <button id="file-browser-context-remove" type="button"><str sid="387"></str></button>
     </div>
 
     <div id="workspace-context-menu" class="app-context-menu">
@@ -298,7 +303,7 @@
               </tr>
               <tr>
                 <td lang-fixed>Ctrl + Space</td>
-                <td><str sid="650"></str></td>
+                <td><str sid="649"></str></td>
               </tr>
               <tr>
                 <td lang-fixed>Ctrl + H</td>
@@ -314,7 +319,7 @@
               </tr>
               <tr>
                 <td lang-fixed>Ctrl + L / Ctrl + K</td>
-                <td><str sid="649"></str></td>
+                <td><str sid="648"></str></td>
               </tr>
               <tr>
                 <td lang-fixed>Ctrl + Shift + L</td>
@@ -333,9 +338,9 @@
         </div>
         <div class="page-panel panel">
           <img class="app-logo" src="../img/JSLAB.svg">
-          <div class='app-name'><str sid="508"></str></div>
+          <div class='app-name'><str sid="507"></str></div>
           <div class='app-version'></div>
-          <div class='app-company'><str sid="509"></str></div>
+          <div class='app-company'><str sid="508"></str></div>
           <img class="company-logo" src="../img/PR-DC_icon.svg">
 
           <p><str sid="86"></str></p>
@@ -377,7 +382,7 @@
             <input id="inspector-input-field-2" type="text" autocomplete="off" spellcheck="false">
           </div>
           <div id="inspector-input-buttons">
-            <button id="inspector-input-submit"><str sid="391"></str></button>
+            <button id="inspector-input-submit"><str sid="390"></str></button>
             <button id="inspector-input-cancel"><str sid="52"></str></button>
           </div>
           <br class="clear">
@@ -401,15 +406,15 @@
             <label class="float-label" for="set-language"><str sid="16"></str></label>
           </div>
           <div class="float-input" title-str="223">
-            <input autocomplete="off" type="text" name="N-history-max" class="N-history-max" str="536" value="20">
+            <input autocomplete="off" type="text" name="N-history-max" class="N-history-max" str="535" value="20">
             <label class="float-label" for="N-history-max"><str sid="223"></str></label>
           </div>
-          <div class="float-input desktop-only" title-str="652">
-            <input autocomplete="off" type="password" name="openai-api-key" class="openai-api-key" str="652" value="">
-            <label class="float-label" for="openai-api-key"><str sid="652"></str></label>
+          <div class="float-input" title-str="651">
+            <input autocomplete="off" type="password" name="openai-api-key" class="openai-api-key" str="651" value="">
+            <label class="float-label" for="openai-api-key"><str sid="651"></str></label>
           </div>
-          <div id="openai-api-key-status" class="desktop-only"><str sid="664"></str></div>
-          <button type="button" class="clear-openai-api-key desktop-only"><str sid="663"></str></button>
+          <div id="openai-api-key-status"><str sid="663"></str></div>
+          <button type="button" class="clear-openai-api-key"><str sid="662"></str></button>
           <button class="change-settings"><str sid="57"></str></button>
         </div>
       </div>
@@ -480,6 +485,6 @@
     
     <script type="text/javascript" src="../js/code/custom-javascript-hint.js"></script>
     
-    <script type="text/javascript" src="../js/main/init-main.js"></script>
+    <script type="text/javascript" src="../js/backend-electron/init-main.js"></script>
   </body>
 </html>

@@ -5,47 +5,60 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_GEOGRAPHY } = require('../geography');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for geography test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_TEST_HELPER {
 
-function createGeographyHarness() {
-  var jsl = {
-    inter: {
-      format: {
-        isUndefined: function(value) {
-          return typeof value === 'undefined';
-        },
-        normalizeAngle: function(angle) {
-          var out = angle % 360;
-          if(out < 0) out += 360;
-          return out;
-        }
-      },
-      env: {
-        egm96: {
-          egm96ToEllipsoid: function(lat, lon, h) {
-            return h + lat * 0 + lon * 0 + 10;
+  /**
+   * Creates geography harness.
+   */
+  static createGeographyHarness() {
+    var jsl = {
+      inter: {
+        format: {
+          isUndefined: function(value) {
+            return typeof value === 'undefined';
           },
-          ellipsoidToEgm96: function(lat, lon, h) {
-            return h + lat * 0 + lon * 0 - 10;
+          normalizeAngle: function(angle) {
+            var out = angle % 360;
+            if(out < 0) {
+              out += 360;
+            }
+            return out;
+          }
+        },
+        env: {
+          egm96: {
+            egm96ToEllipsoid: function(lat, lon, h) {
+              return h + lat * 0 + lon * 0 + 10;
+            },
+            ellipsoidToEgm96: function(lat, lon, h) {
+              return h + lat * 0 + lon * 0 - 10;
+            }
+          }
+        },
+        lang: {
+          currentString: function(id) {
+            return 'LANG_' + id;
           }
         }
-      },
-      lang: {
-        currentString: function(id) {
-          return 'LANG_' + id;
-        }
       }
-    }
-  };
+    };
 
-  var geography = new PRDC_JSLAB_LIB_GEOGRAPHY(jsl);
-  return { geography };
+    var geography = new PRDC_JSLAB_LIB_GEOGRAPHY(jsl);
+    return { geography };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_GEOGRAPHY } = require('../geography');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('calculateTilesBoundingBox returns expected world bounds at zoom 0', function(assert) {
-  var harness = createGeographyHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_TEST_HELPER.createGeographyHarness();
   var out = harness.geography.calculateTilesBoundingBox([{ x: 0, y: 0, z: 0 }]);
 
   assert.approx(out.center[0], 0, 1e-9);
@@ -57,7 +70,7 @@ tests.add('calculateTilesBoundingBox returns expected world bounds at zoom 0', f
 }, { tags: ['unit', 'geography'] });
 
 tests.add('offset and distance functions are internally consistent', function(assert) {
-  var harness = createGeographyHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_TEST_HELPER.createGeographyHarness();
   var start = [44.8, 20.4];
   var moved_north = harness.geography.offsetLatLon(start[0], start[1], 1000, 0);
   var moved_east_north = harness.geography.offsetLatLonEastNorth(start[0], start[1], 500, 500);
@@ -70,7 +83,7 @@ tests.add('offset and distance functions are internally consistent', function(as
 }, { tags: ['unit', 'geography'] });
 
 tests.add('latLonAltDistance and checkNewLatLon handle edge conditions', function(assert) {
-  var harness = createGeographyHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_TEST_HELPER.createGeographyHarness();
   var d3 = harness.geography.latLonAltDistance(0, 0, 100, 0, 0, 50);
   assert.approx(d3, 50, 1e-9);
 
@@ -87,7 +100,7 @@ tests.add('latLonAltDistance and checkNewLatLon handle edge conditions', functio
 }, { tags: ['unit', 'geography'] });
 
 tests.add('MSL and ellipsoid conversion wrappers support scalar and array inputs', function(assert) {
-  var harness = createGeographyHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_TEST_HELPER.createGeographyHarness();
   var scalar = harness.geography.mslToEllipsoidAlt(44, 20, 100);
   var arr = harness.geography.ellipsoidToMslAlt([44, 45], [20, 21], [110, 120]);
 

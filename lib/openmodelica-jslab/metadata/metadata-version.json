@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "source": {
+    "compilerCommit": "dc37f33f4ba739b8e4f145dfcb9a4f40791e804d",
+    "bridgeABI": 1,
+    "compilerFiles": {
+      "omc/OpenModelicaCompiler_bg.wasm": "a2912ee6949cf18dedd6321c05ef583f257e0caa6b4e60fffdeb435e2b335732",
+      "js/worker.js": "f7e7dd588a798dcd787236fb2ac881d1ecffcca15da48b035b903dc53bf1e4e8"
+    },
+    "standardLibrary": {
+      "archive": "efd981a1176f124938d6d6759f7c09e0fbf55ddf.zip",
+      "root": "OpenModelica-ModelicaStandardLibrary-efd981a1176f124938d6d6759f7c09e0fbf55ddf"
+    },
+    "standardLibraryHash": "3f412590c78e440fc92482b9ac8fbe157fab4834e8a687887053bbdc6151f6b2"
+  },
+  "sourceFingerprint": "14018f4c464b9bdc7d0d40a1982bb6dab5c1b53825f35d69122fc88f51cd7e35",
+  "metadataHashes": {
+    "library-catalog.json": "59a454f5d18300354cec7ea85eef7014405d67ed473e68680dbea3ef3844c4c7",
+    "component-schema.json": "f5212e9b712a22d25b5b3b788209a42c113d7f726041495f52ee3346d5c2ad55",
+    "record-schema.json": "8e851df9532463b98d906099fcb67a25b0a1616e95986c754256271404adf08b",
+    "library-graphics.json": "268a2c8b89c5244aab7efef529c43c3add186403904cc5ee17ee74f6db8f178d",
+    "library-assets.json": "489872405a667a2d4d77083e09b2b0e0b9119eabdb5abade6959fd26e9c6feb5"
+  },
+  "metadataFingerprint": "941b52c06e99322544d92f0278c652b10b18ef016172cab7d25837a24ce6f0b7",
+  "previousFingerprint": "941b52c06e99322544d92f0278c652b10b18ef016172cab7d25837a24ce6f0b7",
+  "counts": {
+    "classes": 6020,
+    "concrete": 1794
+  },
+  "retiredPropertyDescriptions": [],
+  "retiredIconTexts": []
+}

@@ -5,11 +5,13 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_LANGUAGE } = require('../other-shared/language');
+
 /**
  * Class for JSLAB windows submodule.
  */
 class PRDC_JSLAB_LIB_WINDOWS {
-  
+
   /**
    * Initializes a new instance of the windows submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -24,7 +26,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
      * @type {Number}
      */
     this.active_window;
-    
+
     /**
      * Array of open windows.
      * @type {Array}
@@ -41,11 +43,11 @@ class PRDC_JSLAB_LIB_WINDOWS {
     if(!this.jsl.inter.env.pathIsAbsolute(file)) {
       file = this.jsl.app_path + '/html/' + file;
     }
-    
+
     if(!this.jsl.inter.env.checkFile(file)) {
-      this.jsl.inter.env.error('@openWindow: '+this.jsl.inter.lang.string(199));
+      this.jsl.inter.env.error('@openWindow: ' + this.jsl.inter.lang.string(199));
     }
-    
+
     this._wid += 1;
     var wid = this._wid;
     this.open_windows[wid] = new PRDC_JSLAB_WINDOW(this.jsl, wid);
@@ -55,7 +57,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     this.jsl.ignore_output = true;
     return wid;
   }
-  
+
   /**
    * Opens the developer tools for a specified window by ID if it exists.
    * @param {string} wid - The window ID.
@@ -85,7 +87,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
   /**
    * Starts video recording of the window.
    * @param {string} wid - The window ID.
-   * @param {Object} - Optional settings. 
+   * @param {Object} - Optional settings.
    * @returns {Object|boolean} - Returns recorder object if there is window; otherwise, false.
    */
   startWindowVideoRecording(wid, opts) {
@@ -95,7 +97,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Closes the specified window.
    * @param {number} wid - Identifier for the window to close.
@@ -105,7 +107,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Closes the specified window.
    * @param {number} wid - Identifier for the window to close.
@@ -117,7 +119,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the window object with the specified ID.
    * @param {number} wid - The ID of the window.
@@ -163,7 +165,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Hides the specified window.
    * @param {number} wid - The ID of the window to hide.
@@ -176,7 +178,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Brings the specified window to the foreground.
    * @param {number} wid - The ID of the window to focus.
@@ -189,7 +191,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Minimizes the specified window.
    * @param {number} wid - The ID of the window to minimize.
@@ -202,7 +204,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Centers the specified window on the screen.
    * @param {number} wid - The ID of the window to center.
@@ -215,7 +217,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Moves the specified window to the top of the window stack.
    * @param {number} wid - The ID of the window to move to the top.
@@ -228,7 +230,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the size of the specified window.
    * @param {number} wid - The ID of the window.
@@ -243,7 +245,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the position of the specified window.
    * @param {number} wid - The ID of the window.
@@ -272,7 +274,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the movable state of the specified window.
    * @param {number} wid - The ID of the window.
@@ -286,7 +288,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the aspect ratio of the specified window.
    * @param {number} wid - The ID of the window.
@@ -300,7 +302,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the opacity of the specified window.
    * @param {number} wid - The ID of the window.
@@ -314,7 +316,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the fullscreen state of the specified window.
    * @param {number} wid - The ID of the window.
@@ -328,7 +330,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Sets the position of the specified window.
    * @param {number} wid - The ID of the window.
@@ -343,7 +345,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the size of the specified window.
    * @param {number} wid - The ID of the window.
@@ -356,7 +358,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the position of the specified window.
    * @param {number} wid - The ID of the window.
@@ -383,7 +385,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       return false;
     }
   }
-  
+
   /**
    * Opens window with documentation
    */
@@ -394,9 +396,9 @@ class PRDC_JSLAB_LIB_WINDOWS {
     if(query) {
       win.context.location.hash = encodeURI(query);
     }
-    win.setTitle(this.jsl.inter.lang.currentString(534));
+    win.setTitle(this.jsl.inter.lang.currentString(533));
   }
-  
+
   /**
    * Opens window with documentation
    */
@@ -410,7 +412,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
   async openDiscourse() {
     var context = await this.openWebpage('https://discourse.jsl.pr-dc.com/');
     var win = this.open_windows[context.wid];
-    win.setTitle(this.jsl.inter.lang.currentString(535));
+    win.setTitle(this.jsl.inter.lang.currentString(534));
   }
 
   /**
@@ -423,7 +425,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     context.location.href = url;
     return context;
   }
-  
+
   /**
    * Opens a new 3D window and imports specified modules.
    * @param {Array<Object>} [imports=[]] - An array of import objects specifying modules to import.
@@ -441,13 +443,13 @@ class PRDC_JSLAB_LIB_WINDOWS {
     const window_assignments = [];
     var imports_array = [{import: '*', as: 'THREE', from: 'three'}];
     imports_array.push(...imports);
-    
+
     imports_array.forEach((item) => {
       const { import: imported, as, from } = item;
 
       if(imported === '*') {
         if(!as) {
-          this.jsl.inter.env.error('@openWindow3D: '+this.jsl.inter.lang.string(200)+from+'.');
+          this.jsl.inter.env.error('@openWindow3D: ' + this.jsl.inter.lang.string(200) + from + '.');
         }
         // Namespace import
         import_statements.push(`import * as ${as} from '${from}';`);
@@ -465,34 +467,40 @@ class PRDC_JSLAB_LIB_WINDOWS {
         window_assignments.push(`window.${imported} = ${imported};`);
       }
     });
-    
+
     script.textContent = `${import_statements.join('\n')}\n\n${window_assignments.join('\n')}\n window.imports_ready = true;`;
-    
+
     context.imports_ready = false;
     context.document.body.appendChild(script);
     while(!context.imports_ready) {
       await this.jsl.inter.non_blocking.waitMSeconds(1);
     }
     context.sceneToJSON = async function(file_path, scene = context.scene) {
-      if(!scene) return;
+      if(!scene) {
+        return;
+      }
       var save_target = file_path;
       if(!save_target) {
         var options = {
-         title: obj.jsl.inter.lang.currentString(144),
-         defaultPath: 'window-3d.json',
-         buttonLabel: obj.jsl.inter.lang.currentString(144),
-         filters :[
-          {name: 'json', extensions: ['json']},
-         ]
+          title: obj.jsl.inter.lang.currentString(144),
+          defaultPath: 'window-3d.json',
+          buttonLabel: obj.jsl.inter.lang.currentString(144),
+          filters: [
+            {name: 'json', extensions: ['json']},
+          ]
         };
         if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
           save_target = await obj.jsl.inter.env.showSaveDialog(options);
-          if(save_target && save_target.canceled) return;
+          if(save_target && save_target.canceled) {
+            return;
+          }
         }
         if(!save_target) {
           save_target = obj.jsl.inter.env.showSaveDialogSync(options);
         }
-        if(!save_target) return;
+        if(!save_target) {
+          return;
+        }
         file_path = typeof save_target == 'object' ? save_target.filePath : save_target;
       }
       var scene_json = scene.toJSON();
@@ -506,8 +514,8 @@ class PRDC_JSLAB_LIB_WINDOWS {
         return;
       }
       obj.jsl.inter.env.writeFileSync(file_path, scene_data);
-    }
-    
+    };
+
     context.sceneFromJSON = async function(file_path) {
       if(!file_path) {
         var options = {
@@ -518,21 +526,21 @@ class PRDC_JSLAB_LIB_WINDOWS {
           ? await obj.jsl.inter.env.showOpenDialog(options)
           : obj.jsl.inter.env.showOpenDialogSync(options);
         if(file_path === undefined || file_path === false) {
-          obj.jsl.inter.env.error('@openWindow3D.fromJSON: '+obj.jsl.inter.lang.string(132)+'.');
+          obj.jsl.inter.env.error('@openWindow3D.fromJSON: ' + obj.jsl.inter.lang.string(132) + '.');
           return false;
         } else {
           file_path = file_path[0];
         }
-      }    
+      }
       if(!obj.jsl.inter.file_system.existFile(obj.jsl.current_path + file_path)) {
-        obj.jsl.inter.env.error('@openWindow3D.fromJSON: '+obj.jsl.inter.lang.string(248));
+        obj.jsl.inter.env.error('@openWindow3D.fromJSON: ' + obj.jsl.inter.lang.string(248));
         return false;
       }
       var data = JSON.parse(obj.jsl.inter.env.readFileSync(obj.jsl.current_path + file_path).toString());
 
       const loader = new context.THREE.ObjectLoader();
-      return loader.parse(data)
-    }
+      return loader.parse(data);
+    };
     return context;
   }
 
@@ -581,7 +589,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     context.canvas.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
     return context;
   }
-  
+
   /**
    * Opens a new blank window.
    * @returns {Promise<Object>} A promise that resolves to the window object once it is ready.
@@ -593,7 +601,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
     context.document.custom_style = context.document.getElementById('custom-style');
     return context;
   }
-  
+
   /**
    * Renders a Mermaid diagram in a new window.
    * @param {string} graph_definition - The Mermaid graph definition.
@@ -619,13 +627,13 @@ class PRDC_JSLAB_LIB_WINDOWS {
           graph.style.display = 'block';
         }
       } catch(err) {
-        obj.jsl.inter.error('@showGraph: '+err);
+        obj.jsl.inter.error('@showGraph: ' + err);
       }
-    }
+    };
     await context.showGraph(graph_definition);
     return context;
   }
-  
+
   /**
    * Sets the specified window as the active window.
    * @param {number} wid - The identifier of the window to set as active.
@@ -637,7 +645,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       this.active_window = -1;
     }
   }
-  
+
   /**
    * Updates the language of the text elements within all open windows.
    */
@@ -658,10 +666,10 @@ class PRDC_JSLAB_LIB_WINDOWS {
         var wids = Object.keys(this.open_windows);
         var N = wids.length;
         if(N > 1) {
-          if(wids[N-1] !== wid) {
-            new_wid = wids[N-1];
+          if(wids[N - 1] !== wid) {
+            new_wid = wids[N - 1];
           } else {
-            new_wid = wids[N-2];
+            new_wid = wids[N - 2];
           }
         }
         this._setActiveWindow(new_wid);
@@ -678,9 +686,9 @@ exports.PRDC_JSLAB_LIB_WINDOWS = PRDC_JSLAB_LIB_WINDOWS;
  * Class for JSLAB window.
  */
 class PRDC_JSLAB_WINDOW {
-  
+
   #jsl;
-  
+
   /**
    * Initializes a new instance of the JSLAB window.
    * @param {Object} jsl - Reference to the main JSLAB object.
@@ -688,19 +696,19 @@ class PRDC_JSLAB_WINDOW {
    */
   constructor(jsl, wid) {
     var obj = this;
-    
+
     this.#jsl = jsl;
     this.wid = wid;
     this._lifecycle_token = Symbol();
 
     this.context;
     this.dom;
-    
+
     this.opened = false;
-    this.ready = new Promise((resolve) => {
+    this.ready = new (this.#jsl._Promise || Promise)((resolve) => {
       obj._readyResolve = resolve;
     });
-    
+
     this.onClosed = function() {};
   }
 
@@ -717,16 +725,18 @@ class PRDC_JSLAB_WINDOW {
       this.context = context;
       this.context.getWindow = function() {
         return obj;
-      }
+      };
       await ready;
       // Internal module views wrap registry values, so object identity changes.
       // The token still distinguishes a closed/replaced window from its view.
-      if(this.#jsl.inter.windows.open_windows[this.wid]?._lifecycle_token !== this._lifecycle_token) return;
+      if(this.#jsl.inter.windows.open_windows[this.wid]?._lifecycle_token !== this._lifecycle_token) {
+        return;
+      }
       this.dom = this.context.document;
       this._onReady();
     }
   }
-  
+
   /**
    * Shows the window.
    * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was shown successfully, or `false` if the window ID is invalid.
@@ -744,7 +754,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.hideWindow(this.wid);
   }
-  
+
   /**
    * Brings focus to the window.
    * @returns {Promise} - Resolves when the window size is focused.
@@ -763,10 +773,10 @@ class PRDC_JSLAB_WINDOW {
     return this.#jsl.inter.env.minimizeWindow(this.wid);
   }
 
-/**
- * Centers the window on the screen.
- * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was centered successfully, or `false` if the window ID is invalid.
- */
+  /**
+   * Centers the window on the screen.
+   * @returns {Promise<boolean|undefined>} - Resolves to `true` if the window was centered successfully, or `false` if the window ID is invalid.
+   */
   async center() {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.centerWindow(this.wid);
@@ -780,7 +790,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.moveTopWindow(this.wid);
   }
-  
+
   /**
    * Sets the size of the current window.
    * @param {number} width - The desired width of the window.
@@ -791,7 +801,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowSize(this.wid, width, height);
   }
-  
+
   /**
    * Sets the position of the current window.
    * @param {number} left - The desired left position of the window.
@@ -852,7 +862,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.setWindowFullscreen(this.wid, state);
   }
-  
+
   /**
    * Sets the title of the current window.
    * @param {string} title - The new title for the window.
@@ -872,7 +882,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.printWindowToPdf(this.wid, options);
   }
-  
+
   /**
    * Retrieves the size of the current window.
    * @returns {Promise<Array>} - Resolves with an array [width, height].
@@ -881,7 +891,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.getWindowSize(this.wid);
   }
-  
+
   /**
    * Retrieves the position of the current window.
    * @returns {Promise<Array>} - Resolves with an array [left, top].
@@ -890,7 +900,7 @@ class PRDC_JSLAB_WINDOW {
     await this.#jsl.awaitResource(this.ready);
     return this.#jsl.inter.env.getWindowPos(this.wid);
   }
-  
+
   /**
    * Closes the current window.
    * @returns {Promise} - Resolves when the window is closed.
@@ -898,7 +908,7 @@ class PRDC_JSLAB_WINDOW {
   async close() {
     return this.#jsl.inter.env.closeWindow(this.wid);
   }
-  
+
   /**
    * Opens the developer tools for the current window asynchronously.
    * @returns {Promise<boolean>} A promise that resolves to true when dev tools are opened.
@@ -919,26 +929,20 @@ class PRDC_JSLAB_WINDOW {
 
   /**
    * Starts video recording of this window.
-   * @param {Object} - Optional settings. 
+   * @param {Object} - Optional settings.
    * @returns {Object|boolean} - Returns recorder object.
    */
   async startVideoRecording(opts) {
     await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.device.startVideoRecording(this.#jsl.inter.env.getWindowMediaSourceId(this.wid), opts);
   }
-  
+
   /**
    * Appends a script to the document head.
    * @param {string} script_path The script's URL.
    */
   addScript(script_path) {
-    if(typeof globalThis != 'undefined' && globalThis.__JSLAB_RUNTIME__ == 'web') {
-      if(/^(\.\.\/)?js\/windows\//.test(script_path)) {
-        script_path = script_path.replace(/^(\.\.\/)?js\/windows\//, '../js/windows/');
-      } else if(/^(\.\.\/)?js\/shared\//.test(script_path)) {
-        script_path = script_path.replace(/^(\.\.\/)?js\/shared\//, '../js/shared/');
-      }
-    }
+    script_path = this.#jsl.inter.env._windowScriptPath?.(script_path) || script_path;
     const script = this.context.document.createElement("script");
     script.src = script_path;
     this.context.document.head.appendChild(script);
@@ -954,7 +958,7 @@ class PRDC_JSLAB_WINDOW {
     link.href = stylesheet_path;
     this.context.document.head.appendChild(link);
   }
-  
+
   /**
    * Loads the UI script.
    */
@@ -962,7 +966,7 @@ class PRDC_JSLAB_WINDOW {
     this.addScript("../js/windows/ui.js");
     this.addLinkStylesheet("../css/ui.css");
   }
-  
+
   /**
    * Handles actions to perform when the window is ready.
    * @returns {void}
@@ -975,60 +979,18 @@ class PRDC_JSLAB_WINDOW {
     this._updateLanguage();
     this._readyResolve(true);
   }
-  
+
   /**
    * Updates localized text elements within the DOM.
    * @param {boolean} [flag=true] - Whether to update text content.
    * @returns {void}
    */
   _updateLanguage(flag = true) {
-    var lang = this.#jsl.inter.lang;
-
-    if(flag) {
-      this.dom.querySelectorAll('str').forEach(function(el) {
-        var id = el.getAttribute('sid');
-        el.innerHTML = lang.string(id);
-      });
-    }
-
+    const lang = this.#jsl.inter.lang;
+    PRDC_JSLAB_LANGUAGE.updateDocument(lang, this.dom, 'html', flag, true);
     if(this.lang_styles.cssRules.length > 1) {
       this.lang_styles.deleteRule(1);
     }
-    this.lang_styles.insertRule("lang."+lang.lang+" { display: initial }", 1);
-      
-    this.dom.querySelectorAll('[title-str]').forEach(function(el) {
-      var id = el.getAttribute('title-str');
-      if(id in lang.s) {
-        el.setAttribute('title', lang.s[id][lang.lang]);
-      }
-    });
-    
-    this.dom.querySelectorAll('textarea[str]').forEach(function(el) {
-      var id = el.getAttribute('str');
-      if(id in lang.s) {
-        el.setAttribute('placeholder', lang.s[id][lang.lang]);
-      }
-    });
-    
-    this.dom.querySelectorAll('input[str]').forEach(function(el) {
-      var id = el.getAttribute('str');
-      if(id in lang.s) {
-        el.setAttribute('placeholder', lang.s[id][lang.lang]);
-      }
-    });
-
-    this.dom.querySelectorAll('option[str]').forEach(function(el) {
-      var id = el.getAttribute('str');
-      if(id in lang.s) {
-        el.textContent = lang.s[id][lang.lang];
-      }
-    });
-
-    this.dom.querySelectorAll('title[str]').forEach(function(el) {
-      var id = el.getAttribute('str');
-      if(id in lang.s) {
-        el.textContent = lang.s[id][lang.lang];
-      }
-    });
+    this.lang_styles.insertRule('lang.' + lang.lang + ' { display: initial }', 1);
   }
 }

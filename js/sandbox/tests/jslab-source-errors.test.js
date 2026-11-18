@@ -4,30 +4,45 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
+
+/**
+ * Class for jslab source errors test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER {
+
+  /**
+   * Creates an isolated test harness.
+   */
+  static harness() {
+    return new PRDC_JSLAB_SOURCE_ERRORS({ debug_sources: new Map(),
+      async getOriginalPosition(map, line, column) {
+        const consumer = await new SourceMapConsumer(map);
+        try {
+          return consumer.originalPositionFor({ line, column });
+        } finally {
+          consumer.destroy();
+        }
+      }
+    });
+  }
+}
+
 const { PRDC_JSLAB_SOURCE_ERRORS } = require('../jslab-source-errors');
 const { SourceMapGenerator, SourceMapConsumer } = require('source-map');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
-function harness() {
-  return new PRDC_JSLAB_SOURCE_ERRORS({ debug_sources: new Map(),
-    async getOriginalPosition(map, line, column) {
-      const consumer = await new SourceMapConsumer(map);
-      try { return consumer.originalPositionFor({ line, column }); }
-      finally { consumer.destroy(); }
-    }
-  });
-}
+
 
 tests.add('errors copied from isolated runtimes retain their mapped source details', async function(assert) {
   const details = { name: 'TypeError', message: 'child failure', kind: 'runtime',
     location: { path: 'child.jsl', line: 8, column: 3 },
     frames: [{ path: 'child.jsl', line: 8, column: 3 }], stack: 'TypeError: child failure\n  at child.jsl:8:3' };
-  const result = await harness().describe(Object.assign(Error('transport error'), { jslab_error_details: details }));
+  const result = await PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness().describe(Object.assign(Error('transport error'), { jslab_error_details: details }));
   assert.deepEqual(result, details);
 }, { tags: ['unit', 'errors'] });
 
 tests.add('stack parser supports Windows, POSIX, file URLs, Firefox and async frames', function(assert) {
-  const errors = harness();
+  const errors = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness();
   for(const [line, path, number, column] of [
     ['    at fail (C:\\folder with spaces\\test (copy).js:12:7)', 'C:\\folder with spaces\\test (copy).js', 12, 7],
     [' at async /tmp/test.js:4:9', '/tmp/test.js', 4, 9],
@@ -43,7 +58,7 @@ tests.add('stack parser supports Windows, POSIX, file URLs, Firefox and async fr
 }, { tags: ['unit', 'errors'] });
 
 tests.add('nested generated frames map to their own immutable source records', async function(assert) {
-  const errors = harness();
+  const errors = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness();
   for(const [url, path, generated, original] of [['jslab://scripts/1.js', 'parent.jsl', 3, 10], ['jslab://scripts/2.js', 'child.jsl', 8, 4]]) {
     const map = new SourceMapGenerator();
     map.addMapping({ source: path, generated: { line: generated, column: 6 }, original: { line: original, column: 2 } });
@@ -60,7 +75,7 @@ tests.add('nested generated frames map to their own immutable source records', a
 }, { tags: ['unit', 'errors'] });
 
 tests.add('module syntax errors use the source header and caret instead of loader internals', async function(assert) {
-  const details = await harness().describe({ name: 'SyntaxError', message: 'Unexpected token',
+  const details = await PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness().describe({ name: 'SyntaxError', message: 'Unexpected token',
     stack: 'C:\\modules\\bad.js:3\nvar value = ;\n            ^\n\nSyntaxError: Unexpected token\n at node:internal/modules/cjs/loader:10:2' });
   assert.equal(details.kind, 'syntax');
   assert.equal(details.location.path, 'C:\\modules\\bad.js');
@@ -69,7 +84,7 @@ tests.add('module syntax errors use the source header and caret instead of loade
 }, { tags: ['unit', 'errors'] });
 
 tests.add('frozen errors and primitive throws are reported without changing catch values', async function(assert) {
-  const errors = harness();
+  const errors = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness();
   const frozen = Object.freeze(new Error('frozen'));
   assert.equal(errors.capture(frozen, { path: 'test.jsl', line: 4, column: 1 }), frozen);
   assert.equal((await errors.describe(frozen)).message, 'frozen');
@@ -84,12 +99,25 @@ tests.add('frozen errors and primitive throws are reported without changing catc
 }, { tags: ['unit', 'errors'] });
 
 tests.add('a broken map never hides the exception being reported', async function(assert) {
-  const errors = harness();
+  const errors = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness();
   errors.evaluator.debug_sources.set('jslab://scripts/1.js', { path: 'broken-map.jsl', map: {} });
-  errors.evaluator.getOriginalPosition = async () => { throw Error('Invalid map'); };
+  errors.evaluator.getOriginalPosition = async () => {
+    throw Error('Invalid map');
+  };
   const details = await errors.describe({ name: 'TypeError', message: 'actual failure', stack: 'TypeError: actual failure\n at jslab://scripts/1.js:9:2' });
   assert.equal(details.message, 'actual failure');
   assert.equal(details.location.path, 'broken-map.jsl');
   assert.equal(details.location.line, 9);
 }, { tags: ['unit', 'errors'] });
+tests.add('browser bootstrap bundles stay out of scientific error frames', async function(assert) {
+  const errors = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness();
+  const result = await errors.describe({ name: 'Error', message: 'user failure', stack:
+    'Error: user failure\n at task (http://localhost/workspace/task.jsl:7:2)\n' +
+    ' at startup (http://localhost/js/sandbox-frame.js:40:3)\n' +
+    ' at worker (http://localhost/js/debug-worker.js:60:4)' });
+  assert.equal(result.frames.length, 1);
+  assert.equal(result.location.path, 'http://localhost/workspace/task.jsl');
+  assert.equal(result.location.line, 7);
+}, { tags: ['unit', 'errors'] });
+
 exports.MODULE_TESTS = tests;

@@ -5,44 +5,62 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for control test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER {
+
+  /**
+   * Handles linspace.
+   * @param {*} start Start.
+   * @param {*} end End.
+   * @param {number} count Count.
+   */
+  static linspace(start, end, count) {
+    if(count <= 1) {
+      return [start];
+    }
+    var step = (end - start) / (count - 1);
+    var out = [];
+    for(var i = 0; i < count; i++) {
+      out.push(start + i * step);
+    }
+    return out;
+  }
+
+  /**
+   * Creates control harness.
+   * @param {*} [inter_overrides] Inter overrides.
+   */
+  static createControlHarness(inter_overrides = {}) {
+    var inter = {
+      zeros: function(n) {
+        return Array(Math.max(0, Number(n) || 0)).fill(0);
+      },
+      ones: function(n) {
+        return Array(Math.max(0, Number(n) || 0)).fill(1);
+      },
+      fliplr: function(values) {
+        return values.slice().reverse();
+      },
+      linspace: PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER.linspace
+    };
+    Object.assign(inter, inter_overrides);
+
+    var jsl = { inter: inter };
+    var control = new PRDC_JSLAB_LIB_CONTROL(jsl);
+    return { control, jsl };
+  }
+}
+
+
 const { PRDC_JSLAB_LIB_CONTROL } = require('../control');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function linspace(start, end, count) {
-  if(count <= 1) {
-    return [start];
-  }
-  var step = (end - start) / (count - 1);
-  var out = [];
-  for(var i = 0; i < count; i++) {
-    out.push(start + i * step);
-  }
-  return out;
-}
-
-function createControlHarness(inter_overrides = {}) {
-  var inter = {
-    zeros: function(n) {
-      return Array(Math.max(0, Number(n) || 0)).fill(0);
-    },
-    ones: function(n) {
-      return Array(Math.max(0, Number(n) || 0)).fill(1);
-    },
-    fliplr: function(values) {
-      return values.slice().reverse();
-    },
-    linspace: linspace
-  };
-  Object.assign(inter, inter_overrides);
-
-  var jsl = { inter: inter };
-  var control = new PRDC_JSLAB_LIB_CONTROL(jsl);
-  return { control, jsl };
-}
 
 tests.add('tf and ss constructors return expected system records', function(assert) {
-  var harness = createControlHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER.createControlHarness();
   var tf = harness.control.tf([1, 2], [1, 3, 2], 0.1);
   var ss = harness.control.ss([[0, 1], [-2, -3]], [0, 1], [1, 0], 0, 0.1);
 
@@ -57,7 +75,7 @@ tests.add('tf and ss constructors return expected system records', function(asse
 }, { tags: ['unit', 'control'] });
 
 tests.add('tf2ss builds canonical companion-form state-space model', function(assert) {
-  var harness = createControlHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER.createControlHarness();
   var sys = harness.control.tf2ss([1], [1, 3, 2]);
 
   assert.deepEqual(sys.A, [[0, 1], [-2, -3]]);
@@ -67,7 +85,7 @@ tests.add('tf2ss builds canonical companion-form state-space model', function(as
 }, { tags: ['unit', 'control'] });
 
 tests.add('lsim computes difference-equation response with internal normalization', function(assert) {
-  var harness = createControlHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER.createControlHarness();
   var sys = { num: [1], den: [1, -0.5], Ts: 1 };
   var u = [1, 1, 1, 1];
   var t = [0, 1, 2, 3];
@@ -78,7 +96,7 @@ tests.add('lsim computes difference-equation response with internal normalizatio
 }, { tags: ['unit', 'control'] });
 
 tests.add('step builds default unit input/time vectors and delegates to lsim', function(assert) {
-  var harness = createControlHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER.createControlHarness();
   var captured = null;
   harness.control.lsim = function(sys, u, t, Ts) {
     captured = { sys: sys, u: u, t: t, Ts: Ts };
@@ -98,7 +116,7 @@ tests.add('step builds default unit input/time vectors and delegates to lsim', f
 }, { tags: ['unit', 'control'] });
 
 tests.add('c2d delegates through tf2ss, _c2dZOH, and ss2tf in order', function(assert) {
-  var harness = createControlHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_CONTROL_TEST_HELPER.createControlHarness();
   var calls = [];
   var sysc = { A: [[0]], B: [1], C: [1], D: 0 };
   var sysd = { A: [[1]], B: [1], C: [1], D: 0, Ts: 0.1 };

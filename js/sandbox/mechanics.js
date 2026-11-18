@@ -9,7 +9,7 @@
  * Class for JSLAB mechanics submodule.
  */
 class PRDC_JSLAB_LIB_MECHANICS {
-  
+
   /**
    * Constructs a mechanics submodule object with access to JSLAB's device functions.
    * @constructor
@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_MECHANICS {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Plots beam diagrams.
    * @param {Array} data Array of objects with x, y, title, xlabel, ylabel
@@ -31,7 +31,7 @@ class PRDC_JSLAB_LIB_MECHANICS {
     if(!context) {
       return false;
     }
-    context.setTitle(this.jsl.inter.lang.currentString(532));
+    context.setTitle(this.jsl.inter.lang.currentString(531));
     var plot_config = {
       responsive: true,
       scrollZoom: true,
@@ -43,7 +43,7 @@ class PRDC_JSLAB_LIB_MECHANICS {
         }
       }]
     };
-    
+
     var opts = {
       n: 50,
       digits: 2,
@@ -54,24 +54,24 @@ class PRDC_JSLAB_LIB_MECHANICS {
       ...opts_in
     };
     var extrems = [];
-    
+
     var n = data.length;
     var traces = [];
     for(var i = 0; i < n; i++) {
       var [y_max, I_max] = this.jsl.inter.array.maxi(data[i].y);
       extrems.push(`${data[i].title}: ${data[i].ylabel[0]}_max = ${y_max.toFixed(opts.digits)} ${data[i].ylabel[1]}, ${data[i].xlabel[0]} = ${data[i].x[I_max].toFixed(opts.digits)} ${data[i].xlabel[1]}`);
-      
+
       var trace = {
         x: data[i].x,
         y: data[i].y,
         cliponaxis: false,
         mode: 'lines+markers',
-        line: { 
-          color: "#000", 
-          width: 2 
+        line: {
+          color: "#000",
+          width: 2
         },
-        xaxis: 'x' + (i > 0  ? (i+1) : ''),
-        yaxis: 'y' + (i > 0  ? (i+1) : ''),
+        xaxis: 'x' + (i > 0  ? (i + 1) : ''),
+        yaxis: 'y' + (i > 0  ? (i + 1) : ''),
         showlegend: false
       };
       traces.push(trace);
@@ -83,21 +83,21 @@ class PRDC_JSLAB_LIB_MECHANICS {
         y: yq.flatMap(y => [0, y, null]),
         cliponaxis: false,
         mode: 'lines',
-        line: { 
-          color: "#000", 
-          width: 1 
+        line: {
+          color: "#000",
+          width: 1
         },
-        xaxis: 'x' + (i > 0  ? (i+1) : ''),
-        yaxis: 'y' + (i > 0  ? (i+1) : ''),
+        xaxis: 'x' + (i > 0  ? (i + 1) : ''),
+        yaxis: 'y' + (i > 0  ? (i + 1) : ''),
         showlegend: false
       };
       traces.push(stem_trace);
     }
-    
+
     var plot_layout = {
-      grid: { 
-        rows: n, 
-        columns: 1, 
+      grid: {
+        rows: n,
+        columns: 1,
         pattern: 'independent',
         ygap: 0.25
       },
@@ -115,9 +115,9 @@ class PRDC_JSLAB_LIB_MECHANICS {
         pad: 0
       }
     };
-    
+
     for(var i = 0; i < n; i++) {
-      plot_layout['xaxis' + (i > 0  ? (i+1) : '')] = {
+      plot_layout['xaxis' + (i > 0  ? (i + 1) : '')] = {
         showgrid: true,
         zeroline: true,
         showline: true,
@@ -132,14 +132,14 @@ class PRDC_JSLAB_LIB_MECHANICS {
         layer: "below traces",
         exponentformat: 'power'
       };
-      if(i == (n-1)) {
-        plot_layout['xaxis' + (i > 0  ? (i+1) : '')].title = {
-          text: `${data[i].xlabel[0]} [${data[i].xlabel[1]}]`, 
+      if(i == (n - 1)) {
+        plot_layout['xaxis' + (i > 0  ? (i + 1) : '')].title = {
+          text: `${data[i].xlabel[0]} [${data[i].xlabel[1]}]`,
           standoff: 0
         };
       }
-      
-      plot_layout['yaxis' + (i > 0 ? (i+1) : '')] = {
+
+      plot_layout['yaxis' + (i > 0 ? (i + 1) : '')] = {
         showgrid: true,
         zeroline: true,
         showline: true,

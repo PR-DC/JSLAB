@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title str="673"></title>
+    <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;">
+    <link rel="stylesheet" href="../font/roboto.css">
+    <link rel="stylesheet" href="../font/RobotoMono.css">
+    <link rel="stylesheet" href="../css/simulate.css">
+    <style id="simulate-icon-style"></style>
+  </head>
+  <body>
+    <header id="simulate-menu-container">
+      <img id="app-logo" src="../img/JSLAB.svg" alt="JSLAB" lang-fixed>
+      <ul id="simulate-menu">
+        <li id="simulate-new" title-str="10"><img src="../img/new-script.svg" alt=""><str sid="10"></str></li>
+        <li id="simulate-open" title-str="11"><img src="../img/open.svg" alt=""><str sid="11"></str></li>
+        <li id="simulate-save" title-str="12"><img src="../img/save.svg" alt=""><str sid="12"></str></li>
+        <li id="simulate-library-open" title-str="omjsl-8471"><img src="../img/simulate-blocks.svg" alt=""><str sid="omjsl-8471"></str></li>
+        <li id="simulate-parameters-menu" title-str="omjsl-8421"><img src="../img/simulate-parameters.svg" alt=""><str sid="omjsl-8421"></str></li>
+        <li id="simulate-simulation-settings" title-str="omjsl-8442"><img src="../img/settings-menu.svg" alt=""><str sid="omjsl-8442"></str></li>
+        <li id="simulate-check" title-str="omjsl-8417"><img src="../img/compile-dialog.svg" alt=""><str sid="omjsl-8417"></str></li>
+        <li id="simulate-build" title-str="omjsl-8418"><img src="../img/simulate-compile.svg" alt=""><str sid="omjsl-8418"></str></li>
+        <li id="simulate-simulate" title-str="omjsl-8419"><img src="../img/run.svg" alt=""><str sid="omjsl-8419"></str></li>
+        <li id="simulate-animation" class="disabled" title-str="omjsl-8445" aria-disabled="true"><img src="../img/simulate-3d.svg" alt=""><str sid="omjsl-8445"></str></li>
+      </ul>
+      <ul id="window-controls">
+        <li id="win-minimize" title-str="603" aria-label-str="603"><img src="../img/win-minimize.svg" alt=""></li>
+        <li id="win-restore" title-str="604" aria-label-str="604"><img src="../img/win-restore.svg" alt=""></li>
+        <li id="win-close" title-str="605" aria-label-str="605"><img src="../img/win-close.svg" alt=""></li>
+      </ul>
+      <div id="app-title"><str sid="673"></str></div>
+    </header>
+    <main id="simulate-workspace">
+      <aside id="simulate-browser">
+        <div id="simulate-tree"></div>
+      </aside>
+      <section id="simulate-center">
+        <div id="simulate-diagram">
+          <div id="simulate-diagram-tools">
+            <button id="simulate-diagram-zoom-in" type="button" title-str="156"><img src="../img/simulate-zoom-in.svg" alt=""></button>
+            <button id="simulate-diagram-zoom-out" type="button" title-str="157"><img src="../img/simulate-zoom-out.svg" alt=""></button>
+            <button id="simulate-diagram-fit" type="button" title-str="omjsl-8434"><img src="../img/simulate-fit.svg" alt=""></button>
+          </div>
+          <div id="simulate-diagram-empty" hidden><str sid="omjsl-8444"></str></div>
+          <svg id="simulate-diagram-svg" tabindex="0">
+            <g id="simulate-diagram-layer"><g id="simulate-wire-layer"></g><g id="simulate-component-layer"></g></g>
+          </svg>
+        </div>
+      </section>
+    </main>
+    <section id="simulate-console" class="collapsed">
+      <div id="simulate-output-header"><button id="simulate-output-toggle" type="button"><span></span><str sid="omjsl-8426"></str></button><span id="simulate-compiler-status"></span><button id="simulate-output-clear" title-str="38"><img src="../img/clear.svg" alt=""></button></div>
+      <progress id="simulate-compiler-progress" max="100" value="0" hidden></progress>
+      <pre id="simulate-output"></pre>
+    </section>
+    <div id="simulate-simulation-dialog" class="simulate-dialog" hidden tabindex="0">
+      <div class="simulate-dialog-panel simulate-simulation-panel">
+        <div class="simulate-dialog-header"><span><str sid="omjsl-8442"></str></span><img id="simulate-simulation-close" src="../img/close.svg" title-str="24" alt=""></div>
+        <div class="simulate-dialog-content">
+          <section class="simulate-settings-section">
+            <h3><str sid="omjsl-8427"></str></h3>
+            <div class="simulate-settings-grid">
+              <label><str sid="omjsl-8428"></str><input id="simulate-start-time" type="number" value="0" step="any"></label>
+              <label><str sid="omjsl-8429"></str><input id="simulate-stop-time" type="number" value="1" step="any"></label>
+              <label><str sid="omjsl-8430"></str><input id="simulate-intervals" type="number" value="500" min="1" step="1"></label>
+              <label><str sid="omjsl-8431"></str><input id="simulate-tolerance" type="number" value="0.000001" step="any"></label>
+              <label class="simulate-settings-wide"><str sid="omjsl-8432"></str><select id="simulate-solver"><option lang-fixed>dassl</option><option lang-fixed>ida</option><option lang-fixed>cvode</option><option lang-fixed>euler</option><option lang-fixed>rungekutta</option></select></label>
+            </div>
+          </section>
+        </div>
+        <div class="simulate-dialog-actions"><button id="simulate-simulation-done"><str sid="omjsl-8443"></str></button></div>
+      </div>
+    </div>
+    <div id="simulate-library-dialog" class="simulate-dialog" hidden tabindex="0">
+      <div class="simulate-dialog-panel simulate-library-panel">
+        <div class="simulate-dialog-header"><span><str sid="omjsl-8471"></str></span><img id="simulate-library-close" src="../img/close.svg" title-str="24" alt=""></div>
+        <div class="simulate-library-tools">
+          <input id="simulate-library-search" type="search" str="omjsl-8472">
+          <div class="simulate-dialog-actions">
+            <button id="simulate-library-import-file"><str sid="omjsl-8477"></str></button>
+            <button id="simulate-library-import-folder"><str sid="omjsl-8478"></str></button>
+          </div>
+        </div>
+        <input id="simulate-library-file" type="file" accept=".mo" hidden>
+        <input id="simulate-library-folder" type="file" webkitdirectory multiple hidden>
+        <div id="simulate-library-entry-choice" hidden>
+          <label for="simulate-library-entry"><str sid="omjsl-8482"></str></label>
+          <select id="simulate-library-entry"></select>
+          <div class="simulate-dialog-actions">
+            <button id="simulate-library-entry-cancel" type="button"><str sid="52"></str></button>
+            <button id="simulate-library-entry-import" type="button"><str sid="omjsl-8483"></str></button>
+          </div>
+        </div>
+        <div class="simulate-library-browser">
+          <nav id="simulate-library-categories" role="tree" aria-label-str="681"></nav>
+          <section class="simulate-library-results">
+            <nav id="simulate-library-category-name" aria-label-str="681"></nav>
+            <div id="simulate-library-items"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div id="simulate-parameters-dialog" class="simulate-dialog" hidden tabindex="0">
+      <div class="simulate-dialog-panel">
+        <div class="simulate-dialog-header"><span><str sid="omjsl-8446"></str></span><img id="simulate-parameters-close" src="../img/close.svg" title-str="24" alt=""></div>
+        <div id="simulate-parameters"></div>
+        <div class="simulate-dialog-actions"><button id="simulate-parameter-add" class="simulate-dialog-secondary"><str sid="omjsl-8447"></str></button><span></span><button id="simulate-parameters-cancel"><str sid="52"></str></button><button id="simulate-parameters-apply"><str sid="omjsl-8441"></str></button></div>
+      </div>
+    </div>
+    <div id="simulate-component-dialog" class="simulate-dialog" hidden tabindex="0">
+      <div class="simulate-dialog-panel simulate-component-panel">
+        <div class="simulate-dialog-header"><span id="simulate-component-title"><str sid="omjsl-8455"></str></span><img id="simulate-component-close" src="../img/close.svg" title-str="24" alt=""></div>
+        <div id="simulate-component-summary"></div>
+        <div class="simulate-property-toolbar">
+          <div class="simulate-property-tabs" role="tablist">
+            <button id="simulate-properties-basic" class="active" type="button" role="tab"><str sid="omjsl-8460"></str></button>
+            <button id="simulate-properties-advanced" type="button" role="tab"><str sid="omjsl-8461"></str></button>
+          </div>
+          <input id="simulate-property-search" type="search" str="omjsl-8462">
+        </div>
+        <div id="simulate-component-properties"><div class="simulate-property-loading"><str sid="omjsl-8463"></str></div></div>
+        <div class="simulate-dialog-actions"><button id="simulate-component-cancel"><str sid="52"></str></button><button id="simulate-component-apply"><str sid="omjsl-8441"></str></button></div>
+      </div>
+    </div>
+    <script>if(typeof module === 'object') { window.module = module; module = undefined; }</script>
+    <script src="../js/backend-electron/init-simulate.js"></script>
+  </body>
+</html>

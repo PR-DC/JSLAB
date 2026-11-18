@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('mathjs-doc source defines PRDC_JSLAB_MATHJS_DOC class', function(assert) {
@@ -28,4 +28,3 @@ tests.add('mathjs-doc source defines PRDC_JSLAB_MATHJS_DOC class', function(asse
 }, { tags: ['unit', 'mathjs-doc'] });
 
 exports.MODULE_TESTS = tests;
-

@@ -9,7 +9,7 @@
  * Class for JSLAB compile submodule.
  */
 class PRDC_JSLAB_LIB_COMPILE {
-  
+
   /**
    * Initializes a new instance of the PRDC_JSLAB_LIB_COMPILE class.
    * @param {Object} jsl The JSLAB application instance this submodule is part of.
@@ -27,36 +27,22 @@ class PRDC_JSLAB_LIB_COMPILE {
   compileNapi(path, show_output = false) {
     var result = false;
     var obj = this;
-    if(typeof path == 'string') {
-      path = this.jsl.pathResolve(path);
+    path = this.jsl.inter.file_system._resolveModuleDirectory(path, '@compileNapi');
+    if(path === false) {
+      return false;
     }
-    if(!path) {
-      var options = {
-        title: this.jsl.inter.lang.currentString(141),
-        buttonLabel: this.jsl.inter.lang.currentString(142),
-        properties: ['openDirectory'],
-      };
-      path = this.jsl.inter.env.showOpenDialogSync(options);
-      if(path === undefined) {
-        this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(119)+'.');
-        return false;
-      } else {
-        path = path[0];
-      }
+
+    if(this.jsl.inter.env.rmSync(path + 'build/Release/', false) === false) {
+      this.jsl.inter.env.error('@compileNapi: ' + this.jsl.inter.lang.string(171));
     }
-    path = this.jsl.inter.env.addPathSep(path);
- 
-    if(this.jsl.inter.env.rmSync(path+'build/Release/', false) === false) {
-      this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(171));
-    }
-    
+
     var binding_file_path = path + 'binding.gyp';
     if(this.jsl.inter.env.checkFile(binding_file_path)) {
       var targets = [];
       try {
         var binding_file_data = JSON.parse(this.jsl.inter.env.readFileSync(binding_file_path).toString());
       } catch(err) {
-        this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(120)+'.');
+        this.jsl.inter.env.error('@compileNapi: ' + this.jsl.inter.lang.string(120) + '.');
         return false;
       }
       binding_file_data.targets.forEach(function(target) {
@@ -66,17 +52,17 @@ class PRDC_JSLAB_LIB_COMPILE {
         var exe = this.jsl.inter.env.exe_path;
         var node_gyp_path = this.jsl.app_path + '/node_modules/node-gyp/bin/node-gyp.js';
         var npm_path = this.jsl.inter.env.pathJoin(this.jsl.app_path, 'node_modules', 'npm', 'bin', 'npm-cli.js');
-        var msg = this.jsl.inter.basic.system('set ELECTRON_RUN_AS_NODE=1 & "' + exe + '" "' + npm_path + '" cache clean --force & "' + exe + '" "' + npm_path + '" install --build-from-source=false & "' + exe + '" "' + node_gyp_path + '" rebuild --target='+process.version+' 2>&1', {cwd: path, shell: false});
-        
+        var msg = this.jsl.inter.basic.system('set ELECTRON_RUN_AS_NODE=1 & "' + exe + '" "' + npm_path + '" cache clean --force & "' + exe + '" "' + npm_path + '" install --build-from-source=false & "' + exe + '" "' + node_gyp_path + '" rebuild --target=' + process.version + ' 2>&1', {cwd: path, shell: false});
+
         if(msg.endsWith('gyp info ok \n')) {
           if(show_output) {
             this.jsl.inter.env.disp(msg.replaceAll('\n', '<br>'));
           }
           result = true;
         } else if(!msg.endsWith('gyp ERR! not ok \n')) {
-          this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(121)+'. '+msg.replaceAll('\n', '<br>'));
+          this.jsl.inter.env.error('@compileNapi: ' + this.jsl.inter.lang.string(121) + '. ' + msg.replaceAll('\n', '<br>'));
         } else {
-          this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(170)+'. '+msg.replaceAll('\n', '<br>'));
+          this.jsl.inter.env.error('@compileNapi: ' + this.jsl.inter.lang.string(170) + '. ' + msg.replaceAll('\n', '<br>'));
         }
 
         if(result) {
@@ -85,11 +71,11 @@ class PRDC_JSLAB_LIB_COMPILE {
           return [result, undefined];
         }
       } else {
-        this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(122)+'. '+msg.replaceAll('\n', '<br>'));
+        this.jsl.inter.env.error('@compileNapi: ' + this.jsl.inter.lang.string(122) + '. ' + msg.replaceAll('\n', '<br>'));
         return [result, undefined];
       }
     } else {
-      this.jsl.inter.env.error('@compileNapi: '+this.jsl.inter.lang.string(123)+'. '+msg.replaceAll('\n', '<br>'));
+      this.jsl.inter.env.error('@compileNapi: ' + this.jsl.inter.lang.string(123) + '. ' + msg.replaceAll('\n', '<br>'));
       return [result, undefined];
     }
   }
@@ -155,15 +141,7 @@ class PRDC_JSLAB_LIB_COMPILE {
     if(rust_candidate) {
       var pkg_dir = this.jsl.inter.env.pathJoin(rust_dir, 'pkg');
       var spawn_result = this.jsl.inter.env.spawnSync('wasm-pack', ['build', '--release', '--target', 'web', '--out-dir', 'pkg'], {cwd: rust_dir});
-      var stdout = spawn_result && spawn_result.stdout ? spawn_result.stdout.toString() : '';
-      var stderr = spawn_result && spawn_result.stderr ? spawn_result.stderr.toString() : '';
-      var output = [stdout, stderr].filter(function(part) { return part && part.length; }).join('\n');
-      if(show_output && output.length) {
-        this.jsl.inter.env.disp(output.replaceAll('\n', '<br>'));
-      }
-      if(!spawn_result || spawn_result.status !== 0) {
-        var err_msg = spawn_result && spawn_result.error ? spawn_result.error.message : (stderr || stdout);
-        this.jsl.inter.env.error('@compileWasm (Rust): ' + this.jsl.inter.lang.string(261) + ' ' + err_msg.replaceAll('\n', '<br>'));
+      if(!this._checkCompilerResult(spawn_result, show_output, '@compileWasm (Rust)', this.jsl.inter.lang.string(261) + ' ')) {
         return [result, undefined];
       }
       if(!this.jsl.inter.env.checkDirectory(pkg_dir)) {
@@ -231,18 +209,35 @@ class PRDC_JSLAB_LIB_COMPILE {
     var wasm_path = this.jsl.inter.env.pathJoin(workdir, output_base + '.wasm');
     var args = [].concat(sources, ['-O3', '-s', 'WASM=1', '-o', wasm_path]);
     var spawn_result = this.jsl.inter.env.spawnSync('emcc', args, {cwd: workdir});
+    if(!this._checkCompilerResult(spawn_result, show_output, '@compileWasm')) {
+      return [result, undefined];
+    }
+    return [true, wasm_path];
+  }
+
+  /**
+   * Reports compiler output and rejects failed subprocess results.
+   * @param {Object} spawn_result Compiler process result.
+   * @param {boolean} show_output Whether to display compiler output.
+   * @param {string} caller Compiler name for errors.
+   * @param {string} [prefix=''] Additional error context.
+   * @returns {boolean} Whether compilation succeeded.
+   */
+  _checkCompilerResult(spawn_result, show_output, caller, prefix = '') {
     var stdout = spawn_result && spawn_result.stdout ? spawn_result.stdout.toString() : '';
     var stderr = spawn_result && spawn_result.stderr ? spawn_result.stderr.toString() : '';
-    var output = [stdout, stderr].filter(function(part) { return part && part.length; }).join('\n');
+    var output = [stdout, stderr].filter(function(part) {
+      return part && part.length;
+    }).join('\n');
     if(show_output && output.length) {
       this.jsl.inter.env.disp(output.replaceAll('\n', '<br>'));
     }
     if(!spawn_result || spawn_result.status !== 0) {
       var err_msg = spawn_result && spawn_result.error ? spawn_result.error.message : (stderr || stdout);
-      this.jsl.inter.env.error('@compileWasm: ' + err_msg.replaceAll('\n', '<br>'));
-      return [result, undefined];
+      this.jsl.inter.env.error(caller + ': ' + prefix + err_msg.replaceAll('\n', '<br>'));
+      return false;
     }
-    return [true, wasm_path];
+    return true;
   }
 
 }

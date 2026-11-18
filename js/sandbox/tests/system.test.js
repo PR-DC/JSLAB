@@ -5,56 +5,67 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_SYSTEM } = require('../system');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for system test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER {
 
-function createSystemMock() {
-  var calls = [];
-  var mock = {
-    inter: {
-      env: {
-        sendPty: function(action, data) {
-          calls.push({ action: action, data: data });
-          if(action === 'create') {
-            return 7;
+  /**
+   * Creates system mock.
+   */
+  static createSystemMock() {
+    var calls = [];
+    var mock = {
+      inter: {
+        env: {
+          sendPty: function(action, data) {
+            calls.push({ action: action, data: data });
+            if(action === 'create') {
+              return 7;
+            }
+            return true;
+          },
+          execSync: function() {
+            return Buffer.from('ok');
+          },
+          exec: function() {
+            return { pid: 11 };
+          },
+          spawn: function() {
+            return { pid: 22 };
+          },
+          error: function() {}
+        },
+        format: {
+          isFunction: function(value) {
+            return typeof value === 'function';
           }
-          return true;
-        },
-        execSync: function() {
-          return Buffer.from('ok');
-        },
-        exec: function() {
-          return { pid: 11 };
-        },
-        spawn: function() {
-          return { pid: 22 };
-        },
-        error: function() {}
-      },
-      format: {
-        isFunction: function(value) {
-          return typeof value === 'function';
         }
       }
-    }
-  };
-  return {
-    calls: calls,
-    mock: mock,
-    system: new PRDC_JSLAB_LIB_SYSTEM(mock)
-  };
+    };
+    return {
+      calls: calls,
+      mock: mock,
+      system: new PRDC_JSLAB_LIB_SYSTEM(mock)
+    };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_SYSTEM } = require('../system');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('system/exec/spawn delegate to environment API', function(assert) {
-  var setup = createSystemMock();
+  var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
   assert.equal(setup.system.system('echo ok'), 'ok');
   assert.equal(setup.system.exec('dummy').pid, 11);
   assert.equal(setup.system.spawn('dummy').pid, 22);
 }, { tags: ['unit', 'system'] });
 
 tests.add('spawnTerminal registers terminal and sends create action', function(assert) {
-  var setup = createSystemMock();
+  var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
   var terminal = setup.system.spawnTerminal(['cmd.exe', ['/c', 'echo hi']], function() {}, function() {});
   assert.equal(terminal.id, 7);
   assert.ok(setup.system.open_terminals.hasOwnProperty(7));
@@ -62,7 +73,7 @@ tests.add('spawnTerminal registers terminal and sends create action', function(a
 }, { tags: ['unit', 'system'] });
 
 tests.add('terminal.write sends base64 payload through pty bridge', function(assert) {
-  var setup = createSystemMock();
+  var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
   var terminal = setup.system.spawnTerminal(['cmd.exe'], function() {}, function() {});
   terminal.write('abc');
   var write_call = setup.calls.find(function(call) {
@@ -74,7 +85,7 @@ tests.add('terminal.write sends base64 payload through pty bridge', function(ass
 }, { tags: ['unit', 'system'] });
 
 tests.add('pty data events are forwarded and decoded', function(assert) {
-  var setup = createSystemMock();
+  var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
   var received = '';
   setup.system.spawnTerminal(['cmd.exe'], function(chunk) {
     received += chunk;
@@ -90,7 +101,7 @@ tests.add('pty data events are forwarded and decoded', function(assert) {
 }, { tags: ['unit', 'system'] });
 
 tests.add('pty exit event removes terminal and calls onExit', function(assert) {
-  var setup = createSystemMock();
+  var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
   var exited = 0;
   setup.system.spawnTerminal(['cmd.exe'], function() {}, function() {
     exited += 1;
@@ -106,7 +117,7 @@ tests.add('pty exit event removes terminal and calls onExit', function(assert) {
 }, { tags: ['unit', 'system'] });
 
 tests.add('clear kills all terminals through pty bridge', function(assert) {
-  var setup = createSystemMock();
+  var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
   setup.system.spawnTerminal(['cmd.exe'], function() {}, function() {});
   setup.system._clear();
   assert.deepEqual(setup.system.open_terminals, {});

@@ -1,5 +1,5 @@
 /**
- * @file JSLAB library
+ * @file JSLAB scientific runtime with an injected host environment
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
@@ -10,26 +10,18 @@ const { PRDC_JSLAB_EVAL } = require('./jslab-eval');
 const { PRDC_JSLAB_OVERRIDE } = require('./jslab-override');
 const { CORE_INTERNAL_MODULE_NAMES } = require('./jslab-internal-protected-modules');
 
-function getEnvironmentModule() {
-  if(typeof globalThis !== 'undefined' && globalThis.__JSLAB_RUNTIME__ == 'web') {
-    return require('./jslab-env-web');
-  }
-  return eval('require')('./jslab-env-electron');
-}
-
-const { PRDC_JSLAB_ENV } = getEnvironmentModule();
-
 /**
  * Class for JSLAB library.
  */
 class PRDC_JSLAB_LIB {
-  
+
   /**
    * Constructs the JSLAB library environment, initializing submodules and setting up the execution context.
    * @param {string} app_path_in - Absolute application root path.
-   * @param {boolean} [packed_in=false] - Whether the app is running in packed mode.
+   * @param {boolean} [packed_in=false] Whether the app is running in packed mode.
+   * @param {Function} Environment Host-supplied environment constructor.
    */
-  constructor(app_path_in, packed_in = false) {
+  constructor(app_path_in, packed_in = false, Environment) {
     var obj = this;
     this.ready = false;
     this.config = global.config;
@@ -37,7 +29,7 @@ class PRDC_JSLAB_LIB {
     this.language = this.lang;
     this.app_path = app_path_in;
     this.packed = packed_in;
-    
+
     // Library built in properties
     this.previous_workspace = {};
     this.previous_properties = [];
@@ -47,10 +39,10 @@ class PRDC_JSLAB_LIB {
     this.last_script_lines;
     this.last_script_silent;
     this.pending_top_level_script_finish = false;
-    
+
     this.current_script;
     this.class_registry = {};
-    
+
     this.required_modules = [];
     this.started_timeouts = [];
     this.started_intervals = [];
@@ -61,9 +53,9 @@ class PRDC_JSLAB_LIB {
     this.started_promises = {};
     this.promises_number = 0;
     this.last_promise_id = 0;
-    
+
     this.execution = new PRDC_JSLAB_EXECUTION(this);
-    this.env = new PRDC_JSLAB_ENV(this);
+    this.env = new Environment(this);
     this.context = this.env.context;
     // Publish the runtime once, before submodules and workspace snapshots are created.
     this.context.jsl = this;
@@ -75,29 +67,29 @@ class PRDC_JSLAB_LIB {
         configurable: false,
         enumerable: false
       });
-    } catch {
+    } catch{
       this.context[this.internal_jsl_identifier] = this;
     }
     this.context._ = Symbol('_');
     this.eval = new PRDC_JSLAB_EVAL(this);
     this.inter = this._createBootstrapInter();
-    
+
     this.debug = this.env.debug;
     this.includes_path = this.env.getDefaultPath('includes');
-    
+
     if(this.config.PLOTTER == 'plotly') {
       var { PRDC_JSLAB_PLOTTER } = require('./jslab-plotter-plotly');
     } else if(this.config.PLOTTER == 'echarts') {
       var { PRDC_JSLAB_PLOTTER } = require('./jslab-plotter-echarts');
     }
     this.plotter = new PRDC_JSLAB_PLOTTER(this);
-    
+
     this.override = new PRDC_JSLAB_OVERRIDE(this);
     // The formatter is registered by the override loader, so depth metadata
     // cannot be attached before submodules have finished bootstrapping.
     this.setDepthSafeStringify(this.context, 1);
     this._createInternalReferences();
-    
+
     this.ready = true;
   }
 
@@ -177,7 +169,7 @@ class PRDC_JSLAB_LIB {
       let descriptor;
       try {
         descriptor = Object.getOwnPropertyDescriptor(this.context, name);
-      } catch {
+      } catch{
         continue;
       }
       if(!descriptor) {
@@ -218,7 +210,7 @@ class PRDC_JSLAB_LIB {
         } else if(module_ref !== undefined) {
           inter[module_name] = module_ref;
         }
-      } catch {
+      } catch{
         // Ignore inaccessible references.
       }
     }
@@ -231,7 +223,7 @@ class PRDC_JSLAB_LIB {
         configurable: false,
         enumerable: false
       });
-    } catch {
+    } catch{
       this.inter = inter;
     }
 
@@ -305,7 +297,7 @@ class PRDC_JSLAB_LIB {
       let own_descriptors;
       try {
         own_descriptors = Object.getOwnPropertyDescriptors(module_target);
-      } catch {
+      } catch{
         proxy_cache.set(module_target, module_target);
         return module_target;
       }
@@ -334,7 +326,7 @@ class PRDC_JSLAB_LIB {
           let descriptor;
           try {
             descriptor = Object.getOwnPropertyDescriptor(source, key);
-          } catch {
+          } catch{
             continue;
           }
           if(descriptor && typeof descriptor.value === 'function') {
@@ -358,7 +350,7 @@ class PRDC_JSLAB_LIB {
           let own_descriptor;
           try {
             own_descriptor = Reflect.getOwnPropertyDescriptor(target_obj, prop);
-          } catch {
+          } catch{
             own_descriptor = undefined;
           }
           if(own_descriptor && own_descriptor.configurable === false) {
@@ -381,7 +373,7 @@ class PRDC_JSLAB_LIB {
           let value;
           try {
             value = Reflect.get(target_obj, prop, target_obj);
-          } catch {
+          } catch{
             return undefined;
           }
           if(typeof value === 'function') {
@@ -397,7 +389,7 @@ class PRDC_JSLAB_LIB {
         set(target_obj, prop, value) {
           try {
             return Reflect.set(target_obj, prop, value, target_obj);
-          } catch {
+          } catch{
             return false;
           }
         },
@@ -413,14 +405,14 @@ class PRDC_JSLAB_LIB {
         defineProperty(target_obj, prop, descriptor) {
           try {
             return Reflect.defineProperty(target_obj, prop, descriptor);
-          } catch {
+          } catch{
             return false;
           }
         },
         deleteProperty(target_obj, prop) {
           try {
             return Reflect.deleteProperty(target_obj, prop);
-          } catch {
+          } catch{
             return false;
           }
         },
@@ -448,7 +440,7 @@ class PRDC_JSLAB_LIB {
       let descriptor;
       try {
         descriptor = Object.getOwnPropertyDescriptor(this, name);
-      } catch {
+      } catch{
         continue;
       }
       if(!descriptor || descriptor.get || descriptor.set ||
@@ -462,12 +454,12 @@ class PRDC_JSLAB_LIB {
           configurable: false,
           enumerable: descriptor.enumerable
         });
-      } catch {
+      } catch{
         // Ignore slots that cannot be redefined in this environment.
       }
     }
   }
-  
+
   /**
    * Invoked at the beginning of a code evaluation to set up necessary flags and state.
    */
@@ -482,7 +474,7 @@ class PRDC_JSLAB_LIB {
     this.env.setStatus('busy', this.lang.string(88));
     return token;
   }
-  
+
   /**
    * Invoked after code evaluation to finalize the state and update the environment accordingly.
    */
@@ -502,17 +494,17 @@ class PRDC_JSLAB_LIB {
     if(!this.no_stats) {
       this.env.setWorkspace();
       this.env.setStats({
-        'required_modules': this.required_modules.length, 
-        'promises': this.promises_number, 
-        'timeouts': this.started_timeouts.length, 
-        'immediates': this.started_immediates.length, 
-        'intervals': this.started_intervals.length, 
-        'animation_frames': this.started_animation_frames.length, 
+        'required_modules': this.required_modules.length,
+        'promises': this.promises_number,
+        'timeouts': this.started_timeouts.length,
+        'immediates': this.started_immediates.length,
+        'intervals': this.started_intervals.length,
+        'animation_frames': this.started_animation_frames.length,
         'idle_callbacks': this.started_idle_callbacks.length
       });
     }
   }
-  
+
   /**
    * Clears the current workspace, stopping any ongoing operations and removing any dynamic properties.
    */
@@ -521,7 +513,7 @@ class PRDC_JSLAB_LIB {
     this.context.sym.clear();
     this.context.parallel.terminate();
     this.system._clear();
-    
+
     this.clearEventListeners();
     this.clearImmediates();
     this.clearAnimationFrames();
@@ -546,7 +538,7 @@ class PRDC_JSLAB_LIB {
     this.no_ans = true;
     this.ignore_output = true;
   }
-  
+
   /**
    * Sets the current path in the environment, adjusting how file paths are resolved.
    * @param {String} new_path The new path to set as the current working directory.
@@ -554,7 +546,7 @@ class PRDC_JSLAB_LIB {
   setPath(new_path) {
     this.current_path = this.env.addPathSep(new_path);
   }
-  
+
   /**
    * Retrieves user globals, including values that replace initial functions.
    * Compares descriptors without invoking getters.
@@ -595,7 +587,9 @@ class PRDC_JSLAB_LIB {
       var prop_name = current_prop_list[i];
       try {
         const descriptor = Object.getOwnPropertyDescriptor(this.context, prop_name);
-        if(!descriptor) continue;
+        if(!descriptor) {
+          continue;
+        }
         if(descriptor.get || descriptor.set) {
           workspace.push([prop_name, 'accessor', '/']);
           continue;
@@ -612,54 +606,15 @@ class PRDC_JSLAB_LIB {
 
     return workspace;
   }
-  
+
   /**
    * Generates the initialization script for the worker environment.
    * @returns {string} - The worker initialization script as a string.
    */
   getWorkerInit() {
-    if(this.env.platform == 'web') {
-      return `
-        global.is_worker = true;
-        global.debug = ${this.env.debug};
-        global.version = '${this.env.version}';
-        global.platform = 'web';
-
-        const internal_app_path = ${JSON.stringify(this.app_path)};
-        const internal_packed = ${JSON.stringify(this.packed)};
-      `;
-    }
-    return `
-      global.is_worker = true;
-      global.debug = ${this.env.debug};
-      global.version = '${this.env.version}';
-      global.platform = '${this.env.platform}';
-      
-      const internal_app_path = ${JSON.stringify(this.app_path)};
-      const internal_packed = ${JSON.stringify(this.packed)};
-      
-      const helper = require(internal_app_path + "/js/shared/helper.js");
-      require(internal_app_path + "/js/shared/init-config.js");
-
-      importScripts(internal_app_path + '/lib/luxon-3.4.4/luxon-3.4.4.min.js');
-      importScripts(internal_app_path + '/lib/math-11.8.2/math-11.8.2.min.js');
-      importScripts(internal_app_path + '/lib/sprintf-1.1.3/sprintf-1.1.3.min.js');
-      importScripts(internal_app_path + '/lib/sympy-0.26.2/pyodide.js');
-
-      const { PRDC_JSLAB_LIB } = require(internal_app_path + '/js/sandbox/jslab');
-      const { initializeWasm } = require(internal_app_path + '/js/sandbox/jslab-wasm-loader');
-      await initializeWasm(
-        require(internal_app_path + '/lib/native-wasm/native_module.js'),
-        require(internal_app_path + '/lib/native-wasm/alpha_shape_3d.js'));
-
-      // Global variables
-      var jsl = new PRDC_JSLAB_LIB(internal_app_path, internal_packed);
-      jsl.current_path = ${JSON.stringify(this.current_path)};
-      jsl.includes_path = ${JSON.stringify(this.includes_path)};
-      jsl.saved_paths = JSON.parse('${JSON.stringify(this.saved_paths)}');
-    `;
+    return this.env._getWorkerInit();
   }
-  
+
   /**
    * Resolves the absolute path for a file, searching through predefined directories and optionally using module context.
    * @param {string} file_path - The file path to resolve.
@@ -685,7 +640,7 @@ class PRDC_JSLAB_LIB {
             }
           }
         }
-        
+
         var file_paths = [];
         var file_path_temp;
         if(typeof this.current_path == 'string' && this.current_path.length) {
@@ -713,14 +668,14 @@ class PRDC_JSLAB_LIB {
         }
         if(file_paths.length > 2) {
           var N = file_paths.length;
-          var str = '@pathResolve: '+this.lang.string(106)+' ' + file_paths[0] + ' '+this.lang.string(107)+': [\n';
-          for(var i = 1; i < N-1; i++) {
-            str += '  '+ file_paths[i] + ',\n';
+          var str = '@pathResolve: ' + this.lang.string(106) + ' ' + file_paths[0] + ' ' + this.lang.string(107) + ': [\n';
+          for(var i = 1; i < N - 1; i++) {
+            str += '  ' + file_paths[i] + ',\n';
           }
-          str += '  ' + file_paths[N-1] + '\n]'; 
-          this.env.disp(str); 
+          str += '  ' + file_paths[N - 1] + '\n]';
+          this.env.disp(str);
         } else if(file_paths.length > 1) {
-          this.env.disp('@pathResolve: '+this.lang.string(106)+' ' + file_paths[0] + ' '+this.lang.string(108)+': [\n  ' + file_paths[1] + '\n]');
+          this.env.disp('@pathResolve: ' + this.lang.string(106) + ' ' + file_paths[0] + ' ' + this.lang.string(108) + ': [\n  ' + file_paths[1] + '\n]');
         } else if(file_paths.length == 0) {
           try {
             if(this_module) {
@@ -730,19 +685,19 @@ class PRDC_JSLAB_LIB {
             }
           } catch(err) {
             this._console.log(err);
-            this.env.error('@pathResolve: '+this.lang.string(109)+' ' + file_path + ' '+this.lang.string(110)+'.');
+            this.env.error('@pathResolve: ' + this.lang.string(109) + ' ' + file_path + ' ' + this.lang.string(110) + '.');
             return false;
           }
         }
         file_path = file_paths[0];
       }
     } else {
-      this.env.error('@pathResolve: '+this.lang.string(111)+'.');
+      this.env.error('@pathResolve: ' + this.lang.string(111) + '.');
       return false;
     }
     return file_path;
   }
-  
+
   /**
    * Loads a WebAssembly module via the configured environment.
    * @param {string} module_path - Path to the `.wasm` module.
@@ -752,14 +707,14 @@ class PRDC_JSLAB_LIB {
   requireWasm(module_path, import_object) {
     return this.env.requireWasm(module_path, import_object);
   }
-  
+
   /**
    * Disables workspace stats tracking
    */
   disableWorkspaceStats() {
     this.no_stats = true;
   }
-  
+
   /**
    * Enables workspace stats tracking
    */
@@ -767,7 +722,7 @@ class PRDC_JSLAB_LIB {
     this.no_stats = false;
     this.onStatsChange();
   }
-  
+
   /**
    * Sets the paths saved in the environment for easier access to files and modules.
    * @param {Array} data An array of paths to be saved for future use.
@@ -775,7 +730,7 @@ class PRDC_JSLAB_LIB {
   setSavedPaths(data) {
     this.saved_paths = data;
   }
-  
+
   /**
    * Registers a class definition and its source location for later restoration.
    * @param {string} class_name - The class name.
@@ -789,17 +744,17 @@ class PRDC_JSLAB_LIB {
     if(typeof class_ref !== 'function') {
       return false;
     }
-    
+
     // Keep class reachable from sandbox global scope.
     try {
       this.context[class_name] = class_ref;
-    } catch {}
-    
+    } catch{}
+
     var resolved_path = class_path;
     if(typeof resolved_path === 'string' && this.env.pathIsAbsolute(resolved_path)) {
       resolved_path = this.env.pathNormalize(resolved_path);
     }
-    
+
     try {
       Object.defineProperty(class_ref, '__jslab_class_name', {
         value: class_name,
@@ -809,11 +764,11 @@ class PRDC_JSLAB_LIB {
         value: resolved_path,
         configurable: true
       });
-    } catch {
+    } catch{
       class_ref.__jslab_class_name = class_name;
       class_ref.__jslab_class_path = resolved_path;
     }
-    
+
     this.class_registry[class_name] = {
       name: class_name,
       path: resolved_path,
@@ -821,7 +776,7 @@ class PRDC_JSLAB_LIB {
     };
     return true;
   }
-  
+
   /**
    * Gets the latest known source path for a class.
    * @param {string} class_name - The class name.
@@ -831,31 +786,31 @@ class PRDC_JSLAB_LIB {
     if(typeof class_name !== 'string' || !class_name.length) {
       return undefined;
     }
-    
+
     if(this.class_registry.hasOwnProperty(class_name)) {
       return this.class_registry[class_name].path;
     }
-    
+
     var ctor = this.context[class_name];
     if(typeof ctor === 'function' && typeof ctor.__jslab_class_path === 'string') {
       return ctor.__jslab_class_path;
     }
     return undefined;
   }
-  
+
   /**
    * Placeholder function for features that have not been implemented.
    */
   notImplemented() {
     this.env.error(this.lang.string(115));
   }
-  
+
   /**
    * Clears all modules that have been required during the session.
    */
   unrequireAll() {
-    if(this.inter.execution.web_modules) {
-      this.inter.execution.web_modules.clear();
+    if(this.inter.execution.module_cache) {
+      this.inter.execution.module_cache.clear();
       this.required_modules = [];
       return;
     }
@@ -864,16 +819,18 @@ class PRDC_JSLAB_LIB {
       try {
         var name = require.resolve(module);
         if(name) {
-          delete require.cache[name];    
+          delete require.cache[name];
         }
       } catch(err) {
         obj._console.log(err);
       }
     });
     this.required_modules = [];
-    Object.keys(require.cache).forEach(function(key) { delete require.cache[key]; });
+    Object.keys(require.cache).forEach(function(key) {
+      delete require.cache[key];
+    });
   }
-  
+
   /**
    * Releases promise accounting; execution generations invalidate continuations.
    */
@@ -881,10 +838,10 @@ class PRDC_JSLAB_LIB {
     var obj = this;
     Object.keys(this.started_promises).forEach(function(key) {
       delete obj.started_promises[key];
-    });  
+    });
     this.promises_number = 0;
   }
-  
+
   /**
    * Registers an object for cleanup with a specified cleanup function.
    * @param {Object} obj - The object to be registered for cleanup.
@@ -893,7 +850,7 @@ class PRDC_JSLAB_LIB {
   addForCleanup(obj, fun) {
     this.cleanup_registry.push({obj: obj, fun: fun});
   }
-  
+
   /**
    * Do cleanup on all registred objects;
    */
@@ -902,26 +859,33 @@ class PRDC_JSLAB_LIB {
     const errors = [];
     for(const entry of entries) {
       try {
-        if(typeof entry.fun === 'function') await entry.fun();
-        else if(typeof entry.obj?._jslabCleanup === 'function') await entry.obj._jslabCleanup();
-      } catch(error) { errors.push(error); }
+        if(typeof entry.fun === 'function') {
+          await entry.fun();
+        } else if(typeof entry.obj?._jslabCleanup === 'function') {
+          await entry.obj._jslabCleanup();
+        }
+      } catch(error) {
+        errors.push(error);
+      }
     }
-    if(errors.length) throw new Error(errors.map(error => String(error.message || error)).join('; '));
+    if(errors.length) {
+      throw new Error(errors.map(error => String(error.message || error)).join('; '));
+    }
   }
-  
+
   /**
    * Removes a specific promise from the tracking list based on its ID.
    * @param {Number} id The ID of the promise to remove.
    */
   clearPromise(id) {
-   this.promises_number -= 1;
-   if(this.promises_number < 0) {
-     this.promises_number = 0;
-   }
-   this.onStatsChange();
-   delete this.started_promises[id];
+    this.promises_number -= 1;
+    if(this.promises_number < 0) {
+      this.promises_number = 0;
+    }
+    this.onStatsChange();
+    delete this.started_promises[id];
   }
-          
+
   /**
    * Clears all timeouts that have been set within the environment.
    */
@@ -943,7 +907,7 @@ class PRDC_JSLAB_LIB {
     });
     this.started_intervals = [];
   }
-  
+
   /**
    * Cancels all animation frames that have been requested within the environment.
    */
@@ -999,7 +963,7 @@ class PRDC_JSLAB_LIB {
   stopSubprocesses() {
     return this.inter.env.stopSubprocesses();
   }
-  
+
   /**
    * Sets the safe stringify depth for the given data.
    * @param {Object} data - The data object to modify.
@@ -1020,7 +984,7 @@ class PRDC_JSLAB_LIB {
   listSubprocesses() {
     return this.inter.env.listSubprocesses(this.inter.env.process_pid);
   }
-  
+
   /**
    * Gets properties missing documentation.
    * @param {Array|string} [workspace=this.initial_workspace] - Workspace to check.
@@ -1030,19 +994,19 @@ class PRDC_JSLAB_LIB {
   _getMissingDocs(workspace = this.initial_workspace, without_builtin = true) {
     var missing = [];
     for(var prop of workspace) {
-      if(!prop.startsWith('_') && 
-          (!without_builtin || 
+      if(!prop.startsWith('_') &&
+          (!without_builtin ||
            !this.builtin_workspace.includes(prop))) {
         try {
           this.inter.help(prop);
-        } catch {
+        } catch{
           missing.push(prop);
         }
       }
     }
     return missing;
   }
-  
+
   /**
    * Writes templates for missing docs to a file.
    * @param {string} path - File path for missing docs.
@@ -1053,7 +1017,7 @@ class PRDC_JSLAB_LIB {
     if(!Array.isArray(workspace)) {
       workspace_array = Object.keys(workspace);
     }
-     
+
     var missing = this._getMissingDocs(workspace_array);
     var str = '';
     for(var prop of missing) {
@@ -1070,12 +1034,12 @@ class PRDC_JSLAB_LIB {
    * @returns {}
    * @memberof PRDC_JSLAB_LIB_
    */
-   
+
 `;
     }
     this.env.writeFileSync(path, str);
   }
-  
+
   /**
    * Awaits a resource while honoring the evaluation's cancellation lifetime.
    * @param {Promise} promise Resource readiness.

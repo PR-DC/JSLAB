@@ -5,37 +5,15 @@
  * info@pr-dc.com
  */
 
-const fs = require('fs');
-const path = require('path');
+const { PRDC_JSLAB_COMMAND_WINDOW_MODULE } = require('./command-window-module');
 
-class PRDC_JSLAB_COMMAND_WINDOW_DIARY {
 
-  /**
-   * Creates diary submodule and binds methods to parent command window.
-   * @param {Object} command_window Parent command window instance.
-   */
-  constructor(command_window) {
-    this.command_window = command_window;
-    this._bindToCommandWindow();
-  }
+/**
+ * Class for command window diary.
+ */
+class PRDC_JSLAB_COMMAND_WINDOW_DIARY extends PRDC_JSLAB_COMMAND_WINDOW_MODULE {
 
-  /**
-   * Binds all submodule methods to command window and exposes them on parent.
-   */
-  _bindToCommandWindow() {
-    var obj = this;
-    Object.getOwnPropertyNames(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype).forEach(function(name) {
-      if(name === 'constructor' || name === '_bindToCommandWindow') {
-        return;
-      }
-      if(typeof obj[name] !== 'function') {
-        return;
-      }
-      var bound = obj[name].bind(obj.command_window);
-      obj[name] = bound;
-      obj.command_window[name] = bound;
-    });
-  }
+
 }
 
 Object.assign(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype, {
@@ -45,6 +23,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype, {
    * @returns {string} Default absolute/relative diary path.
    */
   getDiaryDefaultPath() {
+    const { path } = this.win.platform;
     var base_path = '.';
     if(this.win && this.win.folder_navigation &&
         typeof this.win.folder_navigation.current_path === 'string' &&
@@ -75,6 +54,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype, {
    * @returns {boolean} True when stream is ready.
    */
   openDiaryStream(file_path) {
+    const { fs } = this.win.platform;
     if(typeof file_path !== 'string' || !file_path.length) {
       return false;
     }

@@ -5,13 +5,15 @@
  * info@pr-dc.com
  */
 
-const { safeStringify: sharedSafeStringify } = require('../shared/value-serializer');
- 
+const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
+
+const { safeStringify: sharedSafeStringify } = require('../other-shared/value-serializer');
+
 /**
  * Class for JSLAB format submodule.
  */
 class PRDC_JSLAB_LIB_FORMAT {
-  
+
   /**
    * Initializes a new instance of the format submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -113,7 +115,7 @@ class PRDC_JSLAB_LIB_FORMAT {
     const ext = String(this.jsl.inter.env.pathExtName(file_path)).toLowerCase();
     return mime_types[ext] || 'application/octet-stream';
   }
-  
+
   /**
    * Formats the given byte count into a readable string.
    * @param {Number} bytes Number of bytes.
@@ -121,7 +123,9 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {String} Formatted bytes string with appropriate unit.
    */
   formatBytes(bytes, decimals = 2) {
-    if(!+bytes) return '0 Bytes';
+    if(!+bytes) {
+      return '0 Bytes';
+    }
 
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
@@ -139,12 +143,14 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {String} Formatted bits per second string with appropriate unit.
    */
   formatBPS(bps, decimals = 2) {
-    if(!+bps) return '0 bps';
+    if(!+bps) {
+      return '0 bps';
+    }
 
     const k = 1000;
     const dm = decimals < 0 ? 0 : decimals;
-    const units = ["bps","kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps", "Zbps", "Ybps"];
-    
+    const units = ["bps", "kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps", "Zbps", "Ybps"];
+
     const i = Math.floor(Math.log(bps) / Math.log(k));
 
     return `${parseFloat((bps / Math.pow(k, i)).toFixed(dm))} ${units[i]}`;
@@ -157,12 +163,14 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {String} Formatted number string with metric prefix.
    */
   formatPrefix(number, decimals = 2) {
-    if(!+number) return '0 ';
+    if(!+number) {
+      return '0 ';
+    }
 
     const k = 1000;
     const dm = decimals < 0 ? 0 : decimals;
-    const units = ["","k", "M", "G", "T", "P", "E", "Z", "Y"];
-    
+    const units = ["", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+
     const i = Math.floor(Math.log(number) / Math.log(k));
 
     return `${parseFloat((number / Math.pow(k, i)).toFixed(dm))} ${units[i]}`;
@@ -186,7 +194,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {string} A string containing the formatted number.
    */
   formatFloatDigits(number, digits = 1) {
-    var precision = digits-(number.toString().split(".")[0]).length;
+    var precision = digits - (number.toString().split(".")[0]).length;
     if(precision < 0) {
       precision = 0;
     }
@@ -216,15 +224,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {number} The clipped height value.
    */
   clipHeight(value, min = 0, max = 100) {
-    value = Number(value);
-    if(isNaN(value)) {
-      value = min;
-    } else if(value > max) {
-      value = max;
-    } else if(value < min) {
-      value = min;
-    }
-    return value;
+    return this.clipVal(value, min, max);
   }
 
   /**
@@ -245,7 +245,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   strrep(str, old_string, new_string) {
     return str.replaceAll(old_string, new_string);
-  }  
+  }
 
   /**
    * Clips a value to a specified range.
@@ -288,7 +288,7 @@ class PRDC_JSLAB_LIB_FORMAT {
       return this.jsl._isNaN(value);
     }
   }
-  
+
   /**
    * Determines if the provided value is an object.
    * @param {*} value - The value to check.
@@ -459,11 +459,21 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {string} Type label.
    */
   valueTypeLabel(value) {
-    if(value === null) return 'null';
-    if(typeof value === 'undefined') return 'undefined';
-    if(value instanceof Date) return 'datetime';
-    if(Array.isArray(value)) return 'array';
-    if(this.isTypedArray(value)) return value.constructor ? value.constructor.name : 'typedarray';
+    if(value === null) {
+      return 'null';
+    }
+    if(typeof value === 'undefined') {
+      return 'undefined';
+    }
+    if(value instanceof Date) {
+      return 'datetime';
+    }
+    if(Array.isArray(value)) {
+      return 'array';
+    }
+    if(this.isTypedArray(value)) {
+      return value.constructor ? value.constructor.name : 'typedarray';
+    }
     return typeof value;
   }
 
@@ -696,7 +706,7 @@ class PRDC_JSLAB_LIB_FORMAT {
 
     return valid[0];
   }
-  
+
   /**
    * Determines if the provided value is a number.
    * @param {*} value - The value to check.
@@ -705,7 +715,7 @@ class PRDC_JSLAB_LIB_FORMAT {
   isNumber(value) {
     return typeof value === 'number';
   }
-  
+
   /**
    * Determines if the provided value is a string.
    * @param {*} value - The value to check.
@@ -714,7 +724,7 @@ class PRDC_JSLAB_LIB_FORMAT {
   isString(value) {
     return typeof value === 'string';
   }
-  
+
   /**
    * Checks if a string is empty or contains only whitespace.
    * @param {string} str - The string to check.
@@ -723,7 +733,7 @@ class PRDC_JSLAB_LIB_FORMAT {
   isEmptyString(str) {
     return typeof str === 'string' && str.trim().length === 0;
   }
-  
+
   /**
    * Checks if a object is empty.
    * @param {string} obj - The object to check.
@@ -731,17 +741,17 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   isEmptyObject(obj) {
     return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
-  } 
+  }
 
   /**
    * Determines if the provided value is a function.
-   * @param {*} value - The value to check 
+   * @param {*} value - The value to check
    * @returns {boolean} True if the value is a function, false otherwise.
    */
   isFunction(value) {
     return typeof value === 'function';
   }
-  
+
   /**
    * Determines if the provided value is an array.
    * @param {*} value - The value to check.
@@ -750,7 +760,7 @@ class PRDC_JSLAB_LIB_FORMAT {
   isArray(value) {
     return Object.prototype.toString.call(value) === '[object Array]';
   }
-  
+
   /**
    * Determines if the provided value is null.
    * @param {*} value - The value to check.
@@ -781,7 +791,7 @@ class PRDC_JSLAB_LIB_FORMAT {
       return value === Infinity || value === -Infinity;
     }
   }
-  
+
   /**
    * Checks if a variable is numeric.
    * @param {*} variable - The variable to check.
@@ -809,7 +819,7 @@ class PRDC_JSLAB_LIB_FORMAT {
   isUndefined(value) {
     return typeof value === 'undefined';
   }
-  
+
   /**
    * Checks if a string is a valid UUID.
    * @param {string} str The string to check.
@@ -835,7 +845,7 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {number} The normalized angle.
    */
   normalizeAngle360(angle) {
-     return (angle % 360 + 360) % 360;
+    return (angle % 360 + 360) % 360;
   }
 
   /**
@@ -870,7 +880,7 @@ class PRDC_JSLAB_LIB_FORMAT {
       return val;
     }
   }
-  
+
   /**
    * Pretty-prints data, converting it into a more readable format for display. Handles strings, objects, and other data types.
    * @param {*} data The data to pretty-print.
@@ -887,7 +897,7 @@ class PRDC_JSLAB_LIB_FORMAT {
     } else if(safe_json_method) {
       return [this._consoleValue(data), true];
     } else if(typeof data == 'string') {
-      return ["'"+data.replace(/\n/g, '<br/>')+"'", false];
+      return ["'" + data.replace(/\n/g, '<br/>') + "'", false];
     } else if((data !== null && typeof data == 'object') || typeof data == 'function') {
       return [this._consoleValue(data), true];
     } else {
@@ -934,7 +944,10 @@ class PRDC_JSLAB_LIB_FORMAT {
     return descriptor;
   }
 
-  /** @private */
+  /**
+   * Handles console value class name.
+   * @private
+   */
   _consoleValueClassName(value) {
     try {
       return value?.constructor?.name || (typeof value === 'function' ? 'Function' : 'Object');
@@ -943,32 +956,72 @@ class PRDC_JSLAB_LIB_FORMAT {
     }
   }
 
-  /** @private */
+  /**
+   * Handles console value subtype.
+   * @private
+   */
   _consoleValueSubtype(value) {
-    if(Array.isArray(value)) return 'array';
-    if(value instanceof Date) return 'date';
-    if(value instanceof RegExp) return 'regexp';
-    if(value instanceof Map) return 'map';
-    if(value instanceof Set) return 'set';
-    if(value instanceof WeakMap) return 'weakmap';
-    if(value instanceof WeakSet) return 'weakset';
-    if(value instanceof Error) return 'error';
-    if(ArrayBuffer.isView(value)) return 'typedarray';
-    if(value instanceof ArrayBuffer) return 'arraybuffer';
-    if(value instanceof Promise) return 'promise';
+    if(Array.isArray(value)) {
+      return 'array';
+    }
+    if(value instanceof Date) {
+      return 'date';
+    }
+    if(value instanceof RegExp) {
+      return 'regexp';
+    }
+    if(value instanceof Map) {
+      return 'map';
+    }
+    if(value instanceof Set) {
+      return 'set';
+    }
+    if(value instanceof WeakMap) {
+      return 'weakmap';
+    }
+    if(value instanceof WeakSet) {
+      return 'weakset';
+    }
+    if(value instanceof Error) {
+      return 'error';
+    }
+    if(ArrayBuffer.isView(value)) {
+      return 'typedarray';
+    }
+    if(value instanceof ArrayBuffer) {
+      return 'arraybuffer';
+    }
+    if(value instanceof Promise) {
+      return 'promise';
+    }
     return undefined;
   }
 
-  /** @private */
+  /**
+   * Handles console value description.
+   * @private
+   */
   _consoleValueDescription(value) {
-    if(value === null) return 'null';
+    if(value === null) {
+      return 'null';
+    }
     var type = typeof value;
-    if(type === 'undefined') return 'undefined';
-    if(type === 'string') return JSON.stringify(value);
-    if(type === 'bigint') return String(value) + 'n';
-    if(type === 'symbol') return String(value);
+    if(type === 'undefined') {
+      return 'undefined';
+    }
+    if(type === 'string') {
+      return JSON.stringify(value);
+    }
+    if(type === 'bigint') {
+      return String(value) + 'n';
+    }
+    if(type === 'symbol') {
+      return String(value);
+    }
     if(type === 'number') {
-      if(Object.is(value, -0)) return '-0';
+      if(Object.is(value, -0)) {
+        return '-0';
+      }
       return String(value);
     }
     if(type === 'function') {
@@ -976,16 +1029,29 @@ class PRDC_JSLAB_LIB_FORMAT {
       return 'ƒ ' + name + '()';
     }
     if(value instanceof Date) {
-      try { return value.toISOString(); } catch(err) { return String(value); }
+      try {
+        return value.toISOString();
+      } catch(err) {
+        return String(value);
+      }
     }
-    if(value instanceof RegExp || value instanceof Error) return String(value);
+    if(value instanceof RegExp || value instanceof Error) {
+      return String(value);
+    }
     var class_name = this._consoleValueClassName(value);
-    if(Array.isArray(value) || ArrayBuffer.isView(value)) return class_name + '(' + value.length + ')';
-    if(value instanceof Map || value instanceof Set) return class_name + '(' + value.size + ')';
+    if(Array.isArray(value) || ArrayBuffer.isView(value)) {
+      return class_name + '(' + value.length + ')';
+    }
+    if(value instanceof Map || value instanceof Set) {
+      return class_name + '(' + value.size + ')';
+    }
     return class_name;
   }
 
-  /** @private */
+  /**
+   * Handles console value preview.
+   * @private
+   */
   _consoleValuePreview(value) {
     var parts = [];
     var overflow = false;
@@ -994,13 +1060,19 @@ class PRDC_JSLAB_LIB_FORMAT {
       if(value instanceof Map) {
         var map_index = 0;
         for(const entry of value) {
-          if(map_index++ >= max_properties) { overflow = true; break; }
+          if(map_index++ >= max_properties) {
+            overflow = true;
+            break;
+          }
           parts.push(this._consolePreviewText(entry[0]) + ' => ' + this._consolePreviewText(entry[1]));
         }
       } else if(value instanceof Set) {
         var set_index = 0;
         for(const entry of value) {
-          if(set_index++ >= max_properties) { overflow = true; break; }
+          if(set_index++ >= max_properties) {
+            overflow = true;
+            break;
+          }
           parts.push(this._consolePreviewText(entry));
         }
       } else if(Array.isArray(value) || ArrayBuffer.isView(value)) {
@@ -1029,7 +1101,10 @@ class PRDC_JSLAB_LIB_FORMAT {
     return { properties: parts, overflow: overflow };
   }
 
-  /** @private */
+  /**
+   * Handles console preview text.
+   * @private
+   */
   _consolePreviewText(value) {
     if(value === null || (typeof value !== 'object' && typeof value !== 'function')) {
       var text = this._consoleValueDescription(value);
@@ -1048,8 +1123,10 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   _consoleProperties(object_id, offset = 0, limit = 100) {
     var value = this._console_objects.get(String(object_id));
-    if(value === undefined) return { success: false, error: this.jsl?.inter?.lang?.string(630) ||
+    if(value === undefined) {
+      return { success: false, error: this.jsl?.inter?.lang?.string(629) ||
       'Console object is no longer available.' /* lang-fixed */ };
+    }
     offset = Math.max(0, Number(offset) || 0);
     limit = Math.min(200, Math.max(1, Number(limit) || 100));
     var properties = [];
@@ -1063,7 +1140,9 @@ class PRDC_JSLAB_LIB_FORMAT {
             entries.push({ name: String(map_i), key: this._consoleValue(entry_key), value: this._consoleValue(entry_value) });
           }
           map_i++;
-          if(map_i >= offset + limit) break;
+          if(map_i >= offset + limit) {
+            break;
+          }
         }
         return { success: true, entries: entries, total: map_total,
           next_offset: offset + entries.length < map_total ? offset + entries.length : undefined };
@@ -1072,9 +1151,13 @@ class PRDC_JSLAB_LIB_FORMAT {
         var set_total = value.size;
         var set_i = 0;
         for(const entry_value of Set.prototype.values.call(value)) {
-          if(set_i >= offset) entries.push({ name: String(set_i), value: this._consoleValue(entry_value) });
+          if(set_i >= offset) {
+            entries.push({ name: String(set_i), value: this._consoleValue(entry_value) });
+          }
           set_i++;
-          if(set_i >= offset + limit) break;
+          if(set_i >= offset + limit) {
+            break;
+          }
         }
         return { success: true, entries: entries, total: set_total,
           next_offset: offset + entries.length < set_total ? offset + entries.length : undefined };
@@ -1098,8 +1181,10 @@ class PRDC_JSLAB_LIB_FORMAT {
         var indexed_next = offset + limit < indexed_total ? offset + limit : undefined;
         if(indexed_next === undefined) {
           var indexed_prototype = Object.getPrototypeOf(value);
-          if(indexed_prototype !== null) properties.push({ name: '[[Prototype]]', internal: true,
-            value: this._consoleValue(indexed_prototype) });
+          if(indexed_prototype !== null) {
+            properties.push({ name: '[[Prototype]]', internal: true,
+              value: this._consoleValue(indexed_prototype) });
+          }
         }
         return { success: true, properties: properties, total: indexed_total,
           next_offset: indexed_next };
@@ -1108,9 +1193,13 @@ class PRDC_JSLAB_LIB_FORMAT {
       var keys = Reflect.ownKeys(descriptors);
       var property_order = new Intl.Collator(undefined, { numeric: true, sensitivity: 'variant' });
       keys.sort(function(a, b) {
-        if(typeof a === 'symbol') return typeof b === 'symbol' ?
-          property_order.compare(String(a), String(b)) : 1;
-        if(typeof b === 'symbol') return -1;
+        if(typeof a === 'symbol') {
+          return typeof b === 'symbol' ?
+            property_order.compare(String(a), String(b)) : 1;
+        }
+        if(typeof b === 'symbol') {
+          return -1;
+        }
         return property_order.compare(String(a), String(b));
       });
       keys.slice(offset, offset + limit).forEach((key) => {
@@ -1133,7 +1222,9 @@ class PRDC_JSLAB_LIB_FORMAT {
       });
       if(offset + properties.length >= keys.length) {
         var prototype = Object.getPrototypeOf(value);
-        if(prototype !== null) properties.push({ name: '[[Prototype]]', internal: true, value: this._consoleValue(prototype) });
+        if(prototype !== null) {
+          properties.push({ name: '[[Prototype]]', internal: true, value: this._consoleValue(prototype) });
+        }
       }
       return { success: true, properties: properties, total: keys.length,
         next_offset: offset + Math.min(limit, properties.length) < keys.length ? offset + limit : undefined };
@@ -1152,12 +1243,14 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   _consoleAccessor(object_id, property) {
     var value = this._console_objects.get(String(object_id));
-    if(value === undefined) return { success: false, error: this.jsl?.inter?.lang?.string(630) ||
+    if(value === undefined) {
+      return { success: false, error: this.jsl?.inter?.lang?.string(629) ||
       'Console object is no longer available.' /* lang-fixed */ };
+    }
     try {
       var descriptor = Object.getOwnPropertyDescriptor(value, String(property));
       if(!descriptor || typeof descriptor.get !== 'function') {
-        return { success: false, error: this.jsl?.inter?.lang?.string(634) ||
+        return { success: false, error: this.jsl?.inter?.lang?.string(633) ||
           'Getter is not available.' /* lang-fixed */ };
       }
       return { success: true, value: this._consoleValue(descriptor.get.call(value)) };
@@ -1186,7 +1279,7 @@ class PRDC_JSLAB_LIB_FORMAT {
       indent: 0
     });
   }
-  
+
   /**
    * Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.
    * It also escapes strings to prevent HTML injection.
@@ -1206,7 +1299,9 @@ class PRDC_JSLAB_LIB_FORMAT {
     }
     if(safe_json_method) {
       var safe_value = safe_json_method.call(data);
-      if(typeof safe_value === 'string') return safe_value;
+      if(typeof safe_value === 'string') {
+        return safe_value;
+      }
       data = safe_value;
     }
     if(this._safe_stringify_depths.has(data)) {
@@ -1223,45 +1318,40 @@ class PRDC_JSLAB_LIB_FORMAT {
     });
   }
 
-  /** Finds a formatting data method without invoking getters. */
+  /**
+   * Finds a formatting data method without invoking getters.
+   */
   _getFormattingMethod(value, name) {
-    if(value === null || (typeof value !== 'object' && typeof value !== 'function')) return;
+    if(value === null || (typeof value !== 'object' && typeof value !== 'function')) {
+      return;
+    }
     try {
       for(var current = value; current; current = Object.getPrototypeOf(current)) {
         var descriptor = Object.getOwnPropertyDescriptor(current, name);
-        if(descriptor) return typeof descriptor.value === 'function' ? descriptor.value : undefined;
+        if(descriptor) {
+          return typeof descriptor.value === 'function' ? descriptor.value : undefined;
+        }
       }
     } catch(err) {}
   }
 
-  /** Stores a one-shot legacy stringify depth without modifying the inspected value. */
+  /**
+   * Stores a one-shot legacy stringify depth without modifying the inspected value.
+   */
   _setSafeStringifyDepth(data, depth) {
     if(data !== null && (typeof data === 'object' || typeof data === 'function')) {
       this._safe_stringify_depths.set(data, depth);
     }
     return data;
   }
-  
+
   /**
    * Escapes special HTML characters in a string to prevent HTML injection.
    * @param {string} string - The string to escape.
    * @returns {string} - The escaped string with HTML characters replaced.
    */
   escapeHTML(string) {
-    var escapeHtmlMap = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-      '/': '&#x2F;',
-      '`': '&#x60;',
-      '=': '&#x3D;'
-    };
-
-    return String(string).replace(/[&<>"'`=\/]/g, function(s) {
-      return escapeHtmlMap[s];
-    });
+    return PRDC_JSLAB_TEXT.escapeHTML(string, 'attribute');
   }
 
   /**
@@ -1279,23 +1369,9 @@ class PRDC_JSLAB_LIB_FORMAT {
    * @returns {string} - The escaped string with LaTeX characters replaced.
    */
   escapeLatex(string) {
-    if(typeof string !== 'string') {
-      return string;
-    }
-    return string
-      .replace(/\\/g, '\\textbackslash{}')
-      .replace(/&/g, '\\&')
-      .replace(/%/g, '\\%')
-      .replace(/\$/g, '\\$')
-      .replace(/#/g, '\\#')
-      .replace(/_/g, '\\_')
-      .replace(/{/g, '\\{')
-      .replace(/}/g, '\\}')
-      .replace(/~/g, '\\textasciitilde{}')
-      .replace(/\^/g, '\\textasciicircum{}')
-      .replace(/`/g, '\\textasciigrave{}');
+    return PRDC_JSLAB_TEXT.escapeLatex(string);
   }
-  
+
   /**
    * Produces a unique key name inside an object. If `key` already exists,
    * numerical suffixes are appended until uniqueness is achieved.
@@ -1308,12 +1384,12 @@ class PRDC_JSLAB_LIB_FORMAT {
     var i = 0;
     var unique_key = key;
     while(this.hasKey(object, unique_key)) {
-      i = i+1;
-      unique_key = key+i;
+      i = i + 1;
+      unique_key = key + i;
     }
     return unique_key;
   }
-    
+
   /**
    * Generates a random string of the specified length.
    * @param {number} num - The desired length of the random string.
@@ -1322,16 +1398,16 @@ class PRDC_JSLAB_LIB_FORMAT {
   randomString(num) {
     return Math.random().toString(36).substr(2, num);
   }
-  
+
   /**
    * Calculates the number of decimal places in a number.
    * @param {number} num - The number to evaluate.
    * @returns {number} The count of decimal places.
    */
   countDecimalPlaces(num) {
-    return num > 1 ? 0 : (num.toString().split('.')[1] || '').match(/^0*/)[0].length+1;
+    return num > 1 ? 0 : (num.toString().split('.')[1] || '').match(/^0*/)[0].length + 1;
   }
-  
+
   /**
    * Replaces file links in a text with HTML span elements.
    * @param {string} text - The multiline error log text.
@@ -1339,12 +1415,12 @@ class PRDC_JSLAB_LIB_FORMAT {
    */
   replaceEditorLinks(text) {
     var regex = /(.+?):(\d+):(\d+):/g;
-    
+
     return text.replace(regex, (match, filePath, lineNumber, charPos) => {
       return `<span class="open-editor" file_path="${filePath}" line_number="${lineNumber}" char_pos="${charPos}">${match}</span>`;
     });
   }
-  
+
   /**
    * Checks that an input contains a finite number
    * @param {HTMLInputElement} n  Target input element.
@@ -1355,7 +1431,7 @@ class PRDC_JSLAB_LIB_FORMAT {
     var num = Number(str);
     return str !== '' && Number.isFinite(num);
   }
-  
+
   /**
    * Checks that an input contains a finite number
    * and—if supplied—is within the inclusive range [min, max].
@@ -1367,9 +1443,15 @@ class PRDC_JSLAB_LIB_FORMAT {
   limitedNumberValidator(n, min, max) {
     var str = n.value.trim();
     var num = Number(str);
-    if(str === '' || !Number.isFinite(num)) return false;
-    if(min !== undefined && num < min) return false;
-    if(max !== undefined && num > max) return false;
+    if(str === '' || !Number.isFinite(num)) {
+      return false;
+    }
+    if(min !== undefined && num < min) {
+      return false;
+    }
+    if(max !== undefined && num > max) {
+      return false;
+    }
     return true;
   }
 
@@ -1451,7 +1533,9 @@ class PRDC_JSLAB_LIB_FORMAT {
     const padLeft = (s, w) => (s.length >= w ? s : " ".repeat(w - s.length) + s);
     const padRight = (s, w) => (s.length >= w ? s : s + " ".repeat(w - s.length));
     const centerPad = (s, w) => {
-      if(s.length >= w) return s;
+      if(s.length >= w) {
+        return s;
+      }
       const left = Math.floor((w - s.length) / 2);
       const right = w - s.length - left;
       return " ".repeat(left) + s + " ".repeat(right);
@@ -1459,12 +1543,16 @@ class PRDC_JSLAB_LIB_FORMAT {
 
     function normalizeAlign(align, nCol) {
       if(Array.isArray(align)) {
-        if(align.length !== nCol) throw new Error(this.jsl.inter.lang.string(285));
+        if(align.length !== nCol) {
+          throw new Error(this.jsl.inter.lang.string(285));
+        }
         return align.map(String);
       }
       if(typeof align === "string") {
         // if "lcr" and matches nCol, split; else repeat first char
-        if(align.length === nCol) return align.split("");
+        if(align.length === nCol) {
+          return align.split("");
+        }
         return Array.from({ length: nCol }, () => align[0] || "c");
       }
       return Array.from({ length: nCol }, () => "c");
@@ -1485,11 +1573,15 @@ class PRDC_JSLAB_LIB_FORMAT {
       // parameter/value pairs
       cols = args.slice(0, optPos);
       const rest = args.slice(optPos);
-      if(rest.length % 2 !== 0) throw new Error(this.jsl.inter.lang.string(286));
+      if(rest.length % 2 !== 0) {
+        throw new Error(this.jsl.inter.lang.string(286));
+      }
       for(let i = 0; i < rest.length; i += 2) {
         const k = rest[i];
         const v = rest[i + 1];
-        if(!allowedKeys.has(k)) throw new Error(this.jsl.inter.lang.string(287).replace(/\{option\}/g, k));
+        if(!allowedKeys.has(k)) {
+          throw new Error(this.jsl.inter.lang.string(287).replace(/\{option\}/g, k));
+        }
         opts[k] = v;
       }
     } else {
@@ -1528,15 +1620,21 @@ class PRDC_JSLAB_LIB_FORMAT {
     }
 
     const N_col = cols.length;
-    if(N_col <= 0) throw new Error(this.jsl.inter.lang.string(289));
+    if(N_col <= 0) {
+      throw new Error(this.jsl.inter.lang.string(289));
+    }
 
     cols = cols.map((c, idx) => {
       const arr = toArray(c);
-      if(!Array.isArray(arr)) throw new Error(this.jsl.inter.lang.string(290).replace(/\{index\}/g, idx + 1));
+      if(!Array.isArray(arr)) {
+        throw new Error(this.jsl.inter.lang.string(290).replace(/\{index\}/g, idx + 1));
+      }
       // disallow multi-column style like [[a,b],[c,d]]
       if(arr.length > 0 && Array.isArray(arr[0])) {
         const ok = arr.every((x) => Array.isArray(x) && x.length === 1);
-        if(!ok) throw new Error(this.jsl.inter.lang.string(291));
+        if(!ok) {
+          throw new Error(this.jsl.inter.lang.string(291));
+        }
         return arr.map((x) => x[0]);
       }
       return arr;
@@ -1544,18 +1642,24 @@ class PRDC_JSLAB_LIB_FORMAT {
 
     const N_rows = cols[0].length;
     for(let j = 1; j < N_col; j++) {
-      if(cols[j].length !== N_rows) throw new Error(this.jsl.inter.lang.string(292));
+      if(cols[j].length !== N_rows) {
+        throw new Error(this.jsl.inter.lang.string(292));
+      }
     }
 
     // VariableNames
     let varNames;
     if(Array.isArray(VariableNames) && VariableNames.length) {
-      if(VariableNames.length !== N_col) throw new Error(this.jsl.inter.lang.string(293));
+      if(VariableNames.length !== N_col) {
+        throw new Error(this.jsl.inter.lang.string(293));
+      }
       varNames = VariableNames.map(String);
     } else if(typeof VariableNames === "string" && VariableNames.length) {
       // allow CSV-like "A,B,C"
       varNames = VariableNames.split(",").map((s) => s.trim());
-      if(varNames.length !== N_col) throw new Error(this.jsl.inter.lang.string(293));
+      if(varNames.length !== N_col) {
+        throw new Error(this.jsl.inter.lang.string(293));
+      }
     } else {
       varNames = Array.from({ length: N_col }, (_, i) => `Col${i + 1}`);
     }
@@ -1564,7 +1668,9 @@ class PRDC_JSLAB_LIB_FORMAT {
     let rowNames;
     let rn_tab = 0;
     if(Array.isArray(RowNames) && RowNames.length) {
-      if(RowNames.length !== N_rows) throw new Error(this.jsl.inter.lang.string(294));
+      if(RowNames.length !== N_rows) {
+        throw new Error(this.jsl.inter.lang.string(294));
+      }
       rowNames = RowNames.map(String);
       rn_tab = 1;
     } else {
@@ -1593,8 +1699,11 @@ class PRDC_JSLAB_LIB_FORMAT {
             s = v.toString();
             cellIsNumeric[i][j] = true;
           } else if(typeof v === "number") {
-            if(Number.isInteger(v)) s = v.toString();
-            else s = Number.isFinite(v) ? v.toFixed(6) : String(v);
+            if(Number.isInteger(v)) {
+              s = v.toString();
+            } else {
+              s = Number.isFinite(v) ? v.toFixed(6) : String(v);
+            }
             cellIsNumeric[i][j] = true;
           } else if(v == null) {
             s = "";
@@ -1615,7 +1724,9 @@ class PRDC_JSLAB_LIB_FORMAT {
     const colDataWidth = Array(N_col).fill(0);
     for(let j = 0; j < N_col; j++) {
       let mx = 0;
-      for(let i = 0; i < N_rows; i++) mx = Math.max(mx, cells[i][j].length);
+      for(let i = 0; i < N_rows; i++) {
+        mx = Math.max(mx, cells[i][j].length);
+      }
       colDataWidth[j] = mx;
     }
     const colWidth = colDataWidth.map((w, j) => Math.max(w, vnWidth[j]));
@@ -1663,28 +1774,41 @@ class PRDC_JSLAB_LIB_FORMAT {
     tex += `  \\label{${texCell(label)}}\n`;
     tex += `  \\begin{tabular}[H]{`;
 
-    if(rn_tab) tex += `${cl}l${cl}`;
-    for(let j = 0; j < N_col; j++) tex += `${cl}${al[j]}`;
+    if(rn_tab) {
+      tex += `${cl}l${cl}`;
+    }
+    for(let j = 0; j < N_col; j++) {
+      tex += `${cl}${al[j]}`;
+    }
     tex += `${cl}}\n`;
 
     // header row
     tex += `    ${rl}\n    `;
     for(let j = 0; j < N_col; j++) {
       const h = `\\textbf{${texCell(varNames[j])}}`;
-      if(j === 0 && !rn_tab) tex += h;
-      else tex += ` & ${h}`;
+      if(j === 0 && !rn_tab) {
+        tex += h;
+      } else {
+        tex += ` & ${h}`;
+      }
     }
     tex += ` \\\\ \\hline\n`;
 
     // data rows
     for(let i = 0; i < N_rows; i++) {
-      if(rowNames[i]) tex += `    \\textbf{${texCell(rowNames[i])}}`;
-      else tex += "    ";
+      if(rowNames[i]) {
+        tex += `    \\textbf{${texCell(rowNames[i])}}`;
+      } else {
+        tex += "    ";
+      }
 
       for(let j = 0; j < N_col; j++) {
         const v = texCell(cells[i][j]);
-        if(j === 0 && !rn_tab) tex += `${v}`;
-        else tex += ` & ${v}`;
+        if(j === 0 && !rn_tab) {
+          tex += `${v}`;
+        } else {
+          tex += ` & ${v}`;
+        }
       }
       tex += ` \\\\ ${rl}\n`;
     }

@@ -4,7 +4,7 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB vector math submodule.
  */
@@ -18,7 +18,7 @@ class PRDC_JSLAB_VECTOR_MATH {
   constructor(jsl) {
     this.jsl = jsl;
   }
-  
+
   /**
    * Creates a new vector with specified x, y, z components.
    * @param {number} x - The x-component of the vector.
@@ -29,7 +29,7 @@ class PRDC_JSLAB_VECTOR_MATH {
   new(x, y, z) {
     return new PRDC_JSLAB_VECTOR(this.jsl, x, y, z);
   }
-  
+
   /**
    * Creates a vector from polar coordinates.
    * @param {number} length - The length of the vector.
@@ -42,7 +42,7 @@ class PRDC_JSLAB_VECTOR_MATH {
     const z = 0;
     return new PRDC_JSLAB_VECTOR(this.jsl, x, y, z);
   }
-  
+
   /**
    * Creates a vector from spherical coordinates.
    * @param {number} length - The length (magnitude) of the vector.
@@ -64,9 +64,9 @@ exports.PRDC_JSLAB_VECTOR_MATH = PRDC_JSLAB_VECTOR_MATH;
  * Class for JSLAB vector.
  */
 class PRDC_JSLAB_VECTOR {
-  
+
   #jsl;
-  
+
   /**
    * Creates a new vector instance.
    * @constructor
@@ -79,7 +79,7 @@ class PRDC_JSLAB_VECTOR {
     this.#jsl = jsl;
     this._set(x, y, z);
   }
-  
+
   /**
    * Sets the components of the vector.
    * @param {number|Object} x - The x-component or an object with x, y, z properties.
@@ -97,7 +97,7 @@ class PRDC_JSLAB_VECTOR {
       y = x.y;
       x = x.x;
     }
-    
+
     this.x = x || 0;
     this.y = y || 0;
     this.z = z || 0;
@@ -118,7 +118,7 @@ class PRDC_JSLAB_VECTOR {
   norm() {
     return this.length();
   }
-  
+
   /**
    * Adds two vectors and returns the result.
    * @param {PRDC_JSLAB_VECTOR} v - The second vector.
@@ -136,7 +136,7 @@ class PRDC_JSLAB_VECTOR {
   plus(v) {
     return this.add(v);
   }
-  
+
   /**
    * Subtracts the second vector from the first and returns the result.
    * @param {PRDC_JSLAB_VECTOR} v - The vector to subtract.
@@ -154,7 +154,7 @@ class PRDC_JSLAB_VECTOR {
   minus(v) {
     return this.subtract(v);
   }
-  
+
   /**
    * Scales a vector by the given factors.
    * @param {number|Object} scale_x - The scale factor for the x-component or an object with x, y, z properties.
@@ -174,7 +174,7 @@ class PRDC_JSLAB_VECTOR {
     }
     return this.#jsl.inter.vec.new(this.x * scale_x, this.y * scale_y, this.z * scale_z);
   }
-  
+
   /**
    * Scales a vector by the given factor.
    * @param {number} s - The scale factor.
@@ -183,7 +183,7 @@ class PRDC_JSLAB_VECTOR {
   multiply(s) {
     return this.scale(s);
   }
-  
+
   /**
    * Scales a vector by dividing each element by given factor.
    * @param {number} s - The scale factor.
@@ -192,7 +192,7 @@ class PRDC_JSLAB_VECTOR {
   divide(s) {
     return this.scale(1 / s);
   }
-  
+
   /**
    * Checks if two vectors are equal.
    * @param {PRDC_JSLAB_VECTOR} v - The second vector.
@@ -220,7 +220,7 @@ class PRDC_JSLAB_VECTOR {
   projectTo(v) {
     return v.multiply(this.dot(v) / Math.pow(v.norm(), 2));
   }
-  
+
   /**
    * Calculates the angles of a vector.
    * @param {PRDC_JSLAB_VECTOR} v - The vector.
@@ -232,7 +232,7 @@ class PRDC_JSLAB_VECTOR {
     const elevation = Math.atan2(this.z, length_xy) * (180 / Math.PI);
     return [ azimuth, elevation ];
   }
-  
+
   /**
    * Calculates the distance between two vectors.
    * @param {PRDC_JSLAB_VECTOR} v - The second vector.
@@ -244,7 +244,7 @@ class PRDC_JSLAB_VECTOR {
     var c = this.z - v.z;
     return Math.sqrt(a * a + b * b + c * c);
   }
-  
+
   /**
    * Calculates the dot product of two vectors.
    * @param {PRDC_JSLAB_VECTOR} v - The second vector.
@@ -253,7 +253,7 @@ class PRDC_JSLAB_VECTOR {
   dot(v) {
     return this.x * v.x + this.y * v.y + this.z * v.z;
   }
-  
+
   /**
    * Calculates the cross product of two vectors.
    * @param {PRDC_JSLAB_VECTOR} v - The second vector.
@@ -265,7 +265,7 @@ class PRDC_JSLAB_VECTOR {
     var cross_z = this.x * v.y - this.y * v.x;
     return this.#jsl.inter.vec.new(cross_x, cross_y, cross_z);
   }
-  
+
   /**
    * Interpolates between two vectors by a factor.
    * @param {PRDC_JSLAB_VECTOR} v - The ending vector.
@@ -278,7 +278,7 @@ class PRDC_JSLAB_VECTOR {
     var dz = v.y - this.y;
     return this.#jsl.inter.vec.new(this.x + dx * f, this.y + dy * f, this.z + dz * f);
   }
-  
+
   /**
    * Offsets the vector by the given amounts.
    * @param {number|Object} x - The amount to offset in the x-direction or an object with x, y, z properties.
@@ -293,21 +293,21 @@ class PRDC_JSLAB_VECTOR {
       y = offset.y;
       z = offset.z;
     }
-    
+
     x = this.x + x || 0;
     y = this.y + y || 0;
     z = this.z + z || 0;
-    
+
     return this.#jsl.inter.vec.new(x, y, z);
   }
-  
+
   /**
    * Normalizes the vector to have a length of 1.
    * @returns {PRDC_JSLAB_VECTOR} The normalized vector.
    */
   normalize() {
     var length = this.length();
-    
+
     if(length > 0) {
       var x = this.x / length;
       var y = this.y / length;
@@ -316,7 +316,7 @@ class PRDC_JSLAB_VECTOR {
     }
     return this.clone();
   }
-  
+
   /**
    * Negates the vector components.
    * @returns {PRDC_JSLAB_VECTOR} The negated vector.
@@ -325,10 +325,10 @@ class PRDC_JSLAB_VECTOR {
     var x = this.x * -1;
     var y = this.y * -1;
     var z = this.z * -1;
-    
+
     return this.#jsl.inter.vec.new(x, y, z);
   }
-  
+
   /**
    * Creates a clone of this vector.
    * @returns {PRDC_JSLAB_VECTOR} A new vector instance with the same components.
@@ -336,7 +336,7 @@ class PRDC_JSLAB_VECTOR {
   clone() {
     return this.#jsl.inter.vec.new(this.x, this.y, this.z);
   }
-  
+
   /**
    * Converts the vector to an array.
    * @returns {number[]} An array containing the x, y, z components of the vector.
@@ -368,7 +368,7 @@ class PRDC_JSLAB_VECTOR {
   toRowMatrix() {
     return this.toMatrix();
   }
-  
+
   /**
    * Returns a string representation of the vector.
    * @returns {string} The string representation in the format 'Vector(x:, y:, z:)'.
@@ -376,7 +376,7 @@ class PRDC_JSLAB_VECTOR {
   toString() {
     return 'Vector([' + this.x + ', ' + this.y + ', ' + this.z + '])';
   }
-  
+
   /**
    * Returns a string representation of the vector.
    * @returns {string} The string representation in the format 'Vector(x:, y:, z:)'.
@@ -384,7 +384,7 @@ class PRDC_JSLAB_VECTOR {
   toJSON() {
     return { x: this.x, y: this.y, z: this.z };
   }
-  
+
   /**
    * Returns a string representation of the vector.
    * @returns {string} The string representation in the format 'Vector(x:, y:, z:)'.
@@ -392,7 +392,7 @@ class PRDC_JSLAB_VECTOR {
   toSafeJSON() {
     return this.toJSON();
   }
-  
+
   /**
    * Converts the object to a pretty string representation.
    * @returns {string} The pretty string representation of the object.

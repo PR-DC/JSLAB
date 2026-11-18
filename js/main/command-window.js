@@ -5,16 +5,16 @@
  * info@pr-dc.com
  */
 
-const Store = require('electron-store');
-const { ESLint } = require("eslint");
-const { PRDC_TERMINAL_BUFFER } = require('../shared/terminal-buffer');
+const { PRDC_JSLAB_CODE_LINT } = require('../code/lint');
+
+
+const { PRDC_JSLAB_TERMINAL_BUFFER } = require('../other-shared/terminal-buffer');
 const { PRDC_JSLAB_COMMAND_WINDOW_MESSAGES } = require('./command-window-messages');
 const { PRDC_JSLAB_COMMAND_WINDOW_SETTINGS } = require('./command-window-settings');
 const { PRDC_JSLAB_COMMAND_WINDOW_INPUT } = require('./command-window-input');
 const { PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR } = require('./command-window-inspector');
 const { PRDC_JSLAB_COMMAND_WINDOW_DIARY } = require('./command-window-diary');
 
-const store = new Store();
 
 /**
  * Class for JSLAB command window.
@@ -23,9 +23,10 @@ class PRDC_JSLAB_COMMAND_WINDOW {
 
   /**
    * Initializes the command window, setting up the UI components, event listeners, and loading settings from storage.
-   * @param {object} win The window object representing the current Electron window.
+   * @param {object} win The window object representing the owning window controller.
    */
   constructor(win) {
+    const { store } = win.platform;
     var obj = this;
     this.win = win;
 
@@ -73,14 +74,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     this.last_class;
     this.last_tic;
 
-    var LINT_OPTIONS = {
-      overrideConfigFile: config.LINT_OPTIONS.overrideConfigFile,
-      overrideConfig: {
-        languageOptions: config.LINT_OPTIONS.overrideConfig.languageOptions,
-        rules: config.LINT_OPTIONS.overrideConfig.rules,
-      }
-    };
-    this.eslint = new ESLint(LINT_OPTIONS);
+    this.eslint = new PRDC_JSLAB_CODE_LINT();
 
     // Command window submodules
     this.messages_submodule = new PRDC_JSLAB_COMMAND_WINDOW_MESSAGES(this);
@@ -90,22 +84,13 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     this.diary = new PRDC_JSLAB_COMMAND_WINDOW_DIARY(this);
 
     // Load settings
-    this.autoscroll = store.get('autoscroll');
-    if(!this.autoscroll) {
-      this.autoscroll = true;
-    }
-    this.show_timestamp = store.get('show_timestamp');
-    if(!this.show_timestamp) {
-      this.show_timestamp = false;
-    }
+    this.autoscroll = store.get('autoscroll') !== false;
+    this.show_timestamp = store.get('show_timestamp') === true;
     this.N_messages_max = Number(store.get('N_messages_max'));
     if(!isFinite(this.N_messages_max) || this.N_messages_max == 0) {
       this.N_messages_max = Infinity;
     }
-    this.write_timestamps = store.get('write_timestamps');
-    if(!this.write_timestamps) {
-      this.write_timestamps = true;
-    }
+    this.write_timestamps = store.get('write_timestamps') !== false;
     this.min_messages_max = Number(config.TERMINAL_MIN_MESSAGES_MAX);
     if(!isFinite(this.min_messages_max) || this.min_messages_max < 1) {
       this.min_messages_max = 5;
@@ -126,7 +111,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     if(!isFinite(render_scroll_threshold) || render_scroll_threshold < 0) {
       render_scroll_threshold = 150;
     }
-    this.message_buffer = new PRDC_TERMINAL_BUFFER({
+    this.message_buffer = new PRDC_JSLAB_TERMINAL_BUFFER({
       messages_container: this.messages[0],
       scroll_container: this.messages_scroll_container,
       get_timestamp: function() {
@@ -142,9 +127,6 @@ class PRDC_JSLAB_COMMAND_WINDOW {
       render_scroll_threshold: render_scroll_threshold,
       dom_messages_hard_cap: dom_messages_hard_cap,
       after_render: function(ctx) {
-        if(typeof MathJax === 'undefined' || !MathJax.typeset) {
-          return;
-        }
         var mathjax_nodes = [];
         for(var i = 0; i < ctx.entries.length; i++) {
           if(ctx.entries[i] && ctx.entries[i].needs_mathjax && ctx.elements[i]) {
@@ -152,7 +134,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
           }
         }
         if(mathjax_nodes.length) {
-          MathJax.typeset(mathjax_nodes);
+          Promise.resolve(obj.typesetMath(mathjax_nodes)).catch(error => console.warn(error));
         }
       }
     });

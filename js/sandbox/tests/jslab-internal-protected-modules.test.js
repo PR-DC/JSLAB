@@ -9,7 +9,7 @@ const {
   CORE_INTERNAL_MODULE_NAMES,
   CHECKER_PROTECTED_SLOT_NAMES
 } = require('../jslab-internal-protected-modules');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('core internal module names include required protected slots', function(assert) {

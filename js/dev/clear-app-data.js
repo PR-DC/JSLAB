@@ -5,7 +5,26 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
- 
+
+/**
+ * Class for dev clear app data operations.
+ */
+class PRDC_JSLAB_DEV_CLEAR_APP_DATA_HELPER {
+
+  /**
+   * Runs the module entry point.
+   */
+  static main() {
+    var path = os.homedir() + '\\AppData\\Roaming\\' + data.name;
+    console.log('Clearing app data from ' + path);
+    rimraf.sync(path);
+
+    console.log('[clear-app-data.js] Execution done in ' + ((performance.now() - t) / 1000).toFixed(3) + ' s');
+    process.exit();
+  }
+}
+
+
 // Import modules
 const fs = require('fs');
 const os = require('os');
@@ -26,23 +45,14 @@ var confirm = process.argv.includes('--confirm');
 if(confirm) {
   readline.question("Clear app data? yes/[no]: ", function(answer) {
     if(answer == 'yes') {
-      main();
+      PRDC_JSLAB_DEV_CLEAR_APP_DATA_HELPER.main();
     } else {
       console.log('Action aborted.');
-      console.log('[clear-app-data.js] Execution done in ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
+      console.log('[clear-app-data.js] Execution done in ' + ((performance.now() - t) / 1000).toFixed(3) + ' s');
       process.exit();
     }
     readline.close();
   });
 } else {
-  main();
-}
-
-function main() {
-  var path = os.homedir()+'\\AppData\\Roaming\\'+data.name;
-  console.log('Clearing app data from '+path);
-  rimraf.sync(path);
-  
-  console.log('[clear-app-data.js] Execution done in ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
-  process.exit();
+  PRDC_JSLAB_DEV_CLEAR_APP_DATA_HELPER.main();
 }

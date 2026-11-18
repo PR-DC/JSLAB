@@ -5,33 +5,16 @@ JavaScript laboratory environment.
 
 Release v1.0.4, xx.xx.2026.
 
-- Bug fixes and new features.
-- Implemented a Windows command-line interface with a persistent prompt, multiline input, startup scripts, pipelines, JSON output and execution control.
-- Added automatic Windows CLI PATH registration through NSIS, script-to-REPL execution, batch mode and real interactive figure windows for CLI plots.
-- Documented the Electron desktop, browser and command-line versions of JSLAB.
-- Implemented new functions in the geography module. Added the required functionality because the 3D map uses ellipsoid height instead of Mean Sea Level (MSL).
-- Added a class for forking processes with pseudoterminal file descriptors.
-- Implemented tableprint to display data in a plain-text table and optionally export it as a LaTeX table.
-- Implemented requireWasm and compileWasm for WebAssembly.
-- Added search to the workspace panel.
-- Implemented better vector and matrix display.
-- Added search history to the editor search.
-- Implemented search and replace for all open scripts.
-- Implemented a symbol input panel in the editor.
-- Enabled saving and loading of objects in the workspace.
-- Implemented a variable inspector.
-- Implemented table support.
-- Reworked internal assignment and calling.
-- Implemented tests.
-- Implemented an MCP server for AI agents to execute code, inspect the workspace, check and test scripts, read documentation, and export figures.
-- Added Markdown documentation with a dedicated MCP section.
-- Added an AI Assistant window.
-- Added controllable terminal windows.
-- Improved console display and autocomplete.
-- Reorganized internal sandbox helpers and restricted workspace exports to public properties and methods.
-- Replaced the application's numerical and AlphaShape Node-API addons with shared WebAssembly backends for desktop and browser.
-- Removed JavaScript numerical fallbacks, completed the AlphaShape WASM API, and added explicit WASM resource cleanup.
-- Moved subprocess enumeration to the desktop environment and updated build and packaging scripts for WASM.
+- Added Simulate with visual model editing, .jslmo projects, Modelica import, workspace results and 3D animation.
+- Added a browser version of JSLAB, including Simulate and cached simulation packages.
+- Added a Windows command-line interface for interactive and batch scripts, pipelines, JSON output and plots.
+- Added source debugging with breakpoints, stepping, variable inspection and execution control.
+- Added an AI Assistant and an MCP server for AI agents to run code, inspect data and export figures.
+- Added workspace search, variable inspection, tables, and saving and loading workspace objects.
+- Improved vector and matrix display, console autocomplete, and Editor search and replace across open scripts.
+- Added an Editor symbol input panel and controllable terminal windows.
+- Added tableprint exports, WebAssembly module support and geographic height conversion functions.
+- Improved documentation and fixed simulation, animation and interface issues.
 
 --------------------
 Release v1.0.3, 28.06.2025.

@@ -5,37 +5,33 @@
  * info@pr-dc.com
  */
 
-class PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR {
+const { PRDC_JSLAB_COMMAND_WINDOW_MODULE } = require('./command-window-module');
 
-  /**
-   * Creates inspector submodule and binds methods to parent command window.
-   * @param {Object} command_window Parent command window instance.
-   */
-  constructor(command_window) {
-    this.command_window = command_window;
-    this._bindToCommandWindow();
-  }
+const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
 
-  /**
-   * Binds all submodule methods to command window and exposes them on parent.
-   */
-  _bindToCommandWindow() {
-    var obj = this;
-    Object.getOwnPropertyNames(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype).forEach(function(name) {
-      if(name === 'constructor' || name === '_bindToCommandWindow') {
-        return;
-      }
-      if(typeof obj[name] !== 'function') {
-        return;
-      }
-      var bound = obj[name].bind(obj.command_window);
-      obj[name] = bound;
-      obj.command_window[name] = bound;
-    });
-  }
+/**
+ * Class for command window inspector.
+ */
+class PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR extends PRDC_JSLAB_COMMAND_WINDOW_MODULE {
+
+
 }
 
 Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
+
+  /**
+   * Validates an inspector action against the current debugger frame.
+   * @param {HTMLElement} el Action element.
+   * @returns {Object} Debug context and selected variable.
+   */
+  inspectorActionContext(el) {
+    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
+    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) {
+      throw Error(language.currentString(619));
+    }
+    const variable = el && el.getAttribute ? el.getAttribute('data-variable') : undefined;
+    return { debug_context, variable };
+  },
 
   /**
    * Initializes inspector input dialog DOM references and events.
@@ -145,7 +141,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
         obj.inspector_input_row_2.hide();
       }
 
-      var submit_label = typeof options.submit_label === 'string' ? options.submit_label : language.string(391);
+      var submit_label = typeof options.submit_label === 'string' ? options.submit_label : language.string(390);
       obj.inspector_input_submit.html(submit_label);
       obj.inspector_dialog_resolver = resolve;
       obj.win.gui.openDialog(obj.inspector_input_dialog);
@@ -192,12 +188,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
    * @returns {string}
    */
   escapeInspectorHtml(value) {
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return PRDC_JSLAB_TEXT.escapeHTML(value);
   },
 
   /**
@@ -288,12 +279,12 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
 
     var header_kind = typeof column.header_kind === 'string' ? column.header_kind : '';
     if(header_kind === 'row-name') {
-      return language.string(503);
+      return language.string(502);
     }
     if(header_kind === 'row-time') {
       var time_name = typeof column.name === 'string' && column.name.length ?
         column.name :
-        language.string(504);
+        language.string(503);
       var time_type = typeof column.type === 'string' && column.type.length ?
         column.type :
         '';
@@ -331,8 +322,10 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
       html += '<button class="jslab-inspector-action" data-action="clear-filter"' + attrs + '>' +
         this.escapeInspectorLocalizedHtml(toolbar.clear_filter_label || '') + '</button>';
     }
-    if(toolbar.allow_filter_expression !== false) html += '<button class="jslab-inspector-action" data-action="table-filter-expr"' + attrs + '>' +
+    if(toolbar.allow_filter_expression !== false) {
+      html += '<button class="jslab-inspector-action" data-action="table-filter-expr"' + attrs + '>' +
       this.escapeInspectorLocalizedHtml(toolbar.filter_expr_label || '') + '</button>';
+    }
     if(toolbar.show_clear_expr) {
       html += '<button class="jslab-inspector-action" data-action="table-clear-filter-expr"' + attrs + '>' +
         this.escapeInspectorLocalizedHtml(toolbar.clear_expr_label || '') + '</button>';
@@ -576,7 +569,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     if(!variable || !variable.length) {
       return;
     }
-    this.evalCommandPreserveInput(this.buildInspectCommand(variable, state));
+    return this.evalCommandPreserveInput(this.buildInspectCommand(variable, state));
   },
 
   /**
@@ -592,7 +585,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
       JSON.stringify(action) + ', ' +
       JSON.stringify(payload || {}) + ')';
     var inspect_cmd = this.buildInspectCommand(variable, state);
-    this.evalCommandPreserveInput(action_cmd + '; ' + inspect_cmd);
+    return this.evalCommandPreserveInput(action_cmd + '; ' + inspect_cmd);
   },
 
   /**
@@ -607,12 +600,12 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     if(action === 'table-filter-expr') {
       var current_expr = state.filter_expr || '';
       var expr_result = await this.openInspectorInputDialog({
-        title: language.string(394),
-        message: language.string(424),
-        submit_label: language.string(391),
+        title: language.string(393),
+        message: language.string(423),
+        submit_label: language.string(390),
         fields: [
           {
-            label: language.string(430),
+            label: language.string(429),
             value: current_expr
           }
         ]
@@ -650,15 +643,15 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
 
     if(action === 'table-addvar') {
       var add_result = await this.openInspectorInputDialog({
-        title: language.string(398),
-        submit_label: language.string(391),
+        title: language.string(397),
+        submit_label: language.string(390),
         fields: [
           {
-            label: language.string(425),
+            label: language.string(424),
             value: ''
           },
           {
-            label: language.string(426),
+            label: language.string(425),
             value: ''
           }
         ]
@@ -687,15 +680,15 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
 
     if(action === 'table-renamevar') {
       var rename_result = await this.openInspectorInputDialog({
-        title: language.string(399),
-        submit_label: language.string(391),
+        title: language.string(398),
+        submit_label: language.string(390),
         fields: [
           {
-            label: language.string(427),
+            label: language.string(426),
             value: ''
           },
           {
-            label: language.string(425),
+            label: language.string(424),
             value: ''
           }
         ]
@@ -724,11 +717,11 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
 
     if(action === 'table-removevar') {
       var remove_result = await this.openInspectorInputDialog({
-        title: language.string(400),
-        submit_label: language.string(391),
+        title: language.string(399),
+        submit_label: language.string(390),
         fields: [
           {
-            label: language.string(428),
+            label: language.string(427),
             value: ''
           }
         ]
@@ -761,14 +754,8 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
    * @param {HTMLElement} el Action element.
    */
   async handleInspectorAction(el) {
-    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
-    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
-    if(!el || !el.getAttribute) {
-      return;
-    }
-
-    var variable = el.getAttribute('data-variable');
-    if(!variable || !variable.length) {
+    var { debug_context, variable } = this.inspectorActionContext(el);
+    if(!variable) {
       return;
     }
 
@@ -776,7 +763,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     var state = this.getInspectorStateFromElement(el);
 
     if(action === 'refresh') {
-      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
+      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) {
+        throw Error(language.currentString(619));
+      }
       this.runInspectCommand(variable, state);
       return;
     }
@@ -784,12 +773,12 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     if(action === 'filter') {
       var current_filter = state.filter || '';
       var filter_result = await this.openInspectorInputDialog({
-        title: language.string(392),
-        message: language.string(423),
-        submit_label: language.string(391),
+        title: language.string(391),
+        message: language.string(422),
+        submit_label: language.string(390),
         fields: [
           {
-            label: language.string(390),
+            label: language.string(389),
             value: current_filter
           }
         ]
@@ -804,14 +793,18 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
       } else {
         delete state.filter;
       }
-      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
+      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) {
+        throw Error(language.currentString(619));
+      }
       this.runInspectCommand(variable, state);
       return;
     }
 
     if(action === 'clear-filter') {
       delete state.filter;
-      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
+      if(debug_context && debug_context !== this.win.debugger?.scopeToken()) {
+        throw Error(language.currentString(619));
+      }
       this.runInspectCommand(variable, state);
       return;
     }
@@ -833,14 +826,8 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
    * @param {HTMLElement} el Cell element with data-path and data-default attributes.
    */
   async editInspectorCell(el) {
-    const debug_context = el?.closest('[data-debug-context]')?.getAttribute('data-debug-context');
-    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
-    if(!el || !el.getAttribute) {
-      return;
-    }
-
-    var variable = el.getAttribute('data-variable');
-    if(!variable || !variable.length) {
+    var { debug_context, variable } = this.inspectorActionContext(el);
+    if(!variable) {
       return;
     }
 
@@ -849,22 +836,22 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     try {
       path = JSON.parse(path_raw);
     } catch(err) {
-      this.errorInternal('@inspector: ' + language.string(446));
+      this.errorInternal('@inspector: ' + language.string(445));
       return;
     }
 
     var default_expr = el.getAttribute('data-default') || '';
-    var edit_message = language.formatLang(429, {
+    var edit_message = language.formatLang(428, {
       variable: this.escapeInspectorHtml(variable),
       path: this.escapeInspectorHtml(JSON.stringify(path))
     });
     var edit_result = await this.openInspectorInputDialog({
-      title: language.string(412),
+      title: language.string(411),
       message: edit_message,
-      submit_label: language.string(391),
+      submit_label: language.string(390),
       fields: [
         {
-          label: language.string(430),
+          label: language.string(429),
           value: default_expr
         }
       ]
@@ -872,7 +859,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     if(!edit_result) {
       return;
     }
-    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) throw Error(language.currentString(620));
+    if(debug_context && debug_context !== this.win.debugger?.scopeToken()) {
+      throw Error(language.currentString(619));
+    }
     var expression = edit_result.values[0];
     expression = expression.trim();
     if(!expression.length) {
@@ -883,9 +872,8 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR.prototype, {
     var set_cmd = 'inspectSetVariable(' + JSON.stringify(variable) + ', ' +
       JSON.stringify(path) + ', ' + JSON.stringify(expression) + ')';
     var inspect_cmd = this.buildInspectCommand(variable, state);
-    this.evalCommandPreserveInput(set_cmd + '; ' + inspect_cmd);
+    return this.evalCommandPreserveInput(set_cmd + '; ' + inspect_cmd);
   }
 });
 
 exports.PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR = PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR;
-

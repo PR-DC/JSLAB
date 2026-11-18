@@ -12,7 +12,7 @@ var { PRDC_JSLAB_GEOGRAPHY_MAP_3D } = require('./geography-map-3d');
  * Class for JSLAB geography submodule.
  */
 class PRDC_JSLAB_LIB_GEOGRAPHY {
-  
+
   /**
    * Initializes the geography submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -21,7 +21,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Initializes and returns a new 2D web map instance.
    * @param {...*} args - Arguments for configuring the web map.
@@ -32,7 +32,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     await map.createWindow();
     return map;
   }
-  
+
   /**
    * Initializes and returns a new 3D geoglobe instance.
    * @param {...*} args - Arguments for configuring the 3D geoglobe.
@@ -43,7 +43,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     await map_3d.createWindow();
     return map_3d;
   }
-  
+
   /**
    * Calculates the bounding box and center from an array of tile coordinates.
    * @param {Array<Object>} tile_coordinates - An array of objects with tile coordinates, each having properties `x`, `y`, and `z` for tile X and Y coordinates and zoom level, respectively.
@@ -51,23 +51,23 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
    */
   calculateTilesBoundingBox(tile_coordinates) {
     var min_lat = Number.MAX_VALUE,
-        max_lat = -Number.MAX_VALUE,
-        min_lng = Number.MAX_VALUE,
-        max_lng = -Number.MAX_VALUE;
+      max_lat = -Number.MAX_VALUE,
+      min_lng = Number.MAX_VALUE,
+      max_lng = -Number.MAX_VALUE;
 
     tile_coordinates.forEach(function(coord) {
-        var n = Math.pow(2, coord.z);
-        var tileBounds = {
-            min_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * (coord.y + 1)) / n)) - Math.PI / 2) * (180 / Math.PI),
-            max_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * coord.y) / n)) - Math.PI / 2) * (180 / Math.PI),
-            min_lng: ((coord.x) / n) * 360 - 180,
-            max_lng: ((coord.x + 1) / n) * 360 - 180
-        };
+      var n = Math.pow(2, coord.z);
+      var tileBounds = {
+        min_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * (coord.y + 1)) / n)) - Math.PI / 2) * (180 / Math.PI),
+        max_lat: (2 * Math.atan(Math.exp(Math.PI - (2 * Math.PI * coord.y) / n)) - Math.PI / 2) * (180 / Math.PI),
+        min_lng: ((coord.x) / n) * 360 - 180,
+        max_lng: ((coord.x + 1) / n) * 360 - 180
+      };
 
-        min_lat = Math.min(min_lat, tileBounds.min_lat);
-        max_lat = Math.max(max_lat, tileBounds.max_lat);
-        min_lng = Math.min(min_lng, tileBounds.min_lng);
-        max_lng = Math.max(max_lng, tileBounds.max_lng);
+      min_lat = Math.min(min_lat, tileBounds.min_lat);
+      max_lat = Math.max(max_lat, tileBounds.max_lat);
+      min_lng = Math.min(min_lng, tileBounds.min_lng);
+      max_lng = Math.max(max_lng, tileBounds.max_lng);
     });
 
     var center = [(min_lat + max_lat) / 2, (min_lng + max_lng) / 2];
@@ -85,8 +85,8 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
    * @returns {Array<number>} An array containing the latitude and longitude of the calculated point.
    */
   offsetLatLonEastNorth(lat, lon, east, north) {
-    var distance = Math.sqrt(Math.pow(east, 2)+Math.pow(north, 2)); // [m]
-    var bearing = Math.atan2(east, north)*180/Math.PI; // [deg]
+    var distance = Math.sqrt(Math.pow(east, 2) + Math.pow(north, 2)); // [m]
+    var bearing = Math.atan2(east, north) * 180 / Math.PI; // [deg]
     return this.offsetLatLon(lat, lon, distance, bearing);
   };
 
@@ -106,7 +106,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     var new_lat_rad = Math.asin(Math.sin(lat_rad) * Math.cos(dist_rad) +
         Math.cos(lat_rad) * Math.sin(dist_rad) * Math.cos(bearing_rad));
     var new_lng_rad = lng_rad + Math.atan2(Math.sin(bearing_rad) * Math.sin(dist_rad) * Math.cos(lat_rad),
-        Math.cos(dist_rad) - Math.sin(lat_rad) * Math.sin(new_lat_rad));
+      Math.cos(dist_rad) - Math.sin(lat_rad) * Math.sin(new_lat_rad));
     return [(new_lat_rad * 180) / Math.PI, (new_lng_rad * 180) / Math.PI];
   }
 
@@ -119,11 +119,11 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
    * @returns {number} The distance between the two points in meters.
    */
   latLonDistance(lat1, lon1, lat2, lon2) {
-    var dLat = (lat2-lat1) * Math.PI / 180;
-    var dLon = (lon2-lon1) * Math.PI / 180;
-    return 6371000 * 2 * Math.asin(Math.sqrt(Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180 ) * Math.cos(lat2 * Math.PI / 180 ) *
-      Math.sin(dLon/2) * Math.sin(dLon/2))); // [m]
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    return 6371000 * 2 * Math.asin(Math.sqrt(Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2))); // [m]
   }
 
   /**
@@ -138,7 +138,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
    */
   latLonAltDistance(lat1, lon1, alt1, lat2, lon2, alt2) {
     var L = this.latLonDistance(lat1, lon1, lat2, lon2);
-    return Math.sqrt(Math.pow(L, 2)+Math.pow(alt1-alt2, 2));
+    return Math.sqrt(Math.pow(L, 2) + Math.pow(alt1 - alt2, 2));
   }
 
   /**
@@ -203,7 +203,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     var point = this.jsl.inter.env.Cesium.Matrix4.multiplyByPoint(transform,
       new this.jsl.inter.env.Cesium.Cartesian3(dx, dy, dz), new this.jsl.inter.env.Cesium.Cartesian3());
     var carto = this.jsl.inter.env.Cesium.Ellipsoid.WGS84.cartesianToCartographic(point);
-    
+
     return {lat: this.jsl.inter.env.Cesium.Math.toDegrees(carto.latitude), lon: this.jsl.inter.env.Cesium.Math.toDegrees(carto.longitude), height: carto.height};
   };
 
@@ -217,7 +217,7 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
   computeHeadingPitchFromTo(from_cartesian, to_cartesian) {
     var enu = this.jsl.inter.env.Cesium.Transforms.eastNorthUpToFixedFrame(from_cartesian);
     var inv_enu = this.jsl.inter.env.Cesium.Matrix4.inverse(enu, new this.jsl.inter.env.Cesium.Matrix4());
-    
+
     var local_target = this.jsl.inter.env.Cesium.Matrix4.multiplyByPoint(
       inv_enu,
       to_cartesian,
@@ -250,12 +250,16 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     if(isArray) {
       return lat_deg.map((latitude, index) => {
         var lon = this.jsl.inter.format.normalizeAngle(lon_deg[index]);
-        if(!Number.isFinite(h_msl_meters[index])) throw new TypeError(this.jsl.inter.lang.currentString(358));
+        if(!Number.isFinite(h_msl_meters[index])) {
+          throw new TypeError(this.jsl.inter.lang.currentString(358));
+        }
         return this.jsl.inter.env.egm96.egm96ToEllipsoid(lat_deg[index], lon, h_msl_meters[index]);
       });
     } else {
       var lon = this.jsl.inter.format.normalizeAngle(lon_deg);
-      if(!Number.isFinite(h_msl_meters)) throw new TypeError(this.jsl.inter.lang.currentString(358));
+      if(!Number.isFinite(h_msl_meters)) {
+        throw new TypeError(this.jsl.inter.lang.currentString(358));
+      }
       return this.jsl.inter.env.egm96.egm96ToEllipsoid(lat_deg, lon, h_msl_meters);
     }
   }
@@ -274,17 +278,21 @@ class PRDC_JSLAB_LIB_GEOGRAPHY {
     if(isArray) {
       return lat_deg.map((latitude, index) => {
         var lon = this.jsl.inter.format.normalizeAngle(lon_deg[index]);
-        if(!Number.isFinite(h_ellipsoid_meters[index])) throw new TypeError(this.jsl.inter.lang.currentString(358));
+        if(!Number.isFinite(h_ellipsoid_meters[index])) {
+          throw new TypeError(this.jsl.inter.lang.currentString(358));
+        }
         return this.jsl.inter.env.egm96.ellipsoidToEgm96(lat_deg[index], lon, h_ellipsoid_meters[index]);
       });
     } else {
       var lon = this.jsl.inter.format.normalizeAngle(lon_deg);
-      if(!Number.isFinite(h_ellipsoid_meters)) throw new TypeError(this.jsl.inter.lang.currentString(358));
+      if(!Number.isFinite(h_ellipsoid_meters)) {
+        throw new TypeError(this.jsl.inter.lang.currentString(358));
+      }
       return this.jsl.inter.env.egm96.ellipsoidToEgm96(lat_deg, lon, h_ellipsoid_meters);
     }
   }
 
-/**
+  /**
    * Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.
    * The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
    * @param {number|number[]} lat_deg - Latitude(s) in degrees.

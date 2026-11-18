@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB file system submodule.
  */
 class PRDC_JSLAB_LIB_FILE_SYSTEM {
-  
+
   /**
    * Initializes a new instance of the file system submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -49,7 +49,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   writeFile(...args) {
     return this.jsl.inter.env.writeFileSync(...args);
   }
-  
+
   /**
    * Deletes a specified file synchronously.
    * @param {string} file_path The path to the file that should be deleted.
@@ -58,16 +58,16 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   deleteFile(file_path) {
     return this.jsl.inter.env.rmSync(file_path);
   }
-  
+
   /**
    * Reads the contents of a directory synchronously.
    * @param {string} folder The path to the directory.
    * @returns {string[]|false} An array of filenames or false in case of an error.
    */
-	readDir(...args) {
+  readDir(...args) {
     return this.jsl.inter.env.readDir(...args);
   }
-  
+
   /**
    * Deletes a specified file synchronously.
    * @param {string} file_path The path to the file that should be deleted.
@@ -123,13 +123,17 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     var files = this.jsl.inter.env.readDir(folder);
     if(Array.isArray(files)) {
       return files
-        .filter(function(file) { 
-          if(!ext) return file.includes('.');
+        .filter(function(file) {
+          if(!ext) {
+            return file.includes('.');
+          }
           return file.endsWith('.' + ext);
         })
-        .map(function(file) { return obj.jsl.inter.env.pathJoin(folder, file); });
+        .map(function(file) {
+          return obj.jsl.inter.env.pathJoin(folder, file);
+        });
     } else {
-      this.jsl.inter.env.error('@filesInFolder: '+this.jsl.inter.lang.string(128)+': ' + folder);
+      this.jsl.inter.env.error('@filesInFolder: ' + this.jsl.inter.lang.string(128) + ': ' + folder);
     }
     return false;
   }
@@ -141,11 +145,11 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   allFilesInFolder(folder) {
     return this.jsl.inter.env.readDir(folder).reduce((acc, file) => {
-        const file_path = this.jsl.inter.env.pathJoin(folder, file);
-        return this.jsl.inter.env.checkDirectory(file_path)
-          ? acc.concat(this.allFilesInFolder(file_path))
-          : acc.concat(file);
-      }, []);
+      const file_path = this.jsl.inter.env.pathJoin(folder, file);
+      return this.jsl.inter.env.checkDirectory(file_path)
+        ? acc.concat(this.allFilesInFolder(file_path))
+        : acc.concat(file);
+    }, []);
   }
 
   /**
@@ -169,61 +173,25 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     }
     return result;
   }
-  
+
   /**
    * Opens a dialog for the user to choose a file, synchronously.
    * @param {Object} options Configuration options for the dialog.
    * @returns {string|string[]} The selected file path(s) or an empty array if canceled.
    */
   chooseFile(options) {
-    var file_path;
-    if(typeof this.jsl.inter.env.showOpenDialogSync == 'function') {
-      file_path = this.jsl.inter.env.showOpenDialogSync(options);
-    }
-    if(file_path === false && typeof this.jsl.inter.env.showOpenDialog == 'function') {
-      file_path = this.jsl.inter.env.showOpenDialog(options);
-    } else if(typeof file_path === 'undefined' &&
-        typeof this.jsl.inter.env.showOpenDialogSync != 'function' &&
-        typeof this.jsl.inter.env.showOpenDialog == 'function') {
-      file_path = this.jsl.inter.env.showOpenDialog(options);
-    }
-    if(file_path && typeof file_path.then == 'function') {
-      return file_path.then((out) => {
-        return this._normalizeOpenDialogResult(out, '@chooseFile');
-      });
-    }
-    return this._normalizeOpenDialogResult(file_path, '@chooseFile');
+    return this._choosePath(options, '@chooseFile');
   }
-  
+
   /**
    * Opens a dialog for the user to choose a folder, synchronously.
    * @param {Object} options Configuration options for the dialog.
    * @returns {string|string[]} The selected folder path(s) or an empty array if canceled.
    */
   chooseFolder(options_in) {
-    var options = {
-      properties: ['openDirectory'],
-      ...options_in
-    };
-    var file_path;
-    if(typeof this.jsl.inter.env.showOpenDialogSync == 'function') {
-      file_path = this.jsl.inter.env.showOpenDialogSync(options);
-    }
-    if(file_path === false && typeof this.jsl.inter.env.showOpenDialog == 'function') {
-      file_path = this.jsl.inter.env.showOpenDialog(options);
-    } else if(typeof file_path === 'undefined' &&
-        typeof this.jsl.inter.env.showOpenDialogSync != 'function' &&
-        typeof this.jsl.inter.env.showOpenDialog == 'function') {
-      file_path = this.jsl.inter.env.showOpenDialog(options);
-    }
-    if(file_path && typeof file_path.then == 'function') {
-      return file_path.then((out) => {
-        return this._normalizeOpenDialogResult(out, '@chooseFolder');
-      });
-    }
-    return this._normalizeOpenDialogResult(file_path, '@chooseFolder');
+    return this._choosePath({ properties: ['openDirectory'], ...options_in }, '@chooseFolder');
   }
-  
+
   /**
    * Retrieves a default path based on a specified type.
    * @param {string} type Type of the default path (e.g., 'root', 'documents').
@@ -250,7 +218,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   makeDirectory(directory) {
     return this.jsl.inter.env.makeDirectory(directory);
   }
-  
+
   /**
    * Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.
    * This method delegates the directory creation task to the environment's makeDirectory function.
@@ -260,7 +228,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   mkdir(directory) {
     return this.jsl.inter.env.makeDirectory(directory);
   }
-  
+
   /**
    * Opens the specified directory in the system's file manager. Alias for `openFolder`.
    * @param {string} filepath Path to the directory.
@@ -291,7 +259,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   openProgramFolder() {
     this.jsl.inter.env.openFolder(this.jsl.inter.env.getDefaultPath('root'));
   }
- 
+
   /**
    * Shows the specified file in its containing folder within the system's file manager.
    * @param {string} filepath Path to the file.
@@ -307,7 +275,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   showFileInDir(filepath) {
     this.jsl.inter.env.showFileInDir(filepath);
   }
-  
+
   /**
    * Reads a CSV file and returns a promise that resolves with the parsed data.
    * @param {string} filePath - Path to the CSV file.
@@ -316,15 +284,21 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   readcsv(filePath, delimiter = ',', hasHeader = false) {
     var data = this.jsl.inter.env.readFileSync(filePath, 'utf-8');
-    var lines = data.split('\n').filter(function(line) { return line.trim() !== ''; });
-    var headers = lines[0].split(delimiter).map(function(header) { return header.trim(); });
+    var lines = data.split('\n').filter(function(line) {
+      return line.trim() !== '';
+    });
+    var headers = lines[0].split(delimiter).map(function(header) {
+      return header.trim();
+    });
     var result = [];
-    
+
     if(hasHeader) {
       // If there is a header, parse as objects
       var headers = lines[0].split(delimiter).map(header => header.trim());
       for(let i = 1; i < lines.length; i++) {
-        var row = lines[i].split(delimiter).map(function(cell) { return cell.trim(); });
+        var row = lines[i].split(delimiter).map(function(cell) {
+          return cell.trim();
+        });
         var row_object = {};
         headers.forEach(function(header, index) {
           row_object[header] = row[index];
@@ -334,14 +308,16 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     } else {
       // If no header, parse as arrays
       for(let i = 0; i < lines.length; i++) {
-        var row = lines[i].split(delimiter).map(function(cell) { return cell.trim(); });
+        var row = lines[i].split(delimiter).map(function(cell) {
+          return cell.trim();
+        });
         result.push(row);
       }
     }
-    
+
     return result;
-  } 
-  
+  }
+
   /**
    * Checks if the specified file exists.
    * @param {string} file - The path to the file to check.
@@ -349,7 +325,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   checkFile(file) {
     return this.jsl.inter.env.checkFile(file);
   }
-  
+
   /**
    * Checks if the specified file exists.
    * @param {string} file - The path to the file to check.
@@ -357,7 +333,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   existFile(file) {
     return this.checkFile(file);
   }
-  
+
   /**
    * Checks if the specified directory exists.
    * @param {string} directory - The path to the directory to check.
@@ -365,7 +341,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   checkDirectory(directory) {
     return this.jsl.inter.env.checkDirectory(directory);
   }
-  
+
   /**
    * Checks if the specified directory exists.
    * @param {string} directory - The path to the directory to check.
@@ -373,7 +349,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   existDirectory(directory) {
     return this.checkDirectory(directory);
   }
-  
+
   /**
    * Recursively copies a directory from the source path to the destination path.
    * @param {string} src - The source directory path.
@@ -382,7 +358,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   copyDir(src, dest) {
     // Check if the source directory exists
     if(!this.jsl.inter.env.checkDirectory(src)) {
-      this.jsl.inter.env.error('@copyDir: '+this.jsl.inter.lang.string(173));
+      this.jsl.inter.env.error('@copyDir: ' + this.jsl.inter.lang.string(173));
     }
 
     // Create the destination directory if it doesn't exist
@@ -405,7 +381,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
       }
     }
   }
-  
+
   /**
    * Copies a folder from the source path to the destination path.
    * @param {string} src - The source folder path.
@@ -433,11 +409,81 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
     var name = this.jsl.inter.path.pathFileName(src);
     var ext = this.jsl.inter.path.pathExtName(src);
     var filePath = this.jsl.inter.env.pathJoin(dest, name + ext);
-    
+
     this.jsl.inter.env.copyFileSync(src, filePath);
     this.jsl.inter.env.execSync(`"${this.jsl.inter.env.bin7zip}" x "${filePath}" -o"${dest}" -y`);
     this.jsl.inter.env.rmSync(filePath);
   }
+  /**
+   * Selects paths using the available dialog API and normalizes its result.
+   * @param {Object} options Dialog options.
+   * @param {string} caller Calling command name.
+   * @returns {*} Selected paths or their promise.
+   */
+  _choosePath(options, caller) {
+    var file_path;
+    if(typeof this.jsl.inter.env.showOpenDialogSync == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialogSync(options);
+    }
+    if(file_path === false && typeof this.jsl.inter.env.showOpenDialog == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialog(options);
+    } else if(typeof file_path === 'undefined' &&
+        typeof this.jsl.inter.env.showOpenDialogSync != 'function' &&
+        typeof this.jsl.inter.env.showOpenDialog == 'function') {
+      file_path = this.jsl.inter.env.showOpenDialog(options);
+    }
+    if(file_path && typeof file_path.then == 'function') {
+      return file_path.then((out) => {
+        return this._normalizeOpenDialogResult(out, caller);
+      });
+    }
+    return this._normalizeOpenDialogResult(file_path, caller);
+  }
+
+  /**
+   * Selects an export target through async dialogs with a synchronous fallback.
+   * @param {Object} options Save dialog options.
+   * @returns {Promise<*>} Selected target or no target after cancellation.
+   */
+  async _chooseSaveTarget(options) {
+    var save_target = false;
+    if(typeof this.jsl.inter.env.showSaveDialog == 'function') {
+      save_target = await this.jsl.inter.env.showSaveDialog(options);
+      if(save_target && save_target.canceled) {
+        return;
+      }
+    }
+    if(!save_target) {
+      save_target = this.jsl.inter.env.showSaveDialogSync(options);
+    }
+    return save_target;
+  }
+
+  /**
+   * Resolves a module directory or asks the user to choose one.
+   * @param {string} path Candidate module directory.
+   * @param {string} caller Calling command name.
+   * @returns {string|false} Resolved directory or cancellation.
+   */
+  _resolveModuleDirectory(path, caller) {
+    if(typeof path == 'string') {
+      path = this.jsl.pathResolve(path);
+    }
+    if(!path) {
+      var selection = this.jsl.inter.env.showOpenDialogSync({
+        title: this.jsl.inter.lang.currentString(141),
+        buttonLabel: this.jsl.inter.lang.currentString(142),
+        properties: ['openDirectory']
+      });
+      if(selection === undefined) {
+        this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(119) + '.');
+        return false;
+      }
+      path = selection[0];
+    }
+    return this.jsl.inter.env.addPathSep(path);
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_FILE_SYSTEM = PRDC_JSLAB_LIB_FILE_SYSTEM;

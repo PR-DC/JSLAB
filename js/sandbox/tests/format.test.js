@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 const { PRDC_JSLAB_LIB_FORMAT } = require('../format');
 var tests = new PRDC_JSLAB_TESTS();
 
@@ -111,7 +111,9 @@ tests.add('console values preserve cyclic and repeated object identities without
 
 tests.add('console property expansion pages large objects instead of serializing them recursively', function(assert) {
   var format = new PRDC_JSLAB_LIB_FORMAT({});
-  var value = Array.from({ length: 250 }, function(_item, index) { return index; });
+  var value = Array.from({ length: 250 }, function(_item, index) {
+    return index;
+  });
   var remote = format._consoleValue(value);
   var first = format._consoleProperties(remote.object_id, 0, 100);
   var second = format._consoleProperties(remote.object_id, first.next_offset, 100);
@@ -127,7 +129,10 @@ tests.add('console accessors run only after an explicit accessor request', funct
   var value = {};
   Object.defineProperty(value, 'answer', {
     enumerable: true,
-    get: function() { calls++; return 42; }
+    get: function() {
+      calls++;
+      return 42;
+    }
   });
   var format = new PRDC_JSLAB_LIB_FORMAT({});
   var remote = format._consoleValue(value);
@@ -171,7 +176,12 @@ tests.add('safeStringify does not invoke accessor-based custom formatters', func
   var calls = 0;
   var value = { normal: 1 };
   Object.defineProperty(value, 'toPrettyString', {
-    get: function() { calls++; return function() { return 'unsafe'; }; }
+    get: function() {
+      calls++;
+      return function() {
+        return 'unsafe';
+      };
+    }
   });
 
   var parsed = JSON.parse(format.safeStringify(value, 3, false));

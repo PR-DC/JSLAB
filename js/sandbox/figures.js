@@ -9,7 +9,7 @@
  * Class for JSLAB figures submodule.
  */
 class PRDC_JSLAB_LIB_FIGURES {
-  
+
   /**
    * Initializes a new instance of the figures submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -17,7 +17,7 @@ class PRDC_JSLAB_LIB_FIGURES {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    
+
     this._fonts_registred = false;
     this._fonts = [];
     this._fid = 0;
@@ -29,9 +29,9 @@ class PRDC_JSLAB_LIB_FIGURES {
     /**
      * Array of open figures.
      * @type {Array}
-     */    
+     */
     this.open_figures = {};
-    
+
     /**
      * Current active figure ID.
      * @type {Number}
@@ -86,7 +86,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Retrieves current active figure object.
    * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
@@ -106,7 +106,7 @@ class PRDC_JSLAB_LIB_FIGURES {
   gcf() {
     return this.getCurrentFigure();
   }
-  
+
   /**
    * Retrieves the plot object for a specified figure ID.
    * @param {string} fid - The identifier of the figure to retrieve the plot for.
@@ -119,7 +119,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the plot object for a specified figure ID.
    * @param {string} fid - The identifier of the figure to retrieve the plot for.
@@ -128,7 +128,7 @@ class PRDC_JSLAB_LIB_FIGURES {
   getAxes(fid) {
     return this.getPlot(fid);
   }
-  
+
   /**
    * Retrieves plot from current active figure object.
    * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
@@ -148,7 +148,7 @@ class PRDC_JSLAB_LIB_FIGURES {
   gcp() {
     return this.getCurrentPlot();
   }
-  
+
   /**
    * Retrieves plot from current active figure object.
    * @returns {(Object|boolean)} The figure object if found, otherwise `false`.
@@ -164,7 +164,7 @@ class PRDC_JSLAB_LIB_FIGURES {
   gca() {
     return this.getCurrentPlot();
   }
-  
+
   /**
    * Brings the specified figure to the foreground.
    * @param {number} fid - The ID of the figure to focus.
@@ -177,7 +177,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Sets the size of a specified figure.
    * @param {number} fid - The ID of the figure.
@@ -192,7 +192,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Sets the position of a specified figure.
    * @param {number} fid - The ID of the figure.
@@ -207,7 +207,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Sets the title of the specified figure.
    * @param {string} fid - The figure ID.
@@ -221,7 +221,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the size of a specified figure.
    * @param {number} fid - The ID of the figure.
@@ -234,7 +234,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the position of a specified figure.
    * @param {number} fid - The ID of the figure.
@@ -247,7 +247,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Retrieves the media source id of a specified figure.
    * @param {number} fid - The ID of the figure.
@@ -264,7 +264,7 @@ class PRDC_JSLAB_LIB_FIGURES {
   /**
    * Starts video recording of a specified figure.
    * @param {number} fid - The ID of the figure.
-   * @param {Object} - Optional settings. 
+   * @param {Object} - Optional settings.
    * @returns {Object|boolean} - Returns recorder object or false if the figure ID is invalid.
    */
   startFigureVideoRecording(fid, opts) {
@@ -274,7 +274,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Closes a specified figure.
    * @param {number} fid - The ID of the figure to close.
@@ -287,7 +287,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       return false;
     }
   }
-  
+
   /**
    * Closes a figure or window by its identifier.
    * @param {number|string} id - The identifier of the figure or window to close. Use "all" to close all.
@@ -303,7 +303,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         result = this.jsl.inter.env.closeWindow(id);
       } else if(type == 'figure') {
         result = this.closeFigure(id);
-      } 
+      }
     }
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
@@ -316,20 +316,20 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   async saveFigureDialog(fid) {
     var options = {
-     title: this.jsl.inter.lang.currentString(143),
-     defaultPath: fid + '.svg',
-     buttonLabel: this.jsl.inter.lang.currentString(143),
-     filters :[
-      {name: 'svg', extensions: ['svg']},
-      {name: 'pdf', extensions: ['pdf']},
-      {name: 'png', extensions: ['png']},
-      {name: 'jpg', extensions: ['jpg', 'jpeg']},
-      {name: 'webp', extensions: ['webp']},
-      {name: 'json', extensions: ['json']},
-      {name: 'static html', extensions: ['html']},
-      {name: 'interactive html', extensions: ['i.html']},
-      {name: 'interactive offline html', extensions: ['io.html']}
-     ]
+      title: this.jsl.inter.lang.currentString(143),
+      defaultPath: fid + '.svg',
+      buttonLabel: this.jsl.inter.lang.currentString(143),
+      filters: [
+        {name: 'svg', extensions: ['svg']},
+        {name: 'pdf', extensions: ['pdf']},
+        {name: 'png', extensions: ['png']},
+        {name: 'jpg', extensions: ['jpg', 'jpeg']},
+        {name: 'webp', extensions: ['webp']},
+        {name: 'json', extensions: ['json']},
+        {name: 'static html', extensions: ['html']},
+        {name: 'interactive html', extensions: ['i.html']},
+        {name: 'interactive offline html', extensions: ['io.html']}
+      ]
     };
     var figure_target = false;
     if(typeof this.jsl.inter.env.showSaveDialog == 'function') {
@@ -345,7 +345,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       await this.saveFigure(fid, figure_target);
     }
   }
-  
+
   /**
    * Saves a figure to a specified path in various formats.
    * @param {String} fid - The figure identifier.
@@ -397,7 +397,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         html_flag = true;
         ext = 'svg';
       }
-      
+
       var data_url = await this.open_figures[fid].context.plot.toImage(ext, size);
       var data;
       if(ext == 'svg') {
@@ -405,13 +405,13 @@ class PRDC_JSLAB_LIB_FIGURES {
           var html = this._readFigureTemplate(this._html_figure_path).replaceAll('%title%', this.open_figures[fid].dom.title);
           data = html.replace('%image_source%', data_url);
         } else {
-          data = decodeURIComponent(data_url.replace('data:image/svg+xml,',''));
+          data = decodeURIComponent(data_url.replace('data:image/svg+xml,', ''));
         }
         data = data.replace(/\bLatinModern\b/g, "LatinModernMath");
       } else {
-        data_url = data_url.replace('data:image/png;base64,','');
-        data_url = data_url.replace('data:image/jpeg;base64,','');
-        data_url = data_url.replace('data:image/webp;base64,','');
+        data_url = data_url.replace('data:image/png;base64,', '');
+        data_url = data_url.replace('data:image/jpeg;base64,', '');
+        data_url = data_url.replace('data:image/webp;base64,', '');
         data = this._decodeBase64(data_url);
       }
       if(pdf_flag) {
@@ -422,22 +422,22 @@ class PRDC_JSLAB_LIB_FIGURES {
         try {
           await save_output(pdf_data, 'application/pdf');
         } catch(err) {
-          this.jsl.inter.env.error('@saveFigure: '+err.stack);
+          this.jsl.inter.env.error('@saveFigure: ' + err.stack);
         }
       } else {
         try {
           await save_output(data,
             ext == 'svg' ? 'image/svg+xml;charset=utf-8' :
-            ext == 'png' ? 'image/png' :
-            ext == 'jpeg' ? 'image/jpeg' :
-            ext == 'webp' ? 'image/webp' :
-            'application/octet-stream');
+              ext == 'png' ? 'image/png' :
+                ext == 'jpeg' ? 'image/jpeg' :
+                  ext == 'webp' ? 'image/webp' :
+                    'application/octet-stream');
         } catch(err) {
-          this.jsl.inter.env.error('@saveFigure: '+err.stack);
+          this.jsl.inter.env.error('@saveFigure: ' + err.stack);
         }
       }
     } else {
-      this.jsl.inter.env.error('@saveFigure: '+this.jsl.inter.lang.string(124));
+      this.jsl.inter.env.error('@saveFigure: ' + this.jsl.inter.lang.string(124));
     }
   }
 
@@ -453,7 +453,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     }
     return typeof data == 'string' ? data : data.toString();
   }
-  
+
   /**
    * Sets the label for the x-axis of the active figure.
    * @param {String} label - The label for the x-axis.
@@ -465,7 +465,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Sets the label for the x-axis of the active figure.
    * @param {String} label - The label for the x-axis.
@@ -501,7 +501,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Sets the title of the active figure.
    * @param {String} label - The title text.
@@ -525,7 +525,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Sets the ylim of the active figure.
    * @param {String} lim - y limits.
@@ -550,7 +550,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.ignore_output = true;
   }
 
-  
+
   /**
    * Adjusts the view based on azimuth and elevation angles.
    * @param {number} azimuth - The azimuth angle.
@@ -575,7 +575,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Applies the specified style to the active figure's plot axis.
    * @param {Object} style - The style configuration to apply to the axis.
@@ -587,7 +587,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Prints the currently active figure to a file.
    * @param {String} filename - The name of the file where the figure should be printed.
@@ -600,7 +600,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Plots data on the active figure.
    * @param {Array} traces - Data traces to plot.
@@ -618,10 +618,10 @@ class PRDC_JSLAB_LIB_FIGURES {
     }
     this._pid += 1;
     var id = this._pid;
-    
+
     fid = this.figure(fid);
     this.open_figures[fid]._newPlot(id, traces, options);
-    
+
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
     return this.open_figures[fid].plot;
@@ -639,7 +639,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Updates plot data by id by delegating to the `updateById` method.
    * @param {Object|Object[]} data - Trace update object(s) to apply to the active plot.
@@ -651,7 +651,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Hides figure menu.
    */
@@ -662,8 +662,8 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
-  
+
+
   /**
    * Shows figure menu.
    */
@@ -674,7 +674,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Loads figure from JSON file
    * @param {String} file_path - Absolute or relative path to the JSON file of figure.
@@ -691,14 +691,14 @@ class PRDC_JSLAB_LIB_FIGURES {
         ? await this.jsl.inter.env.showOpenDialog(options)
         : this.jsl.inter.env.showOpenDialogSync(options);
       if(file_path === undefined || file_path === false) {
-        this.jsl.inter.env.error('loadJsonFigure: '+this.jsl.inter.lang.string(132)+'.');
+        this.jsl.inter.env.error('loadJsonFigure: ' + this.jsl.inter.lang.string(132) + '.');
         return false;
       } else {
         file_path = file_path[0];
       }
-    }    
+    }
     if(!this.jsl.inter.file_system.existFile(file_path)) {
-      this.jsl.inter.env.error('@loadJsonFigure: '+this.jsl.inter.lang.string(248));
+      this.jsl.inter.env.error('@loadJsonFigure: ' + this.jsl.inter.lang.string(248));
       return false;
     }
     var data = JSON.parse(this.jsl.inter.env.readFileSync(file_path).toString());
@@ -709,7 +709,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.open_figures[fid]._fromJSON(this._pid, data);
     return fid;
   }
-  
+
   /**
    * Updates the language of the text elements within all open figures.
    */
@@ -718,7 +718,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       figure._updateLanguage(false);
     });
   }
-  
+
   /**
    * Sets the specified figure as the active figure.
    * @param {string} fid - The identifier of the figure to set as active.
@@ -737,15 +737,18 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   _closedFigure(fid) {
     if(this.open_figures.hasOwnProperty(fid)) {
+      if(this.open_figures[fid]._animation_controls) {
+        this.open_figures[fid]._animation_controls.dispose();
+      }
       var new_fid = -1;
       if(this.active_figure == fid) {
         var fids = Object.keys(this.open_figures);
         var N = fids.length;
         if(N > 1) {
-          if(fids[N-1] !== fid) {
-            new_fid = fids[N-1];
+          if(fids[N - 1] !== fid) {
+            new_fid = fids[N - 1];
           } else {
-            new_fid = fids[N-2];
+            new_fid = fids[N - 2];
           }
         }
         this._setActiveFigure(new_fid);
@@ -753,7 +756,7 @@ class PRDC_JSLAB_LIB_FIGURES {
       delete this.open_figures[fid];
     }
   }
-  
+
   /**
    * Reads and returns font data from a specified path.
    * @param {String} font_path Path to the font file.
@@ -763,7 +766,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     try {
       return this.jsl.inter.env.readFileSync(font_path);
     } catch(err) {
-      this.jsl.inter.env.error('@getFontData: '+err.stack);
+      this.jsl.inter.env.error('@getFontData: ' + err.stack);
     }
     return false;
   }
@@ -803,7 +806,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     if(typeof this.jsl.inter.env.svgToPdf == 'function') {
       return this.jsl.inter.env.svgToPdf(data, width, height, this._fonts);
     }
-    
+
     return new Promise(function(resolve) {
       var doc = new obj.jsl.inter.env.PDFDocument({
         size: [width, height]
@@ -856,9 +859,9 @@ exports.PRDC_JSLAB_LIB_FIGURES = PRDC_JSLAB_LIB_FIGURES;
  * Represents an individual figure within the JSLAB environment, providing detailed configuration and interaction capabilities.
  */
 class PRDC_JSLAB_FIGURE {
-  
+
   #jsl;
-  
+
   /**
    * Initializes a new instance of a JSLAB figure.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -867,46 +870,50 @@ class PRDC_JSLAB_FIGURE {
    */
   constructor(jsl, fid) {
     var obj = this;
-    
+
     this.#jsl = jsl;
     this.fid = fid;
-    
+
     this.wid;
-    
+
     this.context;
     this.dom;
     this.fig_ready = false;
     this.opened = false;
-    
+
     this.plot = undefined;
 
-    this.ready = new Promise((resolve) => {
+    this.ready = new (this.#jsl._Promise || Promise)((resolve) => {
       obj._readyResolve = resolve;
     });
-    
+
     this.wid = this.#jsl.inter.windows.openWindow('figure.html');
     this.#jsl.inter.windows.open_windows[this.wid].onClosed = function() {
       if(obj.#jsl.inter.figures.open_figures[obj.fid] === obj) {
         obj.#jsl.inter.figures._closedFigure(obj.fid);
       }
-    }
+    };
   }
-  
+
   /**
    * Initializes figure.
    */
   async init() {
     if(!this.opened) {
       var win = this.#jsl.inter.windows.open_windows[this.wid];
-      if(!win) return;
+      if(!win) {
+        return;
+      }
       await win.ready;
       if(this.#jsl.inter.windows.open_windows[this.wid] !== win ||
-          this.#jsl.inter.figures.open_figures[this.fid] !== this) return;
+          this.#jsl.inter.figures.open_figures[this.fid] !== this) {
+        return;
+      }
       await this._onReady();
       this.opened = true;
     }
   }
-  
+
   /**
    * Brings the figure window to the foreground.
    */
@@ -925,7 +932,7 @@ class PRDC_JSLAB_FIGURE {
     await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].setSize(width, height);
   }
-  
+
   /**
    * Sets the position of the window.
    * @param {number} left - The desired left position of the window.
@@ -936,7 +943,7 @@ class PRDC_JSLAB_FIGURE {
     await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].setPos(left, top);
   }
-  
+
   /**
    * Sets the title of the current window.
    * @param {string} title - The new title for the window.
@@ -946,7 +953,7 @@ class PRDC_JSLAB_FIGURE {
     await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].setTitle(title);
   }
-  
+
   /**
    * Retrieves the size of the window.
    * @returns {Promise<Array>} - Resolves with an array [width, height].
@@ -955,7 +962,7 @@ class PRDC_JSLAB_FIGURE {
     await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].getSize();
   }
-  
+
   /**
    * Retrieves the position of the window.
    * @returns {Promise<Array>} - Resolves with an array [left, top].
@@ -976,14 +983,14 @@ class PRDC_JSLAB_FIGURE {
 
   /**
    * Starts video recording of the figure.
-   * @param {Object} - Optional settings. 
+   * @param {Object} - Optional settings.
    * @returns {Object|boolean} - Returns recorder object.
    */
   async startVideoRecording(opts) {
     await this.#jsl.awaitResource(this.ready);
     return await this.#jsl.inter.windows.open_windows[this.wid].startVideoRecording(opts);
   }
-  
+
   /**
    * Closes the window.
    * @returns {Promise} - Resolves when the window is closed.
@@ -992,7 +999,7 @@ class PRDC_JSLAB_FIGURE {
     var win = this.#jsl.inter.windows.open_windows[this.wid];
     return win ? await win.close() : false;
   }
-  
+
   /**
    * Hides figure menu.
    */
@@ -1002,17 +1009,17 @@ class PRDC_JSLAB_FIGURE {
       this.dom.getElementById('figure-menu-container').style.display = 'none';
     }
   }
-  
+
   /**
    * Shows figure menu.
    */
   showMenu() {
     if(this.dom) {
-      this.dom.getElementById('figure-menu-button').style.display = ''; 
-      this.dom.getElementById('figure-menu-container').style.display = ''; 
+      this.dom.getElementById('figure-menu-button').style.display = '';
+      this.dom.getElementById('figure-menu-container').style.display = '';
     }
   }
-  
+
   /**
    * Creates a new plot in the figure.
    * @param {Number} id Identifier for the new plot.
@@ -1028,7 +1035,7 @@ class PRDC_JSLAB_FIGURE {
       this.plot._onFigureReady();
     }
   }
-  
+
   /**
    * Creates a new plot in the figure based on JSON file data.
    * @param {Number} id Identifier for the new plot.
@@ -1044,7 +1051,7 @@ class PRDC_JSLAB_FIGURE {
       this.plot._onFigureReady();
     }
   }
-  
+
   /**
    * Method called when the figure is ready. Initializes interactive elements within the figure's DOM.
    * @param {Element} dom The DOM element associated with the figure.
@@ -1054,34 +1061,34 @@ class PRDC_JSLAB_FIGURE {
     this.fig_ready = true;
     this.win = this.#jsl.inter.windows.open_windows[this.wid];
     this.context = this.win.context;
-    
+
     this.dom = this.context.document;
-    
+
     this.context.addEventListener("resize", function() {
       if(obj.#jsl.inter.figures.open_figures.hasOwnProperty(obj.fid)) {
         obj._onResize();
       }
     });
-    
+
     this.dom.title = "Figure " + this.fid + " - JSLAB | PR-DC";
 
     // Menu showing
     var menu_button = this.dom.getElementById('figure-menu-button');
     var menu = this.dom.getElementById('figure-menu-container');
 
-    menu_button.addEventListener('click', function (e) {
+    menu_button.addEventListener('click', function(e) {
       e.stopPropagation();
       menu.classList.toggle('active');
       menu_button.classList.toggle('active');
     });
 
-    this.dom.addEventListener('click', function (e) {
+    this.dom.addEventListener('click', function(e) {
       if(!menu.contains(e.target) && !menu_button.contains(e.target)) {
         menu.classList.remove('active');
         menu_button.classList.remove('active');
       }
     });
-  
+
     var interval;
     menu.addEventListener('mouseenter', function() {
       clearInterval(interval);
@@ -1098,87 +1105,87 @@ class PRDC_JSLAB_FIGURE {
 
     // Menu buttons
     this.dom.getElementById('save-as-menu')
-        .addEventListener('click', function() {
-      obj.#jsl.inter.figures.saveFigureDialog(obj.fid);
-    });
+      .addEventListener('click', function() {
+        obj.#jsl.inter.figures.saveFigureDialog(obj.fid);
+      });
     this.dom.getElementById('zoom-menu')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="zoom"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="zoom"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('zoom-in-menu')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="in"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="in"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('zoom-out-menu')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="out"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="out"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('pan-menu')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="pan"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="pan"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('rotate-menu')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="orbit"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="dragmode"][data-val="orbit"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('fit-menu')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="auto"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="zoom"][data-val="auto"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('reset-menu')
-        .addEventListener('click', function() {
-      obj.#jsl.inter.plotter.updatePlotLayout(obj.plot.fid);
-    });
+      .addEventListener('click', function() {
+        obj.#jsl.inter.plotter.updatePlotLayout(obj.plot.fid);
+      });
     this.dom.getElementById('pan-menu-3d')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="scene.dragmode"][data-val="pan"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="scene.dragmode"][data-val="pan"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('rotate-menu-3d')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="scene.dragmode"][data-val="orbit"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="scene.dragmode"][data-val="orbit"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('fit-menu-3d')
-        .addEventListener('click', function() {
-      var btn = obj.dom.querySelector('button[data-attr="resetDefault"]');
-      if(btn) {
-        btn.click();
-      }
-    });
+      .addEventListener('click', function() {
+        var btn = obj.dom.querySelector('button[data-attr="resetDefault"]');
+        if(btn) {
+          btn.click();
+        }
+      });
     this.dom.getElementById('reset-menu-3d')
-        .addEventListener('click', function() {
-      obj.#jsl.inter.plotter.updatePlotLayout(obj.plot.fid);
-    });
-    
+      .addEventListener('click', function() {
+        obj.#jsl.inter.plotter.updatePlotLayout(obj.plot.fid);
+      });
+
     this._readyResolve(true);
     if(this.plot) {
-      await this.plot._onFigureReady();   
+      await this.plot._onFigureReady();
     }
   }
- 
+
   /**
    * Handles figure resize events by updating the plot layout to fit the new dimensions.
    */
@@ -1193,9 +1200,9 @@ class PRDC_JSLAB_FIGURE {
  * Represents an individual plot within the JSLAB environment, holding configuration details and facilitating interaction with the plot.
  */
 class PRDC_JSLAB_PLOT {
-  
+
   #jsl;
-  
+
   /**
    * Constructs a PRDC_JSLAB_PLOT instance with specified plot data and configuration.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -1206,13 +1213,13 @@ class PRDC_JSLAB_PLOT {
    */
   constructor(jsl, fid, id, traces = [], options = []) {
     var obj = this;
-    
+
     this.#jsl = jsl;
     this.fid = fid;
     this.id = id;
     this.traces = traces;
     this.options = options;
-    
+
     this.title_val;
     this.xlabel_val;
     this.ylabel_val;
@@ -1220,16 +1227,16 @@ class PRDC_JSLAB_PLOT {
     this.xlim_val;
     this.ylim_val;
     this.zlim_val;
-    this.view_val = [37.5+180, 30];
+    this.view_val = [37.5 + 180, 30];
     this.zoom_val = 1;
     this.axis_style_val;
     this.json_val;
     this.legend_state_val;
-    
+
     this.plot_ready = false;
     this.lim_update = false;
-    
-    this.ready = new Promise((resolve) => {
+
+    this.ready = new (this.#jsl._Promise || Promise)((resolve) => {
       obj._readyResolve = resolve;
     });
   }
@@ -1244,7 +1251,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the label for the x-axis of the plot.
    * @param {String} label Label text for the x-axis.
@@ -1277,7 +1284,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the title of the plot.
    * @param {String} label Title text for the plot.
@@ -1288,7 +1295,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the limits for the x-axis of the plot.
    * @param {String} lim Limits for the x-axis.
@@ -1300,7 +1307,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the limits for the y-axis of the plot.
    * @param {String} lim Limits for the y-axis.
@@ -1312,7 +1319,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the limits for the z-axis of the plot.
    * @param {String} lim Limits for the z-axis.
@@ -1324,7 +1331,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Adjusts the view based on azimuth and elevation angles.
    * @param {number} azimuth - The azimuth angle.
@@ -1336,7 +1343,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Adjusts the zoom based on factor.
    * @param {number} factor - The zoom factor.
@@ -1347,7 +1354,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the axis style value and updates the plot layout if the plot is ready.
    * @param {Object} style - The style configuration to set for the axis.
@@ -1358,7 +1365,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.updatePlotLayout(this.fid);
     }
   }
-  
+
   /**
    * Sets the plot data from JSON.
    * @param {Array} data Data for the plot.
@@ -1369,7 +1376,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.fromJSON(data);
     }
   }
-  
+
   /**
    * Adds a print job to the queue and prints it if the system is ready.
    * @param {String} filename - The filename for the print job.
@@ -1387,9 +1394,9 @@ class PRDC_JSLAB_PLOT {
         size = options.size;
       }
     }
-    await this.#jsl.inter.figures.saveFigure(this.fid, filename+'.'+type, size);
+    await this.#jsl.inter.figures.saveFigure(this.fid, filename + '.' + type, size);
   }
-  
+
   /**
    * Updates plot data by delegating to the `updateData` method.
    * @param {Object} traces - The trace data to be updated in the plot.
@@ -1406,7 +1413,7 @@ class PRDC_JSLAB_PLOT {
   updateById(data) {
     this.#jsl.inter.plotter.updateDataById(this.fid, data);
   }
-  
+
   /**
    * Removes the plot from the figure, cleaning up any resources associated with it.
    */
@@ -1415,7 +1422,7 @@ class PRDC_JSLAB_PLOT {
       this.#jsl.inter.plotter.remove(this.fid);
     }
   }
-  
+
   /**
    * Called when the figure containing this plot is ready, allowing for final adjustments or updates before displaying.
    */
@@ -1431,7 +1438,7 @@ class PRDC_JSLAB_PLOT {
       this._readyResolve(true);
     }
   }
-  
+
   /**
    * Handles plot resize events, updating the plot layout to accommodate new dimensions.
    */

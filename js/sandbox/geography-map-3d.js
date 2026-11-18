@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for map 3D.
  */
 class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
-  
+
   /**
    * Creates a new 3D map instance.
    * @param {Object} jsl - The JSLAB instance or environment reference.
@@ -17,18 +17,18 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
   constructor(jsl, token) {
     this.jsl = jsl;
     this.token = token;
-    
+
     // Default camera parameters
     this.latitude = 44.8768331;
     this.longitude = 20.112352;
     this.height = 1000; // meters
     this.heading = 0; // degrees
     this.pitch = -30; // degrees
-    
+
     this.wid;
     this.ready = false;
   }
-  
+
   /**
    * Opens a window with Cesium and initializes 3D map.
    * @returns {Promise<void>}
@@ -50,7 +50,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
     }
     context.map_3d_cont = context.document.getElementById('map-3d-cont');
     context.map_3d_cont.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
-    
+
     // Initialize Cesium Viewer
     context.Cesium.Ion.defaultAccessToken = this.token;
     this.viewer = new context.Cesium.Viewer(context.map_3d_cont, {
@@ -62,12 +62,12 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
       infoBox: false,
       selectionIndicator: false
     });
-    
+
     this.context = context;
     this.Cesium = context.Cesium;
     this.ready = true;
   }
-  
+
   /**
    * Sets the camera view to the specified latitude, longitude, and height.
    * @param {number} lat - Latitude.
@@ -82,7 +82,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
     this.height = height;
     this.heading = heading;
     this.pitch = pitch;
-    
+
     if(this.ready && this.viewer) {
       this.viewer.camera.flyTo({
         destination: this.context.Cesium.Cartesian3.fromDegrees(lon, lat, height),
@@ -94,7 +94,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
       });
     }
   }
-  
+
   /**
    * Adds a new entity to the 3D map.
    * @param {Object} data - The data representing the entity to add.
@@ -103,14 +103,14 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
   addEntity(data) {
     return new PRDC_JSLAB_GEOGRAPHY_MAP_3D_ENTITY(this.jsl, this, data);
   }
-  
+
   /**
    * Removes all entities from the 3D map viewer.
    */
   removeAllEntities() {
     this.viewer.entities.removeAll();
   }
-  
+
   /**
    * Animates the camera to fly to the specified entity.
    * @param {Object} entity - The entity to fly to.
@@ -124,8 +124,11 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D {
 
 exports.PRDC_JSLAB_GEOGRAPHY_MAP_3D = PRDC_JSLAB_GEOGRAPHY_MAP_3D;
 
+/**
+ * Class for geography map 3 d entity.
+ */
 class PRDC_JSLAB_GEOGRAPHY_MAP_3D_ENTITY {
-  
+
   /**
    * Creates a new 3D map entity and adds it to the viewer.
    * @param {Object} jsl - The JSL environment object.
@@ -136,10 +139,10 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_3D_ENTITY {
     this.jsl = jsl;
     this.map_3d = map_3d;
     this.data = data;
-    
+
     this.entity = this.map_3d.viewer.entities.add(data);
   }
-  
+
   /**
    * Animates the camera to fly to this entity.
    */

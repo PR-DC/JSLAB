@@ -63,5 +63,3 @@ This document tracks tasks and features to implement, bugs to fix, and ideas to 
 - Add an electronics simulator (e.g., Wokwi).
 
 - Implement symbolic computations using a native module based on GiNaC or SymEngine.
-
-- Create a Modelica GUI and compiler. See [this paper](https://ep.liu.se/ecp/096/115/ecp14096115.pdf) for reference.

@@ -4,8 +4,8 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
- 
+
+
 var { PRDC_JSLAB_GEOMETRY_SPACE_SEARCH } = require('./geometry-spacesearch');
 var { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D } = require('./geometry-boundaryfollow2d');
 var { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D } = require('./geometry-boundaryfollow3d');
@@ -14,7 +14,7 @@ var { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D } = require('./geometry-boundaryfol
  * Class for JSLAB geometry submodule.
  */
 class PRDC_JSLAB_LIB_GEOMETRY {
-  
+
   /**
    * Initializes a new instance of the geometry submodule, providing access to geometry manipulation utilities.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -23,28 +23,28 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Creates an instance of PRDC_JSLAB_GEOMETRY_SPACE_SEARCH.
    */
   spaceSearch(...args) {
     return new PRDC_JSLAB_GEOMETRY_SPACE_SEARCH(this.jsl, ...args);
   }
-  
+
   /**
    * Creates an instance of PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D.
    */
   boundaryFollow2D(...args) {
     return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(this.jsl, ...args);
   }
-  
+
   /**
    * Creates an instance of PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D.
    */
   boundaryFollow3D(...args) {
     return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(this.jsl, ...args);
   }
-  
+
   /**
    * Finds the nearest points in points2 for each point in points1.
    * @param {Array[]} points1 - Array of points.
@@ -58,14 +58,14 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       var L_min;
       for(var j = 0; j < points2.length; j++) {
         if(points1[0].length == 3) {
-          L = Math.sqrt(Math.pow(points1[i][0] - points2[j][0], 2) + 
-                        Math.pow(points1[i][1] - points2[j][1], 2) + 
+          L = Math.sqrt(Math.pow(points1[i][0] - points2[j][0], 2) +
+                        Math.pow(points1[i][1] - points2[j][1], 2) +
                         Math.pow(points1[i][2] - points2[j][2], 2));
         } else {
-          L = Math.sqrt(Math.pow(points1[i][0] - points2[j][0], 2) + 
+          L = Math.sqrt(Math.pow(points1[i][0] - points2[j][0], 2) +
                         Math.pow(points1[i][1] - points2[j][1], 2));
         }
-        if(j == 0 || L < L_min){
+        if(j == 0 || L < L_min) {
           L_min = L;
           id[i] = j;
         }
@@ -89,7 +89,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
   minDisksDistance3D(O1, n1, r1, O2, n2, r2) {
     return this.jsl.inter.env.native_module.minDisksDistance3D(O1, n1, r1, O2, n2, r2);
   }
-  
+
   /**
    * Returns the shortest distance from point P to the line defined by (A, i)
    * and the closest point (P1) on that line.
@@ -97,8 +97,8 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @param {number[]} A  - a point on the line
    * @param {number[]} i  - a unit direction vector of the line
    * @returns {{ d: number, P1: number[] }}
-   *   d   - shortest distance
-   *   P1  - point on the line with the smallest distance to P
+   * d   - shortest distance
+   * P1  - point on the line with the smallest distance to P
    */
   pointLineDistance(P, A, i) {
     // P1 = A + dot(P - A, i) * i
@@ -111,7 +111,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
 
     return { d, P1 };
   }
-  
+
   /**
    * Computes the shortest distance from a point to a line segment in 2D.
    *
@@ -128,24 +128,26 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     const abx = b.x - a.x, aby = b.y - a.y;
     const apx = p.x - a.x, apy = p.y - a.y;
     const den = abx * abx + aby * aby;
-    if(den <= 0) return Math.hypot(apx, apy);
+    if(den <= 0) {
+      return Math.hypot(apx, apy);
+    }
     let t = (apx * abx + apy * aby) / den;
     t = this.jsl.inter.math.clamp(t, 0, 1);
     const cx = a.x + t * abx, cy = a.y + t * aby;
     return Math.hypot(p.x - cx, p.y - cy);
   }
-  
+
   /**
-   * Returns the intersection points of a circle (center O, radius r) 
+   * Returns the intersection points of a circle (center O, radius r)
    * in a plane with a line passing through point P with direction i.
    * @param {number[]} P - point on the line
    * @param {number[]} i - direction vector of the line (unit)
    * @param {number[]} O - center of the circle
    * @param {number} r   - circle radius
    * @returns {{ P1: number[]|null, P2: number[]|null, flag: number }}
-   *   flag = 0 -> intersection (two points)
-   *   flag = 1 -> tangent (one point)
-   *   flag = 2 -> no intersection
+   * flag = 0 -> intersection (two points)
+   * flag = 1 -> tangent (one point)
+   * flag = 2 -> no intersection
    */
   lineCircleIntersection(P, i, O, r) {
     let P1 = null;
@@ -172,18 +174,18 @@ class PRDC_JSLAB_LIB_GEOMETRY {
 
     return { P1, P2, flag };
   }
-  
+
   /**
-   * Returns the line (point P, direction i) that is the intersection 
+   * Returns the line (point P, direction i) that is the intersection
    * of two planes, or indicates if they are the same or parallel.
    * @param {number[]} P1 - a point in plane 1
    * @param {number[]} n1 - normal to plane 1
    * @param {number[]} P2 - a point in plane 2
    * @param {number[]} n2 - normal to plane 2
    * @returns {{ P: number[]|null, i: number[]|null, flag: number }}
-   *   flag = 0 -> planes intersect
-   *   flag = 1 -> planes are the same
-   *   flag = 2 -> planes are parallel (no intersection)
+   * flag = 0 -> planes intersect
+   * flag = 1 -> planes are the same
+   * flag = 2 -> planes are parallel (no intersection)
    */
   planesIntersection(P1, n1, P2, n2) {
     let P = null;
@@ -227,8 +229,8 @@ class PRDC_JSLAB_LIB_GEOMETRY {
           // subA * C = B
           // C is 2x1 => we solve by 2x2 inverse
           const invDet = 1.0 / detSubA;
-          const C0 = invDet * ( B[0]*subA[1][1] - B[1]*subA[0][1] );
-          const C1 = invDet * (-B[0]*subA[1][0] + B[1]*subA[0][0]);
+          const C0 = invDet * (B[0] * subA[1][1] - B[1] * subA[0][1]);
+          const C1 = invDet * (-B[0] * subA[1][0] + B[1] * subA[0][0]);
 
           // Build full solution X
           const X = [0, 0, 0];
@@ -241,7 +243,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       }
       if(!solved) {
         // fallback: planes might be very close, etc.
-        P = [0, 0, 0]; 
+        P = [0, 0, 0];
       }
     } else {
       // Check if they are the same plane
@@ -262,9 +264,9 @@ class PRDC_JSLAB_LIB_GEOMETRY {
   /**
    * Checks if point P lies on the line segment A-B.
    * Returns 1 if on segment, 0 otherwise.
-   * @param {number[]} P 
-   * @param {number[]} A 
-   * @param {number[]} B 
+   * @param {number[]} P
+   * @param {number[]} A
+   * @param {number[]} B
    * @returns {number} 1 (on segment), 0 (not on segment)
    */
   isPointOnLine(P, A, B) {
@@ -335,14 +337,14 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @param {number[][]} P1i - Array of 3D points (e.g. [[x1, y1, z1], [x2, y2, z2], ...]).
    * @param {number[][]} P2i - Another array of 3D points.
    * @returns {{ L: number, P1: number[], P2: number[] }}
-   *   L  - The minimal distance found.
-   *   P1 - The point in P1i corresponding to the minimal distance.
-   *   P2 - The point in P2i corresponding to the minimal distance.
+   * L  - The minimal distance found.
+   * P1 - The point in P1i corresponding to the minimal distance.
+   * P2 - The point in P2i corresponding to the minimal distance.
    */
   minPointsDistance3D(P1i, P2i) {
     var P1ia = P1i.flat();
     var P2ia = P2i.flat();
-    
+
     let L = Infinity;
     let I = -1;
     let J = -1;
@@ -350,10 +352,10 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     for(let i = 0; i < P1ia.length; i += 3) {
       for(let j = 0; j < P2ia.length; j += 3) {
         const dx = P1ia[i]   - P2ia[j];
-        const dy = P1ia[i+1] - P2ia[j+1];
-        const dz = P1ia[i+2] - P2ia[j+2];
+        const dy = P1ia[i + 1] - P2ia[j + 1];
+        const dz = P1ia[i + 2] - P2ia[j + 2];
 
-        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
         if(dist < L) {
           L = dist;
@@ -372,7 +374,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       P2: closestP2
     };
   }
-  
+
   /**
    * Creates a new triangle instance.
    * @param {Array} p1 - First vertex.
@@ -383,7 +385,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
   triangle(p1, p2, p3) {
     return new PRDC_JSLAB_TRIANGLE(this.jsl, p1, p2, p3);
   }
-  
+
   /**
    * Performs Delaunay triangulation on a set of points.
    * @param {Array[]} points - Array of points.
@@ -402,7 +404,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     var p3 = [min_x + dx / 2, min_y + delta_max * 2, 0];
 
     var triangles = [this.triangle(p1, p2, p3)];
-    
+
     for(var point of points) {
       var bad_triangles = triangles.filter(tri => tri.circumcircleContains(point));
 
@@ -412,7 +414,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       }
 
       var unique_edges = edges.filter((edge, index, arr) =>
-        arr.filter(e => (e[0] === edge[1] && e[1] === edge[0]) || 
+        arr.filter(e => (e[0] === edge[1] && e[1] === edge[0]) ||
                         (e[0] === edge[0] && e[1] === edge[1])).length === 1
       );
 
@@ -424,15 +426,21 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
 
     var final_triangles = [];
-    for(var tri of triangles){
-      if(tri.p1 == p1 || tri.p2 == p1 || tri.p3 == p1) continue;
-      if(tri.p1 == p2 || tri.p2 == p2 || tri.p3 == p2) continue;
-      if(tri.p1 == p3 || tri.p2 == p3 || tri.p3 == p3) continue;
+    for(var tri of triangles) {
+      if(tri.p1 == p1 || tri.p2 == p1 || tri.p3 == p1) {
+        continue;
+      }
+      if(tri.p1 == p2 || tri.p2 == p2 || tri.p3 == p2) {
+        continue;
+      }
+      if(tri.p1 == p3 || tri.p2 == p3 || tri.p3 == p3) {
+        continue;
+      }
       final_triangles.push(tri);
     }
     return final_triangles;
   }
-  
+
   /**
    * Generates a rotation matrix to rotate from vector a to vector b.
    * @param {number[]} a - The initial unit vector.
@@ -448,7 +456,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(c == -1) { // Vectors are opposite
       // Find a vector orthogonal to 'a'
       var orthogonal = [0, 0, 0];
-      if(this.jsl.inter.env.math.abs(a[0]) < this.jsl.inter.env.math.abs(a[1]) && 
+      if(this.jsl.inter.env.math.abs(a[0]) < this.jsl.inter.env.math.abs(a[1]) &&
           this.jsl.inter.env.math.abs(a[0]) < this.jsl.inter.env.math.abs(a[2])) {
         orthogonal = [0, -a[2], a[1]];
       } else if(this.jsl.inter.env.math.abs(a[1]) < this.jsl.inter.env.math.abs(a[2])) {
@@ -462,8 +470,8 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       var o = orthogonal;
       return [
         [ -1 + 2 * o[0] * o[0],      2 * o[0] * o[1],      2 * o[0] * o[2],
-             2 * o[1] * o[0],  -1 + 2 * o[1] * o[1],     2 * o[1] * o[2],
-             2 * o[2] * o[0],      2 * o[2] * o[1], -1 + 2 * o[2] * o[2]]
+          2 * o[1] * o[0],  -1 + 2 * o[1] * o[1],     2 * o[1] * o[2],
+          2 * o[2] * o[0],      2 * o[2] * o[1], -1 + 2 * o[2] * o[2]]
       ];
     } else if(s === 0) { // Vectors are the same
       // Return identity matrix
@@ -500,7 +508,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       return transformed;
     });
   }
-        
+
   /**
    * Creates 3D vectors for plotting based on provided parameters.
    * @param {number[]} xi - X coordinates of vector origins.
@@ -515,13 +523,25 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Object} - An object containing line and head trace data for plotting.
    */
   createVectors3D(xi, yi, zi, ui, vi, wi, scale = 0.3, angle_factor = 0.4, opts) {
-    if(!Array.isArray(xi)) xi = [xi];
-    if(!Array.isArray(yi)) yi = [yi];
-    if(!Array.isArray(zi)) zi = [zi];
-    if(!Array.isArray(ui)) ui = [ui];
-    if(!Array.isArray(vi)) vi = [vi];
-    if(!Array.isArray(wi)) wi = [wi];
-    
+    if(!Array.isArray(xi)) {
+      xi = [xi];
+    }
+    if(!Array.isArray(yi)) {
+      yi = [yi];
+    }
+    if(!Array.isArray(zi)) {
+      zi = [zi];
+    }
+    if(!Array.isArray(ui)) {
+      ui = [ui];
+    }
+    if(!Array.isArray(vi)) {
+      vi = [vi];
+    }
+    if(!Array.isArray(wi)) {
+      wi = [wi];
+    }
+
     // Define the unit arrow once
     var arrowhead_length = scale * 1;
     var arrowhead_width = arrowhead_length * this.jsl.inter.env.math.tan(angle_factor);
@@ -537,7 +557,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
 
     // All points of the unit arrow
     var unit_arrow_points = [shaft_start, shaft_end, arrow_tip, arrow_left, arrow_right];
-    
+
     var vectors = {
       line: {
         x: [],
@@ -552,11 +572,11 @@ class PRDC_JSLAB_LIB_GEOMETRY {
         i: [],
         j: [],
         k: [],
-        type: 'mesh3d', color: '#00f', opacity: 1, flatShading: true, 
+        type: 'mesh3d', color: '#00f', opacity: 1, flatShading: true,
         showScale: false, showLegend: false, lighting: {ambient: 1}
       }
     };
-    
+
     if(typeof opts == 'object') {
       Object.assign(vectors.line, opts);
       Object.assign(vectors.head, opts);
@@ -565,10 +585,10 @@ class PRDC_JSLAB_LIB_GEOMETRY {
         vectors.head.id = opts.id + '-head';
       }
     }
-    
+
     var vertex_index = 0;
     var x_axis = [1, 0, 0];
-    
+
     for(var i = 0; i < xi.length; i++) {
       var x0 = xi[i];
       var y0 = yi[i];
@@ -576,12 +596,14 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       var u = ui[i];
       var v = vi[i];
       var w = wi[i];
-      
+
       var vector = [u, v, w];
-      
+
       // Calculate the length of the vector
       var length = this.jsl.inter.env.math.norm(vector);
-      if(length === 0) continue; // Skip zero-length vectors
+      if(length === 0) {
+        continue;
+      } // Skip zero-length vectors
 
       // Normalize the direction vector
       var dir = this.jsl.inter.array.normalizeVector(vector);
@@ -642,7 +664,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     return vectors;
   }
-  
+
   /**
    * Creates 3D disks for plotting based on provided parameters.
    * @param {number[]} xi - X coordinates of disk centers.
@@ -656,46 +678,36 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Object} - An object containing line and area trace data for plotting.
    */
   createDisks3D(xi, yi, zi, ri, ui, vi, wi, opts = {}) {
-    if(!Array.isArray(xi)) xi = [xi];
-    if(!Array.isArray(yi)) yi = [yi];
-    if(!Array.isArray(zi)) zi = [zi];
-    if(!Array.isArray(ri)) ri = [ri];
-    if(!Array.isArray(ui)) ui = [ui];
-    if(!Array.isArray(vi)) vi = [vi];
-    if(!Array.isArray(wi)) wi = [wi];
-    if(ri.length === 1 && xi.length > 1) ri = new Array(xi.length).fill(ri[0]);
-    
+    if(!Array.isArray(xi)) {
+      xi = [xi];
+    }
+    if(!Array.isArray(yi)) {
+      yi = [yi];
+    }
+    if(!Array.isArray(zi)) {
+      zi = [zi];
+    }
+    if(!Array.isArray(ri)) {
+      ri = [ri];
+    }
+    if(!Array.isArray(ui)) {
+      ui = [ui];
+    }
+    if(!Array.isArray(vi)) {
+      vi = [vi];
+    }
+    if(!Array.isArray(wi)) {
+      wi = [wi];
+    }
+    if(ri.length === 1 && xi.length > 1) {
+      ri = new Array(xi.length).fill(ri[0]);
+    }
+
     var segments = opts.segments || 32;
     delete opts.segments;
-    
-    var disks = {
-      line: {
-        x: [],
-        y: [],
-        z: [],
-        type: 'scatter3d', color: '#00f', mode: 'lines', showLegend: false
-      },
-      area: {
-        x: [],
-        y: [],
-        z: [],
-        i: [],
-        j: [],
-        k: [],
-        type: 'mesh3d', color: '#00f', opacity: 1, flatShading: true, 
-        showScale: false, showLegend: false, lighting: {ambient: 1}
-      }
-    };
-    
-    if(typeof opts == 'object') {
-      Object.assign(disks.line, opts);
-      Object.assign(disks.area, opts);
-      if(opts.hasOwnProperty('id')) {
-        disks.line.id = opts.id + '-line';
-        disks.area.id = opts.id + '-area';
-      }
-    }
-    
+
+    var disks = this._surfaceTraces(opts);
+
     var vertex_index = 0;
     var z_axis = [0, 0, 1]; // Assuming disk normal initially aligns with x-axis
 
@@ -709,7 +721,9 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       var radius = ri[i];
       var normal = [ui[i], vi[i], wi[i]];
 
-      if(radius === 0) continue; // Skip zero-radius disks
+      if(radius === 0) {
+        continue;
+      } // Skip zero-radius disks
 
       // Normalize the normal vector to ensure it's a unit vector
       var dir = this.jsl.inter.array.normalizeVector(normal);
@@ -721,7 +735,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       var translation = [x0, y0, z0];
 
       var circle = [...points];
-      
+
       // Transform the circle points to the correct position and orientation
       var transformed_points = this.transform(circle, radius, R, translation);
 
@@ -740,7 +754,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       disks.line.x.push(null);
       disks.line.y.push(null);
       disks.line.z.push(null);
-          
+
       // Add all points for mesh (area) data
       for(var j = 0; j < transformed_points.length; j++) {
         var point = transformed_points[j];
@@ -760,7 +774,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     return disks;
   }
-  
+
   /**
    * Creates a rectangular planes in 3D space, oriented by a normal vector [u, v, w].
    * @param {number[]} xi - X coordinates of planes centers.
@@ -775,58 +789,43 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Object}        - An object containing line and area trace data for plotting.
    */
   createPlanes3D(xi, yi, zi, width_i, height_i, ui, vi, wi, opts) {
-    if(!Array.isArray(xi)) xi = [xi];
-    if(!Array.isArray(yi)) yi = [yi];
-    if(!Array.isArray(zi)) zi = [zi];
-    if(!Array.isArray(width_i)) width_i = [width_i];
-    if(!Array.isArray(height_i)) height_i = [height_i];
-    if(!Array.isArray(ui)) ui = [ui];
-    if(!Array.isArray(vi)) vi = [vi];
-    if(!Array.isArray(wi)) wi = [wi];
-    if(width_i.length === 1 && xi.length > 1) width_i = new Array(xi.length).fill(width_i[0]);
-    if(height_i.length === 1 && xi.length > 1) height_i = new Array(xi.length).fill(height_i[0]);
-    
-    const planes = {
-      line: {
-        x: [],
-        y: [],
-        z: [],
-        type: 'scatter3d',
-        color: '#00f',
-        mode: 'lines',
-        showLegend: false
-      },
-      area: {
-        x: [],
-        y: [],
-        z: [],
-        i: [],
-        j: [],
-        k: [],
-        type: 'mesh3d',
-        color: '#00f',
-        opacity: 1,
-        flatShading: true,
-        showScale: false,
-        showLegend: false,
-        lighting: { ambient: 1 }
-      }
-    };
-
-    // Merge any provided opts into our line & area objects
-    if(typeof opts === 'object') {
-      Object.assign(planes.line, opts);
-      Object.assign(planes.area, opts);
-      if(opts.hasOwnProperty('id')) {
-        planes.line.id = opts.id + '-line';
-        planes.area.id = opts.id + '-area';
-      }
+    if(!Array.isArray(xi)) {
+      xi = [xi];
     }
+    if(!Array.isArray(yi)) {
+      yi = [yi];
+    }
+    if(!Array.isArray(zi)) {
+      zi = [zi];
+    }
+    if(!Array.isArray(width_i)) {
+      width_i = [width_i];
+    }
+    if(!Array.isArray(height_i)) {
+      height_i = [height_i];
+    }
+    if(!Array.isArray(ui)) {
+      ui = [ui];
+    }
+    if(!Array.isArray(vi)) {
+      vi = [vi];
+    }
+    if(!Array.isArray(wi)) {
+      wi = [wi];
+    }
+    if(width_i.length === 1 && xi.length > 1) {
+      width_i = new Array(xi.length).fill(width_i[0]);
+    }
+    if(height_i.length === 1 && xi.length > 1) {
+      height_i = new Array(xi.length).fill(height_i[0]);
+    }
+
+    const planes = this._surfaceTraces(opts);
 
     // Reference axis (z-axis) that our rectangle initially lies in (XY-plane).
     // We will rotate from z-axis to our normal.
     const z_axis = [0, 0, 1];
-    
+
     for(var i = 0; i < ui.length; i++) {
       // Create a symmetrical rectangle in the XY-plane, centered at (0,0,0)
       const rect_coords = this.symRectangle(width_i[i], height_i[i], 0);
@@ -836,16 +835,16 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       for(let i = 0; i < rect_coords.length; i += 3) {
         rectangle_points.push([rect_coords[i], rect_coords[i + 1], rect_coords[i + 2]]);
       }
-    
+
       // Normal vector
       const normal = [ui[i], vi[i], wi[i]];
-      
+
       // Normalize the plane normal
       const dir = this.jsl.inter.array.normalizeVector(normal);
 
       // Compute rotation matrix to rotate a plane (lying in XY-plane) so its normal aligns with 'dir'
       const R = this.getRotationMatrix(z_axis, dir);
-      
+
       // Rotate these points according to R
       // No scaling or translation is applied here. If you want to shift it to [x0,y0,z0], just add that translation.
       rectangle_points = this.transform(rectangle_points, 1.0, R, [xi[i], yi[i], zi[i]]);
@@ -892,13 +891,25 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Object} - lines object.
    */
   createLines3D(x1i, y1i, z1i, x2i, y2i, z2i, opts) {
-    if(!Array.isArray(x1i)) x1i = [x1i];
-    if(!Array.isArray(y1i)) y1i = [y1i];
-    if(!Array.isArray(z1i)) z1i = [z1i];
-    if(!Array.isArray(x2i)) x2i = [x2i];
-    if(!Array.isArray(y2i)) y2i = [y2i];
-    if(!Array.isArray(z2i)) z2i = [z2i];
-    
+    if(!Array.isArray(x1i)) {
+      x1i = [x1i];
+    }
+    if(!Array.isArray(y1i)) {
+      y1i = [y1i];
+    }
+    if(!Array.isArray(z1i)) {
+      z1i = [z1i];
+    }
+    if(!Array.isArray(x2i)) {
+      x2i = [x2i];
+    }
+    if(!Array.isArray(y2i)) {
+      y2i = [y2i];
+    }
+    if(!Array.isArray(z2i)) {
+      z2i = [z2i];
+    }
+
     const lines = {
       x: [],
       y: [],
@@ -913,7 +924,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(typeof opts === 'object') {
       Object.assign(lines, opts);
     }
-    
+
     for(var i = 0; i < x1i.length; i++) {
       lines.x.push(x1i[i], x2i[i], null);
       lines.y.push(y1i[i], y2i[i], null);
@@ -930,10 +941,16 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Object} - points object.
    */
   createPoints3D(xi, yi, zi, opts) {
-    if(!Array.isArray(xi)) xi = [xi];
-    if(!Array.isArray(yi)) yi = [yi];
-    if(!Array.isArray(zi)) zi = [zi];
-    
+    if(!Array.isArray(xi)) {
+      xi = [xi];
+    }
+    if(!Array.isArray(yi)) {
+      yi = [yi];
+    }
+    if(!Array.isArray(zi)) {
+      zi = [zi];
+    }
+
     const points = {
       x: [],
       y: [],
@@ -948,7 +965,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(typeof opts === 'object') {
       Object.assign(points, opts);
     }
-    
+
     for(var i = 0; i < xi.length; i++) {
       points.x.push(xi[i], null);
       points.y.push(yi[i], null);
@@ -965,17 +982,37 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Object} - points object.
    */
   createText3D(xi, yi, zi, texti, dxi, dyi, dzi, opts) {
-    if(!Array.isArray(xi)) xi = [xi];
-    if(!Array.isArray(yi)) yi = [yi];
-    if(!Array.isArray(zi)) zi = [zi];
-    if(!Array.isArray(texti)) texti = [texti];
-    if(!Array.isArray(dxi)) dxi = [dxi];
-    if(!Array.isArray(dyi)) dyi = [dyi];
-    if(!Array.isArray(dzi)) dzi = [dzi];
-    if(dxi.length === 1 && xi.length > 1) dxi = new Array(xi.length).fill(dxi[0]);
-    if(dyi.length === 1 && yi.length > 1) dyi = new Array(yi.length).fill(dyi[0]);
-    if(dzi.length === 1 && zi.length > 1) dzi = new Array(zi.length).fill(dzi[0]);
-    
+    if(!Array.isArray(xi)) {
+      xi = [xi];
+    }
+    if(!Array.isArray(yi)) {
+      yi = [yi];
+    }
+    if(!Array.isArray(zi)) {
+      zi = [zi];
+    }
+    if(!Array.isArray(texti)) {
+      texti = [texti];
+    }
+    if(!Array.isArray(dxi)) {
+      dxi = [dxi];
+    }
+    if(!Array.isArray(dyi)) {
+      dyi = [dyi];
+    }
+    if(!Array.isArray(dzi)) {
+      dzi = [dzi];
+    }
+    if(dxi.length === 1 && xi.length > 1) {
+      dxi = new Array(xi.length).fill(dxi[0]);
+    }
+    if(dyi.length === 1 && yi.length > 1) {
+      dyi = new Array(yi.length).fill(dyi[0]);
+    }
+    if(dzi.length === 1 && zi.length > 1) {
+      dzi = new Array(zi.length).fill(dzi[0]);
+    }
+
     const texts = {
       x: [],
       y: [],
@@ -995,7 +1032,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     if(typeof opts === 'object') {
       Object.assign(texts, opts);
     }
-    
+
     for(var i = 0; i < xi.length; i++) {
       texts.x.push(this.jsl.inter.plus(xi[i], dxi[i]));
       texts.y.push(this.jsl.inter.plus(yi[i], dyi[i]));
@@ -1004,7 +1041,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     return texts;
   }
-  
+
   /**
    * Creates a symmetrical rectangle in 3D space.
    * @param {number} W - Width of the rectangle.
@@ -1013,11 +1050,11 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {number[]} - Array of vertex coordinates for the rectangle.
    */
   symRectangle(W, H, Z = 0) {
-    return [W/2, H/2, Z, 
-      -W/2, H/2, Z,
-      -W/2, -H/2, Z,
-      W/2, -H/2, Z,
-      W/2, H/2, Z];
+    return [W / 2, H / 2, Z,
+      -W / 2, H / 2, Z,
+      -W / 2, -H / 2, Z,
+      W / 2, -H / 2, Z,
+      W / 2, H / 2, Z];
   }
 
   /**
@@ -1054,7 +1091,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     }
     return points;
   }
-  
+
   /**
    * Generates the boundary of a 3D shape based on points and a shrink factor.
    * @param {number[][]} points - Array of points defining the shape.
@@ -1062,16 +1099,16 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @returns {Array} - An array containing boundary facets and the volume.
    */
   boundary3D(points, shrink = 0.5) {
-    var shp = new this.jsl.inter.env.AlphaShape3D(); 
+    var shp = new this.jsl.inter.env.AlphaShape3D();
     try {
       shp.newShape(points);
-    
+
       var Acrit = shp.getCriticalAlpha('one-region');
       var spec = shp.getAlphaSpectrum();
-    
+
       var idx = spec.indexOf(Acrit);
       var subspec = spec.slice(idx);
-    
+
       var idx = Math.max(Math.ceil((1 - shrink) * subspec.length) - 1, 0);
       var alphaval = subspec[idx];
 
@@ -1083,7 +1120,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       shp.dispose();
     }
   }
-        
+
   /**
    * Writes geometry data to an OFF file.
    * @param {string} filename - The path to the OFF file.
@@ -1091,7 +1128,7 @@ class PRDC_JSLAB_LIB_GEOMETRY {
    * @param {number[][]} faces - Array of face indices.
    */
   writeOff(filename, vertices, faces) {
-    var shp = new this.jsl.inter.env.AlphaShape3D(); 
+    var shp = new this.jsl.inter.env.AlphaShape3D();
     try {
       shp.writeOff(filename, vertices, faces);
     } finally {
@@ -1109,39 +1146,39 @@ class PRDC_JSLAB_LIB_GEOMETRY {
     var data = this.jsl.inter.env.readFileSync(filename, 'utf8');
     var tokens = data.split(/\s+/).filter(token => token.length > 0);
     if(tokens[0] !== 'OFF') {
-      this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(193));
+      this.jsl.inter.env.error('@readOff: ' + this.jsl.inter.lang.string(193));
     }
     tokens.shift();
     if(tokens.length < 3) {
-      this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(194));
+      this.jsl.inter.env.error('@readOff: ' + this.jsl.inter.lang.string(194));
     }
-    
+
     var j = 0;
     tokens = tokens.map(x => parseFloat(x));
-    
+
     var nvert = tokens[j++];
     var nface = tokens[j++];
     if(!isNaN(tokens[j])) {
       j++;
     }
-    
+
     // Read vertex coordinates
     var vertices = this.jsl.inter.createArray(nvert);
     var k = 0;
     for(var i = 0; i < nvert; i++) {
       if(j + 2 >= tokens.length) {
-        this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(195));
+        this.jsl.inter.env.error('@readOff: ' + this.jsl.inter.lang.string(195));
         break;
       }
       vertices[k++] = [tokens[j++], tokens[j++], tokens[j++]];
     }
-    
+
     // Read face data
     var faces = this.jsl.inter.createArray(nface);
     var k = 0;
     for(let i = 0; i < nface; i++) {
       if(j >= tokens.length) {
-        this.jsl.inter.env.error('@readOff: '+this.jsl.inter.lang.string(196));
+        this.jsl.inter.env.error('@readOff: ' + this.jsl.inter.lang.string(196));
         break;
       }
       var vertices_per_face = tokens[j++];
@@ -1151,9 +1188,46 @@ class PRDC_JSLAB_LIB_GEOMETRY {
       }
       faces[k++] = face;
     }
-    
+
     return [ vertices, faces ];
   }
+  /**
+   * Creates independent line and filled surface traces with common plot options.
+   * @param {Object} opts Plot options.
+   * @returns {Object} Line and area traces.
+   */
+  _surfaceTraces(opts) {
+    var traces = {
+      line: {
+        x: [],
+        y: [],
+        z: [],
+        type: 'scatter3d', color: '#00f', mode: 'lines', showLegend: false
+      },
+      area: {
+        x: [],
+        y: [],
+        z: [],
+        i: [],
+        j: [],
+        k: [],
+        type: 'mesh3d', color: '#00f', opacity: 1, flatShading: true,
+        showScale: false, showLegend: false, lighting: {ambient: 1}
+      }
+    };
+
+    if(typeof opts == 'object') {
+      Object.assign(traces.line, opts);
+      Object.assign(traces.area, opts);
+      if(opts.hasOwnProperty('id')) {
+        traces.line.id = opts.id + '-line';
+        traces.area.id = opts.id + '-area';
+      }
+    }
+
+    return traces;
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_GEOMETRY = PRDC_JSLAB_LIB_GEOMETRY;
@@ -1162,9 +1236,9 @@ exports.PRDC_JSLAB_LIB_GEOMETRY = PRDC_JSLAB_LIB_GEOMETRY;
  * Class for JSLAB triangle.
  */
 class PRDC_JSLAB_TRIANGLE {
-  
+
   #jsl;
-  
+
   /**
    * Creates a new triangle instance.
    * @constructor
@@ -1177,7 +1251,7 @@ class PRDC_JSLAB_TRIANGLE {
     this.#jsl = jsl;
     this._set(v1, v2, v3);
   }
-  
+
   /**
    * Sets the triangle vertices and edges.
    * @param {Array} v1 - First vertex.
@@ -1190,7 +1264,7 @@ class PRDC_JSLAB_TRIANGLE {
       v2 = v1[1];
       v1 = v1[0];
     }
-    
+
     this.v1 = v1 || [];
     this.v2 = v2 || [];
     this.v3 = v3 || [];
@@ -1198,7 +1272,7 @@ class PRDC_JSLAB_TRIANGLE {
       [v1, v2], [v2, v3], [v3, v1]
     ];
   }
-  
+
   /**
    * Checks if the triangle's circumcircle contains a point.
    * @param {Array} point - The point to test.
@@ -1220,7 +1294,7 @@ class PRDC_JSLAB_TRIANGLE {
 
     return det > 0;
   }
-  
+
   /**
    * Determines if a point is inside the triangle.
    * @param {Array} point - The point to check.
@@ -1234,10 +1308,10 @@ class PRDC_JSLAB_TRIANGLE {
     var d2 = sign(point, this.v2, this.v3);
     var d3 = sign(point, this.v3, this.v1);
 
-    return (d1 >= 0 && d2 >= 0 && d3 >= 0) 
+    return (d1 >= 0 && d2 >= 0 && d3 >= 0)
       || (d1 <= 0 && d2 <= 0 && d3 <= 0);
   }
-  
+
   /**
    * Computes the interpolated value at a point using barycentric coordinates.
    * @param {Array} point - The query point.
@@ -1246,14 +1320,14 @@ class PRDC_JSLAB_TRIANGLE {
   valueAt(point) {
     const denom = ((this.v2[1] - this.v3[1]) * (this.v1[0] - this.v3[0]) +
                    (this.v3[0] - this.v2[0]) * (this.v1[1] - this.v3[1]));
-    
+
     // Compute barycentric coordinates
     const alpha = ((this.v2[1] - this.v3[1]) * (point[0] - this.v3[0]) +
                    (this.v3[0] - this.v2[0]) * (point[1] - this.v3[1])) / denom;
     const beta = ((this.v3[1] - this.v1[1]) * (point[0] - this.v3[0]) +
                   (this.v1[0] - this.v3[0]) * (point[1] - this.v3[1])) / denom;
     const gamma = 1 - alpha - beta;
-    
+
     return alpha * this.v1[2] + beta * this.v2[2] + gamma * this.v3[2];
   }
 }

@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
-  
+
 /**
  * Class representing a video call.
  */
 class PRDC_JSLAB_VIDEOCALL {
-  
+
   /**
    * Creates a new video call instance.
    * @param {string} type - The call type ('server' or 'client').
@@ -31,17 +31,17 @@ class PRDC_JSLAB_VIDEOCALL {
     this.port = tcp_port;
     this.opts = opts || {};
     this.timeout = this.opts.timeout || 15000;
-    
+
     this.is_initiator = (this.type == 'server');
     this.peer_connection;
     this.local_stream;
     this.remote_stream;
     this.incoming_buffer = '';
-    
+
     this.jsl.addForCleanup(this, function() {
       obj.endCall();
     });
-    
+
     this._init();
   }
 
@@ -74,19 +74,19 @@ class PRDC_JSLAB_VIDEOCALL {
     if(this.tcp_client) {
       try {
         this.tcp_client.close();
-      } catch { }
+      } catch{ }
     }
     this._connectClient();
   }
-  
+
   /**
    * Initializes the video call by opening a window, setting up the UI, obtaining media, and creating the peer connection.
    */
   async _init() {
     var obj = this;
-    
+
     this.win = await this.jsl.inter.windows.openWindowBlank();
-    this.win.setTitle(this.jsl.inter.lang.currentString(533));
+    this.win.setTitle(this.jsl.inter.lang.currentString(532));
     this.win.document.body.innerHTML += '<video id="video"></video>';
     this.dom = this.win.document.getElementById('video');
     Object.assign(this.dom.style, {
@@ -101,7 +101,7 @@ class PRDC_JSLAB_VIDEOCALL {
     });
     await this._getLocalMedia();
     this._createPeerConnection();
-    
+
     if(this.is_initiator) {
       this.tcp_server = this.jsl.inter.networking.tcpServer(this.host, this.port, function(socket) {
         obj._setupServerSocketHandlers(socket);
@@ -110,7 +110,7 @@ class PRDC_JSLAB_VIDEOCALL {
       this._connectClient();
     }
   }
-  
+
   /**
    * Sets up handlers for the server-side socket once a client connects.
    * @param {Object} socket - The connected socket.
@@ -151,10 +151,10 @@ class PRDC_JSLAB_VIDEOCALL {
         try {
           let msg = JSON.parse(line);
           this._handleSignalingMessage(msg);
-        } catch { }
+        } catch{ }
       }
     }
-    
+
     this.incoming_buffer = lines[0];
   }
 
@@ -187,10 +187,10 @@ class PRDC_JSLAB_VIDEOCALL {
     }
 
     this.peer_connection.ontrack = function(e) {
-      obj.dom.srcObject = e.streams[0]; 
+      obj.dom.srcObject = e.streams[0];
       obj.dom.play();
     };
-    
+
     this.peer_connection.onicecandidate = function(e) {
       if(e.candidate) {
         obj._sendSignalingMessage({ type: 'candidate', candidate: e.candidate});
@@ -204,13 +204,13 @@ class PRDC_JSLAB_VIDEOCALL {
   async _getLocalMedia() {
     var video_opts = this.opts.video || {};
     var mic_opts = this.opts.mic || {};
-    
+
     var constraints = {};
-    
+
     if(!this.video_source_type || !this.video_id) {
       constraints.video = false;
     } else if(this.video_source_type === 'webcam') {
-      constraints.video = { 
+      constraints.video = {
         deviceId: { exact: this.video_id },
         ...video_opts
       };
@@ -223,7 +223,7 @@ class PRDC_JSLAB_VIDEOCALL {
         }
       };
     }
-   
+
     if(!this.mic_id) {
       constraints.audio = false;
     } else {
@@ -232,15 +232,15 @@ class PRDC_JSLAB_VIDEOCALL {
         ...mic_opts
       };
     }
-    
+
     try {
       if(constraints.audio || constraints.video) {
         this.local_stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
       } else {
         this.local_stream = new this.jsl.inter.MediaStream();
       }
-    } catch {
-      this.jsl.inter.env.error('@videocall: '+this.jsl.inter.lang.string(222));
+    } catch{
+      this.jsl.inter.env.error('@videocall: ' + this.jsl.inter.lang.string(222));
     }
   }
 
@@ -248,7 +248,9 @@ class PRDC_JSLAB_VIDEOCALL {
    * Starts the call by creating and sending an offer if the instance is the initiator.
    */
   async _startCall() {
-    if(!this.is_initiator) return;
+    if(!this.is_initiator) {
+      return;
+    }
     const offer = await this.peer_connection.createOffer({offerToReceiveVideo: true, offerToReceiveAudio: true});
     await this.peer_connection.setLocalDescription(offer);
     this._sendSignalingMessage({ type: 'offer', sdp: this.peer_connection.localDescription });
@@ -271,7 +273,7 @@ class PRDC_JSLAB_VIDEOCALL {
     if(!this.is_initiator) {
       this.connection_timeout = this.jsl.inter.clearTimeoutIf(this.connection_timeout);
     }
-    
+
     switch(message.type) {
       case 'request-offer':
         if(this.is_initiator) {
@@ -301,7 +303,7 @@ class PRDC_JSLAB_VIDEOCALL {
         break;
     }
   }
-  
+
   /**
    * Sets a callback function to handle incoming messages.
    * @param {Function} callback - The function to call when a message is received.
@@ -311,7 +313,7 @@ class PRDC_JSLAB_VIDEOCALL {
       this._onMessage = callback;
     }
   }
-  
+
   /**
    * Sends a message to the connected peer.
    * @param {any} data - The data to send.
@@ -319,7 +321,7 @@ class PRDC_JSLAB_VIDEOCALL {
   sendMessage(data) {
     this._sendSignalingMessage({ type: 'message', data: data });
   }
-  
+
   /**
    * Toggles the local audio track on or off.
    * @param {boolean} mute - If true, mutes the audio; otherwise, unmutes.
@@ -347,7 +349,7 @@ class PRDC_JSLAB_VIDEOCALL {
     if(!this.is_initiator) {
       this.connection_timeout = this.jsl.inter.clearTimeoutIf(this.connection_timeout);
     }
-    
+
     if(this.peer_connection) {
       this.peer_connection.close();
     }

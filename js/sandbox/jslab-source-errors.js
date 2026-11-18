@@ -5,9 +5,14 @@
  * info@pr-dc.com
  */
 
-/** Formats errors independently of the currently executing script. */
+/**
+ * Formats errors independently of the currently executing script.
+ */
 class PRDC_JSLAB_SOURCE_ERRORS {
-  /** @param {Object} evaluator Evaluator owning generated source records. */
+  /**
+   * Initializes the source errors instance.
+   * @param {Object} evaluator Evaluator owning generated source records.
+   */
   constructor(evaluator) {
     this.evaluator = evaluator;
     this.objects = new WeakMap();
@@ -23,11 +28,15 @@ class PRDC_JSLAB_SOURCE_ERRORS {
   capture(value, location) {
     const table = value !== null && (typeof value === 'object' || typeof value === 'function') ? this.objects : this.primitives;
     table.set(value, location);
-    if(table === this.primitives && table.size > 100) table.delete(table.keys().next().value);
+    if(table === this.primitives && table.size > 100) {
+      table.delete(table.keys().next().value);
+    }
     return value;
   }
 
-  /** Adds location capture to throws and explicit Promise rejections, preserving their values. */
+  /**
+   * Adds location capture to throws and explicit Promise rejections, preserving their values.
+   */
   instrument(ast, recast, runtime_identifier, script) {
     const b = recast.types.builders;
     const capture = (value, node) => b.callExpression(b.memberExpression(b.memberExpression(
@@ -38,7 +47,9 @@ class PRDC_JSLAB_SOURCE_ERRORS {
     recast.types.visit(ast, {
       visitThrowStatement(path) {
         this.traverse(path);
-        if(path.node.loc) path.node.argument = capture(path.node.argument, path.node);
+        if(path.node.loc) {
+          path.node.argument = capture(path.node.argument, path.node);
+        }
         return false;
       },
       visitCallExpression(path) {
@@ -54,31 +65,51 @@ class PRDC_JSLAB_SOURCE_ERRORS {
     });
   }
 
-  /** @param {string} line One V8/Firefox stack line. @returns {Object|null} Frame. */
+  /**
+   * Handles parse frame.
+   * @param {string} line One V8/Firefox stack line.
+   * @returns {Object|null} Frame.
+   */
   parseFrame(line) {
     let text = String(line).trim();
     let name = '';
     if(text.startsWith('at ')) {
       text = text.slice(3);
       const parenthesized = text.match(/^(.*?) \((.*)\)$/);
-      if(parenthesized) { name = parenthesized[1]; text = parenthesized[2]; }
-      else if(text.startsWith('async ')) { name = 'async'; text = text.slice(6); }
+      if(parenthesized) {
+        name = parenthesized[1];
+        text = parenthesized[2];
+      } else if(text.startsWith('async ')) {
+        name = 'async';
+        text = text.slice(6);
+      }
     } else {
       const separator = text.indexOf('@');
-      if(separator >= 0) { name = text.slice(0, separator); text = text.slice(separator + 1); }
-      else return null;
+      if(separator >= 0) {
+        name = text.slice(0, separator);
+        text = text.slice(separator + 1);
+      } else {
+        return null;
+      }
     }
     const match = text.match(/^(.*):(\d+):(\d+)$/);
-    if(!match) return null;
+    if(!match) {
+      return null;
+    }
     return { function_name: name, path: match[1], line: Number(match[2]), column: Number(match[3]) };
   }
 
-  /** Maps a stack frame, preserving original paths and selected-line offsets. */
+  /**
+   * Maps a stack frame, preserving original paths and selected-line offsets.
+   */
   async mapFrame(frame) {
     const source = this.evaluator.debug_sources.get(frame.path);
     if(!source) {
-      try { return await this.evaluator.jsl?.inter?.env?.resolveModulePosition?.(frame) || frame; }
-      catch(error) { return frame; }
+      try {
+        return await this.evaluator.jsl?.inter?.env?.resolveModulePosition?.(frame) || frame;
+      } catch(error) {
+        return frame;
+      }
     }
     try {
       const position = await this.evaluator.getOriginalPosition(source.map, frame.line, frame.column - 1);
@@ -123,17 +154,25 @@ class PRDC_JSLAB_SOURCE_ERRORS {
         message = String(error);
         explicit = this.primitives.get(error);
       }
-    } catch(read_error) { message = 'An uninspectable value was thrown.'; }
+    } catch(read_error) {
+      message = 'An uninspectable value was thrown.';
+    }
     const frames = [];
     const seen = new Set();
     for(const line of raw_stack.split(/\r?\n/).slice(0, 100)) {
       const parsed = this.parseFrame(line);
-      if(!parsed) continue;
+      if(!parsed) {
+        continue;
+      }
       const mapped = await this.mapFrame(parsed);
       if(!mapped.mapped && (/^node:/.test(mapped.path) || /[\\/]js[\\/]sandbox[\\/]/.test(mapped.path) ||
-          /\/js\/(debug-worker|init-sandbox-frame|sandbox-worker)\.js$/.test(mapped.path))) continue;
+          /\/js\/(debug-worker|sandbox-frame)\.js$/.test(mapped.path))) {
+        continue;
+      }
       const key = mapped.path + ':' + mapped.line + ':' + mapped.column + ':' + mapped.function_name;
-      if(seen.has(key)) continue;
+      if(seen.has(key)) {
+        continue;
+      }
       seen.add(key);
       frames.push(mapped);
     }
@@ -151,7 +190,9 @@ class PRDC_JSLAB_SOURCE_ERRORS {
             const source = env.readFileSync(header[1], 'utf8');
             env.babel_parser.parse(String(source), { sourceType: 'unambiguous', allowReturnOutsideFunction: true });
           } catch(parse_error) {
-            if(parse_error.loc) explicit = { path: header[1], line: parse_error.loc.line, column: parse_error.loc.column + 1 };
+            if(parse_error.loc) {
+              explicit = { path: header[1], line: parse_error.loc.line, column: parse_error.loc.column + 1 };
+            }
           }
         }
       }

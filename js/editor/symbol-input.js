@@ -1,5 +1,8 @@
 /**
  * @file JSLAB editor symbol input module
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
  */
 
 const SYMBOL_GROUPS = [
@@ -101,7 +104,7 @@ class PRDC_JSLAB_EDITOR_SYMBOL_INPUT {
 
     this.container.appendChild(fragment);
   }
-  
+
   /**
    * Gets translated group title text.
    * @param {object} group Group descriptor.

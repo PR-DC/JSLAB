@@ -6,13 +6,14 @@
  */
 
 const { PRDC_JSLAB_WORKSPACE_SERIALIZER } = require('./jslab-workspace-serializer');
- 
+
 /**
  * Class for JSLAB basic submodule.
  */
 class PRDC_JSLAB_LIB_BASIC {
 
-  /** Sets a conditional source breakpoint or enables an error breakpoint.
+  /**
+   * Sets a conditional source breakpoint or enables an error breakpoint.
    * @param {string} path Script path, 'error', or 'caught error'.
    * @param {number} [line] One-based line.
    * @param {string} [condition=''] Condition evaluated in the paused scope.
@@ -20,28 +21,42 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Promise<Object>|Object} Updated debugger configuration.
    */
   dbstop(path, line = 1, condition = '', enabled = true) {
-    if(path === 'error' || path === 'caught error') return this.jsl.inter.env.debugCommand('set_exception_pause', { state: path === 'error' ? 'uncaught' : 'all' });
-    if(typeof path !== 'string' || !Number.isInteger(line) || line < 1 || typeof condition !== 'string' || typeof enabled !== 'boolean') throw Error('Invalid breakpoint arguments.');
+    if(path === 'error' || path === 'caught error') {
+      return this.jsl.inter.env.debugCommand('set_exception_pause', { state: path === 'error' ? 'uncaught' : 'all' });
+    }
+    if(typeof path !== 'string' || !Number.isInteger(line) || line < 1 || typeof condition !== 'string' || typeof enabled !== 'boolean') {
+      throw Error('Invalid breakpoint arguments.');
+    }
     return this.jsl.inter.env.debugCommand('set_breakpoint', { path: this.jsl.pathResolve(path) || path, line, condition, enabled });
   }
 
-  /** Clears one breakpoint or all line/error breakpoints.
+  /**
+   * Clears one breakpoint or all line/error breakpoints.
    * @param {string} [path='all'] Script path or 'all'.
    * @param {number} [line] One-based line.
    * @returns {Promise<Object>|Object} Updated debugger configuration.
    */
   dbclear(path = 'all', line) {
-    if(path === 'all') return this.jsl.inter.env.debugCommand('clear_breakpoints');
-    if(path === 'error' || path === 'caught error') return this.jsl.inter.env.debugCommand('set_exception_pause', { state: 'none' });
-    if(!Number.isInteger(line) || line < 1) throw Error('Expected a positive line number.');
+    if(path === 'all') {
+      return this.jsl.inter.env.debugCommand('clear_breakpoints');
+    }
+    if(path === 'error' || path === 'caught error') {
+      return this.jsl.inter.env.debugCommand('set_exception_pause', { state: 'none' });
+    }
+    if(!Number.isInteger(line) || line < 1) {
+      throw Error('Expected a positive line number.');
+    }
     return this.jsl.inter.env.debugCommand('remove_breakpoint', { id: (this.jsl.pathResolve(path) || path) + ':' + line });
   }
 
-  /** Returns current line and exception breakpoint settings.
+  /**
+   * Returns current line and exception breakpoint settings.
    * @returns {Promise<Object>|Object} Debugger state and breakpoint configuration.
    */
-  dbstatus() { return this.jsl.inter.env.debugCommand('get_debug_state'); }
-  
+  dbstatus() {
+    return this.jsl.inter.env.debugCommand('get_debug_state');
+  }
+
   /**
    * Initializes a new instance of the PRDC_JSLAB_LIB_BASIC class.
    * @param {Object} jsl The JSLAB application instance this submodule is part of.
@@ -50,7 +65,7 @@ class PRDC_JSLAB_LIB_BASIC {
     var obj = this;
     this.jsl = jsl;
     this._workspace_serializer = new PRDC_JSLAB_WORKSPACE_SERIALIZER(this.jsl);
-    
+
     /**
      * Stores the result of the last evaluated expression.
      * @type {any}
@@ -61,35 +76,51 @@ class PRDC_JSLAB_LIB_BASIC {
     this._inspected_objects = [];
     Object.defineProperty(this.jsl.context, '$_', {
       configurable: true,
-      get: function() { return obj.jsl.context.ans; }
+      get: function() {
+        return obj.jsl.context.ans;
+      }
     });
     var document_ref = this.jsl.context.document;
     if(document_ref && typeof document_ref.querySelector === 'function') {
-      if(typeof this.jsl.context.$ === 'undefined') this.jsl.context.$ =
-        function(selector, start = document_ref) { return start.querySelector(selector); };
-      if(typeof this.jsl.context.$$ === 'undefined') this.jsl.context.$$ =
-        function(selector, start = document_ref) { return Array.from(start.querySelectorAll(selector)); };
-      if(typeof this.jsl.context.$x === 'undefined') this.jsl.context.$x = function(path, start = document_ref) {
-        var result = document_ref.evaluate(path, start, null,
-          document_ref.defaultView.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-        return Array.from({ length: result.snapshotLength }, function(_value, index) {
-          return result.snapshotItem(index);
-        });
-      };
+      if(typeof this.jsl.context.$ === 'undefined') {
+        this.jsl.context.$ =
+        function(selector, start = document_ref) {
+          return start.querySelector(selector);
+        };
+      }
+      if(typeof this.jsl.context.$$ === 'undefined') {
+        this.jsl.context.$$ =
+        function(selector, start = document_ref) {
+          return Array.from(start.querySelectorAll(selector));
+        };
+      }
+      if(typeof this.jsl.context.$x === 'undefined') {
+        this.jsl.context.$x = function(path, start = document_ref) {
+          var result = document_ref.evaluate(path, start, null,
+            document_ref.defaultView.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+          return Array.from({ length: result.snapshotLength }, function(_value, index) {
+            return result.snapshotItem(index);
+          });
+        };
+      }
     }
     for(let inspected_index = 0; inspected_index < 5; inspected_index++) {
       Object.defineProperty(this.jsl.context, '$' + inspected_index, {
         configurable: true,
-        get: function() { return obj._inspected_objects[inspected_index]; }
+        get: function() {
+          return obj._inspected_objects[inspected_index];
+        }
       });
     }
     if(Array.isArray(this.jsl.builtin_workspace)) {
       ['$_', '$0', '$1', '$2', '$3', '$4', '$', '$$', '$x'].forEach(function(name) {
         if(Object.prototype.hasOwnProperty.call(obj.jsl.context, name) &&
-            !obj.jsl.builtin_workspace.includes(name)) obj.jsl.builtin_workspace.push(name);
+            !obj.jsl.builtin_workspace.includes(name)) {
+          obj.jsl.builtin_workspace.push(name);
+        }
       });
     }
-    
+
     /**
      * Clears all defined variables in the current context.
      * @name clear
@@ -277,7 +308,7 @@ class PRDC_JSLAB_LIB_BASIC {
     }
     return await this.jsl.inter.eval.runScript(script_path, lines, silent);
   }
-  
+
   /**
    * Retrieves the file name of the currently active JSL script.
    * @returns {string} The file name of the JSL script.
@@ -403,22 +434,13 @@ class PRDC_JSLAB_LIB_BASIC {
     var trimmed = name.trim();
     var matches = [];
 
-    function pushUnique(path_in) {
-      if(typeof path_in !== 'string' || !path_in.length) {
-        return;
-      }
-      var out = path_in;
-      if(typeof obj.jsl.inter.env.pathNormalize === 'function') {
-        out = obj.jsl.inter.env.pathNormalize(out);
-      }
-      if(!matches.includes(out)) {
-        matches.push(out);
-      }
-    }
+    const pushUnique = path_in => this._pushUniqueMatch(matches, path_in);
 
     var check_file = typeof this.jsl.inter.env.checkFile === 'function'
       ? this.jsl.inter.env.checkFile.bind(this.jsl.inter.env)
-      : function() { return false; };
+      : function() {
+        return false;
+      };
 
     if(typeof this.jsl.inter.env.pathIsAbsolute === 'function' &&
         this.jsl.inter.env.pathIsAbsolute(trimmed)) {
@@ -447,7 +469,7 @@ class PRDC_JSLAB_LIB_BASIC {
               this.jsl.inter.env.pathIsAbsolute(resolved))) {
           pushUnique(resolved);
         }
-      } catch {
+      } catch{
         // Ignore unresolved modules.
       }
     }
@@ -468,22 +490,13 @@ class PRDC_JSLAB_LIB_BASIC {
     var trimmed = name.trim();
     var matches = [];
 
-    function pushUnique(path_in) {
-      if(typeof path_in !== 'string' || !path_in.length) {
-        return;
-      }
-      var out = path_in;
-      if(typeof obj.jsl.inter.env.pathNormalize === 'function') {
-        out = obj.jsl.inter.env.pathNormalize(out);
-      }
-      if(!matches.includes(out)) {
-        matches.push(out);
-      }
-    }
+    const pushUnique = path_in => this._pushUniqueMatch(matches, path_in);
 
     var check_dir = typeof this.jsl.inter.env.checkDirectory === 'function'
       ? this.jsl.inter.env.checkDirectory.bind(this.jsl.inter.env)
-      : function() { return false; };
+      : function() {
+        return false;
+      };
 
     if(typeof this.jsl.inter.env.pathIsAbsolute === 'function' &&
         this.jsl.inter.env.pathIsAbsolute(trimmed)) {
@@ -542,10 +555,14 @@ class PRDC_JSLAB_LIB_BASIC {
   _resolveDirTarget(target) {
     var check_dir = typeof this.jsl.inter.env.checkDirectory === 'function'
       ? this.jsl.inter.env.checkDirectory.bind(this.jsl.inter.env)
-      : function() { return false; };
+      : function() {
+        return false;
+      };
     var check_file = typeof this.jsl.inter.env.checkFile === 'function'
       ? this.jsl.inter.env.checkFile.bind(this.jsl.inter.env)
-      : function() { return false; };
+      : function() {
+        return false;
+      };
 
     if(typeof target === 'undefined' || target === null || target === '') {
       return { type: 'directory', directory: this.jsl.current_path };
@@ -610,37 +627,7 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Array<string>} Updated search path entries.
    */
   addpath(...args) {
-    var obj = this;
-    var values = [];
-
-    function pushValue(value) {
-      if(typeof value === 'string') {
-        var trimmed = value.trim();
-        if(trimmed.length) {
-          values.push(trimmed);
-        }
-      } else if(Array.isArray(value)) {
-        value.forEach(pushValue);
-      }
-    }
-
-    args.forEach(pushValue);
-    values.forEach(function(value) {
-      var target_path = value;
-      if(typeof obj.jsl.inter.env.pathIsAbsolute === 'function' &&
-          typeof obj.jsl.inter.env.pathJoin === 'function' &&
-          !obj.jsl.inter.env.pathIsAbsolute(target_path)) {
-        target_path = obj.jsl.inter.env.pathJoin(obj.jsl.current_path, target_path);
-      }
-      if(typeof obj.jsl.inter.env.pathNormalize === 'function') {
-        target_path = obj.jsl.inter.env.pathNormalize(target_path);
-      }
-      obj.savePath(target_path);
-    });
-
-    this.jsl.no_ans = true;
-    this.jsl.ignore_output = true;
-    return this.path();
+    return this._modifySearchPaths(args, 'savePath');
   }
 
   /**
@@ -650,37 +637,7 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Array<string>} Updated search path entries.
    */
   rmpath(...args) {
-    var obj = this;
-    var values = [];
-
-    function pushValue(value) {
-      if(typeof value === 'string') {
-        var trimmed = value.trim();
-        if(trimmed.length) {
-          values.push(trimmed);
-        }
-      } else if(Array.isArray(value)) {
-        value.forEach(pushValue);
-      }
-    }
-
-    args.forEach(pushValue);
-    values.forEach(function(value) {
-      var target_path = value;
-      if(typeof obj.jsl.inter.env.pathIsAbsolute === 'function' &&
-          typeof obj.jsl.inter.env.pathJoin === 'function' &&
-          !obj.jsl.inter.env.pathIsAbsolute(target_path)) {
-        target_path = obj.jsl.inter.env.pathJoin(obj.jsl.current_path, target_path);
-      }
-      if(typeof obj.jsl.inter.env.pathNormalize === 'function') {
-        target_path = obj.jsl.inter.env.pathNormalize(target_path);
-      }
-      obj.removePath(target_path);
-    });
-
-    this.jsl.no_ans = true;
-    this.jsl.ignore_output = true;
-    return this.path();
+    return this._modifySearchPaths(args, 'removePath');
   }
 
   /**
@@ -822,15 +779,31 @@ class PRDC_JSLAB_LIB_BASIC {
       typeof this.jsl.context[symbol] === 'function'
     );
 
-    if(mode === 'var') return var_exists ? 1 : 0;
-    if(mode === 'file') return file_exists ? 2 : 0;
-    if(mode === 'dir' || mode === 'folder') return dir_exists ? 7 : 0;
-    if(mode === 'builtin') return builtin_exists ? 5 : 0;
+    if(mode === 'var') {
+      return var_exists ? 1 : 0;
+    }
+    if(mode === 'file') {
+      return file_exists ? 2 : 0;
+    }
+    if(mode === 'dir' || mode === 'folder') {
+      return dir_exists ? 7 : 0;
+    }
+    if(mode === 'builtin') {
+      return builtin_exists ? 5 : 0;
+    }
 
-    if(var_exists) return 1;
-    if(file_exists) return 2;
-    if(builtin_exists) return 5;
-    if(dir_exists) return 7;
+    if(var_exists) {
+      return 1;
+    }
+    if(file_exists) {
+      return 2;
+    }
+    if(builtin_exists) {
+      return 5;
+    }
+    if(dir_exists) {
+      return 7;
+    }
     return 0;
   }
 
@@ -875,18 +848,8 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Array<string>} Variable names.
    */
   who(...names) {
-    var filters = [];
-    names.forEach(function(name) {
-      if(typeof name === 'string' && name.length) {
-        filters.push(name);
-      } else if(Array.isArray(name)) {
-        name.forEach(function(sub_name) {
-          if(typeof sub_name === 'string' && sub_name.length) {
-            filters.push(sub_name);
-          }
-        });
-      }
-    });
+    var filters = this._collectStringArguments(names);
+
     var vars = this.jsl.getWorkspaceProperties();
     if(!Array.isArray(vars)) {
       return [];
@@ -904,18 +867,8 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Array<Array<string>>} Workspace descriptor rows.
    */
   whos(...names) {
-    var filters = [];
-    names.forEach(function(name) {
-      if(typeof name === 'string' && name.length) {
-        filters.push(name);
-      } else if(Array.isArray(name)) {
-        name.forEach(function(sub_name) {
-          if(typeof sub_name === 'string' && sub_name.length) {
-            filters.push(sub_name);
-          }
-        });
-      }
-    });
+    var filters = this._collectStringArguments(names);
+
     var rows = this.jsl.getWorkspace();
     if(!Array.isArray(rows)) {
       return [];
@@ -928,6 +881,9 @@ class PRDC_JSLAB_LIB_BASIC {
     });
   }
 
+  /**
+   * Handles cmd help.
+   */
   _cmd_help() {
     this.jsl.inter.env.cmd_help();
     this.jsl.no_ans = true;
@@ -951,7 +907,7 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Retrieves the current working directory.
    * @returns {string} The current working directory.
@@ -986,7 +942,7 @@ class PRDC_JSLAB_LIB_BASIC {
   _version() {
     return this.jsl.inter.env.version;
   }
-  
+
   /**
    * Retrieves the operating system platform.
    * @returns {string} The OS platform.
@@ -994,7 +950,7 @@ class PRDC_JSLAB_LIB_BASIC {
   _platform() {
     return this.jsl.inter.env.platform;
   }
-  
+
   /**
    * Retrieves if the JSLAB application is currently in debug mode.
    * @returns {boolean} True if the application is in debug mode; otherwise, false.
@@ -1002,7 +958,7 @@ class PRDC_JSLAB_LIB_BASIC {
   _debug_flag() {
     return this.jsl.inter.env.debug;
   }
-  
+
   /**
    * Retrieves the current workspace.
    * @returns {Object} The current workspace object.
@@ -1019,7 +975,7 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Updates the file browser display based on the current state.
    */
@@ -1123,7 +1079,7 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.inter.env.disp(msg);
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
-    return msg+"\n";
+    return msg + "\n";
   }
 
   /**
@@ -1134,9 +1090,9 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.inter.env.dispMonospaced(msg);
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
-    return msg+"\n";
+    return msg + "\n";
   }
-  
+
   /**
    * Displays a warning message.
    * @param {string} msg The warning message to display.
@@ -1146,7 +1102,7 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
   }
-  
+
   /**
    * Opens a specified file in the editor or just opens the editor if no file is specified.
    * @param {string} [filepath] The path to the file to open in the editor.
@@ -1169,19 +1125,25 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   _updatepoint() {
     this._logpoint();
-  } 
+  }
 
-  /** Pauses at a real debugger frame, preserving the user's call stack. */
+  /**
+   * Pauses at a real debugger frame, preserving the user's call stack.
+   */
   _breakpoint() {
     debugger;
   }
 
-  /** Alias for a debugger breakpoint. */
+  /**
+   * Alias for a debugger breakpoint.
+   */
   _debug() {
     debugger;
   }
 
-  /** Pauses execution for variable inspection and stepping. */
+  /**
+   * Pauses execution for variable inspection and stepping.
+   */
   _pause() {
     debugger;
   }
@@ -1193,14 +1155,14 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.inter.env.interruptExecution();
     debugger;
   }
-  
+
   /**
    * Marks an endpoint in the script, throwing an error to signify a critical stop or exit point in execution.
    */
   _endPoint() {
     throw new Error(this.jsl.inter.lang.string(116));
   }
-  
+
   /**
    * Opens a specified file in an editor or opens the editor to a default or previously specified file.
    * @param {string} [filepath] - Path to the file to be opened in the editor.
@@ -1216,6 +1178,25 @@ class PRDC_JSLAB_LIB_BASIC {
     this.jsl.inter.env.assistant();
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
+  }
+
+  /**
+   * Opens the Simulate window and optionally loads a .jslmo project or imports a .mo file.
+   * @param {string} [filepath] Simulate project or Modelica source file.
+   * @param {Object} [options] Parameters, simulation settings, run and animation options.
+   * @returns {Promise<Object>} Simulate operation result.
+   */
+  async simulate(filepath, options) {
+    if(typeof filepath === 'string' && filepath.length) {
+      filepath = this.jsl.pathResolve(filepath);
+    }
+    var result = await this.jsl.inter.env.simulate(filepath, options);
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    if(!result || !result.success) {
+      throw new Error(result && result.error || 'Simulate operation failed.');
+    }
+    return result;
   }
 
   /**
@@ -1236,7 +1217,9 @@ class PRDC_JSLAB_LIB_BASIC {
     });
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
-    if(!info || !info.id) return false;
+    if(!info || !info.id) {
+      return false;
+    }
     return new PRDC_JSLAB_TERMINAL_WINDOW(this.jsl, info);
   }
 
@@ -1247,8 +1230,12 @@ class PRDC_JSLAB_LIB_BASIC {
   getExamples() {
     var obj = this;
     return this.jsl.inter.env.readDir(this.jsl.app_path + '/examples')
-      .filter(function(file) { return file.match(new RegExp('\.jsl$')); })
-      .map(function(i) { return obj.jsl.app_path + '\\examples\\' + i; });
+      .filter(function(file) {
+        return file.match(new RegExp('\.jsl$'));
+      })
+      .map(function(i) {
+        return obj.jsl.app_path + '\\examples\\' + i;
+      });
   }
 
   /**
@@ -1275,7 +1262,7 @@ class PRDC_JSLAB_LIB_BASIC {
   goToExamplesFolder() {
     this.jsl.inter.env.cd(this.jsl.app_path + '\\examples');
   }
-  
+
   /**
    * Displays a synchronous message box to the user and waits for their response.
    * @param {Object} options - Configuration options for the message box.
@@ -1321,9 +1308,9 @@ class PRDC_JSLAB_LIB_BASIC {
       class_path,
       { save_dir: this.jsl.current_path }
     );
-    
+
     if(!loaded) {
-      var load_class_msg = this.jsl.formatLang(501, {
+      var load_class_msg = this.jsl.formatLang(500, {
         class_name: class_name,
         class_path: class_path
       });
@@ -1355,13 +1342,13 @@ class PRDC_JSLAB_LIB_BASIC {
     if(!this.jsl.inter.env.pathIsAbsolute(file_path)) {
       file_path = this.jsl.inter.env.pathJoin(this.jsl.current_path, file_path);
     }
-    
+
     var payload = this._workspace_serializer.serializeWorkspace(vars, {
       save_file_path: file_path
     });
     var flag = this.jsl.inter.env.writeFileSync(file_path, JSON.stringify(payload, null, 2));
     if(flag === false) {
-      this.jsl.inter.env.error('@save: '+this.jsl.inter.lang.string(117)+': ' + file_path);
+      this.jsl.inter.env.error('@save: ' + this.jsl.inter.lang.string(117) + ': ' + file_path);
     } else if(payload.warnings && payload.warnings.length) {
       this.jsl.inter.env.warn('@save: ' + payload.warnings.join(' '));
     }
@@ -1382,16 +1369,16 @@ class PRDC_JSLAB_LIB_BASIC {
     } else {
       file_path = args[0];
     }
-    
+
     file_path = this.jsl.pathResolve(file_path);
     if(file_path) {
       try {
         var raw = this.jsl.inter.env.readFileSync(file_path, 'utf8');
         if(raw === false) {
-          this.jsl.inter.env.error('@load: '+this.jsl.inter.lang.string(118)+'.');
+          this.jsl.inter.env.error('@load: ' + this.jsl.inter.lang.string(118) + '.');
           return false;
         }
-        
+
         var parsed = JSON.parse(raw);
         var deserialize_result;
         if(this._workspace_serializer.isSerializedPayload(parsed)) {
@@ -1404,10 +1391,10 @@ class PRDC_JSLAB_LIB_BASIC {
         } else {
           deserialize_result = { workspace: parsed, warnings: [] };
         }
-        
+
         var vars = deserialize_result.workspace || {};
         if(typeof vars !== 'object' || vars === null || Array.isArray(vars)) {
-          this.jsl.inter.env.error('@load: '+this.jsl.inter.lang.string(118)+'.');
+          this.jsl.inter.env.error('@load: ' + this.jsl.inter.lang.string(118) + '.');
           return false;
         }
         Object.keys(vars).forEach(function(property) {
@@ -1415,7 +1402,7 @@ class PRDC_JSLAB_LIB_BASIC {
         });
         return true;
       } catch(err) {
-        this.jsl.inter.env.error('@load: '+this.jsl.inter.lang.string(118)+'.');
+        this.jsl.inter.env.error('@load: ' + this.jsl.inter.lang.string(118) + '.');
         return false;
       }
     }
@@ -1439,7 +1426,7 @@ class PRDC_JSLAB_LIB_BASIC {
     var seen = Object.create(null);
     var start_str = String(start || "");
     var start_lower = start_str.toLowerCase();
-    
+
     function getMatchScore(str) {
       var candidate = String(str);
       if(!start_str.length) {
@@ -1447,10 +1434,18 @@ class PRDC_JSLAB_LIB_BASIC {
       }
 
       var candidate_lower = candidate.toLowerCase();
-      if(candidate === start_str) return 0;
-      if(candidate_lower === start_lower) return 1;
-      if(candidate.startsWith(start_str)) return 2;
-      if(candidate_lower.startsWith(start_lower)) return 3;
+      if(candidate === start_str) {
+        return 0;
+      }
+      if(candidate_lower === start_lower) {
+        return 1;
+      }
+      if(candidate.startsWith(start_str)) {
+        return 2;
+      }
+      if(candidate_lower.startsWith(start_lower)) {
+        return 3;
+      }
       return Infinity;
     }
 
@@ -1470,10 +1465,16 @@ class PRDC_JSLAB_LIB_BASIC {
       found.push({ value: str, score: score, inherited: !!inherited });
     }
     function gatherCompletions(obj) {
-      if(obj === null || obj === undefined) return;
-      if(typeof obj !== 'object' && typeof obj !== 'function') obj = Object(obj);
+      if(obj === null || obj === undefined) {
+        return;
+      }
+      if(typeof obj !== 'object' && typeof obj !== 'function') {
+        obj = Object(obj);
+      }
       if(!Object.getOwnPropertyNames || !Object.getPrototypeOf) {
-        for(var name in obj) maybeAdd(name);
+        for(var name in obj) {
+          maybeAdd(name);
+        }
       } else {
         var inherited = false;
         for(var o = obj; o; o = Object.getPrototypeOf(o)) {
@@ -1487,7 +1488,9 @@ class PRDC_JSLAB_LIB_BASIC {
 
     if(request.expression) {
       var expression_result = this._resolveConsoleExpression(request.expression);
-      if(expression_result.success) gatherCompletions(expression_result.value);
+      if(expression_result.success) {
+        gatherCompletions(expression_result.value);
+      }
     } else if(context && context.length) {
       context = typeof context === 'string' ? JSON.parse(context) : context;
       // If this is a property, see if it belongs to some object we can
@@ -1495,14 +1498,18 @@ class PRDC_JSLAB_LIB_BASIC {
       var obj = context.pop(), base;
       if(obj.type && obj.type.indexOf("variable") === 0) {
         var root_property = this._getConsoleDataProperty(root_scope, obj.string);
-        if(root_property.success) base = root_property.value;
+        if(root_property.success) {
+          base = root_property.value;
+        }
       } else if(obj.type == "string") {
         base = "";
       } else if(obj.type == "atom") {
         base = 1;
       } else if(obj.type == "function") {
         var function_property = this._getConsoleDataProperty(root_scope, obj.string);
-        if(function_property.success) base = function_property.value;
+        if(function_property.success) {
+          base = function_property.value;
+        }
       }
       while(base != null && context.length) {
         var resolved = this._getConsoleDataProperty(base, context.pop().string);
@@ -1512,7 +1519,9 @@ class PRDC_JSLAB_LIB_BASIC {
         }
         base = resolved.value;
       }
-      if(base != null) gatherCompletions(base);
+      if(base != null) {
+        gatherCompletions(base);
+      }
     } else {
       gatherCompletions(root_scope);
       keywords.forEach(maybeAdd);
@@ -1534,10 +1543,16 @@ class PRDC_JSLAB_LIB_BASIC {
       var map_result = this._resolveConsoleExpression(map_match[1]);
       if(map_result.success && map_result.value instanceof Map) {
         items = Array.from(map_result.value.keys()).slice(0, 1000).map(function(key) {
-          if(typeof key === 'string') return JSON.stringify(key);
-          if(['number', 'bigint', 'boolean'].includes(typeof key) || key === null) return String(key);
+          if(typeof key === 'string') {
+            return JSON.stringify(key);
+          }
+          if(['number', 'bigint', 'boolean'].includes(typeof key) || key === null) {
+            return String(key);
+          }
           return null;
-        }).filter(function(key) { return key !== null; });
+        }).filter(function(key) {
+          return key !== null;
+        });
       }
     }
     if(Array.isArray(request.history) && request.input) {
@@ -1553,21 +1568,29 @@ class PRDC_JSLAB_LIB_BASIC {
         }
       });
     }
-    if(Array.isArray(data)) return items;
+    if(Array.isArray(data)) {
+      return items;
+    }
     return { items: items, argument_hint: this._getConsoleArgumentHint(request.input || '') };
-  }    
+  }
 
-  /** Returns enumerable own property names, matching the DevTools helper. */
+  /**
+   * Returns enumerable own property names, matching the DevTools helper.
+   */
   keys(object) {
     return Object.keys(Object(object));
   }
 
-  /** Returns enumerable own property values, matching the DevTools helper. */
+  /**
+   * Returns enumerable own property values, matching the DevTools helper.
+   */
   values(object) {
     return Object.values(Object(object));
   }
 
-  /** Copies a bounded textual representation to the system clipboard. */
+  /**
+   * Copies a bounded textual representation to the system clipboard.
+   */
   async copy(object) {
     var text = typeof object === 'string' ? object : this.jsl.inter.format.safeStringify(object, 20, false);
     await this.jsl.inter.env.copyText(text);
@@ -1576,7 +1599,9 @@ class PRDC_JSLAB_LIB_BASIC {
     return undefined;
   }
 
-  /** Displays a value as an expandable console object. */
+  /**
+   * Displays a value as an expandable console object.
+   */
   inspect(object) {
     this._inspected_objects.unshift(object);
     this._inspected_objects.length = Math.min(5, this._inspected_objects.length);
@@ -1586,29 +1611,47 @@ class PRDC_JSLAB_LIB_BASIC {
     return object;
   }
 
-  /** Finds reachable workspace objects constructed by the supplied class. */
+  /**
+   * Finds reachable workspace objects constructed by the supplied class.
+   */
   queryObjects(constructor) {
-    if(typeof constructor !== 'function') throw new TypeError('Expected a constructor.');
+    if(typeof constructor !== 'function') {
+      throw new TypeError('Expected a constructor.');
+    }
     var found = [];
     var seen = new WeakSet();
     var queue = [this.jsl.context];
     var remaining = 10000;
     while(queue.length && remaining-- > 0) {
       var value = queue.shift();
-      if(value === null || (typeof value !== 'object' && typeof value !== 'function') || seen.has(value)) continue;
+      if(value === null || (typeof value !== 'object' && typeof value !== 'function') || seen.has(value)) {
+        continue;
+      }
       seen.add(value);
-      try { if(value instanceof constructor && value !== constructor.prototype) found.push(value); } catch(err) {}
+      try {
+        if(value instanceof constructor && value !== constructor.prototype) {
+          found.push(value);
+        }
+      } catch(err) {}
       var descriptors;
-      try { descriptors = Object.getOwnPropertyDescriptors(value); } catch(err) { continue; }
+      try {
+        descriptors = Object.getOwnPropertyDescriptors(value);
+      } catch(err) {
+        continue;
+      }
       Reflect.ownKeys(descriptors).forEach(function(key) {
         var descriptor = descriptors[key];
-        if(descriptor && Object.prototype.hasOwnProperty.call(descriptor, 'value')) queue.push(descriptor.value);
+        if(descriptor && Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
+          queue.push(descriptor.value);
+        }
       });
     }
     return found;
   }
 
-  /** Returns listeners installed through monitorEvents(). */
+  /**
+   * Returns listeners installed through monitorEvents().
+   */
   getEventListeners(object) {
     var listeners = this._monitored_events.get(object) || [];
     return listeners.reduce(function(result, listener) {
@@ -1618,9 +1661,13 @@ class PRDC_JSLAB_LIB_BASIC {
     }, {});
   }
 
-  /** Logs selected EventTarget events until unmonitorEvents() is called. */
+  /**
+   * Logs selected EventTarget events until unmonitorEvents() is called.
+   */
   monitorEvents(object, events) {
-    if(!object || typeof object.addEventListener !== 'function') throw new TypeError('Expected an EventTarget.');
+    if(!object || typeof object.addEventListener !== 'function') {
+      throw new TypeError('Expected an EventTarget.');
+    }
     var groups = {
       mouse: ['mousedown', 'mouseup', 'click', 'dblclick', 'mousemove', 'mouseover', 'mouseout', 'wheel'],
       key: ['keydown', 'keyup', 'keypress', 'input'],
@@ -1631,7 +1678,9 @@ class PRDC_JSLAB_LIB_BASIC {
       (Array.isArray(events) ? events : [events]).flatMap(type => groups[type] || [type]);
     var records = this._monitored_events.get(object) || [];
     types.forEach((type) => {
-      if(records.some(record => record.type === type)) return;
+      if(records.some(record => record.type === type)) {
+        return;
+      }
       var handler = event => this.jsl.inter.env.disp(event);
       object.addEventListener(type, handler);
       records.push({ type: type, handler: handler });
@@ -1640,54 +1689,83 @@ class PRDC_JSLAB_LIB_BASIC {
     return object;
   }
 
-  /** Stops event logging installed by monitorEvents(). */
+  /**
+   * Stops event logging installed by monitorEvents().
+   */
   unmonitorEvents(object, events) {
     var records = this._monitored_events.get(object) || [];
     var types = events === undefined ? null : new Set(Array.isArray(events) ? events : [events]);
     records = records.filter(function(record) {
-      if(types && !types.has(record.type)) return true;
+      if(types && !types.has(record.type)) {
+        return true;
+      }
       object.removeEventListener(record.type, record.handler);
       return false;
     });
-    if(records.length) this._monitored_events.set(object, records);
-    else this._monitored_events.delete(object);
+    if(records.length) {
+      this._monitored_events.set(object, records);
+    } else {
+      this._monitored_events.delete(object);
+    }
     return object;
   }
 
-  /** Displays XML/HTML markup when available. */
+  /**
+   * Displays XML/HTML markup when available.
+   */
   dirxml(object) {
     return this.inspect(object && object.outerHTML ? object.outerHTML : object);
   }
 
-  /** Logs calls to a function referenced directly by a workspace variable. */
+  /**
+   * Logs calls to a function referenced directly by a workspace variable.
+   */
   monitor(func) {
     return this._setFunctionMonitor(func, false);
   }
 
-  /** Stops call logging installed by monitor(). */
+  /**
+   * Stops call logging installed by monitor().
+   */
   unmonitor(func) {
     return this._removeFunctionMonitor(func);
   }
 
-  /** Breaks when a workspace function is called; `debug` remains JSLAB's debug flag. */
+  /**
+   * Breaks when a workspace function is called; `debug` remains JSLAB's debug flag.
+   */
   debugFunction(func) {
     return this._setFunctionMonitor(func, true);
   }
 
-  /** Removes a breakpoint wrapper installed by debugFunction(). */
+  /**
+   * Removes a breakpoint wrapper installed by debugFunction().
+   */
   undebug(func) {
     return this._removeFunctionMonitor(func);
   }
 
-  /** @private */
+  /**
+   * Handles set function monitor.
+   * @private
+   */
   _setFunctionMonitor(func, break_on_call) {
-    if(typeof func !== 'function') throw new TypeError('Expected a function.');
-    if(this._monitored_functions.has(func)) return func;
+    if(typeof func !== 'function') {
+      throw new TypeError('Expected a function.');
+    }
+    if(this._monitored_functions.has(func)) {
+      return func;
+    }
     var obj = this;
     var wrapper = function(...args) {
-      if(break_on_call) debugger;
-      else obj.jsl.inter.env.disp((func.name || 'function') + ' called with', args);
-      if(new.target) return Reflect.construct(func, args, new.target);
+      if(break_on_call) {
+        debugger;
+      } else {
+        obj.jsl.inter.env.disp((func.name || 'function') + ' called with', args);
+      }
+      if(new.target) {
+        return Reflect.construct(func, args, new.target);
+      }
       return Reflect.apply(func, this, args);
     };
     var replaced = [];
@@ -1699,19 +1777,28 @@ class PRDC_JSLAB_LIB_BASIC {
         replaced.push(key);
       }
     });
-    if(!replaced.length) throw new Error('Function must be assigned to a writable workspace variable.');
+    if(!replaced.length) {
+      throw new Error('Function must be assigned to a writable workspace variable.');
+    }
     var record = { original: func, wrapper: wrapper, properties: replaced };
     this._monitored_functions.set(func, record);
     this._monitored_functions.set(wrapper, record);
     return wrapper;
   }
 
-  /** @private */
+  /**
+   * Handles remove function monitor.
+   * @private
+   */
   _removeFunctionMonitor(func) {
     var record = this._monitored_functions.get(func);
-    if(!record) return false;
+    if(!record) {
+      return false;
+    }
     record.properties.forEach((key) => {
-      if(this.jsl.context[key] === record.wrapper) this.jsl.context[key] = record.original;
+      if(this.jsl.context[key] === record.wrapper) {
+        this.jsl.context[key] = record.original;
+      }
     });
     this._monitored_functions.delete(record.original);
     this._monitored_functions.delete(record.wrapper);
@@ -1737,19 +1824,29 @@ class PRDC_JSLAB_LIB_BASIC {
     }
     var obj = this;
     function evaluate(node) {
-      if(!node) return { success: false, reason: 'unsupported' };
+      if(!node) {
+        return { success: false, reason: 'unsupported' };
+      }
       if(['StringLiteral', 'NumericLiteral', 'BooleanLiteral', 'BigIntLiteral'].includes(node.type)) {
         return { success: true, value: node.type === 'BigIntLiteral' ? BigInt(node.value) : node.value };
       }
-      if(node.type === 'NullLiteral') return { success: true, value: null };
+      if(node.type === 'NullLiteral') {
+        return { success: true, value: null };
+      }
       if(node.type === 'Identifier') {
-        if(node.name === 'undefined') return { success: true, value: undefined };
+        if(node.name === 'undefined') {
+          return { success: true, value: undefined };
+        }
         return obj._getConsoleDataProperty(obj.jsl.context, node.name);
       }
-      if(node.type === 'ThisExpression') return { success: true, value: obj.jsl.context };
+      if(node.type === 'ThisExpression') {
+        return { success: true, value: obj.jsl.context };
+      }
       if(node.type === 'MemberExpression' || node.type === 'OptionalMemberExpression') {
         var owner = evaluate(node.object);
-        if(!owner.success || owner.value == null) return { success: false, reason: 'unresolved' };
+        if(!owner.success || owner.value == null) {
+          return { success: false, reason: 'unresolved' };
+        }
         var property;
         if(node.computed) {
           var key = evaluate(node.property);
@@ -1764,7 +1861,9 @@ class PRDC_JSLAB_LIB_BASIC {
       }
       if(node.type === 'UnaryExpression' && ['+', '-', '!', '~', 'typeof', 'void'].includes(node.operator)) {
         var argument = evaluate(node.argument);
-        if(!argument.success) return argument;
+        if(!argument.success) {
+          return argument;
+        }
         try {
           switch(node.operator) {
             case '+': return { success: true, value: +argument.value };
@@ -1774,14 +1873,21 @@ class PRDC_JSLAB_LIB_BASIC {
             case 'typeof': return { success: true, value: typeof argument.value };
             case 'void': return { success: true, value: undefined };
           }
-        } catch(err) { return { success: false, reason: 'operation' }; }
+        } catch(err) {
+          return { success: false, reason: 'operation' };
+        }
       }
       if(node.type === 'ArrayExpression') {
         var array = [];
         for(const element of node.elements) {
-          if(element === null) { array.length++; continue; }
+          if(element === null) {
+            array.length++;
+            continue;
+          }
           var array_value = evaluate(element);
-          if(!array_value.success) return array_value;
+          if(!array_value.success) {
+            return array_value;
+          }
           array.push(array_value.value);
         }
         return { success: true, value: array };
@@ -1793,7 +1899,9 @@ class PRDC_JSLAB_LIB_BASIC {
             return { success: false, reason: 'object-property' };
           }
           var object_value = evaluate(property_node.value);
-          if(!object_value.success) return object_value;
+          if(!object_value.success) {
+            return object_value;
+          }
           var object_key = property_node.key.name !== undefined ? property_node.key.name : property_node.key.value;
           Object.defineProperty(result, object_key, { value: object_value.value, enumerable: true,
             configurable: true, writable: true });
@@ -1817,13 +1925,18 @@ class PRDC_JSLAB_LIB_BASIC {
         return { success: true, value: template };
       }
       if(node.type === 'RegExpLiteral') {
-        try { return { success: true, value: new RegExp(node.pattern, node.flags) }; }
-        catch(err) { return { success: false, reason: 'regexp' }; }
+        try {
+          return { success: true, value: new RegExp(node.pattern, node.flags) };
+        } catch(err) {
+          return { success: false, reason: 'regexp' };
+        }
       }
       if(node.type === 'BinaryExpression') {
         var left = evaluate(node.left);
         var right = evaluate(node.right);
-        if(!left.success || !right.success) return { success: false, reason: 'operand' };
+        if(!left.success || !right.success) {
+          return { success: false, reason: 'operand' };
+        }
         var allowed_types = ['undefined', 'string', 'number', 'bigint', 'boolean'];
         if((left.value !== null && !allowed_types.includes(typeof left.value)) ||
             (right.value !== null && !allowed_types.includes(typeof right.value))) {
@@ -1852,26 +1965,40 @@ class PRDC_JSLAB_LIB_BASIC {
             case '>': return { success: true, value: left.value > right.value };
             case '>=': return { success: true, value: left.value >= right.value };
           }
-        } catch(err) { return { success: false, reason: 'operation' }; }
+        } catch(err) {
+          return { success: false, reason: 'operation' };
+        }
       }
       if(node.type === 'LogicalExpression') {
         var logical_left = evaluate(node.left);
-        if(!logical_left.success) return logical_left;
-        if(node.operator === '&&' && !logical_left.value) return logical_left;
-        if(node.operator === '||' && logical_left.value) return logical_left;
-        if(node.operator === '??' && logical_left.value !== null && logical_left.value !== undefined) return logical_left;
+        if(!logical_left.success) {
+          return logical_left;
+        }
+        if(node.operator === '&&' && !logical_left.value) {
+          return logical_left;
+        }
+        if(node.operator === '||' && logical_left.value) {
+          return logical_left;
+        }
+        if(node.operator === '??' && logical_left.value !== null && logical_left.value !== undefined) {
+          return logical_left;
+        }
         return evaluate(node.right);
       }
       if(node.type === 'ConditionalExpression') {
         var test = evaluate(node.test);
-        if(!test.success) return test;
+        if(!test.success) {
+          return test;
+        }
         return evaluate(test.value ? node.consequent : node.alternate);
       }
       if(node.type === 'SequenceExpression') {
         var sequence_value = { success: true, value: undefined };
         for(const expression_node of node.expressions) {
           sequence_value = evaluate(expression_node);
-          if(!sequence_value.success) return sequence_value;
+          if(!sequence_value.success) {
+            return sequence_value;
+          }
         }
         return sequence_value;
       }
@@ -1880,15 +2007,25 @@ class PRDC_JSLAB_LIB_BASIC {
     return evaluate(ast);
   }
 
-  /** Returns a data property without invoking an accessor. @private */
+  /**
+   * Returns a data property without invoking an accessor. @private
+   */
   _getConsoleDataProperty(value, property) {
-    if(value == null) return { success: false, reason: 'null' };
+    if(value == null) {
+      return { success: false, reason: 'null' };
+    }
     var target;
-    try { target = Object(value); } catch(err) { return { success: false, reason: 'object' }; }
+    try {
+      target = Object(value);
+    } catch(err) {
+      return { success: false, reason: 'object' };
+    }
     try {
       for(var current = target; current; current = Object.getPrototypeOf(current)) {
         var descriptor = Object.getOwnPropertyDescriptor(current, property);
-        if(!descriptor) continue;
+        if(!descriptor) {
+          continue;
+        }
         if(!Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
           return { success: false, reason: 'accessor' };
         }
@@ -1898,17 +2035,25 @@ class PRDC_JSLAB_LIB_BASIC {
     return { success: false, reason: 'missing' };
   }
 
-  /** Returns a side-effect-free eager preview descriptor. @private */
+  /**
+   * Returns a side-effect-free eager preview descriptor. @private
+   */
   _getConsolePreview(expression) {
     var result = this._resolveConsoleExpression(expression);
-    if(!result.success) return { success: false, reason: result.reason };
+    if(!result.success) {
+      return { success: false, reason: result.reason };
+    }
     return { success: true, value: this.jsl.inter.format._consoleValue(result.value) };
   }
 
-  /** Reports whether Enter should execute the current prompt. @private */
+  /**
+   * Reports whether Enter should execute the current prompt. @private
+   */
   _isConsoleExpressionComplete(code) {
     var source = String(code || '');
-    if(!source.trim()) return true;
+    if(!source.trim()) {
+      return true;
+    }
     try {
       this.jsl.inter.env.babel_parser.parse(source, { sourceType: 'script',
         allowAwaitOutsideFunction: true, allowReturnOutsideFunction: true });
@@ -1919,28 +2064,46 @@ class PRDC_JSLAB_LIB_BASIC {
     }
   }
 
-  /** Builds a conservative function signature for the active call. @private */
+  /**
+   * Builds a conservative function signature for the active call. @private
+   */
   _getConsoleArgumentHint(input) {
     var text = String(input || '');
     var depth = 0;
     var open = -1;
     for(var i = text.length - 1; i >= 0; i--) {
-      if(text[i] === ')') depth++;
-      else if(text[i] === '(') {
-        if(depth === 0) { open = i; break; }
+      if(text[i] === ')') {
+        depth++;
+      } else if(text[i] === '(') {
+        if(depth === 0) {
+          open = i;
+          break;
+        }
         depth--;
       }
     }
-    if(open < 0) return null;
+    if(open < 0) {
+      return null;
+    }
     var match = /([A-Za-z_$][\w$]*(?:\s*(?:\.\s*[A-Za-z_$][\w$]*|\[\s*(?:"[^"]*"|'[^']*')\s*\]))*)\s*$/.exec(text.slice(0, open));
-    if(!match) return null;
+    if(!match) {
+      return null;
+    }
     var resolved = this._resolveConsoleExpression(match[1]);
-    if(!resolved.success || typeof resolved.value !== 'function') return null;
+    if(!resolved.success || typeof resolved.value !== 'function') {
+      return null;
+    }
     var source;
-    try { source = Function.prototype.toString.call(resolved.value); } catch(err) { return null; }
+    try {
+      source = Function.prototype.toString.call(resolved.value);
+    } catch(err) {
+      return null;
+    }
     var params = /^\s*(?:async\s*)?(?:function\s*)?[^\(]*\(([^)]*)\)/.exec(source) ||
       /^\s*(?:async\s*)?([^=()]*)=>/.exec(source);
-    if(!params) return resolved.value.name ? resolved.value.name + '(...)' : null;
+    if(!params) {
+      return resolved.value.name ? resolved.value.name + '(...)' : null;
+    }
     var name = resolved.value.name || match[1].split('.').pop();
     var arguments_text = params[1].trim();
     if(!arguments_text && resolved.value.length > 0 && source.includes('[native code]')) {
@@ -1959,7 +2122,9 @@ class PRDC_JSLAB_LIB_BASIC {
    * @returns {Object|null} The found object with key and value, or null if not found.
    */
   getObjectByProp(obj, prop, val) {
-    const key = Object.keys(obj).find(function(key) { return obj[key][prop] === val; });
+    const key = Object.keys(obj).find(function(key) {
+      return obj[key][prop] === val;
+    });
     return key ? { key, value: obj[key] } : null;
   }
 
@@ -1972,7 +2137,9 @@ class PRDC_JSLAB_LIB_BASIC {
    */
   getObjectsByProp(obj, prop, val) {
     return Object.fromEntries(Object.entries(obj)
-      .filter(function([key, value]) { return value[prop] === val; }));
+      .filter(function([key, value]) {
+        return value[prop] === val;
+      }));
   }
 
   /**
@@ -1984,7 +2151,7 @@ class PRDC_JSLAB_LIB_BASIC {
   strcmp(x, y) {
     return this.jsl.inter.env.math.compareText(x, y);
   }
-    
+
   /**
    * Compare two version strings (e.g. "1.4.2", "v2.0.0-beta.1").
    * @param {string} a First version.
@@ -2002,12 +2169,16 @@ class PRDC_JSLAB_LIB_BASIC {
     for(let i = 0; i < len; i++) {
       var xi = x[i] ?? 0;
       var yi = y[i] ?? 0;
-      if(xi > yi) return 1;
-      if(xi < yi) return -1;
+      if(xi > yi) {
+        return 1;
+      }
+      if(xi < yi) {
+        return -1;
+      }
     }
     return 0;
   }
-  
+
   /**
    * Checks if there is available update
    * @returns {boolean} True if there is available update; otherwise, false.
@@ -2020,7 +2191,7 @@ class PRDC_JSLAB_LIB_BASIC {
         const rel = await fetch(`${api_base}/releases/latest`, {
           headers: { 'Accept': 'application/vnd.github+json' }
         });
-        
+
         var latest_version;
         if(rel.ok) {
           const { tag_name } = await rel.json();   // e.g. "v1.5.0"
@@ -2031,20 +2202,20 @@ class PRDC_JSLAB_LIB_BASIC {
           latest_version = name;
         } else {
           this.jsl._console.log(rel);
-          this.jsl.inter.env.error('@checkForUpdate: '+this.jsl.inter.lang.string(237));
+          this.jsl.inter.env.error('@checkForUpdate: ' + this.jsl.inter.lang.string(237));
         }
 
         var check = this.compareVersions(this.jsl.inter.env.version, latest_version) === -1;
         if(check) {
-          this.jsl.inter.env.disp('@checkForUpdate: '+this.jsl.inter.lang.string(238) + '<a href="https://github.com/PR-DC/JSLAB/releases" class="external-link">https://github.com/PR-DC/JSLAB/releases</a>');
+          this.jsl.inter.env.disp('@checkForUpdate: ' + this.jsl.inter.lang.string(238) + '<a href="https://github.com/PR-DC/JSLAB/releases" class="external-link">https://github.com/PR-DC/JSLAB/releases</a>');
         }
         return check;
       } catch(err) {
         this.jsl._console.log(err);
-        this.jsl.inter.env.error('@checkForUpdate: '+this.jsl.inter.lang.string(237));
+        this.jsl.inter.env.error('@checkForUpdate: ' + this.jsl.inter.lang.string(237));
       }
     } else {
-      this.jsl.inter.env.error('@checkForUpdate: '+this.jsl.inter.lang.string(237));
+      this.jsl.inter.env.error('@checkForUpdate: ' + this.jsl.inter.lang.string(237));
     }
   }
 
@@ -2057,19 +2228,19 @@ class PRDC_JSLAB_LIB_BASIC {
     if(this.jsl.required_modules.includes(module)) {
       var name = require.resolve(module);
       if(name) {
-        delete require.cache[name];    
+        delete require.cache[name];
       }
       this.jsl.inter.array.removeElementByValue(this.jsl.required_modules, module);
     }
   }
-  
+
   /**
    * Resets app.
    */
   resetApp() {
     this.jsl.inter.env.resetApp();
   }
-  
+
   /**
    * Resets the sandbox environment to its initial state.
    */
@@ -2091,24 +2262,11 @@ class PRDC_JSLAB_LIB_BASIC {
    * @param {boolean} [show_output=true] - Whether to show output in the command window.
    */
   installModule(path, show_output = false) {
-    if(typeof path == 'string') {
-      path = this.jsl.pathResolve(path);
+    path = this.jsl.inter.file_system._resolveModuleDirectory(path, '@installModule');
+    if(path === false) {
+      return;
     }
-    if(!path) {
-      var options = {
-        title: this.jsl.inter.lang.currentString(141),
-        buttonLabel: this.jsl.inter.lang.currentString(142),
-        properties: ['openDirectory'],
-      };
-      path = this.jsl.inter.env.showOpenDialogSync(options);
-      if(path === undefined) {
-        this.jsl.inter.env.error('@installModule: '+this.jsl.inter.lang.string(119)+'.');
-      } else {
-        path = path[0];
-      }
-    }
-    path = this.jsl.inter.env.addPathSep(path);
-    
+
     var exe = this.jsl.inter.env.exe_path;
     var npm_path = this.jsl.inter.env.pathJoin(this.jsl.app_path, 'node_modules', 'npm', 'bin', 'npm-cli.js');
     var command = 'set ELECTRON_RUN_AS_NODE=1 & "' + exe + '" "' + npm_path + '" install 2>&1';
@@ -2145,16 +2303,16 @@ class PRDC_JSLAB_LIB_BASIC {
         msg += ', command output: \n' + err_out;
       }
     }
-    
+
     if(!msg.includes('\nnpm error')) {
       if(show_output) {
         this.jsl.inter.env.disp(msg);
       }
     } else {
-      this.jsl.inter.env.error('@installModule: '+msg.replaceAll('\n', '<br>'));
+      this.jsl.inter.env.error('@installModule: ' + msg.replaceAll('\n', '<br>'));
     }
   }
-  
+
   /**
    * Registers an object for cleanup with a specified cleanup function.
    * @param {Object} obj - The object to be registered for cleanup.
@@ -2163,10 +2321,87 @@ class PRDC_JSLAB_LIB_BASIC {
   addForCleanup(...args) {
     this.jsl.addForCleanup(...args);
   }
+
+  /**
+   * Adds one normalized path to a result list without duplicates.
+   * @param {Array<string>} matches Result paths.
+   * @param {string} path_in Candidate path.
+   */
+  _pushUniqueMatch(matches, path_in) {
+      if(typeof path_in !== 'string' || !path_in.length) {
+        return;
+      }
+      var out = path_in;
+      if(typeof this.jsl.inter.env.pathNormalize === 'function') {
+        out = this.jsl.inter.env.pathNormalize(out);
+      }
+      if(!matches.includes(out)) {
+        matches.push(out);
+      }
+    }
+
+  /**
+   * Collects string arguments with the caller's existing trimming and nesting rules.
+   * @param {Array} args Input arguments.
+   * @param {boolean} [trim=false] Whether to trim whitespace.
+   * @param {boolean} [recursive=false] Whether to traverse nested arrays.
+   * @returns {Array<string>} Collected strings.
+   */
+  _collectStringArguments(args, trim = false, recursive = false) {
+    const values = [];
+    for(const value of args) {
+      if(typeof value === 'string') {
+        const text = trim ? value.trim() : value;
+        if(text.length) {
+          values.push(text);
+        }
+      } else if(Array.isArray(value)) {
+        values.push(...(recursive ? this._collectStringArguments(value, trim, true) :
+          value.filter(item => typeof item === 'string' && item.length)));
+      }
+    }
+    return values;
+  }
+
+  /**
+   * Normalizes path arguments before adding or removing saved search paths.
+   * @param {Array} args Path arguments.
+   * @param {string} operation Saved-path operation.
+   * @returns {Array<string>} Current search path.
+   */
+  _modifySearchPaths(args, operation) {
+    var obj = this;
+    var values = this._collectStringArguments(args, true, true);
+
+    values.forEach(function(value) {
+      var target_path = value;
+      if(typeof obj.jsl.inter.env.pathIsAbsolute === 'function' &&
+          typeof obj.jsl.inter.env.pathJoin === 'function' &&
+          !obj.jsl.inter.env.pathIsAbsolute(target_path)) {
+        target_path = obj.jsl.inter.env.pathJoin(obj.jsl.current_path, target_path);
+      }
+      if(typeof obj.jsl.inter.env.pathNormalize === 'function') {
+        target_path = obj.jsl.inter.env.pathNormalize(target_path);
+      }
+      obj[operation](target_path);
+    });
+
+    this.jsl.no_ans = true;
+    this.jsl.ignore_output = true;
+    return this.path();
+  }
+
 }
 
-/** Controllable handle for one visible system Terminal window. */
+/**
+ * Controllable handle for one visible system Terminal window.
+ */
 class PRDC_JSLAB_TERMINAL_WINDOW {
+  /**
+   * Initializes the terminal window instance.
+   * @param {*} jsl Jsl.
+   * @param {*} info Info.
+   */
   constructor(jsl, info) {
     Object.defineProperty(this, '_jsl', { value: jsl, enumerable: false });
     Object.defineProperty(this, '_listeners', {
@@ -2176,51 +2411,71 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
     this.name = info.name;
   }
 
-  /** Writes text exactly as if it were typed into the terminal. */
+  /**
+   * Writes text exactly as if it were typed into the terminal.
+   */
   write(data) {
     this._jsl.inter.env.terminal('write', { id: this.id, value: String(data) });
     return this;
   }
 
-  /** Writes text followed by Enter. */
+  /**
+   * Writes text followed by Enter.
+   */
   writeln(data = '') {
     return this.write(String(data) + '\r');
   }
 
-  /** Returns the bounded output currently captured for this terminal. */
+  /**
+   * Returns the bounded output currently captured for this terminal.
+   */
   read() {
     var output = this._jsl.inter.env.terminal('read', { id: this.id });
     return output === false ? '' : output;
   }
 
-  /** Returns only output received since the previous readNew call. */
+  /**
+   * Returns only output received since the previous readNew call.
+   */
   readNew() {
     var output = this._jsl.inter.env.terminal('read-new', { id: this.id });
     return output === false ? '' : output;
   }
 
-  /** Clears captured output without changing the visible terminal screen. */
+  /**
+   * Clears captured output without changing the visible terminal screen.
+   */
   clearOutput() {
     this._jsl.inter.env.terminal('clear-output', { id: this.id });
     return this;
   }
 
-  /** Returns window and shell lifecycle information. */
+  /**
+   * Returns window and shell lifecycle information.
+   */
   status() {
     return this._jsl.inter.env.terminal('status', { id: this.id }) || {
       id: this.id, name: this.name, open: false, running: false
     };
   }
 
-  /** Registers a callback invoked for every new raw output chunk. */
+  /**
+   * Registers a callback invoked for every new raw output chunk.
+   */
   onData(callback) {
-    if(typeof callback !== 'function') return this;
+    if(typeof callback !== 'function') {
+      return this;
+    }
     var wrapped = this._jsl.inter.env.terminalOn(this.id, 'data', callback);
-    if(wrapped) this._listeners.data.set(callback, wrapped);
+    if(wrapped) {
+      this._listeners.data.set(callback, wrapped);
+    }
     return this;
   }
 
-  /** Removes a data callback registered with onData. */
+  /**
+   * Removes a data callback registered with onData.
+   */
   offData(callback) {
     var wrapped = this._listeners.data.get(callback);
     if(wrapped) {
@@ -2230,15 +2485,23 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
     return this;
   }
 
-  /** Registers a callback invoked when the shell exits. */
+  /**
+   * Registers a callback invoked when the shell exits.
+   */
   onExit(callback) {
-    if(typeof callback !== 'function') return this;
+    if(typeof callback !== 'function') {
+      return this;
+    }
     var wrapped = this._jsl.inter.env.terminalOn(this.id, 'exit', callback);
-    if(wrapped) this._listeners.exit.set(callback, wrapped);
+    if(wrapped) {
+      this._listeners.exit.set(callback, wrapped);
+    }
     return this;
   }
 
-  /** Removes an exit callback registered with onExit. */
+  /**
+   * Removes an exit callback registered with onExit.
+   */
   offExit(callback) {
     var wrapped = this._listeners.exit.get(callback);
     if(wrapped) {
@@ -2248,7 +2511,9 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
     return this;
   }
 
-  /** Waits until captured output contains a string or matches a RegExp. */
+  /**
+   * Waits until captured output contains a string or matches a RegExp.
+   */
   waitFor(pattern, timeout = 10000) {
     var obj = this;
     return new Promise(function(resolve, reject) {
@@ -2260,7 +2525,10 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
         return output.includes(String(pattern));
       };
       var output = obj.read();
-      if(matches(output)) { resolve(output); return; }
+      if(matches(output)) {
+        resolve(output);
+        return;
+      }
       var timer;
       var listener = function(chunk) {
         output += chunk;
@@ -2278,11 +2546,15 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
     });
   }
 
-  /** Waits for the current shell process to exit. */
+  /**
+   * Waits for the current shell process to exit.
+   */
   waitForExit(timeout = 10000) {
     var obj = this;
     var state = this.status();
-    if(!state.running) return Promise.resolve(state);
+    if(!state.running) {
+      return Promise.resolve(state);
+    }
     return new Promise(function(resolve, reject) {
       var timer;
       var listener = function(event) {
@@ -2298,25 +2570,33 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
     });
   }
 
-  /** Clears the visible terminal scrollback. */
+  /**
+   * Clears the visible terminal scrollback.
+   */
   clear() {
     this._jsl.inter.env.terminal('clear', { id: this.id });
     return this;
   }
 
-  /** Brings the terminal window to the foreground. */
+  /**
+   * Brings the terminal window to the foreground.
+   */
   focus() {
     this._jsl.inter.env.terminal('focus', { id: this.id });
     return this;
   }
 
-  /** Restarts the configured shell in this window. */
+  /**
+   * Restarts the configured shell in this window.
+   */
   restart() {
     this._jsl.inter.env.terminal('restart', { id: this.id });
     return this;
   }
 
-  /** Changes the native window title. */
+  /**
+   * Changes the native window title.
+   */
   setName(name) {
     if(this._jsl.inter.env.terminal('set-name', { id: this.id, name: name })) {
       this.name = String(name);
@@ -2324,26 +2604,38 @@ class PRDC_JSLAB_TERMINAL_WINDOW {
     return this;
   }
 
-  /** Alias for setName, matching native window terminology. */
+  /**
+   * Alias for setName, matching native window terminology.
+   */
   setTitle(name) {
     return this.setName(name);
   }
 
-  /** Hides the window without terminating its shell. */
+  /**
+   * Hides the window without terminating its shell.
+   */
   hide() {
     this._jsl.inter.env.terminal('hide', { id: this.id });
     return this;
   }
 
-  /** Reports whether the window still exists. */
+  /**
+   * Reports whether the window still exists.
+   */
   isOpen() {
     return this._jsl.inter.env.terminal('is-open', { id: this.id });
   }
 
-  /** Closes the window and its owned shell process. */
+  /**
+   * Closes the window and its owned shell process.
+   */
   close() {
-    for(const callback of this._listeners.data.keys()) this.offData(callback);
-    for(const callback of this._listeners.exit.keys()) this.offExit(callback);
+    for(const callback of this._listeners.data.keys()) {
+      this.offData(callback);
+    }
+    for(const callback of this._listeners.exit.keys()) {
+      this.offExit(callback);
+    }
     return this._jsl.inter.env.terminal('close', { id: this.id });
   }
 }

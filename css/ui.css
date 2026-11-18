@@ -722,3 +722,11 @@ li.ui:hover {
   z-index: 0;
   border-radius: 2px;
 }
+.ui-animation { position: fixed; left: 50%; transform: translateX(-50%); z-index: 20; width: min(620px,calc(100% - 48px)); display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: #fffffff0; border: 1px solid #bbb; border-radius: 4px; box-shadow: 0 1px 5px #0002; }
+.ui-animation-bottom { bottom: 12px; }
+.ui-animation-top { top: 40px; }
+.ui-animation-inline { position: relative; left: auto; transform: none; width: 100%; }
+.ui-animation-slider { flex: 1; min-width: 0; }
+.ui-animation-time { min-width: 110px; text-align: right; font: 12px Roboto,Arial,sans-serif; }
+.ui-animation-play { width: 30px; height: 26px; border: 1px solid #aaa; border-radius: 3px; background: #fff; cursor: pointer; }
+.ui-animation-speed { height: 26px; width: 65px; flex-shrink: 0; border: 1px solid #aaa; border-radius: 3px; background: #fff; font: 12px Roboto,Arial,sans-serif; cursor: pointer; }

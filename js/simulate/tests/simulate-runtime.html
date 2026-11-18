@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script>
+const { ipcRenderer } = require('electron');
+window.addEventListener('error', function(event) {
+  ipcRenderer.send('JSLAB_SIMULATE_RUNTIME_TEST', { success: false, error: String(event.error && event.error.stack || event.message) });
+});
+window.addEventListener('unhandledrejection', function(event) {
+  ipcRenderer.send('JSLAB_SIMULATE_RUNTIME_TEST', { success: false, error: String(event.reason && event.reason.stack || event.reason) });
+});
+const fs = require('fs');
+const path = require('path');
+const { PRDC_JSLAB_SIMULATE_COMPILER } = require('./platform');
+const candidate_bundle = new URLSearchParams(location.search).get('bundle');
+const runtime = candidate_bundle ? require(path.join(candidate_bundle, 'js')) :
+  PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
+const { PRDC_OMJSL_CLIENT, renderAnnotation, resolvedChoiceValue, insertModelComponent,
+  componentModifierPatches, resolvePropertyValue, parameterValuePatches, modelicaValueToJSLAB } = runtime;
+const { PRDC_JSLAB_SIMULATE_PROJECT } = require('../project');
+var statuses = [];
+var cad_directory = null;
+var app_path = path.resolve(__dirname, '..', '..', '..');
+var client = new PRDC_OMJSL_CLIENT(
+  app_path,
+  function(status) { statuses.push(status); }
+);
+
+(async function() {
+  var started = Date.now();
+  var report;
+  try {
+    var status = await client.status();
+    if(!status || status.available !== true || !status.version) {
+      throw new Error('The bundled compiler did not report its version.');
+    }
+    var libraries = await client.libraryClasses('Modelica');
+    if(!libraries.some(function(item) { return item.type == 'Modelica.Blocks' && item.package; })) {
+      throw new Error('The standard library browser did not enumerate Blocks: ' + JSON.stringify(libraries));
+    }
+    var graphics = await client.componentGraphics('Modelica.Blocks.Math.Gain');
+    if(!graphics.ports.some(function(port) { return port.name == 'u'; }) ||
+        !graphics.icons.some(function(icon) { return /Polygon|Rectangle|Text/.test(icon.annotation); })) {
+      throw new Error('The compiler did not provide Gain connectors and graphics.');
+    }
+    var icon_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    renderAnnotation(icon_svg, graphics, { name: 'gain', modifiers: [{ name: 'k', value: '2' }] }, 20, 20);
+    if(!icon_svg.querySelector('polygon') || !icon_svg.textContent.includes('k=2')) {
+      throw new Error('The compiler Gain icon did not render its polygon and parameter label.');
+    }
+    var units_schema = await client.componentSchema({ type: 'UnitMetadata', source:
+      'block UnitMetadata\n parameter Real distance(unit="mm", displayUnit="m", quantity="Length")=1000;\n' +
+      ' final parameter Real fixedGain=2;\n parameter Real delta(unit="K", relativeQuantity=true)=20;\nend UnitMetadata;' });
+    var declared_distance = units_schema.properties.find(item => item.name == 'distance');
+    var declared_fixed = units_schema.properties.find(item => item.name == 'fixedGain');
+    var declared_difference = units_schema.properties.find(item => item.name == 'delta');
+    if(!declared_distance || declared_distance.unit != 'mm' || declared_distance.preferred_unit != 'm' ||
+        declared_distance.quantity != 'Length' || !declared_fixed || declared_fixed.final !== true ||
+        !declared_difference || declared_difference.relative_quantity !== true) {
+      throw new Error('Declared units, display preferences or final flags were lost: ' + JSON.stringify(units_schema));
+    }
+    var external_source = 'package JSLABExternalTest\n' +
+      '  type Mode = enumeration(Slow, Fast);\n' +
+      '  connector Pin\n Real v;\n flow Real i;\n end Pin;\n' +
+      '  record Settings\n parameter Real rate=2;\n parameter Real bias=4;\n parameter Mode mode=Mode.Slow;\n parameter Boolean enabled=true;\n final parameter Real total=rate+bias;\n end Settings;\n' +
+      '  block RecordProbe\n parameter Settings settings(rate=3,bias=5);\n output Real y;\n equation\n y=settings.total;\n end RecordProbe;\n' +
+      '  block ArrayProbe\n parameter Settings settings[2];\n output Real y;\n equation\n' +
+      ' y=(if settings[1].enabled then settings[1].total else 0) + settings[2].total + (if settings[1].mode==Mode.Fast then 100 else 0);\n end ArrayProbe;\n' +
+      '  partial model Base\n parameter Real gain=2 "Inherited gain";\n parameter Mode mode=Mode.Slow;\n Pin p;\n end Base;\n' +
+      '  model Decay\n extends Base(gain=3);\n Real x(start=1, fixed=true);\n equation\n der(x)=-gain*x;\n p.v=0;\n' +
+      ' annotation(Icon(graphics={Bitmap(extent={{-100,-100},{100,100}},fileName="modelica://JSLABExternalTest/Resources/icon.svg")}));\n end Decay;\n' +
+      'end JSLABExternalTest;';
+    await client.importLibrary({ id: 'runtime-test', entry: 'package.mo', files: [
+      { path: 'package.mo', data: new TextEncoder().encode(external_source) }
+    ] });
+    var external_classes = await client.libraryClasses('JSLABExternalTest');
+    if(!external_classes.some(function(item) {
+      return item.type == 'JSLABExternalTest.Decay' && !item.standard;
+    })) throw new Error('The imported external library was not discoverable.');
+    var inherited_schema = await client.componentSchema({ type: 'JSLABExternalTest.Decay' });
+    var inherited_gain = inherited_schema.properties.find(function(item) { return item.name == 'gain'; });
+    if(!inherited_gain || inherited_gain.default_value != '3' || inherited_gain.description != 'Inherited gain') {
+      throw new Error('Inherited parameter metadata or its override was lost: ' + JSON.stringify(inherited_schema));
+    }
+    var enum_property = inherited_schema.properties.find(function(item) { return item.name == 'mode'; });
+    if(!enum_property || JSON.stringify(enum_property.choices) != JSON.stringify(['Slow', 'Fast'])) {
+      throw new Error('The compiler did not expose external enumeration choices: ' + JSON.stringify(enum_property));
+    }
+    if(JSON.stringify(await client.typeChoices('JSLABExternalTest.Mode')) != JSON.stringify(['Slow', 'Fast'])) {
+      throw new Error('External enumeration metadata was not available for workspace expressions.');
+    }
+    var inherited_graphics = await client.componentGraphics('JSLABExternalTest.Decay');
+    if(!inherited_graphics.ports.some(function(port) { return port.name == 'p'; })) {
+      throw new Error('Inherited external connectors were omitted.');
+    }
+    var standalone_source = 'block JSLABStandaloneTest\n parameter Real gain=2;\n' +
+      'Real x(start=1,fixed=true);\nequation\n der(x)=-gain*x;\nend JSLABStandaloneTest;';
+    client.close();
+    client.setLibraries([{ id: 'runtime-test', entry: 'package.mo', roots: ['JSLABExternalTest'],
+      files: [{ path: 'package.mo', data: Buffer.from(external_source).toString('base64') },
+        { path: 'Resources/icon.svg', data: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="blue"/></svg>').toString('base64') }] },
+      { id: 'standalone-test', entry: 'Standalone.mo', roots: ['JSLABStandaloneTest'],
+        files: [{ path: 'Standalone.mo', data: Buffer.from(standalone_source).toString('base64') }] }]);
+    var imported_classes = await client.importedClasses();
+    if(!imported_classes.some(function(item) { return item.type == 'JSLABStandaloneTest' && item.restriction == 'block' && !item.package; }) ||
+        !imported_classes.some(function(item) { return item.type == 'JSLABExternalTest.Decay'; })) {
+      throw new Error('The imported search index omitted standalone roots or nested blocks.');
+    }
+    var restored_graphic = await client.componentGraphics('JSLABExternalTest.Decay');
+    var external_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    renderAnnotation(external_svg, restored_graphic, { name: 'decay', modifiers: [] }, 20, 20);
+    var external_image = external_svg.querySelector('image');
+    if(!external_image || !external_image.getAttribute('href').startsWith('data:image/svg+xml;base64,')) {
+      throw new Error('The imported SVG icon was not restored from the portable library resources.');
+    }
+    var external_run = await client.compile({ action: 'simulate', model_name: 'ExternalLibraryPlant',
+      source: 'model ExternalLibraryPlant\n JSLABExternalTest.Decay decay(mode=' +
+        resolvedChoiceValue(enum_property, '"Fast"') + ');\n JSLABStandaloneTest standalone(gain=4);\nend ExternalLibraryPlant;',
+      options: { start_time: 0, stop_time: 1, intervals: 20, tolerance: 1e-8, solver: 'dassl' } });
+    var external_values = external_run.result && external_run.result.data['decay.x'];
+    var standalone_values = external_run.result && external_run.result.data['standalone.x'];
+    if(!external_run.success || !external_values ||
+        Math.abs(external_values[external_values.length - 1] - Math.exp(-3)) > 1e-5 || !standalone_values ||
+        Math.abs(standalone_values[standalone_values.length - 1] - Math.exp(-4)) > 1e-5) {
+      throw new Error('The external block did not simulate correctly after restarting the compiler.');
+    }
+    var backend = new PRDC_JSLAB_SIMULATE_PROJECT();
+    var created_source = 'model CreatedPlant\nequation\nend CreatedPlant;';
+    var created_names = [];
+    for(const type of ['Modelica.Blocks.Sources.Constant', 'Modelica.Blocks.Math.Gain']) {
+      var created_model = backend.parse(created_source);
+      if(!created_model.success) throw new Error('The visually created model failed to parse.');
+      var created_edit = insertModelComponent(created_source, created_model.model, type);
+      created_names.push(created_edit.name);
+      created_source = created_edit.source.replace(' ' + created_edit.name + ' annotation',
+        ' ' + created_edit.name + '(k=' + (created_names.length == 1 ? 3 : 2) + ') annotation');
+    }
+    created_source = created_source.replace('end CreatedPlant;',
+      'connect(' + created_names[0] + '.y,' + created_names[1] + '.u);\nend CreatedPlant;');
+    var created_run = await client.compile({ action: 'simulate', model_name: 'CreatedPlant', source: created_source,
+      options: { start_time: 0, stop_time: 1, intervals: 10, tolerance: 1e-8, solver: 'dassl' } });
+    var created_values = created_run.result && created_run.result.data['gain.y'];
+    if(!created_run.success || !created_values || !created_values.length || created_values.some(value => Math.abs(value - 6) > 1e-9)) {
+      throw new Error('A model created from library blocks did not produce the expected output.');
+    }
+    var record_source = 'model RecordPlant\n JSLABExternalTest.RecordProbe probe(settings(rate=7,bias=11));\nequation\nend RecordPlant;';
+    var record_component = backend.parse(record_source).model.components[0];
+    for(const patch of componentModifierPatches(record_component, [
+      { name: 'settings.rate', value: '9' }, { name: 'settings.bias', remove: true }
+    ]).sort((a, b) => b.start - a.start)) {
+      record_source = record_source.slice(0, patch.start) + patch.value + record_source.slice(patch.end);
+    }
+    var record_schema = await client.recordSchema('JSLABExternalTest.Settings');
+    if(!record_schema || !record_schema.properties.find(property => property.name == 'total' && property.final)) {
+      throw new Error('Imported record schemas omitted final-field metadata.');
+    }
+    var record_run = await client.compile({ action: 'simulate', model_name: 'RecordPlant', source: record_source,
+      options: { start_time: 0, stop_time: 1, intervals: 10, tolerance: 1e-8, solver: 'dassl' } });
+    var record_values = record_run.result && record_run.result.data['probe.y'];
+    if(!record_run.success || !record_values || !record_values.length || record_values.some(value => Math.abs(value - 14) > 1e-9)) {
+      throw new Error('Record field changes did not preserve inherited defaults after reset: ' + JSON.stringify(record_run));
+    }
+    var record_type = { type: 'JSLABExternalTest.Settings' };
+    var schema_resolver = type => client.recordSchema(type);
+    var object_modifier = await resolvePropertyValue(record_type, { rate: 12 }, schema_resolver, { modifier: true });
+    record_component = backend.parse(record_source).model.components[0];
+    for(const patch of componentModifierPatches(record_component, [Object.assign({ name: 'settings' }, object_modifier)]).sort((a, b) => b.start - a.start)) {
+      record_source = record_source.slice(0, patch.start) + patch.value + record_source.slice(patch.end);
+    }
+    var object_run = await client.compile({ action: 'simulate', model_name: 'RecordPlant', source: record_source,
+      options: { start_time: 0, stop_time: 1, intervals: 10, tolerance: 1e-8, solver: 'dassl' } });
+    var object_values = object_run.result && object_run.result.data['probe.y'];
+    if(!object_run.success || !object_values || object_values.some(value => Math.abs(value - 17) > 1e-9)) {
+      throw new Error('A partial record object did not preserve the owning block default: ' + JSON.stringify(object_run));
+    }
+    var array_literal = await resolvePropertyValue(Object.assign({}, record_type, { dimensions: ['2'] }),
+      [{ rate: 4, mode: 'Fast', enabled: false }, { rate: 6 }], schema_resolver);
+    var parameter_literal = await resolvePropertyValue(record_type, { rate: 7 }, schema_resolver);
+    var array_source = 'model RecordArrayPlant\n parameter JSLABExternalTest.Settings data=' + parameter_literal.value + ';\n' +
+      ' JSLABExternalTest.ArrayProbe probe(settings=' + array_literal.value + ');\n output Real y;\nequation\n y=data.total;\nend RecordArrayPlant;';
+    var array_run = await client.compile({ action: 'simulate', model_name: 'RecordArrayPlant', source: array_source,
+      options: { start_time: 0, stop_time: 1, intervals: 10, tolerance: 1e-8, solver: 'dassl' } });
+    var array_values = array_run.result && array_run.result.data['probe.y'];
+    var parameter_values = array_run.result && array_run.result.data.y;
+    if(!array_run.success || !array_values || !parameter_values || array_values.some(value => Math.abs(value - 110) > 1e-9) ||
+      parameter_values.some(value => Math.abs(value - 11) > 1e-9)) {
+      throw new Error('Record constructors, arrays or their choices did not simulate correctly: ' + JSON.stringify(array_run));
+    }
+    var expression_source = 'model ExpressionPlant\n parameter Real mass(min=0) "Mass";\n' +
+      ' parameter Real coefficients[2]={mass,mass^2};\n parameter String label="Keep {x}; from_deg(30)";\n' +
+      ' output Real y;\nequation\n y=coefficients[2];\nend ExpressionPlant;';
+    var expression_model = backend.parse(expression_source).model;
+    var string_parameter = expression_model.parameters.find(parameter => parameter.name == 'label');
+    if(modelicaValueToJSLAB(string_parameter.value) != '"Keep {x}; from_deg(30)"' || string_parameter.description) {
+      throw new Error('String data was confused with a parameter comment during import.');
+    }
+    var mass_parameter = expression_model.parameters.find(parameter => parameter.name == 'mass');
+    for(const patch of parameterValuePatches(mass_parameter, '200').sort((a, b) => b.start - a.start)) {
+      expression_source = expression_source.slice(0, patch.start) + patch.value + expression_source.slice(patch.end);
+    }
+    var expression_run = await client.compile({ action: 'simulate', model_name: 'ExpressionPlant', source: expression_source,
+      options: { start_time: 0, stop_time: 1, intervals: 10, tolerance: 1e-8, solver: 'dassl' } });
+    var expression_values = expression_run.result && expression_run.result.data.y;
+    if(!expression_run.success || !expression_values || expression_values.some(value => Math.abs(value - 40000) > 1e-9)) {
+      throw new Error('A single parameter edit did not preserve dependent model expressions: ' + JSON.stringify(expression_run));
+    }
+    var response = await client.compile({
+      action: 'simulate',
+      model_name: 'JSLABBridgeTest',
+      source: [
+        'model JSLABBridgeTest',
+        '  Real x(start = 1, fixed = true);',
+        'equation',
+        '  der(x) = -x;',
+        'end JSLABBridgeTest;'
+      ].join('\n'),
+      options: {
+        start_time: 0,
+        stop_time: 1,
+        intervals: 20,
+        tolerance: 1e-8,
+        solver: 'dassl'
+      }
+    });
+    var time = response && response.result && response.result.data.time;
+    var values = response && response.result && response.result.data.x;
+    if(!response.success || !time || !values || time.length < 21 || values.length !== time.length) {
+      throw new Error('The bridge returned an incomplete simulation result: ' +
+        JSON.stringify({ success: response && response.success,
+          columns: response && response.result && response.result.columns,
+          time: time && time.length, values: values && values.length,
+          stdout: response && response.stdout }));
+    }
+    var final_value = values[values.length - 1];
+    if(Math.abs(final_value - Math.exp(-1)) > 1e-5) {
+      throw new Error('Unexpected numerical result: ' + final_value + '.');
+    }
+    var project = JSON.parse(fs.readFileSync(
+      path.join(app_path, 'examples', 'resources', 'simulate-6dof.jslmo'), 'utf8'));
+    var parameters = Object.fromEntries(project.parameter_bindings || []);
+    var six_started = Date.now();
+    var six_response = await client.compile({
+      action: 'simulate',
+      model_name: 'modelDinamikaJointSSR',
+      source: project.source,
+      parameters: parameters,
+      options: project.simulation
+    });
+    var six_time = six_response && six_response.result && six_response.result.data.time;
+    var six_columns = six_response && six_response.result && six_response.result.columns;
+    if(!six_response.success || !six_time || six_time.length != 1007 ||
+        !six_columns || six_columns.length < 4640 || !six_response.result.scene ||
+        !six_response.result.scene.xml.includes('<shape>')) {
+      throw new Error('The 6-DOF example returned an incomplete simulation result: ' +
+        JSON.stringify({ success: six_response && six_response.success,
+          samples: six_time && six_time.length,
+          variables: six_columns && six_columns.length,
+          stdout: six_response && six_response.stdout }));
+    }
+    if(Math.abs(six_time[six_time.length - 1] - 1) > 1e-9) {
+      throw new Error('The 6-DOF example did not reach its requested stop time.');
+    }
+    var reference_names = ['time',
+      ...[1, 2, 3, 4, 5, 6].flatMap(index => ['phi', 'w', 'a'].map(field => 'drive' + index + '.' + field)),
+      ...[1, 2, 3, 4, 5, 6].map(index => 'leg' + index + '.revolute.tau'),
+      ...['v_0', 'a_0', 'z_a', 'w_a'].flatMap(field => [1, 2, 3].map(index => 'M.' + field + '[' + index + ']'))];
+    var reference_values = {};
+    for(const name of reference_names) {
+      var series = six_response.result.data[name];
+      if(!series || series.length != six_time.length || Array.from(series).some(value => !Number.isFinite(value))) {
+        throw new Error('The 6-DOF result contains missing or non-finite values: ' + name);
+      }
+      reference_values[name] = Array.from(series);
+    }
+    var result_path = new URLSearchParams(location.search).get('result');
+    var native_comparison = null;
+    var reference_path = new URLSearchParams(location.search).get('reference');
+    if(reference_path) {
+      native_comparison = require('./simulate-native-reference').PRDC_JSLAB_SIMULATE_NATIVE_REFERENCE.compare(
+        reference_path, project.source, reference_values, project.simulation);
+    }
+    if(result_path) fs.writeFileSync(result_path, JSON.stringify({
+      compiler: status.version,
+      source_sha256: require('crypto').createHash('sha256').update(project.source).digest('hex'),
+      parameters: parameters, simulation: project.simulation, selected: reference_values,
+      native_comparison: native_comparison
+    }));
+    if(native_comparison && !native_comparison.success) {
+      throw new Error('Native simulation comparison failed: ' + JSON.stringify(
+        native_comparison.differences.filter(item => item.failures)));
+    }
+    var scene_root = candidate_bundle || require('../compiler').PRDC_JSLAB_SIMULATE_COMPILER.getBundleRoot();
+    var scene_module = await import(require('url').pathToFileURL(path.join(scene_root, 'js/scene.js')).href);
+    var native_scene = await scene_module.PRDC_OMJSL_SCENE.create(
+      six_response.result.scene.xml, six_time, six_response.result.data);
+    var scene_frame = native_scene.frame(0);
+    var scene_colors = scene_frame.map(function(batch) { return batch.color; });
+    for(const color of ['rgb(153,153,153)', 'rgb(51,51,51)', 'rgb(255,153,51)']) {
+      if(!scene_colors.includes(color)) throw new Error('The native scene lost its model-defined material: ' + color);
+    }
+    if(native_scene.length != six_time.length || !native_scene.bounds.flat().every(Number.isFinite)) {
+      throw new Error('The native scene has incomplete frames or invalid bounds.');
+    }
+    var six_duration_ms = Date.now() - six_started;
+    cad_directory = fs.mkdtempSync(path.join(app_path, 'temp', 'simulate-cad-'));
+    fs.writeFileSync(path.join(cad_directory, 'part.obj'), 'mtllib paint.mtl\nv 0 0 0\nv 1 0 0\nv 0 1 0\nusemtl metal\nf 1 2 3\n');
+    fs.writeFileSync(path.join(cad_directory, 'paint.mtl'), 'newmtl metal\nKd 0.2 0.4 0.6\n');
+    var cad_uri = require('url').pathToFileURL(path.join(cad_directory, 'part.obj')).href;
+    var cad_source = 'model CADResourceProbe\n' +
+      ' inner Modelica.Mechanics.MultiBody.World world(animateWorld=false,animateGravity=false);\n' +
+      ' Real clock(start=0,fixed=true);\n' +
+      ' Modelica.Mechanics.MultiBody.Visualizers.FixedShape libraryMesh(shapeType="modelica://Modelica/Resources/Data/Shapes/Engine/piston.dxf",length=1,width=1,height=1);\n' +
+      ' Modelica.Mechanics.MultiBody.Visualizers.FixedShape fileMesh(shapeType="' + cad_uri + '",r_shape={clock,0,0},length=2,width=3,height=4,extra=1);\n' +
+      ' Modelica.Mechanics.MultiBody.Visualizers.FixedShape relativeMesh(shapeType="part.obj",r_shape={clock,0,0},length=2,width=3,height=4,extra=1);\n' +
+      'equation der(clock)=1; connect(world.frame_b,libraryMesh.frame_a); connect(world.frame_b,fileMesh.frame_a); connect(world.frame_b,relativeMesh.frame_a);\nend CADResourceProbe;';
+    var cad_response = await client.compile({ action: 'simulate', source: cad_source, model_name: 'CADResourceProbe',
+      file_path: path.join(cad_directory, 'model.jslmo'), options: { stop_time: 0.1, intervals: 2 } });
+    if(!cad_response.success || cad_response.result.scene.error) {
+      throw new Error('CAD resource resolution failed: ' + JSON.stringify(cad_response.result?.scene?.error || cad_response));
+    }
+    var cad_scene = await scene_module.PRDC_OMJSL_SCENE.create(cad_response.result.scene.xml,
+      cad_response.result.data.time, cad_response.result.data, cad_response.result.scene.resources);
+    var cad_frame = cad_scene.frame(0);
+    var cad_colors = cad_frame.flatMap(function(batch) { return batch.facecolor || [batch.color]; });
+    if(!cad_colors.includes('rgb(51,102,153)') || cad_frame.reduce((count,batch) => count + batch.i.length,0) <= 2) {
+      throw new Error('The imported CAD colors or bundled piston geometry were lost.');
+    }
+    client.close();
+    var cad_final = cad_scene.frame(cad_scene.length - 1);
+    if(!cad_final.some((batch,index) => batch.x.some((value,vertex) => Math.abs(value - cad_frame[index].x[vertex] - 0.1) < 1e-6))) {
+      throw new Error('The CAD scene did not keep moving after the compiler closed.');
+    }
+    cad_scene.dispose();
+    var final_scene_frame = native_scene.frame(six_time.length - 1);
+    if(!final_scene_frame.some(function(batch, index) {
+      return batch.x.some(function(value, vertex) { return Math.abs(value - scene_frame[index].x[vertex]) > 0.01; });
+    })) throw new Error('The scene stopped following moving shapes after the compiler closed.');
+    var scene_triangles = scene_frame.reduce(function(count, batch) { return count + batch.i.length; }, 0);
+    native_scene.dispose();
+    if(statuses.length < 2) {
+      throw new Error('The compiler did not report progress during the 6-DOF run.');
+    }
+    report = {
+      success: true,
+      graphics_primitives: icon_svg.querySelectorAll('polygon, text').length,
+      declared_unit: declared_distance.unit,
+      preferred_unit: declared_distance.preferred_unit,
+      version: status.version,
+      samples: time.length,
+      final_value: final_value,
+      created_model_output: created_values[created_values.length - 1],
+      record_model_output: record_values[record_values.length - 1],
+      record_object_output: object_values[object_values.length - 1],
+      record_array_output: array_values[array_values.length - 1],
+      record_parameter_output: parameter_values[parameter_values.length - 1],
+      expression_model_output: expression_values[expression_values.length - 1],
+      external_final_value: external_values[external_values.length - 1],
+      standalone_final_value: standalone_values[standalone_values.length - 1],
+      six_dof_samples: six_time.length,
+      six_dof_variables: six_columns.length,
+      six_dof_verified_series: reference_names.length,
+      native_scene_batches: scene_frame.length,
+      native_scene_triangles: scene_triangles,
+      cad_resources: Object.keys(cad_response.result.scene.resources).length,
+      cad_triangles: cad_frame.reduce((count,batch) => count + batch.i.length,0),
+      native_comparison: native_comparison && Object.fromEntries(Object.entries(native_comparison).filter(([key]) => key != 'differences')),
+      six_dof_duration_ms: six_duration_ms,
+      duration_ms: Date.now() - started,
+      statuses: statuses.length
+    };
+  } catch(error) {
+    report = {
+      success: false,
+      error: String(error && error.stack || error)
+    };
+  } finally {
+    client.close();
+    if(cad_directory) {
+      var cad_target = path.resolve(cad_directory);
+      if(path.dirname(cad_target) !== path.resolve(app_path, 'temp') || !path.basename(cad_target).startsWith('simulate-cad-')) {
+        throw new Error('Unexpected CAD test resource directory.');
+      }
+      fs.rmSync(cad_target, { recursive: true, force: true });
+    }
+    ipcRenderer.send('JSLAB_SIMULATE_RUNTIME_TEST', report);
+  }
+})();
+</script>

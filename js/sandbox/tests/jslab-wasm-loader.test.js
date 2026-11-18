@@ -5,38 +5,57 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for jslab wasm loader test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WASM_LOADER_TEST_HELPER {
+
+  /**
+   * Creates an isolated loader with the same lifetime as one sandbox.
+   * @returns {Object} Loader exports.
+   */
+  static createLoader() {
+    var context = { exports: {} };
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'jslab-wasm-loader.js'), 'utf8'), context);
+    return context.exports;
+  }
+}
+
+
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-/**
- * Creates an isolated loader with the same lifetime as one sandbox.
- * @returns {Object} Loader exports.
- */
-function createLoader() {
-  var context = { exports: {} };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'jslab-wasm-loader.js'), 'utf8'), context);
-  return context.exports;
-}
 
 tests.add('WASM initialization waits for both backends and shares concurrent requests', async function(assert) {
-  var loader = createLoader();
+  var loader = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WASM_LOADER_TEST_HELPER.createLoader();
   var resolve_native;
   var native = { name: 'numerical' };
   var alpha = { name: 'geometry' };
   var calls = 0;
-  assert.throws(function() { loader.getWasmModules(); }, /Initialize WebAssembly/);
+  assert.throws(function() {
+    loader.getWasmModules();
+  }, /Initialize WebAssembly/);
   var pending = loader.initializeWasm(function() {
     calls++;
-    return new Promise(function(resolve) { resolve_native = resolve; });
-  }, function() { calls++; return Promise.resolve(alpha); });
-  var second = loader.initializeWasm(function() { throw new Error('Duplicate initialization'); }, function() {});
+    return new Promise(function(resolve) {
+      resolve_native = resolve;
+    });
+  }, function() {
+    calls++;
+    return Promise.resolve(alpha);
+  });
+  var second = loader.initializeWasm(function() {
+    throw new Error('Duplicate initialization');
+  }, function() {});
   assert.equal(pending, second);
   await Promise.resolve();
   assert.equal(calls, 2);
-  assert.throws(function() { loader.getWasmModules(); }, /Initialize WebAssembly/);
+  assert.throws(function() {
+    loader.getWasmModules();
+  }, /Initialize WebAssembly/);
   resolve_native(native);
   var initialized = await pending;
   assert.equal(initialized.native, native);
@@ -45,22 +64,38 @@ tests.add('WASM initialization waits for both backends and shares concurrent req
 }, { tags: ['unit', 'wasm'] });
 
 tests.add('WASM initialization reports missing bundles and permits retry after failure', async function(assert) {
-  var loader = createLoader();
+  var loader = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WASM_LOADER_TEST_HELPER.createLoader();
   var failure;
-  try { await loader.initializeWasm(null, null); } catch(err) { failure = err; }
+  try {
+    await loader.initializeWasm(null, null);
+  } catch(err) {
+    failure = err;
+  }
   assert.ok(/bundles are missing/.test(failure.message));
   failure = null;
   try {
-    await loader.initializeWasm(function() { throw new Error('Compilation failed'); }, function() { return {}; });
-  } catch(err) { failure = err; }
+    await loader.initializeWasm(function() {
+      throw new Error('Compilation failed');
+    }, function() {
+      return {};
+    });
+  } catch(err) {
+    failure = err;
+  }
   assert.equal(failure.message, 'Compilation failed');
-  assert.throws(function() { loader.getWasmModules(); }, /Initialize WebAssembly/);
-  var initialized = await loader.initializeWasm(function() { return {}; }, function() { return {}; });
+  assert.throws(function() {
+    loader.getWasmModules();
+  }, /Initialize WebAssembly/);
+  var initialized = await loader.initializeWasm(function() {
+    return {};
+  }, function() {
+    return {};
+  });
   assert.equal(loader.getWasmModules(), initialized);
 }, { tags: ['unit', 'wasm'] });
 
 tests.add('configured WASM factories initialize each backend only before matching code runs', async function(assert) {
-  var loader = createLoader();
+  var loader = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WASM_LOADER_TEST_HELPER.createLoader();
   var native_calls = 0;
   var alpha_calls = 0;
   loader.configureWasm(function() {
@@ -72,7 +107,9 @@ tests.add('configured WASM factories initialize each backend only before matchin
   });
   assert.equal(native_calls, 0);
   assert.equal(alpha_calls, 0);
-  assert.throws(function() { loader.getWasmModule('native'); }, /Prepare the native/);
+  assert.throws(function() {
+    loader.getWasmModule('native');
+  }, /Prepare the native/);
   await loader.prepareWasmForCode('roots([1, 2]);');
   assert.equal(loader.getWasmModule('native').name, 'native');
   assert.equal(native_calls, 1);
@@ -80,7 +117,9 @@ tests.add('configured WASM factories initialize each backend only before matchin
   await loader.prepareWasmForCode('boundary3D(points);');
   assert.equal(loader.getWasmModule('alpha').name, 'alpha');
   assert.equal(alpha_calls, 1);
-  assert.throws(function() { loader.getWasmModule('other'); }, /Unknown WebAssembly/);
+  assert.throws(function() {
+    loader.getWasmModule('other');
+  }, /Unknown WebAssembly/);
 }, { tags: ['unit', 'wasm', 'lazy'] });
 
 exports.MODULE_TESTS = tests;

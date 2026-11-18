@@ -5,128 +5,149 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for networking tcp test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_TCP_TEST_HELPER {
+
+  /**
+   * Creates mock socket.
+   */
+  static createMockSocket() {
+    var handlers = {};
+    return {
+      handlers: handlers,
+      write_calls: [],
+      set_timeout_calls: [],
+      keep_alive_calls: [],
+      no_delay_calls: [],
+      destroyed: false,
+      sid: undefined,
+
+      on: function(name, handler) {
+        handlers[name] = handler;
+        return this;
+      },
+      emit: function(name, value) {
+        if(typeof handlers[name] === 'function') {
+          handlers[name](value);
+        }
+      },
+      write: function(value) {
+        this.write_calls.push(value);
+      },
+      setTimeout: function() {
+        this.set_timeout_calls.push(Array.from(arguments));
+      },
+      setKeepAlive: function() {
+        this.keep_alive_calls.push(Array.from(arguments));
+      },
+      setNoDelay: function() {
+        this.no_delay_calls.push(Array.from(arguments));
+      },
+      destroy: function() {
+        this.destroyed = true;
+      }
+    };
+  }
+
+  /**
+   * Creates client harness.
+   */
+  static createClientHarness() {
+    var cleanup_callbacks = [];
+    var socket = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_TCP_TEST_HELPER.createMockSocket();
+
+    var jsl = {
+      inter: {
+        format: {
+          isFunction: function(value) {
+            return typeof value === 'function';
+          }
+        },
+        env: {
+          net: {
+            createConnection: function() {
+              return socket;
+            }
+          }
+        }
+      },
+      addForCleanup: function(_target, callback) {
+        cleanup_callbacks.push(callback);
+      }
+    };
+
+    var connect_events = 0;
+    var client = new PRDC_JSLAB_TCP_CLIENT(jsl, '127.0.0.1', 9000, function() {
+      connect_events += 1;
+    });
+
+    return { client, socket, cleanup_callbacks, connect_events_ref: function() {
+      return connect_events;
+    } };
+  }
+
+  /**
+   * Creates server harness.
+   */
+  static createServerHarness() {
+    var cleanup_callbacks = [];
+    var connection_handler = null;
+    var server_object = {
+      close_called: false,
+      listen_args: null,
+      listen: function(port, host, callback) {
+        this.listen_args = [port, host];
+        if(typeof callback === 'function') {
+          callback();
+        }
+      },
+      close: function() {
+        this.close_called = true;
+      }
+    };
+
+    var jsl = {
+      inter: {
+        format: {
+          isFunction: function(value) {
+            return typeof value === 'function';
+          }
+        },
+        env: {
+          net: {
+            createServer: function(handler) {
+              connection_handler = handler;
+              return server_object;
+            }
+          }
+        }
+      },
+      addForCleanup: function(_target, callback) {
+        cleanup_callbacks.push(callback);
+      }
+    };
+
+    var connected_sockets = [];
+    var server = new PRDC_JSLAB_TCP_SERVER(jsl, '127.0.0.1', 9100, function(socket) {
+      connected_sockets.push(socket);
+    });
+
+    return { server, connection_handler_ref: function() {
+      return connection_handler;
+    }, server_object, cleanup_callbacks, connected_sockets };
+  }
+}
+
+
 const { PRDC_JSLAB_TCP_CLIENT, PRDC_JSLAB_TCP_SERVER } = require('../networking-tcp');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function createMockSocket() {
-  var handlers = {};
-  return {
-    handlers: handlers,
-    write_calls: [],
-    set_timeout_calls: [],
-    keep_alive_calls: [],
-    no_delay_calls: [],
-    destroyed: false,
-    sid: undefined,
-
-    on: function(name, handler) {
-      handlers[name] = handler;
-      return this;
-    },
-    emit: function(name, value) {
-      if(typeof handlers[name] === 'function') {
-        handlers[name](value);
-      }
-    },
-    write: function(value) {
-      this.write_calls.push(value);
-    },
-    setTimeout: function() {
-      this.set_timeout_calls.push(Array.from(arguments));
-    },
-    setKeepAlive: function() {
-      this.keep_alive_calls.push(Array.from(arguments));
-    },
-    setNoDelay: function() {
-      this.no_delay_calls.push(Array.from(arguments));
-    },
-    destroy: function() {
-      this.destroyed = true;
-    }
-  };
-}
-
-function createClientHarness() {
-  var cleanup_callbacks = [];
-  var socket = createMockSocket();
-
-  var jsl = {
-    inter: {
-      format: {
-        isFunction: function(value) {
-          return typeof value === 'function';
-        }
-      },
-      env: {
-        net: {
-          createConnection: function() {
-            return socket;
-          }
-        }
-      }
-    },
-    addForCleanup: function(_target, callback) {
-      cleanup_callbacks.push(callback);
-    }
-  };
-
-  var connect_events = 0;
-  var client = new PRDC_JSLAB_TCP_CLIENT(jsl, '127.0.0.1', 9000, function() {
-    connect_events += 1;
-  });
-
-  return { client, socket, cleanup_callbacks, connect_events_ref: function() { return connect_events; } };
-}
-
-function createServerHarness() {
-  var cleanup_callbacks = [];
-  var connection_handler = null;
-  var server_object = {
-    close_called: false,
-    listen_args: null,
-    listen: function(port, host, callback) {
-      this.listen_args = [port, host];
-      if(typeof callback === 'function') {
-        callback();
-      }
-    },
-    close: function() {
-      this.close_called = true;
-    }
-  };
-
-  var jsl = {
-    inter: {
-      format: {
-        isFunction: function(value) {
-          return typeof value === 'function';
-        }
-      },
-      env: {
-        net: {
-          createServer: function(handler) {
-            connection_handler = handler;
-            return server_object;
-          }
-        }
-      }
-    },
-    addForCleanup: function(_target, callback) {
-      cleanup_callbacks.push(callback);
-    }
-  };
-
-  var connected_sockets = [];
-  var server = new PRDC_JSLAB_TCP_SERVER(jsl, '127.0.0.1', 9100, function(socket) {
-    connected_sockets.push(socket);
-  });
-
-  return { server, connection_handler_ref: function() { return connection_handler; }, server_object, cleanup_callbacks, connected_sockets };
-}
 
 tests.add('TCP client buffers incoming data and supports callback mode', function(assert) {
-  var harness = createClientHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_TCP_TEST_HELPER.createClientHarness();
   var client = harness.client;
   var socket = harness.socket;
 
@@ -152,7 +173,7 @@ tests.add('TCP client buffers incoming data and supports callback mode', functio
 }, { tags: ['unit', 'networking', 'tcp'] });
 
 tests.add('TCP client delegates socket options, errors, writes and close', function(assert) {
-  var harness = createClientHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_TCP_TEST_HELPER.createClientHarness();
   var client = harness.client;
   var socket = harness.socket;
 
@@ -187,10 +208,10 @@ tests.add('TCP client delegates socket options, errors, writes and close', funct
 }, { tags: ['unit', 'networking', 'tcp'] });
 
 tests.add('TCP server handles connection lifecycle and socket routing', function(assert) {
-  var harness = createServerHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_TCP_TEST_HELPER.createServerHarness();
   var server = harness.server;
   var connection_handler = harness.connection_handler_ref();
-  var socket = createMockSocket();
+  var socket = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_TCP_TEST_HELPER.createMockSocket();
 
   assert.ok(typeof connection_handler === 'function');
   assert.equal(server.active, true);

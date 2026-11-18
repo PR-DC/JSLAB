@@ -5,12 +5,16 @@
  * info@pr-dc.com
  */
 
-const fs = require('fs');
-const path = require('path');
-const { ipcRenderer } = require('electron');
+const { PRDC_JSLAB_CODE_EDITOR } = require('../code/editor');
+
+const { PRDC_JSLAB_DEBUGGER_DISPATCHER } = require("../other-shared/debugger-dispatcher");
+
+const { PRDC_JSLAB_CODE_LINT } = require('../code/lint');
+
+
 const { PRDC_JSLAB_CODE_DOC_HOVER } = require('../code/doc-hover');
 
-const { PRDC_JSLAB_CODE_DEBUGGER } = require('../code/debugger');
+const { PRDC_JSLAB_EDITOR_BREAKPOINTS } = require("./breakpoints");
 
 const SECTION_MARKER_REGEX = /^\s*\/\/\/(?!\/).*$/;
 
@@ -27,11 +31,12 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
    * @param {HTMLElement} tab The tab element associated with this script in the UI.
    */
   constructor(win, script_manager, script_path, tab) {
+    const { path, host } = win.platform;
     var obj = this;
     this.win = win;
     this.script_manager = script_manager;
     this.tab = tab;
-    
+
     this.code_editor;
     this.code_doc_hover;
     this.code = "";
@@ -54,38 +59,20 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     this.tab.setAttribute("title", this.path);
     this.script_manager.setScriptNameByTab(this.tab, this.name);
 
-    this.code_editor = CodeMirror(document.getElementById("code"), {
-      theme: "notepadpp",
-      rulers: [{ color: "#aff", column: 75, lineStyle: "solid" }],
-      indentUnit: 2,
-      tabSize: 2,
-      lineNumbers: true,
-      lineWrapping: true,
-      styleActiveLine: true,
-      matchBrackets: true,
-      gutter: true,
-      gutters: [
-        "CodeMirror-linenumbers",
-        "CodeMirror-foldgutter",
-        "CodeMirror-lint-markers",
-      ],
-      foldGutter: true,
-      searchDialog: true,
-      highlightSelectionMatches: { annotateScrollbar: true },
-    });
+    this.code_editor = CodeMirror(document.getElementById("code"), PRDC_JSLAB_CODE_EDITOR.options({ jslabStorage: win.platform.store }));
 
-    this.debugger = new PRDC_JSLAB_CODE_DEBUGGER(this.code_editor, {
+    this.debugger = new PRDC_JSLAB_EDITOR_BREAKPOINTS(this.code_editor, {
       path: () => this.path,
       error: message => this.win.editor.disp(message),
-      request: async (method, args) => {
-        const result = await ipcRenderer.invoke('JSLAB_DEBUGGER', method, args);
-        if(!result.success) throw Error(result.error);
-        return result.value;
-      }
+      request: (method, args) => PRDC_JSLAB_DEBUGGER_DISPATCHER.invoke(host, method, args)
     });
-    if(this.win.debugger_state) this.debugger.update(this.win.debugger_state);
-    ipcRenderer.invoke('JSLAB_DEBUGGER', 'get_debug_state').then(result => {
-      if(result.success) this.debugger.update(result.value);
+    if(this.win.debugger_state) {
+      this.debugger.update(this.win.debugger_state);
+    }
+    host.invoke('JSLAB_DEBUGGER', 'get_debug_state').then(result => {
+      if(result.success) {
+        this.debugger.update(result.value);
+      }
     }).catch(() => {});
 
     this.code_editor.setOption("foldOptions", {
@@ -98,18 +85,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       scanUp: true,
     });
 
-    CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-    CodeMirror.keyMap.default["Tab"] = "indentMore";
-    CodeMirror.keyMap.default["Ctrl-F"] = "showSearchDialog";
-    CodeMirror.keyMap.default['Ctrl-G'] = 'findNext';
-    CodeMirror.keyMap.default['Shift-Ctrl-G'] = 'findPrev';
-    CodeMirror.keyMap.default['Shift-Ctrl-F'] = 'replace';
-    CodeMirror.keyMap.default['Shift-Ctrl-R'] = 'replaceAll';
-    CodeMirror.keyMap.default['Ctrl-/'] = 'toggleComment';
+    PRDC_JSLAB_CODE_EDITOR.bindShortcuts(CodeMirror);
     CodeMirror.keyMap.default['Ctrl-Space'] = function(cm) {
       CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
     };
-    
+
     // Request completion after CodeMirror has applied typed input.
     this.code_editor.on("inputRead", function(cm, change) {
       var inserted = change && Array.isArray(change.text) ? change.text.join("\n") : "";
@@ -120,7 +100,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     });
 
     // Drop events
-    this.code_editor.on("drop", function (data, e) {
+    this.code_editor.on("drop", function(data, e) {
       e.preventDefault();
     });
 
@@ -156,17 +136,18 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
 
     // Hover documentation for tokens in editor
     this.code_doc_hover = new PRDC_JSLAB_CODE_DOC_HOVER({
+      get_docs: () => this.win.platform.getDocumentation(),
       on_print_doc: function(entry) {
         var query = entry && entry.doc_query ? entry.doc_query : '';
         if(!query.length) {
           return;
         }
-        ipcRenderer.send("MainWindow", "eval-command-preserve-input",
+        host.send("MainWindow", "eval-command-preserve-input",
           ['documentation(' + JSON.stringify(query) + ')']);
       }
     });
     this.code_doc_hover.attach(this.code_editor);
-    
+
     this.show();
   }
 
@@ -175,10 +156,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
    * @param {string} script_path The path to the script file to be loaded.
    */
   loadCode(script_path) {
+    const { fs } = this.win.platform;
     try {
       var data = fs.readFileSync(script_path);
       this.code = data.toString();
-    } catch (err) {
+    } catch(err) {
       this.win.editor.errorInternal(err.stack);
     }
     this.saved_code = this.code;
@@ -212,9 +194,10 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
 
   /**
    * Saves the current script to its associated file path. If the script does not have a path, prompts for one.
-   * @returns {boolean} True if the save operation was successful, false otherwise.
+   * @returns {boolean|Promise<boolean>} True if the save operation was successful, false otherwise.
    */
   save() {
+    const { fs } = this.win.platform;
     if(this.path !== undefined) {
       if(this.isActive()) {
         this.update();
@@ -223,7 +206,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       if(this.code != this.saved_code) {
         try {
           fs.writeFileSync(this.path, this.code);
-        } catch (err) {
+        } catch(err) {
           this.win.editor.errorInternal(err.stack);
           return false;
         }
@@ -240,57 +223,43 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
 
   /**
    * Saves the current script to a new file, prompting the user for the file path.
-   * @returns {boolean} True if the save operation was successful, false otherwise.
+   * @returns {Promise<boolean>} True if the save operation was successful, false otherwise.
    */
-  saveAs() {
-    var script_path;
-    if(this.path === undefined) {
-      script_path = "script.jsl";
-    } else {
-      script_path = this.path;
-    }
-    let options = {
-      title: language.currentString(144),
-      defaultPath: script_path,
-      buttonLabel: language.currentString(145),
-      filters: [
-        { name: language.currentString(345), extensions: ["*"] },
-      ],
-    };
-
+  async saveAs() {
+    const platform = this.win.platform;
     if(this.isActive()) {
       this.update();
     }
-
-    script_path = ipcRenderer.sendSync("dialog", "showSaveDialogSync", options);
-    if(script_path === undefined) {
-      this.win.editor.disp("@editor/saveAs: "+language.string(129));
+    const options = {
+      title: language.currentString(144),
+      defaultPath: this.path || 'script.jsl',
+      buttonLabel: language.currentString(145),
+      filters: [{ name: language.currentString(345), extensions: ['*'] }]
+    };
+    const target = await platform.chooseSaveTarget(options);
+    if(!target) {
       return false;
     }
-    
-    if(script_path != this.path) {
-      if(!this.script_manager.checkScriptOpenByPath(script_path)) {
-        try {
-          fs.writeFileSync(script_path, this.code);
-        } catch (err) {
-          this.win.editor.errorInternal(err.stack);
-          return false;
-        }
-        this.path = script_path;
-        this.name = this.path.replace(/^.*[\\\/]/, "");
-        this.tab.setAttribute("title", this.path);
-        this.tab.querySelector(".tab-title").innerHTML = this.name;
-        this.saved_code = this.code;
-        this.tab.classList.remove("changed");
-        this.updateEditorMode();
-        return true;
-      } else {
-        this.win.editor.errorInternal(language.string(130));
-        return false;
-      }
-    } else {
+    if(target.path && target.path != this.path && this.script_manager.checkScriptOpenByPath(target.path)) {
+      this.win.editor.errorInternal(language.string(130));
       return false;
     }
+    try {
+      await platform.writeSaveTarget(target, this.code);
+    } catch(error) {
+      this.win.editor.errorInternal(error.stack || String(error));
+      return false;
+    }
+    if(target.path) {
+      this.path = target.path;
+      this.name = platform.path.basename(this.path);
+      this.tab.setAttribute('title', this.path);
+      this.tab.querySelector('.tab-title').textContent = this.name;
+      this.saved_code = this.code;
+      this.tab.classList.remove('changed');
+      this.updateEditorMode();
+    }
+    return true;
   }
 
   /**
@@ -298,13 +267,14 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
    * @returns {boolean} True if the script can be safely removed, false if there are unsaved changes.
    */
   remove() {
+    const { host } = this.win.platform;
     this.closing = true;
     if(this.isActive()) {
       this.update();
     }
     if(this.code.replace(/[\r]/g, '') != this.saved_code.replace(/[\r]/g, '')) {
       // Fade in window
-      ipcRenderer.send("MainProcess", "fade-in-win");
+      host.send("MainProcess", "fade-in-win");
       if(this.isActive()) {
         $("#close-file").text(this.name);
         $("#close-dialog-cont").fadeIn(300, "linear");
@@ -363,22 +333,26 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       this.code_editor.setCursor({ line: lineno - 1, ch: charpos - 1 });
     }
   }
-  
+
   /**
    * Saves the script and then runs it, typically in an external execution environment.
    * @param {array} lines The specific lines or sections of the script to execute, if applicable.
+   * @returns {Promise<boolean>} Whether execution was queued successfully.
    */
-  run(lines) {
-    if(this.save()) {
-      ipcRenderer.send("MainWindow", "run", [this.path, lines]);
+  async run(lines) {
+    const { host } = this.win.platform;
+    if(await this.save()) {
+      host.send("MainWindow", "run", [this.path, lines]);
+      return true;
     } else {
-      this.win.editor.disp("@editor/run: "+language.string(131));
+      this.win.editor.disp("@editor/run: " + language.string(131));
+      return false;
     }
   }
 
   /**
    * Runs only the current code section delimited by lines that start with "///".
-   * @returns {boolean} True when a runnable section was found and sent for execution.
+   * @returns {boolean|Promise<boolean>} True when a runnable section was found and sent for execution.
    */
   runCurrentSection() {
     var lines = this.getCurrentSectionLines();
@@ -400,21 +374,21 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     this.run(line);
     return true;
   }
-  
+
   /**
    * Marks the script as having unsaved changes, updating the UI accordingly.
    */
   codeChanged() {
     this.tab.classList.add("changed");
   }
-  
+
   /**
    * Toggles the comment state of the currently selected lines in the code editor.
    */
   toggleComment() {
     this.code_editor.execCommand('toggleComment');
   }
-  
+
   /**
    * Inserts text at the current cursor or selection in the code editor.
    * @param {string} text Text to insert.
@@ -426,11 +400,12 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
     this.code_editor.replaceSelection(text, 'end', '+input');
     this.code_editor.focus();
   }
-  
+
   /**
    * Update editor mode based on script extension
    */
   updateEditorMode() {
+    const { path } = this.win.platform;
     var obj = this;
     this.script_manager.updateActiveExtension(this);
     if(typeof this.name === 'string' || this.name instanceof String) {
@@ -442,49 +417,37 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       }
     }
     this.code_editor.setOption("mode", "javascript");
-    this.code_editor.setOption("lint", {
-      getAnnotations: async function(text, callback) {
-        var results = await obj.script_manager.eslint.lintText(text);
-        callback(results[0].messages.map(message => ({
-          from: CodeMirror.Pos(message.line - 1, message.column - 1),
-          to: CodeMirror.Pos(
-            message.endLine ? message.endLine - 1 : message.line - 1,
-            message.endColumn ? message.endColumn - 1 : message.column
-          ),
-          severity: message.severity === 2 ? "error" : "warning",
-          message: message.message,
-        })));
-      },
-      async: true
-    });
+    this.code_editor.setOption("lint", PRDC_JSLAB_CODE_LINT.createCodeMirrorLintOptions(CodeMirror, obj.script_manager.eslint));
   }
-  
+
   /**
    * Opens search dialog in the code editor.
    */
   openSearchDialog() {
     this.code_editor.execCommand('showSearchDialog');
   }
-  
+
   /**
    * Compiles arduino code.
    */
   compileArduino() {
+    const { path, host } = this.win.platform;
     if(typeof this.path === 'string' || this.path instanceof String) {
-      ipcRenderer.send("MainWindow", "eval-command", [`compileArduino('${path.dirname(this.path).replace(/\\(?!\\)/g, "\\\\")}')`]);
+      host.send("MainWindow", "eval-command", [`compileArduino('${path.dirname(this.path).replace(/\\(?!\\)/g, "\\\\")}')`]);
     } else {
-      this.win.editor.disp("@editor/compileArduino: "+language.string(229));
+      this.win.editor.disp("@editor/compileArduino: " + language.string(229));
     }
   }
-  
+
   /**
    * Uploads arduino code.
    */
   uploadArduino() {
+    const { path, host } = this.win.platform;
     if(typeof this.path === 'string' || this.path instanceof String) {
-      ipcRenderer.send("MainWindow", "eval-command", [`uploadArduino('${path.dirname(this.path).replace(/\\(?!\\)/g, "\\\\")}')`]);
+      host.send("MainWindow", "eval-command", [`uploadArduino('${path.dirname(this.path).replace(/\\(?!\\)/g, "\\\\")}')`]);
     } else {
-      this.win.editor.disp("@editor/uploadArduino: "+language.string(229));
+      this.win.editor.disp("@editor/uploadArduino: " + language.string(229));
     }
   }
 

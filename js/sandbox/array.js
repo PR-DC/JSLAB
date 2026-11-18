@@ -4,13 +4,13 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB array submodule.
  * Column-major order for matrix operation
  */
 class PRDC_JSLAB_LIB_ARRAY {
-  
+
   /**
    * Constructs an array submodule object for JSLAB.
    * @param {Object} jsl - Reference to the main JSLAB object.
@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Converts an iterable or array-like object into a standard array.
    * @param {Iterable|ArrayLike} A - The iterable or array-like object to convert.
@@ -28,25 +28,25 @@ class PRDC_JSLAB_LIB_ARRAY {
   array(A) {
     return Array.from(A);
   }
-  
+
   /**
    * Retrieves the last element from the provided array.
    * @param {Array} A - The array from which the last element is to be retrieved.
    * @returns {*} The last element of the array. If the array is empty, returns undefined.
    */
   end(A) {
-    return A[A.length-1];
+    return A[A.length - 1];
   }
-  
+
   /**
    * Returns the index of the last element in the array.
    * @param {Array} A - The array to evaluate.
    * @returns {number} The index of the last element.
    */
   endi(A) {
-    return A.length-1;
+    return A.length - 1;
   }
-  
+
   /**
    * Retrieves a specific column from the provided matrix.
    * @param {Array} A - The matrix array.
@@ -54,7 +54,9 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} The specified column as an array.
    */
   column(A, col) {
-    return A.map(function(x) { return x[col]; });
+    return A.map(function(x) {
+      return x[col];
+    });
   }
 
   /**
@@ -86,7 +88,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   last(A, N = 1) {
     return A.slice(-N);
   }
-  
+
   /**
    * Generates an array of indices based on rows and columns.
    * @param {number|number[]} rows - The row index or array of row indices.
@@ -102,17 +104,17 @@ class PRDC_JSLAB_LIB_ARRAY {
       cols = [cols];
     }
     var A = this.zeros(rows.length * cols.length);
-    
+
     var k = 0;
     for(var j = 0; j < cols.length; j++) {
       for(var i = 0; i < rows.length; i++) {
         A[k++] = rows[i] + cols[j] * rows_max;
       }
     }
-    
+
     return A;
   }
-  
+
   /**
    * Finds all indices of a specified value in the array.
    * @param {Array} A - The array to search.
@@ -121,13 +123,13 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   indexOfAll(A, value) {
     return A.reduce(function(a, e, i) {
-        if(e === value) {
-          a.push(i);
-        }
-        return a;
+      if(e === value) {
+        a.push(i);
+      }
+      return a;
     }, []);
   }
-  
+
   /**
    * Returns the index of a value in an array.
    * @param {Array} A - Array to search.
@@ -137,7 +139,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   indexOf(A, value) {
     return A.indexOf(value);
   }
-  
+
   /**
    * Finds the index of a sequence of elements in the array.
    * @param {Array} A - The array to search.
@@ -204,7 +206,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   setSubB(A, b, B) {
     this.setSub(A, this.b2i(b), B);
   }
-  
+
   /**
    * Retrieves a subset of array elements based on provided indices.
    * @param {Array} A - The source array.
@@ -219,7 +221,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return B;
   }
-  
+
   /**
    * Retrieves a subset of array elements based on provided indices.
    * @param {Array} A - The source array.
@@ -229,7 +231,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   getSubB(A, b) {
     return this.getSub(A, this.b2i(b));
   }
-  
+
   /**
    * Moves an element within the array from one index to another.
    * @param {Array} A - The array to modify.
@@ -272,7 +274,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return A;
   }
-  
+
   /**
    * Removes elements from array A that have properties listed in array B.
    * @param {Array<Object>} A - The array to filter.
@@ -282,12 +284,16 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   removeElementProp(A, B, prop) {
     if(prop) {
-      return A.filter(function(e) { return !B.includes(e[prop]); });
+      return A.filter(function(e) {
+        return !B.includes(e[prop]);
+      });
     } else {
-      return A.filter(function(e) { return !B.includes(e); });
+      return A.filter(function(e) {
+        return !B.includes(e);
+      });
     }
   }
-  
+
   /**
    * Finds the index of the first object in the array where the specified property matches the given value.
    * @param {Array<Object>} A - The array to search.
@@ -338,7 +344,7 @@ class PRDC_JSLAB_LIB_ARRAY {
       return undefined;
     }
   }
-  
+
   /**
    * Alias for setValueAt.
    * @param {Array} A - The target array.
@@ -349,7 +355,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   setVal(A, indices, value) {
     return this.setValueAt(A, indices, value);
   }
-  
+
   /**
    * Alias for getValueAt.
    * @param {Array} A - The source array.
@@ -359,7 +365,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   getVal(A, indices) {
     return this.getValueAt(A, indices);
   }
-  
+
   /**
    * Returns the intersection of two arrays.
    * @param {Array} A - First array.
@@ -367,11 +373,13 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} Common elements.
    */
   arrayIntersect(A, B) {
-    if(A.length > B.length) [A, B] = [B, A];
+    if(A.length > B.length) {
+      [A, B] = [B, A];
+    }
     const set_B = new Set(B);
     return [...A.filter(item => set_B.has(item))];
   }
-  
+
   /**
    * Creates a shallow copy of the provided array.
    * @param {Array} A - The array to clone.
@@ -380,7 +388,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   cloneArray(A) {
     return structuredClone(A);
   }
-  
+
   /**
    * Creates an n-dimensional array.
    * @param {number} length - The size of the first dimension.
@@ -416,7 +424,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return A;
   }
-  
+
   /**
    * Fills the array with a specific value.
    * @param {*} val - The value to fill the array with.
@@ -428,7 +436,7 @@ class PRDC_JSLAB_LIB_ARRAY {
       A[i] = val;
     }
   }
-  
+
   /**
    * Creates an n-dimensional array filled with NaN.
    * @param {...number} size - The size of each dimension.
@@ -455,7 +463,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   ones(...size) {
     return this.createFilledArray(...size, 1);
   }
-  
+
   /**
    * Creates a 2-dimensional identity matrix.
    * @param {number} size - The size of the identity matrix.
@@ -464,7 +472,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   eye(size) {
     return this.diag(this.ones(size), size);
   }
-  
+
   /**
    * Scales an array by a scalar.
    * @param {Array<number>} A - The array to scale.
@@ -481,7 +489,7 @@ class PRDC_JSLAB_LIB_ARRAY {
       }
     });
   }
-  
+
   /**
    * Creates a linearly spaced vector.
    * @param {number} x1 - The start value.
@@ -491,9 +499,9 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   linspace(x1, x2, rows = 100) {
     var A = new Array(rows);
-    var dx = (x2-x1)/(rows-1);
+    var dx = (x2 - x1) / (rows - 1);
     for(var i = 0; i < rows; i++) {
-      A[i] = x1+dx*i;
+      A[i] = x1 + dx * i;
     }
     return A;
   }
@@ -506,7 +514,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   range(...args) {
     return [...this.jsl.inter.env.math.range(...args, true).toArray()];
   }
-  
+
   /**
    * Generates a sequence of numbers from `x1` to `x2` with increments of `dx`.
    * @param {number} x1 - The starting value of the sequence.
@@ -516,7 +524,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   colon(x1, x2, dx) {
     if(dx === 0) {
-      this.jsl.inter.env.error('@colon: '+this.jsl.inter.lang.string(189));
+      this.jsl.inter.env.error('@colon: ' + this.jsl.inter.lang.string(189));
     }
     const x = [];
     const tolerance = 1e-14; // Tolerance for floating-point comparisons
@@ -559,7 +567,7 @@ class PRDC_JSLAB_LIB_ARRAY {
 
     return result;
   }
-  
+
   /**
    * Applies a function to each element of an array or matrix along a specified dimension.
    * @param {Array|Matrix} A - The array or matrix to process.
@@ -590,7 +598,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   multiplyEl(x, y) {
     return this.jsl.inter.env.math.dotMultiply(x, y);
   }
-  
+
   /**
    * Raises elements of an array or matrix to the power of elements in another array or matrix, element-wise.
    * @param {Array|Matrix} x - The base array or matrix.
@@ -610,7 +618,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   dot(x, y, cols) {
     if(cols) {
-      var rows = x.length/cols;
+      var rows = x.length / cols;
       var x_in = this.reshape(this.transpose(x, cols, rows), cols, rows);
       var y_in = this.reshape(this.transpose(y, cols, rows), cols, rows);
       return this.elementWise((a, b) => this.jsl.inter.env.math.dot(a, b), x_in, y_in);
@@ -618,33 +626,33 @@ class PRDC_JSLAB_LIB_ARRAY {
       return this.jsl.inter.env.math.dot(x, y);
     }
   }
-  
+
   /**
    * Determines if the element is greater than zero.
    * @param {number} e - The element to check.
    * @returns {boolean} True if greater than zero, otherwise false.
    */
-  lZero(e) { 
-    return e > 0; 
+  lZero(e) {
+    return e > 0;
   }
-  
+
   /**
    * Converts a boolean array into an array of indices where the values are `true`.
    * @param {boolean[]} arr - The input array of boolean values.
    * @returns {number[]} An array of indices corresponding to `true` values in the input array.
    */
-  b2i(arr) { 
+  b2i(arr) {
     return arr.map((value, index) => value ? index : -1).filter(index => index !== -1);
   }
-  
+
   /**
    * Calculates the average value of an array.
    * @param {Array<number>} arr - The array to average.
    * @returns {number} The average value.
    */
-  average(arr) { 
-    return arr.reduce(function(p, c) { 
-      return p + c; 
+  average(arr) {
+    return arr.reduce(function(p, c) {
+      return p + c;
     }, 0) / arr.length;
   }
 
@@ -664,7 +672,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return result;
   }
-  
+
   /**
    * Applies a moving average filter to an input array while keeping the output array the same size.
    * @param {number[]} inputArray - The array of numbers to filter.
@@ -681,8 +689,12 @@ class PRDC_JSLAB_LIB_ARRAY {
       var end = i + halfWindow;
 
       // Adjust the window if it goes beyond the array bounds
-      if(start < 0) start = 0;
-      if(end >= len) end = len - 1;
+      if(start < 0) {
+        start = 0;
+      }
+      if(end >= len) {
+        end = len - 1;
+      }
 
       var sum = 0;
       var count = 0;
@@ -694,7 +706,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return result;
   }
-  
+
   /**
    * Applies a moving average filter to an input array while keeping the output array the same size.
    * @param {number[]} inputArray - The array of numbers to filter.
@@ -704,7 +716,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   movmean(inputArray, windowSize) {
     return this.averageMoving(inputArray, windowSize);
   }
-  
+
   /**
    * Determines if two arrays are equal.
    * @param {Array} A1 - The first array.
@@ -713,8 +725,14 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   isequal(A1, A2) {
     let n;
-    if((n = A1.length) != A2.length) return false;
-    for(let i = 0; i < n; i++) if(A1[i] !== A2[i]) return false;
+    if((n = A1.length) != A2.length) {
+      return false;
+    }
+    for(let i = 0; i < n; i++) {
+      if(A1[i] !== A2[i]) {
+        return false;
+      }
+    }
     return true;
   }
 
@@ -730,7 +748,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return B;
   }
-  
+
   /**
    * Determines if all elements in an array evaluate to true.
    * @param {Array<boolean>} A - The array to check.
@@ -745,7 +763,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return true;
   }
- 
+
   /**
    * Determines if any element in an array evaluates to true.
    * @param {Array<boolean>} A - The array to check.
@@ -779,7 +797,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return arr.indexOf(item) != -1;
   }
-  
+
   /**
    * Checks if an array contains any duplicate elements.
    * @param {Array} array - The array to check for duplicates.
@@ -795,9 +813,11 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array} An array containing only unique elements from the original array.
    */
   removeDuplicates(arr) {
-    return arr.filter(function(item, index) { return arr.indexOf(item) === index; });
+    return arr.filter(function(item, index) {
+      return arr.indexOf(item) === index;
+    });
   }
-  
+
   /**
    * Reverses the order of elements in each row of a matrix.
    * @param {Array} array - The matrix array to flip horizontally.
@@ -815,13 +835,15 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   movelr(array, n) {
     var A = [...array];
-    if(A.length === 0 || n <= 0) return array;
+    if(A.length === 0 || n <= 0) {
+      return array;
+    }
     n = n % A.length;
     const elements_to_move = A.splice(0, n);
     A.push(...elements_to_move);
     return A;
   }
-  
+
   /**
    * Adds multiple operands, which can be either scalars or arrays.
    * If multiple operands are arrays, they must be of the same length.
@@ -831,15 +853,9 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   plus(...args) {
     if(args.length === 0) {
-          this.jsl.inter.env.error('@plus: ' + this.jsl.inter.lang.string(350));
+      this.jsl.inter.env.error('@plus: ' + this.jsl.inter.lang.string(350));
     }
 
-    const isComplex = (x) =>
-      x !== null &&
-      typeof x === 'object' &&
-      !Array.isArray(x) &&
-      typeof x.re === 'number' &&
-      typeof x.im === 'number';
 
     // Helper function to add two operands
     const addTwo = (a, b) => {
@@ -860,15 +876,15 @@ class PRDC_JSLAB_LIB_ARRAY {
       }
 
       // Complex + Complex
-      if(isComplex(a) && isComplex(b)) {
+      if(this._isComplex(a) && this._isComplex(b)) {
         return { re: a.re + b.re, im: a.im + b.im };
       }
 
       // Complex + Number
-      if(isComplex(a) && typeof b === 'number') {
+      if(this._isComplex(a) && typeof b === 'number') {
         return { re: a.re + b, im: a.im };
       }
-      if(typeof a === 'number' && isComplex(b)) {
+      if(typeof a === 'number' && this._isComplex(b)) {
         return { re: a + b.re, im: b.im };
       }
 
@@ -895,7 +911,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   add(...args) {
     return this.plus(...args);
   }
-  
+
   /**
    * Subtracts multiple operands from the first one, which can be either scalars or arrays.
    * If multiple operands are arrays, they must be of the same length.
@@ -908,12 +924,6 @@ class PRDC_JSLAB_LIB_ARRAY {
       this.jsl.inter.env.error('@minus: ' + this.jsl.inter.lang.string(351));
     }
 
-    const isComplex = (x) =>
-      x !== null &&
-      typeof x === 'object' &&
-      !Array.isArray(x) &&
-      typeof x.re === 'number' &&
-      typeof x.im === 'number';
 
     const subtractTwo = (a, b) => {
       // Array - Array
@@ -935,17 +945,17 @@ class PRDC_JSLAB_LIB_ARRAY {
       }
 
       // Complex - Complex
-      if(isComplex(a) && isComplex(b)) {
+      if(this._isComplex(a) && this._isComplex(b)) {
         return { re: a.re - b.re, im: a.im - b.im };
       }
 
       // Complex - Number
-      if(isComplex(a) && typeof b === 'number') {
+      if(this._isComplex(a) && typeof b === 'number') {
         return { re: a.re - b, im: a.im };
       }
 
       // Number - Complex
-      if(typeof a === 'number' && isComplex(b)) {
+      if(typeof a === 'number' && this._isComplex(b)) {
         return { re: a - b.re, im: -b.im };
       }
 
@@ -976,7 +986,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   subtract(...args) {
     return this.minus(...args);
   }
-  
+
   /**
    * Computes the cross product of two 3D vectors.
    * @param {number[]} A - The first 3D vector.
@@ -993,7 +1003,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return C;
   }
-  
+
   /**
    * Computes the inverse of a matrix represented as a flat array.
    * @param {number[]} A - The input matrix in a flat array format.
@@ -1003,8 +1013,8 @@ class PRDC_JSLAB_LIB_ARRAY {
   inv(A, size) {
     var A_mat = this.reshape(A, size, size);
     try {
-      return this.reshape(this.jsl.inter.env.math.inv(A_mat), size*size, 1);
-    } catch {
+      return this.reshape(this.jsl.inter.env.math.inv(A_mat), size * size, 1);
+    } catch{
       return false;
     }
   }
@@ -1018,15 +1028,15 @@ class PRDC_JSLAB_LIB_ARRAY {
   concatRow(cols_C, ...args) {
     var N = args.length;
     var rows_C = args.reduce((a, e) => a += e.length, 0) / cols_C;
-    
+
     var C = new Array(rows_C * cols_C).fill(0);
-    
+
     var p = 0;
     for(var j = 0; j < cols_C; j++) {
-      for(var k = 0; k < N; k++) {  
+      for(var k = 0; k < N; k++) {
         var P = args[k].length / cols_C;
         for(var i = 0; i < P; i++) {
-          C[p++] = args[k][j*P+i];
+          C[p++] = args[k][j * P + i];
         }
       }
     }
@@ -1051,7 +1061,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   concat(...args) {
     return args.flat();
   }
-  
+
   /**
    * Repeats a row vector multiple times.
    * @param {Array} A - The row vector to repeat.
@@ -1063,7 +1073,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(cols * rows).fill(0);
     for(var i = 0; i < cols; i++) {
       for(var j = 0; j < rows; j++) {
-        C[i*rows+j] = A[i];
+        C[i * rows + j] = A[i];
       }
     }
     return C;
@@ -1080,7 +1090,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(cols * rows).fill(0);
     for(var i = 0; i < cols; i++) {
       for(var j = 0; j < rows; j++) {
-        C[i*rows+j] = A[j];
+        C[i * rows + j] = A[j];
       }
     }
     return C;
@@ -1097,12 +1107,12 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(rows).fill(0);
     for(var i = 0; i < rows; i++) {
       for(var j = 0; j < cols; j++) {
-        C[i] += A[i*cols+j];
+        C[i] += A[i * cols + j];
       }
     }
     return C;
   }
-  
+
   /**
    * Sums the elements of each column in a matrix.
    * @param {Array<number>} A - The matrix array.
@@ -1114,7 +1124,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(cols).fill(0);
     for(var j = 0; j < cols; j++) {
       for(var i = 0; i < rows; i++) {
-        C[j] += A[j*rows+i];
+        C[j] += A[j * rows + i];
       }
     }
     return C;
@@ -1131,13 +1141,13 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(rows).fill(0);
     for(var i = 0; i < rows; i++) {
       for(var j = 0; j < cols; j++) {
-        C[i] += Math.pow(A[i*cols+j], 2);
+        C[i] += Math.pow(A[i * cols + j], 2);
       }
       C[i] = Math.sqrt(C[i]);
     }
     return C;
   }
-  
+
   /**
    * Calculates the Euclidean norm of each column in a matrix.
    * @param {Array<number>} A - The matrix array.
@@ -1149,7 +1159,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     var C = new Array(cols).fill(0);
     for(var j = 0; j < cols; j++) {
       for(var i = 0; i < rows; i++) {
-        C[j] += Math.pow(A[j*rows+i], 2);
+        C[j] += Math.pow(A[j * rows + i], 2);
       }
       C[j] = Math.sqrt(C[j]);
     }
@@ -1172,7 +1182,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return C;
   }
-  
+
   /**
    * Transposes a 2D matrix.
    * @param {Array[]} A - Input matrix.
@@ -1189,7 +1199,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return T;
   }
-  
+
   /**
    * Multiplies two matrices.
    * @param {Array<number>} A - The first matrix array.
@@ -1236,13 +1246,13 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {Array<number>} The diagonal matrix as a 1D array.
    */
   diag(A, length) {
-    var B = new Array(length*length).fill(0);
+    var B = new Array(length * length).fill(0);
     for(var i = 0; i < length; i++) {
       B[i * length + i] = A[i];
     }
     return B;
   }
-  
+
   /**
    * Solves a linear system of equations using LU decomposition.
    * @param {Array<number>} A - The coefficient matrix.
@@ -1253,7 +1263,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   linsolve(A, B, N) {
     return this.reshape(this.jsl.inter.env.math.lusolve(this.reshape(A, N, N), B), 1, N);
   }
-  
+
   /**
    * Computes the reciprocal of each element in the array.
    * @param {Array<number>} A - The array of numbers.
@@ -1299,7 +1309,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
 
     if(flat_arr.length !== rows * cols) {
-      this.jsl.inter.env.error('@reshape: '+this.jsl.inter.lang.string(178));
+      this.jsl.inter.env.error('@reshape: ' + this.jsl.inter.lang.string(178));
     }
 
     var reshaped = Array.from({ length: rows }, () => Array(cols));
@@ -1326,7 +1336,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   maxi(A) {
     if(!Array.isArray(A)) {
-      this.jsl.inter.env.error('@maxi: '+this.jsl.inter.lang.string(190));
+      this.jsl.inter.env.error('@maxi: ' + this.jsl.inter.lang.string(190));
     }
 
     const filtered_A = A.filter(num => !isNaN(num));
@@ -1357,12 +1367,12 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   mini(A) {
     if(!Array.isArray(A)) {
-      this.jsl.inter.env.error('@mini: '+this.jsl.inter.lang.string(190));
+      this.jsl.inter.env.error('@mini: ' + this.jsl.inter.lang.string(190));
     }
 
     const filtered_A = A.filter(num => !isNaN(num));
     if(filtered_A.length === 0) {
-      return [NaN, -1]; 
+      return [NaN, -1];
     }
 
     let min = filtered_A[0];
@@ -1387,16 +1397,22 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   sorti(A) {
     if(!Array.isArray(A)) {
-      this.jsl.inter.env.error('@sorti: '+this.jsl.inter.lang.string(190));
+      this.jsl.inter.env.error('@sorti: ' + this.jsl.inter.lang.string(190));
     }
 
     // Create an array of indices and sort based on values in A,
     // with NaNs sorted to the end.
     const indices = A.map((_, idx) => idx);
     indices.sort((i, j) => {
-      if(isNaN(A[i]) && isNaN(A[j])) return 0;
-      if(isNaN(A[i])) return 1;
-      if(isNaN(A[j])) return -1;
+      if(isNaN(A[i]) && isNaN(A[j])) {
+        return 0;
+      }
+      if(isNaN(A[i])) {
+        return 1;
+      }
+      if(isNaN(A[j])) {
+        return -1;
+      }
       return A[i] - A[j];
     });
 
@@ -1427,7 +1443,7 @@ class PRDC_JSLAB_LIB_ARRAY {
   condiff(A) {
     return A.slice(1).map((num, i) => num - A[i]);
   }
-  
+
   /**
    * Generates an array with random floating-point numbers within a specified range.
    * @param {number} l - The lower bound of the range.
@@ -1443,7 +1459,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return this.plus(this.repCol(l, cols), this.multiplyEl(this.repCol(this.minus(u, l), cols), Array.from({ length: rows * cols }, () => randFun())));
   }
-  
+
   /**
    * Generates an array with random integer numbers within a specified range.
    * @param {number[]} lu - An array containing the lower and upper bounds [lower, upper].
@@ -1458,7 +1474,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     return Array.from({ length: rows * cols }, () => Math.floor(randFun() * (lu[1] - lu[0] + 1) + lu[0]));
   }
-  
+
   /**
    * Normalizes a 3D vector.
    * @param {number[]} v - The vector to normalize.
@@ -1466,8 +1482,10 @@ class PRDC_JSLAB_LIB_ARRAY {
    */
   normalizeVector(v) {
     var len = this.jsl.inter.env.math.norm(v);
-    if(len === 0) return [0, 0, 0];
-    return [v[0]/len, v[1]/len, v[2]/len];
+    if(len === 0) {
+      return [0, 0, 0];
+    }
+    return [v[0] / len, v[1] / len, v[2] / len];
   }
 
   /**
@@ -1477,7 +1495,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {number} The dot product of the vectors.
    */
   dotVector(a, b) {
-    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   }
 
   /**
@@ -1487,9 +1505,9 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {number} The angle in radians between vectors a and b.
    */
   angleVectors(a, b) {
-    return this.jsl.inter.acos(this.dotVector(a, b)/(this.norm(a)*this.norm(b)));
+    return this.jsl.inter.acos(this.dotVector(a, b) / (this.norm(a) * this.norm(b)));
   }
-  
+
   /**
    * Creates a skew-symmetric matrix from a 3D vector.
    * @param {number[]} v - The vector to skew.
@@ -1545,10 +1563,7 @@ class PRDC_JSLAB_LIB_ARRAY {
    * @returns {boolean} True if the arrays are equal, otherwise false.
    */
   areEqual(A1, A2) {
-    let n;
-    if((n = A1.length) != A2.length) return false;
-    for(let i = 0; i < n; i++) if(A1[i] !== A2[i]) return false;
-    return true;
+    return this.isequal(A1, A2);
   }
 
   /**
@@ -1570,7 +1585,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     str += ' ]';
     this.jsl.inter.env.disp(str);
-    return str+"\n";
+    return str + "\n";
   }
 
   /**
@@ -1587,7 +1602,7 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     str += ']';
     this.jsl.inter.env.disp(str);
-    return str+"\n";
+    return str + "\n";
   }
 
   /**
@@ -1604,8 +1619,19 @@ class PRDC_JSLAB_LIB_ARRAY {
     }
     str += ' ]';
     this.jsl.inter.env.disp(str);
-    return str+"\n";
+    return str + "\n";
   }
+
+  /**
+   * Recognizes the scalar complex value shape accepted by array operations.
+   * @param {*} value Candidate scalar.
+   * @returns {boolean} Whether the value contains numeric real and imaginary parts.
+   */
+  _isComplex(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value) &&
+      typeof value.re === 'number' && typeof value.im === 'number';
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_ARRAY = PRDC_JSLAB_LIB_ARRAY;

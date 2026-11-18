@@ -5,7 +5,8 @@
  * info@pr-dc.com
  */
 
-const { clipboard } = require('electron');
+const { PRDC_JSLAB_DOM } = require('../other-shared/dom');
+
 
 /**
  * Class for JSLAB editor.
@@ -14,12 +15,13 @@ class PRDC_JSLAB_EDITOR {
 
   /**
    * Initializes the editor, setting up event listeners for UI interactions and window controls.
-   * @param {object} win The window object representing the current Electron window.
+   * @param {object} win The window object representing the owning window controller.
    */
   constructor(win) {
+    const { clipboard, host } = win.platform;
     var obj = this;
     this.win = win;
-    
+
     this.fullscreen = false;
     this.context_menu = document.getElementById('editor-context-menu');
     this.context_menu_run_line = document.getElementById('editor-context-run-line');
@@ -31,21 +33,41 @@ class PRDC_JSLAB_EDITOR {
     this.context_menu_copy = document.getElementById('editor-context-copy');
     this.context_menu_paste = document.getElementById('editor-context-paste');
     this.context_menu_select_all = document.getElementById('editor-context-select-all');
-    
+
     // On menu click
-    $("#save-menu").click(function() { obj.win.script_manager.saveScript(); });
-    $("#save-as-menu").click(function() { obj.win.script_manager.saveAsScript(); });
-    $("#open-menu").click(function() { obj.win.script_manager.openScriptFile(); });
+    $("#save-menu").click(function() {
+      obj.win.script_manager.saveScript();
+    });
+    $("#save-as-menu").click(function() {
+      obj.win.script_manager.saveAsScript();
+    });
+    $("#open-menu").click(function() {
+      obj.win.script_manager.openScriptFile();
+    });
 
-    $("#run-menu").click(function() { if(!obj.win.debugger_toolbar?.handleRun()) obj.win.script_manager.runScript(); });
-    $("#new-tab").click(function() { obj.win.script_manager.createScript(); });
-    $("#new-script").click(function() { obj.win.script_manager.createScript(); });
-    
-    $("#close-dialog-save").click(function() { obj.win.script_manager.closingDialogButton(2); });
-    $("#close-dialog-discard").click(function() { obj.win.script_manager.closingDialogButton(1); });
-    $("#close-dialog-cancel").click(function() { obj.win.script_manager.closingDialogButton(0); });
+    $("#run-menu").click(function() {
+      if(!obj.win.debugger_toolbar?.handleRun()) {
+        obj.win.script_manager.runScript();
+      }
+    });
+    $("#new-tab").click(function() {
+      obj.win.script_manager.createScript();
+    });
+    $("#new-script").click(function() {
+      obj.win.script_manager.createScript();
+    });
 
-    $("#search-dialog-menu").click(function() { 
+    $("#close-dialog-save").click(function() {
+      obj.win.script_manager.closingDialogButton(2);
+    });
+    $("#close-dialog-discard").click(function() {
+      obj.win.script_manager.closingDialogButton(1);
+    });
+    $("#close-dialog-cancel").click(function() {
+      obj.win.script_manager.closingDialogButton(0);
+    });
+
+    $("#search-dialog-menu").click(function() {
       obj.win.script_manager.openSearchDialog();
       obj.win.editor_more_popup.close();
     });
@@ -56,11 +78,11 @@ class PRDC_JSLAB_EDITOR {
     $("#symbol-input-menu").click(function() {
       obj.win.editor_more_popup.close();
     });
-    $("#compile-dialog-menu").click(function() { 
+    $("#compile-dialog-menu").click(function() {
       obj.win.script_manager.compileArduino();
       obj.win.editor_more_popup.close();
     });
-    $("#upload-dialog-menu").click(function() { 
+    $("#upload-dialog-menu").click(function() {
       obj.win.script_manager.uploadArduino();
       obj.win.editor_more_popup.close();
     });
@@ -80,7 +102,9 @@ class PRDC_JSLAB_EDITOR {
       element.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        action();
+        Promise.resolve(action()).catch(function(error) {
+          obj.errorInternal(error.stack || String(error));
+        });
         obj.hideContextMenu();
       });
     }
@@ -111,7 +135,7 @@ class PRDC_JSLAB_EDITOR {
       }
     });
 
-    bindContextAction(this.context_menu_cut, function() {
+    bindContextAction(this.context_menu_cut, async function() {
       var cm = getActiveCodeEditor();
       if(!cm) {
         return;
@@ -119,28 +143,28 @@ class PRDC_JSLAB_EDITOR {
       cm.focus();
       var selection = cm.getSelection();
       if(selection && selection.length) {
-        clipboard.writeText(selection);
+        await clipboard.writeText(selection);
         cm.replaceSelection('', 'start', '+delete');
       }
     });
 
-    bindContextAction(this.context_menu_copy, function() {
+    bindContextAction(this.context_menu_copy, async function() {
       var cm = getActiveCodeEditor();
       if(!cm) {
         return;
       }
       var selection = cm.getSelection();
       if(selection && selection.length) {
-        clipboard.writeText(selection);
+        await clipboard.writeText(selection);
       }
     });
 
-    bindContextAction(this.context_menu_paste, function() {
+    bindContextAction(this.context_menu_paste, async function() {
       var cm = getActiveCodeEditor();
       if(!cm) {
         return;
       }
-      var text = clipboard.readText();
+      var text = await clipboard.readText();
       if(typeof text === 'string' && text.length) {
         cm.focus();
         cm.replaceSelection(text, 'end', '+input');
@@ -154,25 +178,19 @@ class PRDC_JSLAB_EDITOR {
       }
     });
 
-    document.addEventListener('click', function(e) {
-      if(!obj.context_menu || obj.context_menu.style.display === 'none') {
-        return;
-      }
-      if(!obj.context_menu.contains(e.target)) {
-        obj.hideContextMenu();
-      }
-    });
+    document.addEventListener('click', event => PRDC_JSLAB_DOM.dismissContextMenu(obj, event));
 
     document.addEventListener('scroll', function() {
       obj.hideContextMenu();
     }, true);
-    
+
     // Keydown actions
     document.addEventListener("keydown", function(e) {
       if(e.key == 'F11') {
         obj.toggleFullscreen();
-      } if(e.key == 'F12') {
-        ipcRenderer.send('MainProcess', 'show-dev-tools');
+      }
+      if(e.key == 'F12') {
+        host.send('MainProcess', 'show-dev-tools');
       } else if(e.ctrlKey && e.key.toLowerCase() === "n") {
         obj.win.script_manager.createScript();
       } else if(e.ctrlKey && e.key === "F4") {
@@ -193,7 +211,9 @@ class PRDC_JSLAB_EDITOR {
         e.stopPropagation();
         e.preventDefault();
       } else if(e.key === "F5") {
-        if(!obj.win.debugger_toolbar?.handleRun()) obj.win.script_manager.runScript();
+        if(!obj.win.debugger_toolbar?.handleRun()) {
+          obj.win.script_manager.runScript();
+        }
       } else if(e.ctrlKey && e.key.toLowerCase() === "o") {
         obj.win.script_manager.openScriptFile();
       } else if(e.ctrlKey && e.key.toLowerCase() === "s" && !e.shiftKey) {
@@ -202,37 +222,9 @@ class PRDC_JSLAB_EDITOR {
         obj.win.script_manager.saveAsScript();
       }
     });
-    
-    // Window controls    
-    window.addEventListener('resize', function() {
-      // Detect change of maximize
-      obj.maximized = ipcRenderer.sendSync('sync-message', 'is-maximized-win');
-      if(obj.maximized) {
-       $("#win-restore img").attr('src', '../img/win-restore.svg');
-      } else {
-       $("#win-restore img").attr('src', '../img/win-maximize.svg');
-      }
-    }, true);
-    
-    $("#win-close").click(function() {
-      ipcRenderer.send('MainProcess', 'close-editor');
-    });
-    
-    $("#win-restore").click(function() {
-      obj.toggleFullscreen(false);
-      obj.maximized = !obj.maximized;
-      if(obj.maximized) {
-       ipcRenderer.send('MainProcess', 'maximize-win');
-      } else {
-       ipcRenderer.send('MainProcess', 'restore-win');
-      }
-    });
-    
-    $("#win-minimize").click(function() {
-      obj.toggleFullscreen(false);
-      ipcRenderer.send('MainProcess', 'minimize-win');
-    });
-    
+
+    this.win.platform.bindWindowControls(this);
+
     window.dispatchEvent(new Event('resize'));
   }
 
@@ -242,28 +234,9 @@ class PRDC_JSLAB_EDITOR {
    * @param {number} top Cursor Y in viewport.
    */
   openContextMenu(left, top) {
-    if(!this.context_menu) {
-      return;
+    if(this.context_menu) {
+      PRDC_JSLAB_DOM.openContextMenu(this.context_menu, left, top);
     }
-
-    this.context_menu.style.display = 'block';
-    this.context_menu.style.left = '0px';
-    this.context_menu.style.top = '0px';
-
-    var rect = this.context_menu.getBoundingClientRect();
-    var x = left;
-    var y = top;
-    var margin = 4;
-
-    if((x + rect.width) > window.innerWidth - margin) {
-      x = Math.max(margin, window.innerWidth - rect.width - margin);
-    }
-    if((y + rect.height) > window.innerHeight - margin) {
-      y = Math.max(margin, window.innerHeight - rect.height - margin);
-    }
-
-    this.context_menu.style.left = x + 'px';
-    this.context_menu.style.top = y + 'px';
   }
 
   /**
@@ -280,24 +253,26 @@ class PRDC_JSLAB_EDITOR {
    * @param {boolean} [fullscreen] Optional. If specified, sets the fullscreen state to the provided value. If omitted, toggles the current state.
    */
   toggleFullscreen(fullscreen) {
+    const { host } = this.win.platform;
     if(fullscreen == null) {
       fullscreen = !this.fullscreen;
     }
     if(fullscreen) {
-      ipcRenderer.send('MainProcess', 'set-fullscreen', true);
+      host.send('MainProcess', 'set-fullscreen', true);
     } else {
-      ipcRenderer.send('MainProcess', 'set-fullscreen', false);
+      host.send('MainProcess', 'set-fullscreen', false);
     }
     this.fullscreen = fullscreen;
   }
-  
+
   /**
    * Displays a message to the user through the application's main window. Can optionally request to focus the window.
    * @param {string} msg The message to display.
    * @param {boolean} [focus=true] Optional. Whether to focus the application window when displaying the message. Defaults to true.
    */
   disp(msg, focus = true) {
-    ipcRenderer.send("MainWindow", "editor-disp", [msg, focus]);
+    const { host } = this.win.platform;
+    host.send("MainWindow", "editor-disp", [msg, focus]);
   }
 
   /**
@@ -306,15 +281,17 @@ class PRDC_JSLAB_EDITOR {
    * @param {boolean} [focus=true] - Optional. Whether to focus the application window when displaying the message. Defaults to true.
    */
   dispInternal(msg, focus = true) {
-    ipcRenderer.send("MainWindow", "disp-internal", [msg, focus]);
+    const { host } = this.win.platform;
+    host.send("MainWindow", "disp-internal", [msg, focus]);
   }
-  
+
   /**
    * Displays an error message through the application's main window. Typically used for internal errors.
    * @param {string} msg The error message to display.
    */
   errorInternal(msg) {
-    ipcRenderer.send("MainWindow", "internal-error", msg);
+    const { host } = this.win.platform;
+    host.send("MainWindow", "internal-error", msg);
   }
 }
 

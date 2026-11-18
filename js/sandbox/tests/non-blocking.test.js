@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('waitMSeconds resolves asynchronously', async function(assert) {
@@ -29,16 +29,24 @@ tests.add('clearTimeoutIf cancels timeout when provided', async function(assert)
   }, 25);
   var ret = jsl.inter.non_blocking.clearTimeoutIf(id);
   assert.equal(ret, false);
-  await new Promise(function(resolve) { setTimeout(resolve, 40); });
+  await new Promise(function(resolve) {
+    setTimeout(resolve, 40);
+  });
   assert.equal(triggered, false);
 }, { tags: ['unit', 'async', 'non-blocking'], timeout_ms: 5000 });
 
 tests.add('resetTimeout re-schedules callback', async function(assert) {
   var counter = 0;
   var id = undefined;
-  id = jsl.inter.non_blocking.resetTimeout(id, function() { counter += 1; }, 50);
-  id = jsl.inter.non_blocking.resetTimeout(id, function() { counter += 1; }, 15);
-  await new Promise(function(resolve) { setTimeout(resolve, 40); });
+  id = jsl.inter.non_blocking.resetTimeout(id, function() {
+    counter += 1;
+  }, 50);
+  id = jsl.inter.non_blocking.resetTimeout(id, function() {
+    counter += 1;
+  }, 15);
+  await new Promise(function(resolve) {
+    setTimeout(resolve, 40);
+  });
   assert.equal(counter, 1);
 }, { tags: ['unit', 'async', 'non-blocking'], timeout_ms: 5000 });
 

@@ -6,212 +6,218 @@
  */
 
 /**
- * Returns a human-readable type name.
- * @param {Object} jsl JSL context.
- * @param {Object} jsl JSL context.
- * @param {*} value Input value.
- * @returns {string}
+ * Class for sandbox inspector operations.
  */
-function inspectorTypeName(jsl, value) {
-  if(value === null) {
-    return 'null';
-  }
-  if(Array.isArray(value)) {
-    return 'Array';
-  }
-  if(jsl.inter.format.isTypedArray(value)) {
-    return value.constructor ? value.constructor.name : 'TypedArray';
-  }
-  if(typeof value === 'object') {
-    if(value.constructor && value.constructor.name) {
-      return value.constructor.name;
+class PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER {
+
+  /**
+   * Returns a human-readable type name.
+   * @param {Object} jsl JSL context.
+   * @param {*} value Input value.
+   * @returns {string}
+   */
+  static inspectorTypeName(jsl, value) {
+    if(value === null) {
+      return 'null';
     }
-    return 'Object';
-  }
-  return typeof value;
-}
-
-/**
- * Trims text to the desired display width.
- * @param {*} text Input text.
- * @param {number} limit Maximum number of characters.
- * @returns {string}
- */
-function inspectorTrimText(text, limit) {
-  var out = String(text);
-  if(out.length <= limit) {
-    return out;
-  }
-  return out.slice(0, Math.max(0, limit - 3)) + '...';
-}
-
-/**
- * Builds one-line preview text for a value.
- * @param {Object} jsl JSL context.
- * @param {*} value Input value.
- * @param {number} [max_chars=120] Maximum output width.
- * @returns {string}
- */
-function inspectorPreviewValue(jsl, value, max_chars = 120) {
-  if(jsl.inter.format && typeof jsl.inter.format._consoleValue === 'function') {
-    var remote = jsl.inter.format._consoleValue(value);
-    var remote_text = remote.description;
-    if(remote.preview && remote.preview.properties && remote.preview.properties.length) {
-      var array_like = remote.subtype === 'array' || remote.subtype === 'typedarray';
-      remote_text += (array_like ? ' [' : ' {') + remote.preview.properties.join(', ') +
-        (remote.preview.overflow ? ', …' : '') + (array_like ? ']' : '}');
+    if(Array.isArray(value)) {
+      return 'Array';
     }
-    return inspectorTrimText(remote_text, max_chars);
-  }
-  var text;
-  var value_type = typeof value;
-
-  if(value === null) {
-    text = 'null';
-  } else if(value_type === 'undefined') {
-    text = 'undefined';
-  } else if(value_type === 'string') {
-    text = '"' + value.replace(/\r/g, '\\r').replace(/\n/g, '\\n') + '"';
-  } else if(value_type === 'number' || value_type === 'boolean' || value_type === 'bigint') {
-    text = String(value);
-  } else if(value_type === 'function') {
-    text = '[Function ' + (value.name || 'anonymous') + ']';
-  } else if(Array.isArray(value)) {
-    text = 'Array(' + value.length + ')';
-  } else if(jsl.inter.format.isTypedArray(value)) {
-    text = inspectorTypeName(jsl, value) + '(' + value.length + ')';
-  } else if(value_type === 'object') {
-    if(value instanceof Date) {
-      text = value.toISOString();
-    } else if(value instanceof Map) {
-      text = 'Map(' + value.size + ')';
-    } else if(value instanceof Set) {
-      text = 'Set(' + value.size + ')';
-    } else {
-      var keys = Object.keys(value);
-      var shown = keys.slice(0, 3);
-      text = inspectorTypeName(jsl, value) + ' {' + shown.join(', ');
-      if(keys.length > shown.length) {
-        text += ', ...';
+    if(jsl.inter.format.isTypedArray(value)) {
+      return value.constructor ? value.constructor.name : 'TypedArray';
+    }
+    if(typeof value === 'object') {
+      if(value.constructor && value.constructor.name) {
+        return value.constructor.name;
       }
-      text += '}';
+      return 'Object';
     }
-  } else {
-    text = String(value);
+    return typeof value;
   }
 
-  return inspectorTrimText(String(text), max_chars);
-}
+  /**
+   * Trims text to the desired display width.
+   * @param {*} text Input text.
+   * @param {number} limit Maximum number of characters.
+   * @returns {string}
+   */
+  static inspectorTrimText(text, limit) {
+    var out = String(text);
+    if(out.length <= limit) {
+      return out;
+    }
+    return out.slice(0, Math.max(0, limit - 3)) + '...';
+  }
 
-/**
- * Converts value to lowercase searchable text.
- * @param {*} value Input value.
- * @returns {string}
- */
-function inspectorSearchValue(jsl, value) {
-  if(value === null) {
-    return 'null';
-  }
-  if(typeof value === 'undefined') {
-    return 'undefined';
-  }
-  if(typeof value === 'object') {
-    return String(jsl.inter.format.safeStringify(value, 3, false)).toLowerCase();
-  }
-  return String(value).toLowerCase();
-}
+  /**
+   * Builds one-line preview text for a value.
+   * @param {Object} jsl JSL context.
+   * @param {*} value Input value.
+   * @param {number} [max_chars=120] Maximum output width.
+   * @returns {string}
+   */
+  static inspectorPreviewValue(jsl, value, max_chars = 120) {
+    if(jsl.inter.format && typeof jsl.inter.format._consoleValue === 'function') {
+      var remote = jsl.inter.format._consoleValue(value);
+      var remote_text = remote.description;
+      if(remote.preview && remote.preview.properties && remote.preview.properties.length) {
+        var array_like = remote.subtype === 'array' || remote.subtype === 'typedarray';
+        remote_text += (array_like ? ' [' : ' {') + remote.preview.properties.join(', ') +
+          (remote.preview.overflow ? ', …' : '') + (array_like ? ']' : '}');
+      }
+      return PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorTrimText(remote_text, max_chars);
+    }
+    var text;
+    var value_type = typeof value;
 
-/**
- * Converts known wrappers to structures that inspector can render.
- * @param {Object} jsl JSL context.
- * @param {*} value Input value.
- * @returns {*}
- */
-function inspectorToInspectable(jsl, value) {
-  var inspectable = value;
-  if(inspectable &&
-    typeof inspectable.getInspectorColumns === 'function' &&
-    typeof inspectable.getInspectorRows === 'function') {
+    if(value === null) {
+      text = 'null';
+    } else if(value_type === 'undefined') {
+      text = 'undefined';
+    } else if(value_type === 'string') {
+      text = '"' + value.replace(/\r/g, '\\r').replace(/\n/g, '\\n') + '"';
+    } else if(value_type === 'number' || value_type === 'boolean' || value_type === 'bigint') {
+      text = String(value);
+    } else if(value_type === 'function') {
+      text = '[Function ' + (value.name || 'anonymous') + ']';
+    } else if(Array.isArray(value)) {
+      text = 'Array(' + value.length + ')';
+    } else if(jsl.inter.format.isTypedArray(value)) {
+      text = PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorTypeName(jsl, value) + '(' + value.length + ')';
+    } else if(value_type === 'object') {
+      if(value instanceof Date) {
+        text = value.toISOString();
+      } else if(value instanceof Map) {
+        text = 'Map(' + value.size + ')';
+      } else if(value instanceof Set) {
+        text = 'Set(' + value.size + ')';
+      } else {
+        var keys = Object.keys(value);
+        var shown = keys.slice(0, 3);
+        text = PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorTypeName(jsl, value) + ' {' + shown.join(', ');
+        if(keys.length > shown.length) {
+          text += ', ...';
+        }
+        text += '}';
+      }
+    } else {
+      text = String(value);
+    }
+
+    return PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorTrimText(String(text), max_chars);
+  }
+
+  /**
+   * Converts value to lowercase searchable text.
+   * @param {*} value Input value.
+   * @returns {string}
+   */
+  static inspectorSearchValue(jsl, value) {
+    if(value === null) {
+      return 'null';
+    }
+    if(typeof value === 'undefined') {
+      return 'undefined';
+    }
+    if(typeof value === 'object') {
+      return String(jsl.inter.format.safeStringify(value, 3, false)).toLowerCase();
+    }
+    return String(value).toLowerCase();
+  }
+
+  /**
+   * Converts known wrappers to structures that inspector can render.
+   * @param {Object} jsl JSL context.
+   * @param {*} value Input value.
+   * @returns {*}
+   */
+  static inspectorToInspectable(jsl, value) {
+    var inspectable = value;
+    if(inspectable &&
+      typeof inspectable.getInspectorColumns === 'function' &&
+      typeof inspectable.getInspectorRows === 'function') {
+      return inspectable;
+    }
+    if(inspectable && typeof inspectable.toArray === 'function') {
+      try {
+        inspectable = inspectable.toArray();
+      } catch(err) {
+        // Keep original value when conversion fails.
+      }
+    }
+    if(jsl.inter.format.isTypedArray(inspectable)) {
+      inspectable = Array.from(inspectable);
+    }
     return inspectable;
   }
-  if(inspectable && typeof inspectable.toArray === 'function') {
+
+  /**
+   * Returns true if value can be rendered as row-array.
+   * @param {Object} jsl JSL context.
+   * @param {*} value Input value.
+   * @returns {boolean}
+   */
+  static inspectorIsRowArray(jsl, value) {
+    return Array.isArray(value) || jsl.inter.format.isTypedArray(value);
+  }
+
+  /**
+   * Converts value into expression text usable in inspector editing.
+   * @param {*} value Input value.
+   * @returns {string}
+   */
+  static inspectorToExpression(value) {
+    if(value === null) {
+      return 'null';
+    }
+    if(typeof value === 'undefined') {
+      return 'undefined';
+    }
+    if(typeof value === 'string') {
+      return JSON.stringify(value);
+    }
+    if(typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    if(typeof value === 'bigint') {
+      return String(value) + 'n';
+    }
     try {
-      inspectable = inspectable.toArray();
+      return JSON.stringify(value);
     } catch(err) {
-      // Keep original value when conversion fails.
+      return '';
     }
   }
-  if(jsl.inter.format.isTypedArray(inspectable)) {
-    inspectable = Array.from(inspectable);
-  }
-  return inspectable;
-}
 
-/**
- * Returns true if value can be rendered as row-array.
- * @param {Object} jsl JSL context.
- * @param {*} value Input value.
- * @returns {boolean}
- */
-function inspectorIsRowArray(jsl, value) {
-  return Array.isArray(value) || jsl.inter.format.isTypedArray(value);
-}
+  /**
+   * Compares scalar values for table sorting in inspector.
+   * @param {*} a First value.
+   * @param {*} b Second value.
+   * @returns {number}
+   */
+  static inspectorCompareValues(a, b) {
+    if(a === b) {
+      return 0;
+    }
 
-/**
- * Converts value into expression text usable in inspector editing.
- * @param {*} value Input value.
- * @returns {string}
- */
-function inspectorToExpression(value) {
-  if(value === null) {
-    return 'null';
-  }
-  if(typeof value === 'undefined') {
-    return 'undefined';
-  }
-  if(typeof value === 'string') {
-    return JSON.stringify(value);
-  }
-  if(typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
-  }
-  if(typeof value === 'bigint') {
-    return String(value) + 'n';
-  }
-  try {
-    return JSON.stringify(value);
-  } catch(err) {
-    return '';
-  }
-}
+    var a_num = typeof a === 'number' && isFinite(a);
+    var b_num = typeof b === 'number' && isFinite(b);
+    if(a_num && b_num) {
+      return a - b;
+    }
 
-/**
- * Compares scalar values for table sorting in inspector.
- * @param {*} a First value.
- * @param {*} b Second value.
- * @returns {number}
- */
-function inspectorCompareValues(a, b) {
-  if(a === b) {
+    var a_str = String(a).toLowerCase();
+    var b_str = String(b).toLowerCase();
+    if(a_str < b_str) {
+      return -1;
+    }
+    if(a_str > b_str) {
+      return 1;
+    }
     return 0;
   }
-
-  var a_num = typeof a === 'number' && isFinite(a);
-  var b_num = typeof b === 'number' && isFinite(b);
-  if(a_num && b_num) {
-    return a - b;
-  }
-
-  var a_str = String(a).toLowerCase();
-  var b_str = String(b).toLowerCase();
-  if(a_str < b_str) {
-    return -1;
-  }
-  if(a_str > b_str) {
-    return 1;
-  }
-  return 0;
 }
+
 
 /**
  * Class for JSLAB inspector submodule.
@@ -241,13 +247,13 @@ class PRDC_JSLAB_LIB_INSPECTOR {
    */
   inspectVariable(variable_name, options = {}) {
     if(typeof variable_name !== 'string' || !variable_name.trim().length) {
-      this.jsl.inter.env.error('@inspectVariable: ' + this.jsl.inter.lang.string(431));
+      this.jsl.inter.env.error('@inspectVariable: ' + this.jsl.inter.lang.string(430));
       return false;
     }
 
     var name = variable_name.trim();
     if(!(name in this.jsl.context)) {
-      this.jsl.inter.env.error('@inspectVariable: ' + this.jsl.formatLang(432, {
+      this.jsl.inter.env.error('@inspectVariable: ' + this.jsl.formatLang(431, {
         name: name
       }));
       return false;
@@ -295,41 +301,41 @@ class PRDC_JSLAB_LIB_INSPECTOR {
     }
 
     var formatLang = this.jsl.formatLang.bind(this.jsl);
-    var txt_filter = this.jsl.inter.lang.string(392);
-    var txt_clear_filter = this.jsl.inter.lang.string(393);
-    var txt_filter_expr = this.jsl.inter.lang.string(394);
-    var txt_clear_expr = this.jsl.inter.lang.string(395);
-    var txt_refresh = this.jsl.inter.lang.string(396);
-    var txt_edit_hint = this.jsl.inter.lang.string(397);
-    var txt_add_var = this.jsl.inter.lang.string(398);
-    var txt_rename_var = this.jsl.inter.lang.string(399);
-    var txt_remove_var = this.jsl.inter.lang.string(400);
-    var txt_copy_csv = this.jsl.inter.lang.string(401);
-    var txt_inspect = this.jsl.inter.lang.string(402);
-    var txt_meta_type = this.jsl.inter.lang.string(403);
-    var txt_meta_size = this.jsl.inter.lang.string(404);
-    var txt_meta_row_times = this.jsl.inter.lang.string(405);
-    var txt_meta_types = this.jsl.inter.lang.string(406);
-    var txt_meta_rows = this.jsl.inter.lang.string(407);
-    var txt_meta_fields = this.jsl.inter.lang.string(408);
-    var txt_meta_length = this.jsl.inter.lang.string(409);
-    var txt_meta_entries = this.jsl.inter.lang.string(410);
-    var txt_meta_keys = this.jsl.inter.lang.string(447);
-    var txt_no_props = this.jsl.inter.lang.string(411);
-    var txt_edit_value = this.jsl.inter.lang.string(412);
-    var txt_sort_asc = this.jsl.inter.lang.string(413);
-    var txt_sort_desc = this.jsl.inter.lang.string(414);
-    var txt_double_click_to_edit = this.jsl.inter.lang.string(420);
-    var txt_col_key = this.jsl.inter.lang.string(421);
-    var txt_col_value = this.jsl.inter.lang.string(422);
+    var txt_filter = this.jsl.inter.lang.string(391);
+    var txt_clear_filter = this.jsl.inter.lang.string(392);
+    var txt_filter_expr = this.jsl.inter.lang.string(393);
+    var txt_clear_expr = this.jsl.inter.lang.string(394);
+    var txt_refresh = this.jsl.inter.lang.string(395);
+    var txt_edit_hint = this.jsl.inter.lang.string(396);
+    var txt_add_var = this.jsl.inter.lang.string(397);
+    var txt_rename_var = this.jsl.inter.lang.string(398);
+    var txt_remove_var = this.jsl.inter.lang.string(399);
+    var txt_copy_csv = this.jsl.inter.lang.string(400);
+    var txt_inspect = this.jsl.inter.lang.string(401);
+    var txt_meta_type = this.jsl.inter.lang.string(402);
+    var txt_meta_size = this.jsl.inter.lang.string(403);
+    var txt_meta_row_times = this.jsl.inter.lang.string(404);
+    var txt_meta_types = this.jsl.inter.lang.string(405);
+    var txt_meta_rows = this.jsl.inter.lang.string(406);
+    var txt_meta_fields = this.jsl.inter.lang.string(407);
+    var txt_meta_length = this.jsl.inter.lang.string(408);
+    var txt_meta_entries = this.jsl.inter.lang.string(409);
+    var txt_meta_keys = this.jsl.inter.lang.string(446);
+    var txt_no_props = this.jsl.inter.lang.string(410);
+    var txt_edit_value = this.jsl.inter.lang.string(411);
+    var txt_sort_asc = this.jsl.inter.lang.string(412);
+    var txt_sort_desc = this.jsl.inter.lang.string(413);
+    var txt_double_click_to_edit = this.jsl.inter.lang.string(419);
+    var txt_col_key = this.jsl.inter.lang.string(420);
+    var txt_col_value = this.jsl.inter.lang.string(421);
 
-    var getTypeName = (value) => inspectorTypeName(this.jsl, value);
-    var previewValue = (value) => inspectorPreviewValue(this.jsl, value, max_chars);
-    var searchValue = (value) => inspectorSearchValue(this.jsl, value);
-    var toInspectable = (value) => inspectorToInspectable(this.jsl, value);
-    var isRowArray = (value) => inspectorIsRowArray(this.jsl, value);
-    var toExpression = inspectorToExpression;
-    var compareValues = inspectorCompareValues;
+    var getTypeName = (value) => PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorTypeName(this.jsl, value);
+    var previewValue = (value) => PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorPreviewValue(this.jsl, value, max_chars);
+    var searchValue = (value) => PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorSearchValue(this.jsl, value);
+    var toInspectable = (value) => PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorToInspectable(this.jsl, value);
+    var isRowArray = (value) => PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorIsRowArray(this.jsl, value);
+    var toExpression = PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorToExpression;
+    var compareValues = PRDC_JSLAB_SANDBOX_INSPECTOR_HELPER.inspectorCompareValues;
 
     var toolbar_extra_actions = [];
 
@@ -365,7 +371,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
           }
           return false;
         });
-        note_parts.push(formatLang(417, {
+        note_parts.push(formatLang(416, {
           filter: filter_text,
           matched: filtered_rows.length,
           total: total_rows
@@ -377,7 +383,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
         try {
           expr_fun = new Function('row', 'index', 'values', 'return (' + filter_expr + ');');
         } catch(err) {
-          note_parts.push(formatLang(418, {
+          note_parts.push(formatLang(417, {
             error: err.message
           }));
           expr_fun = undefined;
@@ -392,7 +398,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
               return false;
             }
           });
-          note_parts.push(formatLang(419, {
+          note_parts.push(formatLang(418, {
             matched: filtered_rows.length,
             total: before_expr
           }));
@@ -429,13 +435,13 @@ class PRDC_JSLAB_LIB_INSPECTOR {
       var trimmed_columns = columns.slice(0, shown_cols);
 
       if(sorted_rows.length > shown_rows) {
-        note_parts.push(formatLang(415, {
+        note_parts.push(formatLang(414, {
           shown: shown_rows,
           total: sorted_rows.length
         }));
       }
       if(total_cols > shown_cols) {
-        note_parts.push(formatLang(416, {
+        note_parts.push(formatLang(415, {
           shown: shown_cols,
           total: total_cols
         }));
@@ -759,21 +765,21 @@ class PRDC_JSLAB_LIB_INSPECTOR {
    */
   inspectSetVariable(variable_name, path, expression) {
     if(typeof variable_name !== 'string' || !variable_name.trim().length) {
-      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(431));
+      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(430));
       return false;
     }
     if(!Array.isArray(path)) {
-      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(433));
+      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(432));
       return false;
     }
     if(typeof expression !== 'string') {
-      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(434));
+      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(433));
       return false;
     }
 
     var name = variable_name.trim();
     if(!(name in this.jsl.context)) {
-      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.formatLang(432, {
+      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.formatLang(431, {
         name: name
       }));
       return false;
@@ -783,7 +789,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
     try {
       new_value = this.jsl._eval(expression);
     } catch(err) {
-      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.formatLang(435, {
+      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.formatLang(434, {
         error: err.message
       }));
       return false;
@@ -827,14 +833,14 @@ class PRDC_JSLAB_LIB_INSPECTOR {
     var target = root;
     for(var i = 0; i < path.length - 1; i++) {
       if(target === null || typeof target === 'undefined') {
-        this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(436));
+        this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(435));
         return false;
       }
       target = target[path[i]];
     }
 
     if(target === null || typeof target === 'undefined') {
-      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(437));
+      this.jsl.inter.env.error('@inspectSetVariable: ' + this.jsl.inter.lang.string(436));
       return false;
     }
 
@@ -860,11 +866,11 @@ class PRDC_JSLAB_LIB_INSPECTOR {
    */
   inspectTableAction(variable_name, action, payload = {}) {
     if(typeof variable_name !== 'string' || !variable_name.trim().length) {
-      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(431));
+      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(430));
       return false;
     }
     if(typeof action !== 'string' || !action.trim().length) {
-      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(438));
+      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(437));
       return false;
     }
     if(!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -873,7 +879,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
 
     var name = variable_name.trim();
     if(!(name in this.jsl.context)) {
-      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(432, {
+      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(431, {
         name: name
       }));
       return false;
@@ -884,7 +890,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
       typeof target.getVariable !== 'function' ||
       typeof target.setVariable !== 'function' ||
       !Array.isArray(target.VariableNames)) {
-      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(439, {
+      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(438, {
         name: name
       }));
       return false;
@@ -895,13 +901,13 @@ class PRDC_JSLAB_LIB_INSPECTOR {
     if(action_name === 'addvar') {
       var new_name = typeof payload.name === 'string' ? payload.name.trim() : '';
       if(!new_name.length) {
-        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(440));
+        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(439));
         return false;
       }
 
       var expression = typeof payload.expression === 'string' ? payload.expression : '';
       if(!expression.trim().length) {
-        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(441));
+        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(440));
         return false;
       }
 
@@ -909,7 +915,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
       try {
         new_values = this.jsl._eval(expression);
       } catch(err) {
-        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(435, {
+        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(434, {
           error: err.message
         }));
         return false;
@@ -937,7 +943,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
       var old_name = typeof payload.old_name === 'string' ? payload.old_name.trim() : '';
       var renamed = typeof payload.new_name === 'string' ? payload.new_name.trim() : '';
       if(!old_name.length || !renamed.length) {
-        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(442));
+        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(441));
         return false;
       }
 
@@ -957,7 +963,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
         });
       }
       if(!Array.isArray(names) || names.length === 0) {
-        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(443));
+        this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.inter.lang.string(442));
         return false;
       }
 
@@ -976,7 +982,7 @@ class PRDC_JSLAB_LIB_INSPECTOR {
         return false;
       }
     } else {
-      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(445, {
+      this.jsl.inter.env.error('@inspectTableAction: ' + this.jsl.formatLang(444, {
         action: action
       }));
       return false;

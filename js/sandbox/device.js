@@ -7,12 +7,12 @@
 
 
 var { PRDC_JSLAB_DEVICE_GAMEPAD } = require('./device-gamepad');
- 
+
 /**
  * Class for JSLAB device submodule.
  */
 class PRDC_JSLAB_LIB_DEVICE {
-  
+
   /**
    * Constructs a device submodule object with access to JSLAB's device functions.
    * @constructor
@@ -21,7 +21,7 @@ class PRDC_JSLAB_LIB_DEVICE {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    
+
     this._camera_resolutions = [
       { "label": "4K (UHD)", "width": 3840, "height": 2160, "ratio": "16:9" },
       { "label": "1080p (FHD)", "width": 1920, "height": 1080, "ratio": "16:9" },
@@ -38,37 +38,47 @@ class PRDC_JSLAB_LIB_DEVICE {
    * @param {string} driver_name - Name of the driver to check.
    * @returns {boolean} True if the driver is found, false otherwise.
    */
-  checkDriver(driver_name){
+  checkDriver(driver_name) {
     var val = this.jsl.inter.env.execSync('driverquery');
     if(val.state == 'success') {
       var output = val.data.split(/[\r\n]+/);
-      var output_lc = output.map(function(x) { return x.toLowerCase(); });
+      var output_lc = output.map(function(x) {
+        return x.toLowerCase();
+      });
       if(!Array.isArray(driver_name)) {
-       driver_name = [driver_name];
+        driver_name = [driver_name];
       }
-      driver_name = driver_name.map(function(x) { return x.toLowerCase(); });
+      driver_name = driver_name.map(function(x) {
+        return x.toLowerCase();
+      });
       var data_out = [];
       for(var i = 0; i < driver_name.length; i++) {
-        var idx = output_lc.map(function(x) { return x.startsWith(driver_name[i]); }).findIndex(function(x) { return x == true; });
+        var idx = output_lc.map(function(x) {
+          return x.startsWith(driver_name[i]);
+        }).findIndex(function(x) {
+          return x == true;
+        });
         if(idx >= 0) {
           data_out[i] = output[idx];
         } else {
           data_out[i] = '';
         }
       }
-      if(data_out.every(function(x) { return x.length; })) {
+      if(data_out.every(function(x) {
+        return x.length;
+      })) {
         if(this.jsl.debug) {
           this.jsl.inter.env.disp('@checkDriver: ' + data_out);
         }
-        return true; 
+        return true;
       } else {
-        return false; 
+        return false;
       }
     } else {
       if(this.jsl.debug) {
         this.jsl.inter.env.error('@checkDriver: ' + val.data);
       }
-      return false; 
+      return false;
     }
   }
 
@@ -79,7 +89,7 @@ class PRDC_JSLAB_LIB_DEVICE {
   checkDriverFTDI() {
     return this.checkDriver(['FTDIBUS', 'FTSER2K']);
   }
- 
+
   /**
    * Checks if the drivers for Silicon Labs CP210x USB to UART bridge are installed.
    * @returns {boolean} True if the drivers are found, false otherwise.
@@ -87,7 +97,7 @@ class PRDC_JSLAB_LIB_DEVICE {
   checkDriverCP210x() {
     return this.checkDriver('silabser');
   }
- 
+
   /**
    * Checks if the drivers for CH340 USB to serial converter are installed.
    * @returns {boolean} True if the drivers are found, false otherwise.
@@ -105,10 +115,10 @@ class PRDC_JSLAB_LIB_DEVICE {
       var output = this.jsl.inter.env.execSync('arduino-cli -h', { stdio: 'pipe' });
       return true;
     } catch(err) {
-      this.jsl.inter.env.error('@checkArduino: '+this.jsl.inter.lang.string(224));
+      this.jsl.inter.env.error('@checkArduino: ' + this.jsl.inter.lang.string(224));
     }
   }
-  
+
   /**
    * Compile Arduino project.
    * @param {string} dir - Project directory.
@@ -117,13 +127,13 @@ class PRDC_JSLAB_LIB_DEVICE {
   compileArduino(dir) {
     var config_file = this.jsl.inter.env.pathJoin(dir, 'config.json');
     if(!this.jsl.inter.env.checkFile(config_file)) {
-      this.jsl.inter.env.error('@compileArduino: '+this.jsl.inter.lang.string(225));
+      this.jsl.inter.env.error('@compileArduino: ' + this.jsl.inter.lang.string(225));
       return false;
     }
-    
+
     this.checkArduino();
     try {
-      var arduino_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file))
+      var arduino_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file));
       var build_property_str = '';
       if(arduino_config.build_property) {
         build_property_str = `--build-property "${arduino_config.build_property}"`;
@@ -138,7 +148,7 @@ class PRDC_JSLAB_LIB_DEVICE {
       this.jsl.inter.env.error('@compileArduino: ' + this.jsl.inter.lang.string(353) + ' ' + err.toString());
     }
   }
- 
+
   /**
    * Upload Arduino project.
    * @param {string} dir - Project directory.
@@ -148,10 +158,10 @@ class PRDC_JSLAB_LIB_DEVICE {
   uploadArduino(dir, port) {
     var config_file = this.jsl.inter.env.pathJoin(dir, 'config.json');
     if(!this.jsl.inter.env.checkFile(config_file)) {
-      this.jsl.inter.env.error('@uploadArduino: '+this.jsl.inter.lang.string(225));
+      this.jsl.inter.env.error('@uploadArduino: ' + this.jsl.inter.lang.string(225));
       return false;
     }
-    
+
     this.checkArduino();
     try {
       var arduino_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file));
@@ -175,7 +185,7 @@ class PRDC_JSLAB_LIB_DEVICE {
       this.jsl.inter.env.error('@uploadArduino: ' + this.jsl.inter.lang.string(354) + ' ' + err.toString());
     }
   }
-  
+
   /**
    * Parses Arduino output from stdout or stderr.
    * @param {object} output
@@ -188,7 +198,7 @@ class PRDC_JSLAB_LIB_DEVICE {
     } else if(output.stderr) {
       data_string = output.stderr;
     }
-    
+
     var data = JSON.parse(data_string);
     if(!data.success) {
       this.jsl.inter.env.warn('@parseArduinoOutput: ' + this.jsl.inter.lang.string(355));
@@ -207,43 +217,33 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       .filter((g) => !this.jsl.inter.isNull(g))
       .map(g => g.toJSON());
   }
- 
+
   /**
    * Registers a callback function to be called when a gamepad is connected.
    * @param {Function} callback - The function to execute when a gamepad connects.
    */
   onGamepadConnected(callback) {
     var obj = this;
-    var listener = function(e) {
-      if(e.gamepad) {
-        e.gamepad = e.gamepad.map(g => g.toJSON());
-      }
-      callback(e);
-    };
+    var listener = event => this._gamepadEvent(event, callback);
     this.jsl.inter.env.context.addEventListener("gamepadconnected", listener);
     this.jsl.addForCleanup(this, function() {
       obj.jsl.inter.env.context.removeEventListener("gamepadconnected", listener);
     });
   }
- 
+
   /**
    * Registers a callback function to be called when a gamepad is disconnected.
    * @param {Function} callback - The function to execute when a gamepad disconnects.
    */
   onGamepadDisconnected(callback) {
     var obj = this;
-    var listener = function(e) {
-      if(e.gamepad) {
-        e.gamepad = e.gamepad.map(g => g.toJSON());
-      }
-      callback(e);
-    };
+    var listener = event => this._gamepadEvent(event, callback);
     this.jsl.inter.env.context.addEventListener("gamepaddisconnected", listener);
     this.jsl.addForCleanup(this, function() {
       obj.jsl.inter.env.context.removeEventListener("gamepaddisconnected", listener);
     });
   }
- 
+
   /**
    * Retrieves a specific gamepad by its ID.
    * @param {number} id - The index of the gamepad to retrieve.
@@ -253,7 +253,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
   getGamepad(id, dt) {
     return new PRDC_JSLAB_DEVICE_GAMEPAD(this.jsl, id, dt);
   }
-   
+
   /**
    * Retrieves a list of available webcam (video input) devices.
    * @returns {Object[]} A promise that resolves to an array of video input devices.
@@ -275,7 +275,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       .filter(device => device.kind === 'audioinput')
       .map(device => device.toJSON());
   }
- 
+
   /**
    * Retrieves a list of available audio output devices.
    * @returns {Object[]} A promise that resolves to an array of audio output devices.
@@ -286,7 +286,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       .filter(device => device.kind === 'audiooutput')
       .map(device => device.toJSON());
   }
- 
+
   /**
    * Opens a new window to display the webcam feed from the specified device.
    * @param {string} device_id - The unique identifier of the webcam device to use.
@@ -294,7 +294,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
    */
   async webcam(device_id) {
     var win = await this.jsl.inter.windows.openWindowBlank();
-    win.setTitle(this.jsl.inter.lang.currentString(530));
+    win.setTitle(this.jsl.inter.lang.currentString(529));
     win.document.body.innerHTML += '<video id="video"></video>';
     var dom = win.document.getElementById('video');
     Object.assign(dom.style, {
@@ -314,7 +314,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       var stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
     } catch(err) {
       this.jsl._console.log(err, constraints);
-      this.jsl.inter.env.error('@capture: '+this.jsl.inter.lang.string(222));
+      this.jsl.inter.env.error('@capture: ' + this.jsl.inter.lang.string(222));
     }
     dom.srcObject = stream;
     dom.play();
@@ -324,8 +324,8 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     });
     return { win, dom, stream };
   }
-  
-   
+
+
   /**
    * Initiates webcam video capture.
    * @param {Object} opts - Configuration options for webcam capture.
@@ -336,7 +336,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     opts.type = 'webcam';
     this.capture(opts, frameCallback, editCallback);
   }
-   
+
   /**
    * Retrieves desktop sources from the current environment.
    * @returns {DesktopSource[]} An array of desktop sources.
@@ -344,7 +344,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
   getDesktopSources() {
     return this.jsl.inter.env.getDesktopSources();
   }
-   
+
   /**
    * Displays the available desktop sources by generating and injecting HTML elements for each source.
    * @returns {void}
@@ -354,11 +354,11 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var sources = this.jsl.inter.env.getDesktopSources();
     for(const source of sources) {
       var { width, height } = source.thumbnail.getSize();
-      html += '<div style="padding:10px; margin: 10px; border: #ccc 1px solid; border-radius: 5px;"><div><b>Name:</b> '+source.name+'</div><div><b>Id:</b> '+source.id+'</div><div><b>DisplayId:</b> '+source.display_id+'</div><img style="padding-top: 10px; width:'+width+'px; height:'+height+'px;" src="'+source.thumbnail.toDataURL()+'"></img></div>';
+      html += '<div style="padding:10px; margin: 10px; border: #ccc 1px solid; border-radius: 5px;"><div><b>Name:</b> ' + source.name + '</div><div><b>Id:</b> ' + source.id + '</div><div><b>DisplayId:</b> ' + source.display_id + '</div><img style="padding-top: 10px; width:' + width + 'px; height:' + height + 'px;" src="' + source.thumbnail.toDataURL() + '"></img></div>';
     }
     this.jsl.inter.env.disp(html);
   }
-  
+
   /**
    * Initiates desktop screen capture.
    * @param {Object} opts - Configuration options for desktop capture.
@@ -369,7 +369,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     opts.type = 'desktop';
     this.capture(opts, frameCallback, editCallback);
   }
-  
+
   /**
    * Captures media frames based on the provided options.
    * @param {Object} opts - Configuration options for capturing.
@@ -394,7 +394,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     // Define media constraints based on capture type
     if(type === 'webcam') {
       constraints = {
-        video: { 
+        video: {
           deviceId: { exact: id },
           ...otherOpts
         },
@@ -415,15 +415,15 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
 
     // Obtain media stream
     if(this.jsl.inter.isEmptyString(id)) {
-      this.jsl.inter.env.error('@capture: '+this.jsl.inter.lang.string(222));
+      this.jsl.inter.env.error('@capture: ' + this.jsl.inter.lang.string(222));
     }
-    
+
     try {
       var stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
     } catch(err) {
       this.jsl._console.log(err);
       this.jsl._console.log(constraints);
-      this.jsl.inter.env.error('@capture: '+this.jsl.inter.lang.string(222));
+      this.jsl.inter.env.error('@capture: ' + this.jsl.inter.lang.string(222));
     }
 
     var videoTrack = stream.getVideoTracks()[0];
@@ -483,7 +483,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     // Return control functions and resources
     return { stop, ctx, offscreenCanvas, videoTrack, trackProcessor, reader };
   }
-  
+
   /**
    * Gets supported camera resolutions for a specific device.
    * @param {string} device_id - The camera device ID.
@@ -506,11 +506,12 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
         resolutions.push(resolution);
       } catch(err) {
         this.jsl._console.log(err);
-      };
+      }
+      ;
     }
     return resolutions;
   }
-  
+
   /**
    * Displays an audio waveform on the canvas.
    * @param {string} device_id - The microphone device ID.
@@ -524,7 +525,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     if(!win) {
       return false;
     }
-    win.setTitle(this.jsl.inter.lang.currentString(531));
+    win.setTitle(this.jsl.inter.lang.currentString(530));
     var draw_loop;
     var audio_ctx = new this.jsl.inter.AudioContext();
     var analyser = audio_ctx.createAnalyser();
@@ -540,12 +541,12 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     canvas.height = canvas_height;
     canvas.style.width = '100vw';
     canvas.style.height = '100vh';
-    
+
     canvas_ctx.lineWidth = 1;
     canvas_ctx.strokeStyle = "#000";
     var slice_width = canvas_width / buffer_length;
     reset();
-    
+
     var constraints = {
       audio: {
         deviceId: { exact: device_id }
@@ -554,7 +555,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
     var source = audio_ctx.createMediaStreamSource(stream);
     source.connect(analyser);
-    
+
     _update();
 
     function _update() {
@@ -580,7 +581,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
 
         x += slice_width;
       }
-      
+
       canvas_ctx.lineTo(canvas_width, canvas_height / 2);
       canvas_ctx.stroke();
     }
@@ -593,20 +594,20 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     function reset() {
       canvas_ctx.clearRect(0, 0, canvas_width, canvas_height);
       canvas_ctx.beginPath();
-      canvas_ctx.moveTo(0, canvas_height/2);
+      canvas_ctx.moveTo(0, canvas_height / 2);
       canvas_ctx.lineTo(canvas_width, canvas_height / 2);
       canvas_ctx.stroke();
     }
-    
+
     this.jsl.addForCleanup(this, stop);
-    
+
     return { win, stop, reset };
   }
-  
+
   /**
-   * Records video from the specified canvas element, webcam deviceId, or desktop sourceId and returns a MediaRecorder augmented with an async stopRecording() that finalizes and saves the file. 
-   * @param {(HTMLCanvasElement|string)} source - Canvas element, webcam deviceId, or desktop sourceId to capture. 
-   * @param {Object} [opts={}] - Optional settings: type ('canvas' | 'webcam' | 'desktop'), fps, mimeType, and videoBitsPerSecond. 
+   * Records video from the specified canvas element, webcam deviceId, or desktop sourceId and returns a MediaRecorder augmented with an async stopRecording() that finalizes and saves the file.
+   * @param {(HTMLCanvasElement|string)} source - Canvas element, webcam deviceId, or desktop sourceId to capture.
+   * @param {Object} [opts={}] - Optional settings: type ('canvas' | 'webcam' | 'desktop'), fps, mimeType, and videoBitsPerSecond.
    * @returns {MediaRecorder} - MediaRecorder that streams the capture and provides a helper to stop and save.
    */
   async startVideoRecording(source, opts = {}) {
@@ -614,9 +615,9 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var preferredMime = 'video/mp4;codecs="avc1.640028"';
     var fallbackMime  = 'video/webm;codecs=vp9,opus';
 
-    var standardMimeType = MediaRecorder.isTypeSupported(preferredMime) ? 
+    var standardMimeType = MediaRecorder.isTypeSupported(preferredMime) ?
       preferredMime : fallbackMime;
-    
+
     var stream;
     if(opts.type == 'canvas') {
       stream = source.captureStream(opts.fps);
@@ -624,7 +625,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       var constraints;
       if(opts.type === 'webcam') {
         constraints = {
-          video: { 
+          video: {
             deviceId: { exact: source },
             ...opts.constrains_opts
           },
@@ -647,7 +648,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       } catch(err) {
         this.jsl._console.log(err);
         this.jsl._console.log(constraints);
-        this.jsl.inter.env.error('@startVideoRecording: '+this.jsl.inter.lang.string(222));
+        this.jsl.inter.env.error('@startVideoRecording: ' + this.jsl.inter.lang.string(222));
       }
     }
 
@@ -657,33 +658,24 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       mimeType: mimeType,
       videoBitsPerSecond: opts.videoBitsPerSecond || 8_000_000
     });
-    
+
     var chunks = [];
     recorder.ondataavailable = function(e) {
-      chunks.push(e.data)
-    }
-    
+      chunks.push(e.data);
+    };
+
     recorder.onstop = async function() {
       var blob = new Blob(chunks, { type: mimeType });
       var buffer = Buffer.from(await blob.arrayBuffer());
 
       var options = {
-       title: obj.jsl.inter.lang.currentString(236),
-       buttonLabel: obj.jsl.inter.lang.currentString(236),
-       filters :[
-        {name: ext, extensions: [ext]},
-       ]
+        title: obj.jsl.inter.lang.currentString(236),
+        buttonLabel: obj.jsl.inter.lang.currentString(236),
+        filters: [
+          {name: ext, extensions: [ext]},
+        ]
       };
-      var save_target = false;
-      if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
-        save_target = await obj.jsl.inter.env.showSaveDialog(options);
-        if(save_target && save_target.canceled) {
-          return;
-        }
-      }
-      if(!save_target) {
-        save_target = obj.jsl.inter.env.showSaveDialogSync(options);
-      }
+      var save_target = await obj.jsl.inter.file_system._chooseSaveTarget(options);
       if(save_target) {
         var video_path = typeof save_target == 'object' ? save_target.filePath : save_target;
         if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
@@ -696,19 +688,32 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
         }
         obj.jsl.inter.env.writeFileSync(video_path, buffer);
       }
-    }
-    
+    };
+
     var recording = true;
     recorder.start(1000);
-    
+
     recorder.stopRecording = async function() {
       if(recording) {
         recording = false;
         recorder.stop();
       }
-    }
+    };
     return recorder;
   }
+
+  /**
+   * Converts gamepad event payloads before forwarding a device event.
+   * @param {Object} event Host gamepad event.
+   * @param {Function} callback Device event handler.
+   */
+  _gamepadEvent(event, callback) {
+    if(event.gamepad) {
+      event.gamepad = event.gamepad.map(gamepad => gamepad.toJSON());
+    }
+    callback(event);
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_DEVICE = PRDC_JSLAB_LIB_DEVICE;

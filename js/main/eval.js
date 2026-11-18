@@ -1,42 +1,24 @@
 /**
- * @file JSLAB eval module
+ * @file JSLAB eval
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
 
-const path = require('path');
-
-/**
- * Resolves ipcRenderer from runtime globals or Electron module.
- * @returns {Object|null}
- */
-function getIpcRenderer() {
-  if(typeof globalThis !== 'undefined' && globalThis.ipcRenderer) {
-    return globalThis.ipcRenderer;
-  }
-  try {
-    var electron = require('electron');
-    if(electron && electron.ipcRenderer) {
-      return electron.ipcRenderer;
-    }
-  } catch(err) {}
-  return null;
-}
 
 /**
  * Class for JSLAB eval.
  */
-class PRDC_JSLAB_EVAL {
+class PRDC_JSLAB_MAIN_EVAL {
 
   /**
    * Initializes the script evaluation functionality, setting up the necessary environment and variables.
-   * @param {object} win The window object representing the current Electron window.
+   * @param {object} win The window object representing the owning window controller.
    */
   constructor(win) {
     var obj = this;
     this.win = win;
-    
+
     this.last_script_path;
     this.jslfilename = 'jslcmdwindow';
   }
@@ -74,16 +56,17 @@ class PRDC_JSLAB_EVAL {
         this.win.command_window.addMessageCmd(cmd);
         this.win.command_history.updateHistory(cmd);
         this.win.command_window.code_input.setValue('');
-        this.win.debugger.executeCommand(cmd);
-        return;
+        return this.win.debugger.executeCommand(cmd);
       }
-    } catch(error) { this.win.command_window.error(error.message); return; }
+    } catch(error) {
+      this.win.command_window.error(error.message);
+      return;
+    }
     if(this.win.debug_paused && cmd.length) {
       this.win.command_window.addMessageCmd(cmd);
       this.win.command_history.updateHistory(cmd);
       this.win.command_window.code_input.setValue('');
-      this.win.debugger.evaluate(cmd);
-      return;
+      return this.win.debugger.evaluate(cmd);
     }
     if(!this.win.evaluating) {
       if(cmd.length) {
@@ -92,7 +75,7 @@ class PRDC_JSLAB_EVAL {
         this.win.command_window.code_input.setValue('');
         this.win.command_window.scrollToBottom();
         this.win.command_window.resetHistoryIndex();
-        this.evalCode(cmd, show_output, jsl_file_name);
+        return this.evalCode(cmd, show_output, jsl_file_name);
       }
     } else {
       this.win.command_window.message('@evalCommand: ' + language.string(348));
@@ -106,11 +89,12 @@ class PRDC_JSLAB_EVAL {
    * @param {string} [jsl_file_name='jslcmdwindow'] The context file name for the code evaluation.
    */
   evalCode(code, show_output = true, jsl_file_name = 'jslcmdwindow') {
+    const host = this.win.platform.host;
     if(!this.win.evaluating) {
       this.win.evaluating = true;
-      var ipc = getIpcRenderer();
+      var ipc = host;
       if(ipc && typeof ipc.send === 'function') {
-        ipc.send('SandboxWindow', 'eval-code',
+        return ipc.send('SandboxWindow', 'eval-code',
           [code, show_output, jsl_file_name]);
       }
     } else {
@@ -123,6 +107,8 @@ class PRDC_JSLAB_EVAL {
    * @param {number} s The button state indicating the action to be performed.
    */
   scriptDirDialogButton(s) {
+    const host = this.win.platform.host;
+    const { path } = this.win.platform;
     if(typeof this.last_script_path != 'string' || !this.last_script_path.length) {
       return false;
     }
@@ -135,8 +121,8 @@ class PRDC_JSLAB_EVAL {
       // Add directory to saved paths
       this.win.folder_navigation.savePath(script_dir);
     }
-    
-    var ipc = getIpcRenderer();
+
+    var ipc = host;
     if(ipc && typeof ipc.send === 'function') {
       ipc.send('SandboxWindow', 'run-last-script');
     }
@@ -145,4 +131,4 @@ class PRDC_JSLAB_EVAL {
 
 }
 
-exports.PRDC_JSLAB_EVAL = PRDC_JSLAB_EVAL;
+exports.PRDC_JSLAB_MAIN_EVAL = PRDC_JSLAB_MAIN_EVAL;

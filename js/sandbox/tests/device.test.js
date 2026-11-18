@@ -5,97 +5,108 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_DEVICE } = require('../device');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for device test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER {
 
-function createDeviceHarness() {
-  var listeners = {};
-  var removed = [];
-  var cleanup_callbacks = [];
-  var warnings = [];
-  var displays = [];
-  var errors = [];
-  var exec_result = { state: 'success', data: '' };
-  var gamepads = [];
+  /**
+   * Creates device harness.
+   */
+  static createDeviceHarness() {
+    var listeners = {};
+    var removed = [];
+    var cleanup_callbacks = [];
+    var warnings = [];
+    var displays = [];
+    var errors = [];
+    var exec_result = { state: 'success', data: '' };
+    var gamepads = [];
 
-  var jsl = {
-    debug: false,
-    inter: {
-      isNull: function(value) {
-        return value === null || typeof value === 'undefined';
-      },
-      env: {
-        execSync: function() {
-          return exec_result;
+    var jsl = {
+      debug: false,
+      inter: {
+        isNull: function(value) {
+          return value === null || typeof value === 'undefined';
         },
-        warn: function(message) {
-          warnings.push(message);
-        },
-        disp: function(message) {
-          displays.push(message);
-        },
-        error: function(message) {
-          errors.push(message);
-        },
-        navigator: {
-          getGamepads: function() {
-            return gamepads;
-          }
-        },
-        context: {
-          addEventListener: function(name, handler) {
-            listeners[name] = handler;
+        env: {
+          execSync: function() {
+            return exec_result;
           },
-          removeEventListener: function(name, handler) {
-            removed.push([name, handler]);
+          warn: function(message) {
+            warnings.push(message);
+          },
+          disp: function(message) {
+            displays.push(message);
+          },
+          error: function(message) {
+            errors.push(message);
+          },
+          navigator: {
+            getGamepads: function() {
+              return gamepads;
+            }
+          },
+          context: {
+            addEventListener: function(name, handler) {
+              listeners[name] = handler;
+            },
+            removeEventListener: function(name, handler) {
+              removed.push([name, handler]);
+            }
+          }
+        },
+        format: {
+          replaceEditorLinks: function(text) {
+            return 'REPLACED:' + text;
+          }
+        },
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          },
+          currentString: function(id) {
+            return 'LANG_' + id;
+          }
+        },
+        windows: {
+          openCanvas: async function() {
+            return false;
           }
         }
       },
-      format: {
-        replaceEditorLinks: function(text) {
-          return 'REPLACED:' + text;
-        }
-      },
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
-        },
-        currentString: function(id) {
-          return 'LANG_' + id;
-        }
-      },
-      windows: {
-        openCanvas: async function() {
-          return false;
-        }
+      addForCleanup: function(_target, callback) {
+        cleanup_callbacks.push(callback);
       }
-    },
-    addForCleanup: function(_target, callback) {
-      cleanup_callbacks.push(callback);
-    }
-  };
+    };
 
-  var device = new PRDC_JSLAB_LIB_DEVICE(jsl);
-  return {
-    device,
-    listeners,
-    removed,
-    cleanup_callbacks,
-    warnings,
-    displays,
-    errors,
-    setExecResult: function(next_result) {
-      exec_result = next_result;
-    },
-    setGamepads: function(next_gamepads) {
-      gamepads = next_gamepads;
-    }
-  };
+    var device = new PRDC_JSLAB_LIB_DEVICE(jsl);
+    return {
+      device,
+      listeners,
+      removed,
+      cleanup_callbacks,
+      warnings,
+      displays,
+      errors,
+      setExecResult: function(next_result) {
+        exec_result = next_result;
+      },
+      setGamepads: function(next_gamepads) {
+        gamepads = next_gamepads;
+      }
+    };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_DEVICE } = require('../device');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('checkDriver parses driverquery output for single and multi-driver checks', function(assert) {
-  var harness = createDeviceHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER.createDeviceHarness();
   harness.setExecResult({
     state: 'success',
     data: 'FTDIBUS   1\nFTSER2K   1\nSILABSER  1\n'
@@ -110,13 +121,13 @@ tests.add('checkDriver parses driverquery output for single and multi-driver che
 }, { tags: ['unit', 'device'] });
 
 tests.add('checkDriver returns false when command execution fails', function(assert) {
-  var harness = createDeviceHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER.createDeviceHarness();
   harness.setExecResult({ state: 'error', data: 'driverquery failed' });
   assert.equal(harness.device.checkDriver('FTDIBUS'), false);
 }, { tags: ['unit', 'device'] });
 
 tests.add('parseArduinoOutput returns parsed payload and reports compiler errors', function(assert) {
-  var harness = createDeviceHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER.createDeviceHarness();
   var ok = harness.device.parseArduinoOutput({
     stdout: JSON.stringify({ success: true, message: 'ok' })
   });
@@ -133,7 +144,7 @@ tests.add('parseArduinoOutput returns parsed payload and reports compiler errors
 }, { tags: ['unit', 'device'] });
 
 tests.add('getGamepads filters null entries and serializes gamepads', function(assert) {
-  var harness = createDeviceHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER.createDeviceHarness();
   harness.setGamepads([
     null,
     {
@@ -152,7 +163,7 @@ tests.add('getGamepads filters null entries and serializes gamepads', function(a
 }, { tags: ['unit', 'device'] });
 
 tests.add('gamepad connect/disconnect listeners are wired and cleaned up', function(assert) {
-  var harness = createDeviceHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER.createDeviceHarness();
   var seen_connected = null;
   var seen_disconnected = null;
 
@@ -195,7 +206,7 @@ tests.add('gamepad connect/disconnect listeners are wired and cleaned up', funct
 }, { tags: ['unit', 'device'] });
 
 tests.add('showAudioWaveform returns false when canvas window init is interrupted', async function(assert) {
-  var harness = createDeviceHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER.createDeviceHarness();
   var out = await harness.device.showAudioWaveform('mic-id');
   assert.equal(out, false);
 }, { tags: ['unit', 'device', 'async'] });

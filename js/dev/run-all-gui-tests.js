@@ -10,6 +10,10 @@ for(const runner of ['run-gui-tests.js', 'run-web-gui-tests.js', 'run-desktop-gu
   var result = spawnSync(process.execPath, [path.join(__dirname, runner), ...process.argv.slice(2)], {
     cwd: path.resolve(__dirname, '..', '..'), stdio: 'inherit', windowsHide: true
   });
-  if(result.error) console.error(result.error);
-  if(result.error || result.status !== 0) process.exitCode = 1;
+  if(result.error) {
+    console.error(result.error);
+  }
+  if(result.error || result.status !== 0) {
+    process.exitCode = 1;
+  }
 }

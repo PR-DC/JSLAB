@@ -8,14 +8,17 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { createRequire } = require('module');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 tests.add('GUI handler instrumentation preserves strict receivers and nested arrow return values', function(assert) {
   var filename = path.resolve(__dirname, '../../dev/gui-test-coverage.js'), module = { exports: {} };
   vm.runInThisContext('(function(require,module,exports,__dirname){' + fs.readFileSync(filename, 'utf8') + '\n})', { filename })(
     createRequire(filename), module, module.exports, path.dirname(filename));
   var callbacks = [], hits = [], context = {
-    el: { addEventListener(event, callback) { callbacks.push(callback); return 7; } },
+    el: { addEventListener(event, callback) {
+      callbacks.push(callback);
+      return 7;
+    } },
     __JSLAB_GUI_HIT__: id => hits.push(id)
   };
   var source = "el.addEventListener('click', function() { 'use strict'; return this; });" +

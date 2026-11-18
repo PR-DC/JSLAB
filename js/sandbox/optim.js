@@ -4,14 +4,14 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 var { PRDC_JSLAB_OPTIM_RCMIGA } = require('./optim-rcmiga');
 
 /**
  * Class for JSLAB optim submodule.
  */
 class PRDC_JSLAB_LIB_OPTIM {
-  
+
   /**
    * Initializes the optim submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -20,19 +20,19 @@ class PRDC_JSLAB_LIB_OPTIM {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Minimizes an unconstrained function using a coordinate descent-like Powell algorithm.
    * @param {function} fnc Function to be minimized. Accepts an array of size N and returns a scalar.
    * @param {Array} x0 Initial guess for the parameters as an array of size N.
    * @param {Object} [options] Optional parameters:
-   *   - eps: Convergence threshold (default: 1e-6)
-   *   - alpha: Initial step size scaling factor (default: 0.001)
-   *   - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
-   *   - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
+   * - eps: Convergence threshold (default: 1e-6)
+   * - alpha: Initial step size scaling factor (default: 0.001)
+   * - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
+   * - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
    * @return {Object} An object with two fields:
-   *   - argument: The parameter array that minimizes the function.
-   *   - fncvalue: The function value at the minimized parameters.
+   * - argument: The parameter array that minimizes the function.
+   * - fncvalue: The function value at the minimized parameters.
    */
   optimPowell(fnc, x0, options = {}) {
     const {
@@ -51,7 +51,7 @@ class PRDC_JSLAB_LIB_OPTIM {
 
     let iteration = 0;
     let dx;
-    
+
     while(!convergence && iteration < maxIterations) {
       iteration++;
       const indices = this.jsl.inter.array.shuffleIndices(x);
@@ -95,7 +95,7 @@ class PRDC_JSLAB_LIB_OPTIM {
 
     return { x, fx };
   }
-  
+
   /**
    * Performs optimization using the Nelder-Mead algorithm.
    * @param {Function} f - The objective function to minimize. It should accept an array of numbers and return a scalar value.
@@ -113,13 +113,13 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {Array<Object>} [parameters.history] - Optional array to store the history of simplex states for analysis.
    *
    * @returns {{ fx: number, x: number[] }} An object containing:
-   *   - `fx`: The minimum function value found.
-   *   - `x`: The parameters corresponding to the minimum function value.
+   * - `fx`: The minimum function value found.
+   * - `x`: The parameters corresponding to the minimum function value.
    */
   optimNelderMead(...args) {
     return this.jsl.inter.env.fmin.nelderMead(...args);
   }
-  
+
   /**
    * Performs optimization using the Conjugate Gradient method.
    * @param {Function} f - The objective function to minimize. It should accept an array of numbers and return a scalar value and its gradient.
@@ -129,14 +129,14 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {Array<Object>} [params.history] - Optional array to store the history of optimization steps for analysis.
    *
    * @returns {{ fx: number, x: number[], fxprime: number[] }} An object containing:
-   *   - `fx`: The minimum function value found.
-   *   - `x`: The parameters corresponding to the minimum function value.
-   *   - `fxprime`: The gradient of the function at the minimum.
+   * - `fx`: The minimum function value found.
+   * - `x`: The parameters corresponding to the minimum function value.
+   * - `fxprime`: The gradient of the function at the minimum.
    */
   optimConjugateGradient(...args) {
     return this.jsl.inter.env.fmin.conjugateGradient(...args);
   }
-  
+
   /**
    * Performs optimization using the Gradient Descent method.
    * @param {Function} f - The objective function to minimize. It should accept an array of numbers and return a scalar value and its gradient.
@@ -147,14 +147,14 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {Array<Object>} [params.history] - Optional array to store the history of optimization steps for analysis.
    *
    * @returns {{ fx: number, x: number[], fxprime: number[] }} An object containing:
-   *   - `fx`: The minimum function value found.
-   *   - `x`: The parameters corresponding to the minimum function value.
-   *   - `fxprime`: The gradient of the function at the minimum.
+   * - `fx`: The minimum function value found.
+   * - `x`: The parameters corresponding to the minimum function value.
+   * - `fxprime`: The gradient of the function at the minimum.
    */
   optimGradientDescent(...args) {
     return this.jsl.inter.env.fmin.gradientDescent(...args);
   }
-  
+
   /**
    * Performs optimization using the Gradient Descent method with Wolfe Line Search.
    * @param {Function} f - The objective function to minimize. It should accept an array of numbers and return a scalar value and its gradient.
@@ -166,14 +166,14 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {number} [params.c2=0.1] - Parameter for the curvature condition in Wolfe Line Search.
    * @param {Array<Object>} [params.history] - Optional array to store the history of optimization steps for analysis, including line search details.
    * @returns {{ fx: number, x: number[], fxprime: number[] }} An object containing:
-   *   - `fx`: The minimum function value found.
-   *   - `x`: The parameters corresponding to the minimum function value.
-   *   - `fxprime`: The gradient of the function at the minimum.
+   * - `fx`: The minimum function value found.
+   * - `x`: The parameters corresponding to the minimum function value.
+   * - `fxprime`: The gradient of the function at the minimum.
    */
   optimGradientDescentLineSearch(...args) {
     return this.jsl.inter.env.fmin.gradientDescentLineSearch(...args);
   }
-    
+
   /**
    * Performs root finding using the Bisection method.
    * @param {Function} f - The function for which to find a root. It should accept a number and return a number.
@@ -187,7 +187,7 @@ class PRDC_JSLAB_LIB_OPTIM {
   optimBisect(...args) {
     return this.jsl.inter.env.fmin.bisect(...args);
   }
-  
+
   /**
    * Performs search using the Nelder-Mead algorithm.
    * @param {Function} f - The objective function to minimize. It should accept an array of numbers and return a scalar value.
@@ -205,13 +205,13 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {Array<Object>} [parameters.history] - Optional array to store the history of simplex states for analysis.
    *
    * @returns {{ fx: number, x: number[] }} An object containing:
-   *   - `fx`: The minimum function value found.
-   *   - `x`: The parameters corresponding to the minimum function value.
+   * - `fx`: The minimum function value found.
+   * - `x`: The parameters corresponding to the minimum function value.
    */
   fminsearch(...args) {
     return this.jsl.inter.env.fmin.nelderMead(...args);
   }
-  
+
   /**
    * Finds the minimum of a univariate function within a specified interval using a bracketing method.
    * @param {function} func - The function to minimize. Should accept a single number and return a number.
@@ -219,8 +219,8 @@ class PRDC_JSLAB_LIB_OPTIM {
    * @param {number} b - The upper bound of the interval.
    * @param {number} [tol=1e-5] - The tolerance for convergence (optional).
    * @returns {{ fx: number, x: number[]}} An object containing:
-   *   - `fx`: The minimum function value found.
-   *   - `x`: The x-value where the function attains its minimum within [a, b].
+   * - `fx`: The minimum function value found.
+   * - `x`: The x-value where the function attains its minimum within [a, b].
    */
   fminbnd(func, a, b, tol = 1e-5) {
     const eps = 1e-10;  // A small value to prevent division by zero or to avoid precision issues.
@@ -280,26 +280,38 @@ class PRDC_JSLAB_LIB_OPTIM {
 
       // Update a, b, v, w, x
       if(fu <= fx) {
-        if(u < x) b = x;
-        else a = x;
-        v = w; fv = fw;
-        w = x; fw = fx;
-        x = u; fx = fu;
+        if(u < x) {
+          b = x;
+        } else {
+          a = x;
+        }
+        v = w;
+        fv = fw;
+        w = x;
+        fw = fx;
+        x = u;
+        fx = fu;
       } else {
-        if(u < x) a = u;
-        else b = u;
+        if(u < x) {
+          a = u;
+        } else {
+          b = u;
+        }
         if(fu <= fw || w === x) {
-          v = w; fv = fw;
-          w = u; fw = fu;
+          v = w;
+          fv = fw;
+          w = u;
+          fw = fu;
         } else if(fu <= fv || v === x || v === w) {
-          v = u; fv = fu;
+          v = u;
+          fv = fu;
         }
       }
     }
 
     return { x, fx };
   }
-  
+
   /**
    * Creates an instance of PRDC_JSLAB_LIB_OPTIM_RCMIGA.
    * @param {Object} problem - The optimization problem definition.

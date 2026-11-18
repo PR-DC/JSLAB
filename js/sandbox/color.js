@@ -9,7 +9,7 @@
  * Class for JSLAB color submodule.
  */
 class PRDC_JSLAB_LIB_COLOR {
-  
+
   /**
    * Constructs a color submodule object with access to JSLAB's color functions.
    * @constructor
@@ -24,7 +24,7 @@ class PRDC_JSLAB_LIB_COLOR {
      * @type {Array}
      */
     this.colororder = ['#0072BD', '#D95319', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A2142F'];
-  
+
     var colors = {
       aliceblue: 'rgb(240, 248, 255)',
       antiquewhite: 'rgb(250, 235, 215)',
@@ -186,13 +186,15 @@ class PRDC_JSLAB_LIB_COLOR {
     var RE_HSL = this.RE_HSL;
     var RE_HSLA = this.RE_HSLA;
     var RE_HEX = this.RE_HEX;
-    
+
     // Global object
     var Color = {
       create: function(str) {
         str = str.replace(/^\s*#|\s*$/g, '');
         str = str.toLowerCase();
-        if(KEYWORDS[str]) str = KEYWORDS[str];
+        if(KEYWORDS[str]) {
+          str = KEYWORDS[str];
+        }
 
         var match;
 
@@ -232,9 +234,11 @@ class PRDC_JSLAB_LIB_COLOR {
 
         return null;
       },
-      
+
       luminance: function(color) {
-        if(color instanceof Color.HSLA) color = color.toRGBA();
+        if(color instanceof Color.HSLA) {
+          color = color.toRGBA();
+        }
         return 0.298912 * color.r + 0.586611 * color.g + 0.114478 * color.b;
       },
 
@@ -244,7 +248,9 @@ class PRDC_JSLAB_LIB_COLOR {
       },
 
       nagate: function(color) {
-        if(color instanceof Color.HSLA) color = color.toRGBA();
+        if(color instanceof Color.HSLA) {
+          color = color.toRGBA();
+        }
         return new Color.RGBA(255 - color.r, 255 - color.g, 255 - color.b, color.a);
       },
 
@@ -252,9 +258,15 @@ class PRDC_JSLAB_LIB_COLOR {
        * @see http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html#mix-instance_method
        */
       mix: function(color1, color2, weight) {
-        if(color1 instanceof Color.HSLA) color1 = color1.toRGBA();
-        if(color2 instanceof Color.HSLA) color2 = color2.toRGBA();
-        if(obj.jsl.inter.isNull(weight) || obj.jsl.inter.format.isUndefined(weight)) weight = 0.5;
+        if(color1 instanceof Color.HSLA) {
+          color1 = color1.toRGBA();
+        }
+        if(color2 instanceof Color.HSLA) {
+          color2 = color2.toRGBA();
+        }
+        if(obj.jsl.inter.isNull(weight) || obj.jsl.inter.format.isUndefined(weight)) {
+          weight = 0.5;
+        }
 
         var w0 = 1 - weight;
         var w = w0 * 2 - 1;
@@ -286,27 +298,27 @@ class PRDC_JSLAB_LIB_COLOR {
         a = r.a;
         r = r.r;
       }
-      
+
       this.r = r || 0;
       this.g = g || 0;
       this.b = b || 0;
       this.a = !obj.jsl.inter.isNumber(a) ? 1 : a;
     };
 
-    Color.RGBA.prototype = {        
+    Color.RGBA.prototype = {
       toHSLA: function() {
         var hsl = obj.rgbToHsl(Math.round(this.r), Math.round(this.g), Math.round(this.b));
         return new Color.HSLA(hsl[0], hsl[1], hsl[2], this.a);
       },
-      
+
       toArray: function() {
         return [Math.round(this.r), Math.round(this.g), Math.round(this.b), this.a];
       },
-      
+
       clone: function() {
         return new Color.RGBA(this);
       },
-      
+
       toString: function() {
         return 'rgba(' + Math.round(this.r) + ', ' + Math.round(this.g) + ', ' + Math.round(this.b) + ', ' + this.a + ')';
       }
@@ -328,7 +340,7 @@ class PRDC_JSLAB_LIB_COLOR {
         a = h.a;
         h = h.h;
       }
-      
+
       this.h = h || 0;
       this.s = s || 0;
       this.l = l || 0;
@@ -340,21 +352,21 @@ class PRDC_JSLAB_LIB_COLOR {
         var rgb = obj.hslToRgb(this.h, this.s, this.l);
         return new Color.RGBA(rgb[0], rgb[1], rgb[2], this.a);
       },
-      
+
       toArray: function() {
         return [this.h, this.s, this.l, this.a];
       },
-      
+
       clone: function() {
         return new Color.HSLA(this);
       },
-      
+
       toString: function() {
         return 'hsla(' + this.h + ', ' + this.s + '%, ' + this.l + '%, ' + this.a + ')';
       }
     };
   }
- 
+
   /**
    * Returns a color code based on the provided identifier.
    * @param {number|string|Array<number>} id - Identifier for the color. Can be a numeric index, a predefined color name, or an RGB array.
@@ -413,16 +425,16 @@ class PRDC_JSLAB_LIB_COLOR {
    * @param {number} [k=0.3] - A scaling factor to adjust the gradient effect.
    * @return {string} The hsl color string.
    */
-  getColorG2R(value, k = 0.3){
+  getColorG2R(value, k = 0.3) {
     if(value < 0) {
       value = 0;
     } else if(value < k) {
-      value = value/k;
+      value = value / k;
     } else {
       value = 1;
     }
-    var hue=(120*value).toString(10);
-    return ["hsl(",hue,",100%,50%)"].join("");
+    var hue = (120 * value).toString(10);
+    return ["hsl(", hue, ",100%,50%)"].join("");
   }
 
   /**
@@ -432,7 +444,7 @@ class PRDC_JSLAB_LIB_COLOR {
    * @param {Array<number>} rgb_end - The RGB values of the end color.
    * @return {Array<number>} The RGB values of the calculated gradient color.
    */
-  colourGradientor(p, rgb_beginning, rgb_end){
+  colourGradientor(p, rgb_beginning, rgb_end) {
     var w = p * 2 - 1;
     var w1 = (w + 1) / 2.0;
     var w2 = 1 - w1;
@@ -455,7 +467,7 @@ class PRDC_JSLAB_LIB_COLOR {
     if(Array.isArray(r)) {
       [r, g, b] = r;
     }
-    
+
     function toHex(c) {
       // Scale to 0-255 if the value is between 0 and 1
       c = (c <= 1) ? Math.round(c * 255) : Math.round(c);
@@ -466,7 +478,7 @@ class PRDC_JSLAB_LIB_COLOR {
     }
     return '#' + toHex(r) + toHex(g) + toHex(b);
   }
-  
+
   /**
    * Converts RGB color values to HSL (Hue, Saturation, Lightness).
    * @param {number} r - The red color value (0-255).
@@ -513,7 +525,7 @@ class PRDC_JSLAB_LIB_COLOR {
 
     var r, g, b;
 
-    if(s === 0){
+    if(s === 0) {
       r = g = b = l * 255;
     } else {
       var v2 = l < 0.5 ? l * (1 + s) : l + s - l * s;
@@ -535,13 +547,23 @@ class PRDC_JSLAB_LIB_COLOR {
    */
   hueToRgb(v1, v2, vh) {
     vh /= 360;
-    if(vh < 0) vh++;
-    if(vh > 1) vh--;
-    if(vh < 1 / 6) return v1 + (v2 - v1) * 6 * vh;
-    if(vh < 1 / 2) return v2;
-    if(vh < 2 / 3) return v1 + (v2 - v1) * (2 / 3 - vh) * 6;
+    if(vh < 0) {
+      vh++;
+    }
+    if(vh > 1) {
+      vh--;
+    }
+    if(vh < 1 / 6) {
+      return v1 + (v2 - v1) * 6 * vh;
+    }
+    if(vh < 1 / 2) {
+      return v2;
+    }
+    if(vh < 2 / 3) {
+      return v1 + (v2 - v1) * (2 / 3 - vh) * 6;
+    }
     return v1;
   }
 }
-    
+
 exports.PRDC_JSLAB_LIB_COLOR = PRDC_JSLAB_LIB_COLOR;

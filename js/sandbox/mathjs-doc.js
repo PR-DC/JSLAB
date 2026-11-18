@@ -10,8 +10,11 @@
  */
 class PRDC_JSLAB_MATHJS_DOC {
 
+  /**
+   * Initializes the mathjs doc instance.
+   */
   constructor() {
-    
+
     /**
      * Test whether a value is a Complex number.
      * @name isComplex
@@ -20,7 +23,7 @@ class PRDC_JSLAB_MATHJS_DOC {
      * @returns { boolean } Returns true if `x` is a Complex number, false otherwise.
      * @memberof PRDC_JSLAB_MATHJS_DOC
      */
-     
+
     /**
      * Test whether a value is a BigNumber.
      * @name isBigNumber

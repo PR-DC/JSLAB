@@ -1,26 +1,34 @@
 ﻿/**
- * @file JSLAB electron environment
- * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
- * PR-DC, Republic of Serbia
- * info@pr-dc.com
- */
-  
+﻿ * @file JSLAB electron environment
+﻿ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+﻿ * PR-DC, Republic of Serbia
+﻿ * info@pr-dc.com
+﻿ */
+
+const { PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT } = require('../backend-electron/presentation-transport');
+
+require('../simulate/compiler').PRDC_JSLAB_SIMULATE_COMPILER.configure(
+  require('../backend-electron/simulate-assets').PRDC_JSLAB_SIMULATE_ASSETS);
+
 const RUNTIME_SCOPE = typeof self === 'object' && self ? self : globalThis;
 const IS_WORKER_CONTEXT = !!(RUNTIME_SCOPE && RUNTIME_SCOPE.is_worker);
 
 if(!IS_WORKER_CONTEXT) {
   var { ipcRenderer, shell, clipboard } = require('electron');
-  var { PRDC_JSLAB_SANDBOX_AUTOMATION } = require('./jslab-automation');
+  var { PRDC_JSLAB_SANDBOX_AUTOMATION } = require("../backend-electron/sandbox-automation");
 }
 
-const { PRDC_JSLAB_FREECAD_LINK } = require('./freecad-link');
-const { PRDC_JSLAB_OPENMODELICA_LINK } = require('./om-link');
-const { PRDC_JSLAB_EXCEL_LINK } = require('./excel-link');
-const { PRDC_JSLAB_CALC_LINK } = require('./calc-link');
+const { PRDC_JSLAB_FREECAD_LINK } = require("../backend-electron/freecad-link");
+const { PRDC_JSLAB_OPENMODELICA_LINK } = require("../backend-electron/openmodelica-link");
+const { PRDC_JSLAB_EXCEL_LINK } = require("../backend-electron/excel-link");
+const { PRDC_JSLAB_CALC_LINK } = require("../backend-electron/calc-link");
 const { createNativeModule } = require('./jslab-wasm-native');
 const { createAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
 const { getWasmModules } = require('./jslab-wasm-loader');
+const { PRDC_JSLAB_SIMULATE_COMPILER } = require('../simulate/compiler');
+const { safeWorkspaceValue, modelicaLiteral } = PRDC_JSLAB_SIMULATE_COMPILER.getValues();
 
+const { PRDC_JSLAB_SANDBOX_SIMULATE } = require('./jslab-simulate');
 const fs = require("fs");
 const os = require('os');
 const net = require('net');
@@ -88,13 +96,18 @@ class PRDC_JSLAB_ENV {
       });
       ipcRenderer.on('TerminalWindowEvent', function(e, data) {
         var listeners = data && obj._terminal_listeners.get(Number(data.id));
-        if(!listeners) return;
+        if(!listeners) {
+          return;
+        }
         var callbacks = data.type === 'data' ? listeners.data :
           data.type === 'exit' ? listeners.exit : listeners.state;
         if(callbacks) {
           callbacks.forEach(function(callback) {
-            try { callback(data.type === 'data' ? data.data : data); }
-            catch(error) { obj.error(error); }
+            try {
+              callback(data.type === 'data' ? data.data : data);
+            } catch(error) {
+              obj.error(error);
+            }
           });
         }
       });
@@ -113,7 +126,7 @@ class PRDC_JSLAB_ENV {
     this.bin7zip = bin7zip;
     this.seedRandom = seedrandom;
     this.extractFull = extractFull;
-    
+
     this.process_pid = process.pid;
     this.math = this.context.math;
     this.fmin = this.context.fmin;
@@ -128,16 +141,16 @@ class PRDC_JSLAB_ENV {
     this.babel_parser = babel_parser;
     this.SourceMapConsumer = SourceMapConsumer;
     this.SourceMapConsumer.initialize({
-      "lib/mappings.wasm": internal_app_path+'/node_modules/source-map/lib/mappings.wasm',
+      "lib/mappings.wasm": internal_app_path + '/node_modules/source-map/lib/mappings.wasm',
     });
     this.SerialPort = SerialPort;
     this.jsdoc = jsdoc;
-    
+
     this.context.freecad_link = new PRDC_JSLAB_FREECAD_LINK(this.jsl);
     this.context.om_link = new PRDC_JSLAB_OPENMODELICA_LINK(this.jsl);
     this.context.excel_link = new PRDC_JSLAB_EXCEL_LINK(this.jsl);
     this.context.calc_link = new PRDC_JSLAB_CALC_LINK(this.jsl);
-    
+
     // On IPC message
     if(!this.is_worker) {
       ipcRenderer.on("SandboxWindow", function(event, action, data) {
@@ -153,6 +166,25 @@ class PRDC_JSLAB_ENV {
           }
           case "eval-code":
             obj.jsl.inter.eval.evalCodeFromMain(...data);
+            break;
+          case "simulate-result":
+            obj._publishSimulateResult(data);
+            break;
+          case "simulate-animation":
+            obj._openSimulateAnimation(data);
+            break;
+          case "simulate-resolve":
+            obj.jsl.inter.eval.evalString('(' + String(data.expression || '') + ')').then(function(result) {
+              var value = safeWorkspaceValue(result);
+              ipcRenderer.send('JSLAB_SIMULATE_RESOLVE_RESULT', {
+                id: data.id, success: true, js_value: value
+              });
+            }).catch(function(error) {
+              ipcRenderer.send('JSLAB_SIMULATE_RESOLVE_RESULT', {
+                id: data.id, success: false, error: error && error.message ? error.message : String(error),
+                value_code: error && error.value_code, value_path: error && error.value_path
+              });
+            });
             break;
           case "get-completions":
             ipcRenderer.send("completions-" + data.request_id,
@@ -194,18 +226,18 @@ class PRDC_JSLAB_ENV {
         }
       });
     }
-    
+
     // Functions
     this.setImmediate = this.context.setImmediate;
     this.clearImmediate = this.context.clearImmediate;
     this.pathEqual = pathEqual;
     this.Readable = Readable;
     this.Writable = Writable;
-    
+
     // Which properties and methods to export to context
     this.exports = ['debug', 'version', 'platform', 'buildShareLink'];
   }
-  
+
   /**
    * Opens a window based on the provided ID.
    * @param {number} id - The ID of the window to open.
@@ -222,7 +254,7 @@ class PRDC_JSLAB_ENV {
           obj.error(err.message);
         }
       });
-      
+
       var onDocumentReady;
       var loadCheckInterval = window_timers.setInterval(function() {
         try {
@@ -230,12 +262,14 @@ class PRDC_JSLAB_ENV {
             window_timers.clearInterval(loadCheckInterval);
             return;
           }
-          if(onDocumentReady) onDocumentReady();
-        } catch {
+          if(onDocumentReady) {
+            onDocumentReady();
+          }
+        } catch{
           sub_context.close();
           obj.jsl.inter.windows._closedWindow(wid);
           window_timers.clearInterval(loadCheckInterval);
-          obj.error('@openWindow: '+obj.jsl.inter.lang.string(174));
+          obj.error('@openWindow: ' + obj.jsl.inter.lang.string(174));
         }
       }, 10);
 
@@ -245,11 +279,13 @@ class PRDC_JSLAB_ENV {
           if(ready_finished || sub_context.closed ||
               !obj.jsl.inter.windows.open_windows.hasOwnProperty(wid) ||
               sub_context.location.href === 'about:blank' ||
-              sub_context.document.readyState === 'loading') return;
+              sub_context.document.readyState === 'loading') {
+            return;
+          }
           ready_finished = true;
           window_timers.clearInterval(loadCheckInterval);
           sub_context.wid = wid;
-          
+
           sub_context.show = function() {
             return obj.jsl.inter.windows.open_windows[wid].show();
           };
@@ -268,8 +304,8 @@ class PRDC_JSLAB_ENV {
           sub_context.moveTop = function() {
             return obj.jsl.inter.windows.open_windows[wid].moveTop();
           };
-          
-          
+
+
           sub_context.setSize = function(width, height) {
             return obj.jsl.inter.windows.open_windows[wid].setSize(width, height);
           };
@@ -294,14 +330,14 @@ class PRDC_JSLAB_ENV {
           sub_context.setTitle = function(title) {
             return obj.jsl.inter.windows.open_windows[wid].setTitle(title);
           };
-          
+
           sub_context.getSize = function() {
             return obj.jsl.inter.windows.open_windows[wid].getSize();
           };
           sub_context.getPos = function() {
             return obj.jsl.inter.windows.open_windows[wid].getPos();
           };
-          
+
           sub_context.openDevTools = function() {
             return obj.jsl.inter.windows.open_windows[wid].openDevTools();
           };
@@ -309,8 +345,8 @@ class PRDC_JSLAB_ENV {
           sub_context.printToPdf = function(options) {
             return obj.jsl.inter.windows.open_windows[wid].printToPdf(options);
           };
-          
-          sub_context.document.addEventListener("keydown", function (e) {
+
+          sub_context.document.addEventListener("keydown", function(e) {
             if(e.key == 'F12') {
               sub_context.openDevTools();
             } else if(e.ctrlKey && e.key.toLowerCase() == 'c') {
@@ -337,13 +373,13 @@ class PRDC_JSLAB_ENV {
   getWinSelectionText(context) {
     var text = "";
     if(context.getSelection) {
-        text = context.getSelection().toString();
+      text = context.getSelection().toString();
     } else if(context.document.selection && context.document.selection.type != "Control") {
-        text = context.document.selection.createRange().text;
+      text = context.document.selection.createRange().text;
     }
     return text;
   }
-  
+
   /**
    * Closes a window or all windows based on the provided ID.
    * @param {number} id - The ID of the window to close, or "all" to close all windows.
@@ -374,14 +410,14 @@ class PRDC_JSLAB_ENV {
   showWindow(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, 'show']);
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * Hides the specified window.
    * @param {number} wid - The ID of the window to hide.
@@ -390,14 +426,14 @@ class PRDC_JSLAB_ENV {
   hideWindow(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, 'hide']);
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * Brings the specified window to the foreground.
    * @param {number} wid - The ID of the window to focus.
@@ -406,14 +442,14 @@ class PRDC_JSLAB_ENV {
   focusWindow(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, 'focus']);
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * Minimizes the specified window.
    * @param {number} wid - The ID of the window to minimize.
@@ -422,14 +458,14 @@ class PRDC_JSLAB_ENV {
   minimizeWindow(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, 'minimize']);
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * Centers the specified window on the screen.
    * @param {number} wid - The ID of the window to center.
@@ -438,14 +474,14 @@ class PRDC_JSLAB_ENV {
   centerWindow(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, 'center']);
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * Moves the specified window to the top.
    * @param {number} wid - The ID of the window to move to top.
@@ -454,14 +490,14 @@ class PRDC_JSLAB_ENV {
   moveTopWindow(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, 'moveTop']);
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * Sets the size of a specified window.
    * @param {number} wid - The ID of the window.
@@ -472,13 +508,13 @@ class PRDC_JSLAB_ENV {
   setWindowSize(wid, width, height) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setSize", width, 49 + height]);
       }
     }
     return false;
   }
-  
+
   /**
    * Sets the position of a specified window.
    * @param {number} wid - The ID of the window.
@@ -489,13 +525,13 @@ class PRDC_JSLAB_ENV {
   setWindowPos(wid, left, top) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setPosition", left, top]);
       }
     }
     return false;
   }
-  
+
   /**
    * Sets whether the specified window is resizable.
    * @param {number} wid - The ID of the window.
@@ -505,13 +541,13 @@ class PRDC_JSLAB_ENV {
   setWindowResizable(wid, state) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setResizable", state]);
       }
     }
     return false;
   }
-  
+
   /**
    * Sets whether the specified window is movable.
    * @param {number} wid - The ID of the window.
@@ -521,14 +557,14 @@ class PRDC_JSLAB_ENV {
   setWindowMovable(wid, state) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setMovable", state]);
       } else {
         return false;
       }
     }
   }
-  
+
   /**
    * Sets the aspect ratio of the specified window.
    * @param {number} wid - The ID of the window.
@@ -538,13 +574,13 @@ class PRDC_JSLAB_ENV {
   setWindowAspectRatio(wid, aspect_ratio) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setAspectRatio", aspect_ratio]);
       }
     }
     return false;
   }
-  
+
   /**
    * Sets the opacity of the specified window.
    * @param {number} wid - The ID of the window.
@@ -554,7 +590,7 @@ class PRDC_JSLAB_ENV {
   setWindowOpacity(wid, opacity) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setOpacity", opacity]);
       }
     }
@@ -570,13 +606,13 @@ class PRDC_JSLAB_ENV {
   setWindowFullscreen(wid, state) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "setFullScreen", state]);
       }
     }
     return false;
   }
-  
+
   /**
    * Sets the title of the specified window if not running in a worker thread.
    * @param {string} wid - The window ID.
@@ -591,7 +627,7 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Retrieves the size of a specified window.
    * @param {number} wid - The ID of the window.
@@ -600,13 +636,13 @@ class PRDC_JSLAB_ENV {
   getWindowSize(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "getSize"]);
       }
     }
     return false;
   }
-  
+
   /**
    * Retrieves the position of a specified window.
    * @param {number} wid - The ID of the window.
@@ -615,13 +651,13 @@ class PRDC_JSLAB_ENV {
   getWindowPos(wid) {
     if(!this.is_worker) {
       if(this.jsl.inter.windows.open_windows.hasOwnProperty(wid)) {
-        return ipcRenderer.sendSync("sync-message", "call-sub-win-method", 
+        return ipcRenderer.sendSync("sync-message", "call-sub-win-method",
           [wid, "getPosition"]);
       }
     }
     return false;
   }
-  
+
   /**
    * Opens the developer tools for a specified window in the renderer process.
    * Only available if not in a worker context.
@@ -636,7 +672,7 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Returns media source id for a specified window in the renderer process.
    * Only available if not in a worker context.
@@ -651,14 +687,14 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Opens the developer tools for the sandbox environment.
    */
   openSandboxDevTools() {
     ipcRenderer.send("MainProcess", "show-sandbox-dev-tools");
   }
-  
+
   /**
    * Clears local storage.
    */
@@ -667,7 +703,7 @@ class PRDC_JSLAB_ENV {
       ipcRenderer.send("MainWindow", "clear-storage");
     }
   }
-  
+
   /**
    * Creates a directory at the specified path. If the directory already exists, no action is taken.
    * @param {string} directory - The path where the directory will be created.
@@ -686,7 +722,7 @@ class PRDC_JSLAB_ENV {
       }
     }
   }
-  
+
   /**
    * Checks if a directory exists at the specified path.
    * @param {string} directory - The path to the directory.
@@ -700,7 +736,7 @@ class PRDC_JSLAB_ENV {
       return false;
     }
   }
-  
+
   /**
    * Checks if a file exists at the specified path.
    * @param {string} file_path - The path to the file.
@@ -744,7 +780,7 @@ class PRDC_JSLAB_ENV {
   pathSep() {
     return path.sep;
   }
-  
+
   /**
    * Extracts the basename of a path, possibly removing the specified extension.
    * @param {...string} paths The path to extract the basename from, followed by an optional extension to remove.
@@ -771,7 +807,7 @@ class PRDC_JSLAB_ENV {
   pathDirName(file_path) {
     return path.dirname(file_path);
   }
-  
+
   /**
    * Retrieves the file extension from the given file path.
    * @param {string} file_path - The path to the file.
@@ -780,7 +816,7 @@ class PRDC_JSLAB_ENV {
   pathExtName(file_path) {
     return path.extname(file_path);
   }
-  
+
   /**
    * Resolves a sequence of path segments into an absolute path.
    * @param {string} path_in - The path or sequence of paths to resolve.
@@ -789,9 +825,9 @@ class PRDC_JSLAB_ENV {
   pathResolve(path_in) {
     return path.resolve(path_in);
   }
-    
+
   /**
-   * Computes the relative path from one path to another. 
+   * Computes the relative path from one path to another.
    * @param {string} from - The starting path.
    * @param {string} to - The target path.
    * @returns {string} - The relative path from the `from` path to the `to` path.
@@ -799,7 +835,7 @@ class PRDC_JSLAB_ENV {
   pathRelative(from, to) {
     return path.relative(from, to);
   }
-  
+
   /**
    * Normalizes a given path, resolving '..' and '.' segments.
    * @param {string} path - The path to normalize.
@@ -808,7 +844,7 @@ class PRDC_JSLAB_ENV {
   pathNormalize(path_in) {
     return path.normalize(path_in);
   }
-    
+
   /**
    * Parses a file path into its component parts.
    * @param {string} path - The file path to parse.
@@ -817,7 +853,7 @@ class PRDC_JSLAB_ENV {
   pathParse(path_in) {
     return path.parse(path_in);
   }
-  
+
   /**
    * Reads the content of a file synchronously.
    * @param {string} file_path The path to the file.
@@ -846,7 +882,7 @@ class PRDC_JSLAB_ENV {
       return false;
     }
   }
-  
+
   /**
    * Writes data to a file synchronously.
    * @param {string} file_path - The path to the file.
@@ -860,7 +896,7 @@ class PRDC_JSLAB_ENV {
     } catch(err) {
       this.jsl._console.log(err);
       if(throw_flag) {
-        this.error('@writeFileSync: '+err);
+        this.error('@writeFileSync: ' + err);
       }
       return false;
     }
@@ -893,23 +929,23 @@ class PRDC_JSLAB_ENV {
     } catch(err) {
       this.jsl._console.log(err);
       if(throw_flag) {
-        this.error('@rmSync: '+err);
+        this.error('@rmSync: ' + err);
       }
       return false;
     }
   }
-  
+
   /**
    * Reads the contents of a directory synchronously.
    * @param {string} folder The path to the directory.
    * @returns {string[]|false} An array of filenames or false in case of an error.
    */
-	readDir(...args) {
+  readDir(...args) {
     try {
       return fs.readdirSync(...args);
     } catch(err) {
       this.jsl._console.log(err);
-      this.error('@readDir: '+err);
+      this.error('@readDir: ' + err);
       return false;
     }
   }
@@ -950,11 +986,14 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Builds share link.
+   */
   buildShareLink() {
     this.error('Web share links are not available in Electron.', false);
     return false;
   }
-  
+
   /**
    * Displays a dialog to save file, synchronously returning the selected files' paths.
    * @param {Object} options The options for the dialog.
@@ -979,35 +1018,55 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
-  /** Requests debugger-backed interruption from the main process. */
+  /**
+   * Requests debugger-backed interruption from the main process.
+   */
   interruptExecution() {
-    if(!this.is_worker) ipcRenderer.send('SandboxWindow', 'interrupt-execution');
+    if(!this.is_worker) {
+      ipcRenderer.send('SandboxWindow', 'interrupt-execution');
+    }
   }
 
-  /** Runs a native task in a separately owned scientific process. */
+  /**
+   * Runs a native task in a separately owned scientific process.
+   */
   runInterruptibleTask(id, source, args) {
-    if(this.is_worker) throw Error('Start isolated native processes from the main scientific workspace.');
+    if(this.is_worker) {
+      throw Error('Start isolated native processes from the main scientific workspace.');
+    }
     return ipcRenderer.invoke('JSLAB_TASK_START', { id, source, args, cwd: this.jsl.current_path });
   }
 
-  /** Waits for the owned native process tree to stop. */
-  cancelInterruptibleTask(id) { return ipcRenderer.invoke('JSLAB_TASK_CANCEL', id); }
+  /**
+   * Waits for the owned native process tree to stop.
+   */
+  cancelInterruptibleTask(id) {
+    return ipcRenderer.invoke('JSLAB_TASK_CANCEL', id);
+  }
 
-  /** Configures the host debugger from running scripts without bypassing its controller. */
+  /**
+   * Configures the host debugger from running scripts without bypassing its controller.
+   */
   async debugCommand(method, args = {}) {
     const result = await ipcRenderer.invoke('JSLAB_DEBUGGER', method, args);
-    if(!result.success) throw Error(result.error);
+    if(!result.success) {
+      throw Error(result.error);
+    }
     return result.value;
   }
 
-  /** Registers source mappings and breakpoints before evaluation begins. */
+  /**
+   * Registers source mappings and breakpoints before evaluation begins.
+   */
   registerDebugSource(source) {
     if(!this.is_worker) {
       return ipcRenderer.invoke('JSLAB_DEBUG_SOURCE', source);
     }
   }
 
-  /** Resolves native CommonJS wrapper columns through the debugger's compiled source. */
+  /**
+   * Resolves native CommonJS wrapper columns through the debugger's compiled source.
+   */
   resolveModulePosition(frame) {
     if(!this.is_worker && frame.line === 1 && this.pathIsAbsolute(frame.path)) {
       return ipcRenderer.invoke('JSLAB_MODULE_POSITION', frame);
@@ -1029,12 +1088,139 @@ class PRDC_JSLAB_ENV {
     }
   }
 
-  /** Opens the Assistant chat window. */
+  /**
+   * Opens the Assistant chat window.
+   */
   assistant() {
-    if(!this.is_worker) ipcRenderer.send('MainProcess', 'show-assistant');
+    if(!this.is_worker) {
+      ipcRenderer.send('MainProcess', 'show-assistant');
+    }
   }
 
-  /** Creates or controls PTY-backed system Terminal windows. */
+  /**
+   * Opens the Simulate GUI and optionally loads a model file.
+   */
+  simulate(filepath, options) {
+    if(this.is_worker) {
+      return Promise.resolve({ success: false, error: 'Simulate requires the desktop runtime.' });
+    }
+    var request_options = Object.assign({}, options || {});
+    if(request_options.parameters && typeof request_options.parameters == 'object') {
+      request_options.parameters = safeWorkspaceValue(request_options.parameters);
+    }
+    return ipcRenderer.invoke('JSLAB_SIMULATE_AUTOMATION', {
+      filepath: filepath,
+      options: request_options
+    });
+  }
+
+  /**
+   * Loads the native scene core independently of the compiler worker.
+   * @param {string} xml Compiler scene description.
+   * @param {Array} time Simulation times.
+   * @param {Object} variables Referenced simulation series.
+   * @param {Object} [resources={}] Referenced CAD and material bytes.
+   * @returns {Promise<Object>} Figure-owned native scene.
+   */
+  async _createSimulateScene(xml, time, variables, resources = {}) {
+    const { pathToFileURL } = require('url');
+    // A module script guarantees Chromium's loader rather than Node's
+    // unsupported dynamic import from a non-isolated CommonJS renderer.
+    if(!this._scene_module) {
+      this._scene_module = new Promise((resolve, reject) => {
+        var script = document.createElement('script');
+        script.id = 'jslab-simulate-scene-loader';
+        script.type = 'module';
+        var entry = pathToFileURL(path.join(PRDC_JSLAB_SIMULATE_COMPILER.getCodeRoot(), 'scene.js')).href;
+        // Execute this function through Chromium, where native module imports work.
+        var load_scene = async function(entry, id) {
+          var owner = document.getElementById(id);
+          try {
+            var module = await import(entry);
+            owner.dispatchEvent(new CustomEvent('module-ready', { detail: module }));
+          } catch(error) {
+            owner.dispatchEvent(new CustomEvent('module-error', { detail: error }));
+          }
+        };
+        script.textContent = '(' + load_scene.toString() + ')(' + JSON.stringify(entry) + ',' + JSON.stringify(script.id) + ');';
+        script.addEventListener('module-ready', function(event) {
+          script.remove();
+          resolve(event.detail);
+        }, { once: true });
+        script.addEventListener('module-error', function(event) {
+          script.remove();
+          reject(event.detail);
+        }, { once: true });
+        script.addEventListener('error', function() {
+          script.remove();
+          reject(new Error('Unable to load the scene module.'));
+        }, { once: true });
+        document.head.appendChild(script);
+      }).catch(error => {
+        this._scene_module = null;
+        throw error;
+      });
+    }
+    const module = await this._scene_module;
+    return module.PRDC_OMJSL_SCENE.create(xml, time, variables, resources);
+  }
+
+  /**
+   * Returns the private simulation services shared by all platform environments.
+   * @returns {Object} Sandbox simulation helper.
+   */
+  _getSimulate() {
+    if(!this._simulate) {
+      this._simulate = new PRDC_JSLAB_SANDBOX_SIMULATE(this);
+    }
+    return this._simulate;
+  }
+
+  /**
+   * Publishes a complete simulation result as one lossless workspace value.
+   */
+  _publishSimulateResult(...args) {
+    return this._getSimulate()._publishSimulateResult(...args);
+  }
+
+  /**
+   * Converts a JSLAB value into a safe Modelica literal expression.
+   */
+  _modelicaLiteral(value) {
+    return modelicaLiteral(value);
+  }
+
+  /**
+   * Extracts moving MultiBody frame coordinates from the last simulation.
+   */
+  _simulateAnimationData(...args) {
+    return this._getSimulate()._simulateAnimationData(...args);
+  }
+
+  /**
+   * Copies only serializable numeric fields from Plotly's managed camera object.
+   */
+  _simulateCameraSnapshot(...args) {
+    return this._getSimulate()._simulateCameraSnapshot(...args);
+  }
+
+  /**
+   * Calculates a bounded orthographic scene scale for wheel zoom.
+   */
+  _simulateZoomScale(...args) {
+    return this._getSimulate()._simulateZoomScale(...args);
+  }
+
+  /**
+   * Opens a shared JSLAB 3D mechanism figure with a time slider.
+   */
+  _openSimulateAnimation(...args) {
+    return this._getSimulate()._openSimulateAnimation(...args);
+  }
+
+  /**
+   * Creates or controls PTY-backed system Terminal windows.
+   */
   terminal(action, data) {
     if(!this.is_worker) {
       return ipcRenderer.sendSync('sync-message', 'terminal-window', {
@@ -1045,9 +1231,13 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
-  /** Registers a live event listener for a Terminal window. */
+  /**
+   * Registers a live event listener for a Terminal window.
+   */
   terminalOn(id, type, callback) {
-    if(this.is_worker || typeof callback !== 'function') return false;
+    if(this.is_worker || typeof callback !== 'function') {
+      return false;
+    }
     id = Number(id);
     var listeners = this._terminal_listeners.get(id);
     if(!listeners) {
@@ -1055,16 +1245,22 @@ class PRDC_JSLAB_ENV {
       this._terminal_listeners.set(id, listeners);
     }
     var set = listeners[type];
-    if(!set) return false;
+    if(!set) {
+      return false;
+    }
     var wrapped = this.jsl.inter.execution.wrap(callback);
     set.add(wrapped);
     return wrapped;
   }
 
-  /** Removes a previously registered Terminal window listener. */
+  /**
+   * Removes a previously registered Terminal window listener.
+   */
   terminalOff(id, type, callback) {
     var listeners = this._terminal_listeners.get(Number(id));
-    if(!listeners || !listeners[type]) return false;
+    if(!listeners || !listeners[type]) {
+      return false;
+    }
     var removed = listeners[type].delete(callback);
     if(!listeners.data.size && !listeners.exit.size && !listeners.state.size) {
       this._terminal_listeners.delete(Number(id));
@@ -1077,7 +1273,9 @@ class PRDC_JSLAB_ENV {
    * @param {...any} args - The messages to send for display in the main window.
    */
   disp(...args) {
-    if(this._automation_output) this._automation_output('disp', args);
+    if(this._automation_output) {
+      this._automation_output('disp', args);
+    }
     if(!this.is_worker) {
       var obj = this;
       args.forEach(function(msg) {
@@ -1088,9 +1286,13 @@ class PRDC_JSLAB_ENV {
     }
   }
 
-  /** Writes text to the native clipboard. */
+  /**
+   * Writes text to the native clipboard.
+   */
   async copyText(text) {
-    if(this.is_worker || !clipboard) throw new Error('Clipboard is not available in this context.');
+    if(this.is_worker || !clipboard) {
+      throw new Error('Clipboard is not available in this context.');
+    }
     clipboard.writeText(String(text));
     return true;
   }
@@ -1110,7 +1312,9 @@ class PRDC_JSLAB_ENV {
    * @param {...any} args - The messages to send for display in the main window with monospaced font.
    */
   dispMonospaced(...args) {
-    if(this._automation_output) this._automation_output('dispMonospaced', args);
+    if(this._automation_output) {
+      this._automation_output('dispMonospaced', args);
+    }
     if(!this.is_worker) {
       var obj = this;
       args.forEach(function(msg) {
@@ -1118,18 +1322,20 @@ class PRDC_JSLAB_ENV {
       });
     }
   }
-  
+
   /**
    * Sends a message to display latex in the main window of the application.
    * @param {string} expr The expression to be displayed.
    */
   dispLatex(expr) {
-    if(this._automation_output) this._automation_output('dispLatex', [expr]);
+    if(this._automation_output) {
+      this._automation_output('dispLatex', [expr]);
+    }
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "disp-latex", expr);
     }
   }
-  
+
   /**
    * Triggers the display of CMD help content in the main window.
    */
@@ -1176,11 +1382,15 @@ class PRDC_JSLAB_ENV {
   error(msg, throw_flag = true) {
     if(!this._formatting_error && this.jsl?.inter?.execution?.current) {
       const error = new Error(String(msg));
-      if(throw_flag) throw error;
+      if(throw_flag) {
+        throw error;
+      }
       this._reported_error = error;
       return;
     }
-    if(this._automation_output) this._automation_output('error', [msg]);
+    if(this._automation_output) {
+      this._automation_output('error', [msg]);
+    }
     if(!this.is_worker) {
       this.jsl.no_ans = true;
       this.jsl.ignore_output = true;
@@ -1197,7 +1407,9 @@ class PRDC_JSLAB_ENV {
    * @param {string} msg The internal error message.
    */
   errorInternal(msg) {
-    if(this._automation_output) this._automation_output('errorInternal', [msg]);
+    if(this._automation_output) {
+      this._automation_output('errorInternal', [msg]);
+    }
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "internal-error", msg);
     }
@@ -1208,12 +1420,14 @@ class PRDC_JSLAB_ENV {
    * @param {string} msg The warning message.
    */
   warn(msg) {
-    if(this._automation_output) this._automation_output('warn', [msg]);
+    if(this._automation_output) {
+      this._automation_output('warn', [msg]);
+    }
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "warn", msg);
     }
   }
-  
+
   /**
    * Clears the command window, removing all current content.
    */
@@ -1243,13 +1457,20 @@ class PRDC_JSLAB_ENV {
    * @returns {Array<number>} Child process IDs.
    */
   listSubprocesses(pid = this.process_pid) {
-    if(!Number.isInteger(pid) || pid <= 0) throw new Error('Expected a positive process ID.');
-    if(pid !== this.process_pid) throw new Error('Only JSLAB-owned subprocesses can be listed.');
+    if(!Number.isInteger(pid) || pid <= 0) {
+      throw new Error('Expected a positive process ID.');
+    }
+    if(pid !== this.process_pid) {
+      throw new Error('Only JSLAB-owned subprocesses can be listed.');
+    }
     return Array.from(this._subprocesses || []).filter(child => child.exitCode === null && child.pid)
       .map(child => child.pid);
   }
 
-  /** @private Tracks only processes launched through the JSLAB environment. */
+  /**
+   * Handles track subprocess.
+   * @private Tracks only processes launched through the JSLAB environment.
+   */
   _trackSubprocess(child) {
     this._subprocesses.add(child);
     const forget = () => this._subprocesses.delete(child);
@@ -1258,12 +1479,16 @@ class PRDC_JSLAB_ENV {
     return child;
   }
 
-  /** Stops owned processes, including their descendants on Windows. */
+  /**
+   * Stops owned processes, including their descendants on Windows.
+   */
   async stopSubprocesses() {
     const children = Array.from(this._subprocesses);
     const errors = [];
     for(const child of children) {
-      if(!child.pid || child.exitCode !== null) continue;
+      if(!child.pid || child.exitCode !== null) {
+        continue;
+      }
       try {
         if(process.platform === 'win32') {
           await new Promise((resolve, reject) => {
@@ -1273,21 +1498,38 @@ class PRDC_JSLAB_ENV {
                   // Direct child handles remain usable when OS tree termination
                   // is restricted. Never claim completion until the child exits.
                   try {
-                    if(!child.kill()) reject(error); else resolve();
-                  } catch(kill_error) { reject(kill_error); }
-                } else resolve();
+                    if(!child.kill()) {
+                      reject(error);
+                    } else {
+                      resolve();
+                    }
+                  } catch(kill_error) {
+                    reject(kill_error);
+                  }
+                } else {
+                  resolve();
+                }
               });
           });
-        } else child.kill('SIGTERM');
+        } else {
+          child.kill('SIGTERM');
+        }
         if(child.exitCode === null && child.signalCode === null) {
           await new Promise((resolve, reject) => {
             const timer = setTimeout(() => reject(new Error('Owned process did not exit: ' + child.pid)), 2000);
-            child.once('exit', () => { clearTimeout(timer); resolve(); });
+            child.once('exit', () => {
+              clearTimeout(timer);
+              resolve();
+            });
           });
         }
-      } catch(error) { errors.push(error.message); }
+      } catch(error) {
+        errors.push(error.message);
+      }
     }
-    if(errors.length) throw new Error(errors.join('; '));
+    if(errors.length) {
+      throw new Error(errors.join('; '));
+    }
   }
 
   /**
@@ -1297,7 +1539,7 @@ class PRDC_JSLAB_ENV {
   listFolderContents() {
     return fs.readdirSync(this.jsl.current_path);
   }
-  
+
   /**
    * Requests an update of the file browser to reflect current directory or file changes.
    */
@@ -1334,7 +1576,7 @@ class PRDC_JSLAB_ENV {
       ipcRenderer.send("MainWindow", "set-workspace", this.jsl.getWorkspace());
     }
   }
-  
+
   /**
    * Saves a new path to the application's memory for quick access.
    * @param {string} new_path The path to save.
@@ -1375,18 +1617,20 @@ class PRDC_JSLAB_ENV {
       ipcRenderer.send("MainWindow", "set-stats", stats);
     }
   }
-  
+
   /**
    * Notifies the main window that code evaluation has started.
    */
   codeEvaluating(id) {
     if(!this.is_worker) {
       const result = ipcRenderer.sendSync('sync-message', 'execution-started', id);
-      if(result && result.error) throw new Error(result.error);
+      if(result && result.error) {
+        throw new Error(result.error);
+      }
       ipcRenderer.send("MainWindow", "code-evaluating");
     }
   }
-  
+
   /**
    * Notifies the main window that code evaluation has finished.
    */
@@ -1422,12 +1666,12 @@ class PRDC_JSLAB_ENV {
    * @returns {string} The modified path string with a trailing separator.
    */
   addPathSep(path_str) {
-    if(path_str && path_str[path_str.length-1] != path.sep) {
+    if(path_str && path_str[path_str.length - 1] != path.sep) {
       path_str += path.sep;
     }
     return path_str;
   }
-  
+
   /**
    * Changes the current working directory to the specified path.
    * @param {string} new_path The path to set as the current working directory.
@@ -1494,7 +1738,7 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Retrieves desktop sources synchronously by sending an IPC message.
    * @returns {DesktopSource[]|undefined} An array of desktop sources if not in a worker, otherwise undefined.
@@ -1505,7 +1749,7 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Prints window to PDF format.
    * @param {string} wid - The window ID.
@@ -1518,43 +1762,43 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Executes a system command asynchronously.
    * @param {...*} args Command arguments.
    */
-  exec(...args){
+  exec(...args) {
     if(typeof args[args.length - 1] === 'function') {
       args[args.length - 1] = this.jsl.inter.execution.wrap(args[args.length - 1]);
     }
     return this._trackSubprocess(cp.exec(...args));
   }
-  
+
   /**
    * Executes a system command synchronously and returns the result.
    * @param {...*} args Command arguments.
    * @returns {*} The result of the command execution.
    */
-  execSync(...args){
+  execSync(...args) {
     return cp.execSync(...args);
   }
-  
+
   /**
    * Spawns child process synchronously.
    * @param {...*} args Command arguments.
    */
-  spawnSync(...args){
+  spawnSync(...args) {
     return cp.spawnSync(...args);
   }
-  
+
   /**
    * Spawns child process asynchronously.
    * @param {...*} args Command arguments.
    */
-  spawn(...args){
+  spawn(...args) {
     return this._trackSubprocess(cp.spawn(...args));
   }
-  
+
   /**
    * Sends a PTY action request to the Electron main process (sync IPC).
    * @param {string} action - PTY action name (e.g. "create", "write", "resize", "kill").
@@ -1567,7 +1811,7 @@ class PRDC_JSLAB_ENV {
     }
     return false;
   }
-  
+
   /**
    * Resets the sandbox environment by sending a synchronous IPC message if not in a worker.
    * @returns {void}
@@ -1577,7 +1821,7 @@ class PRDC_JSLAB_ENV {
       ipcRenderer.sendSync("sync-message", "reset-sandbox");
     }
   }
-  
+
   /**
    * Resets the app.
    * @returns {void}
@@ -1587,7 +1831,7 @@ class PRDC_JSLAB_ENV {
       ipcRenderer.sendSync("sync-message", "reset-app");
     }
   }
-  
+
   /**
    * Loads and instantiates a WebAssembly module from disk with an optional import object.
    * @param {string} module_path - Path to the `.wasm` module to load.
@@ -1616,7 +1860,98 @@ class PRDC_JSLAB_ENV {
     wasm_instance.module = wasm_module;
     return wasm_instance;
   }
+  /**
+   * Returns the native CommonJS module runtime.
+   * @returns {Function} Node module constructor.
+   */
+  _getModuleRuntime() {
+    return require('module');
+  }
+
+  /**
+   * Resolves a configured scientific constructor before runtime require overrides.
+   * @param {Object} module_data Configured module.
+   * @returns {Function} Scientific constructor.
+   */
+  _getSubmoduleConstructor(module_data) {
+    return require('./' + module_data.file)[module_data.class_name];
+  }
+
+  /**
+   * Routes native require through the scientific workspace search paths.
+   * @param {Function} Module Node module constructor.
+   */
+  _configureModuleRequire(Module) {
+    const jsl = this.jsl;
+    Module.prototype.require = function(...args) {
+      const name = jsl.pathResolve(args[0], this);
+      if(!name) {
+        return false;
+      }
+      if(!jsl.required_modules.includes(name)) {
+        jsl.required_modules.push(name);
+      }
+      args[0] = name;
+      return jsl._require.apply(this, args);
+    };
+  }
+
+  /**
+   * Builds the initialization source for a child scientific worker.
+   * @returns {string} Worker initialization source.
+   */
+  _getWorkerInit() {
+
+    return `
+      global.is_worker = true;
+      global.debug = ${this.debug};
+      global.version = '${this.version}';
+      global.platform = '${this.platform}';
+
+      const internal_app_path = ${JSON.stringify(this.jsl.app_path)};
+      const internal_packed = ${JSON.stringify(this.jsl.packed)};
+
+      const helper = require(internal_app_path + "/js/backend-electron/renderer-startup.js");
+      require(internal_app_path + "/js/other-shared/init-config.js");
+
+      importScripts(internal_app_path + '/lib/luxon-3.4.4/luxon-3.4.4.min.js');
+      importScripts(internal_app_path + '/lib/math-11.8.2/math-11.8.2.min.js');
+      importScripts(internal_app_path + '/lib/sprintf-1.1.3/sprintf-1.1.3.min.js');
+      importScripts(internal_app_path + '/lib/sympy-0.26.2/pyodide.js');
+
+      const { PRDC_JSLAB_LIB } = require(internal_app_path + '/js/sandbox/jslab');
+      const { PRDC_JSLAB_ENV } = require(internal_app_path + '/js/sandbox/jslab-env-electron');
+      const { initializeWasm } = require(internal_app_path + '/js/sandbox/jslab-wasm-loader');
+      await initializeWasm(
+        require(internal_app_path + '/lib/native-wasm/native_module.js'),
+        require(internal_app_path + '/lib/native-wasm/alpha_shape_3d.js'));
+
+      // Global variables
+      var jsl = new PRDC_JSLAB_LIB(internal_app_path, internal_packed, PRDC_JSLAB_ENV);
+      jsl.current_path = ${JSON.stringify(this.jsl.current_path)};
+      jsl.includes_path = ${JSON.stringify(this.jsl.includes_path)};
+      jsl.saved_paths = JSON.parse('${JSON.stringify(this.jsl.saved_paths)}');
+    `;
+
+  }
+
+  /**
+   * Connects presentation behavior to the host's storage and preview transport.
+   * @param {Object} presentation Shared presentation controller.
+   * @returns {Object} Presentation transport.
+   */
+  _createPresentationTransport(presentation) {
+    return new PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT(presentation);
+  }
+
+  /**
+   * Creates a native worker for module-method dispatch.
+   * @returns {Worker} Module worker.
+   */
+  _createModuleWorker() {
+    return new this.context.Worker(this.jsl.app_path + '/js/backend-electron/init-worker.js');
+  }
+
 }
 
 exports.PRDC_JSLAB_ENV = PRDC_JSLAB_ENV;
-

@@ -5,114 +5,130 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for file system test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER {
+
+  /**
+   * Runs with temp dir.
+   * @param {*} fn Fn.
+   */
+  static withTempDir(fn) {
+    var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-fs-test-'));
+    try {
+      return fn(dir);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  /**
+   * Creates fs harness.
+   * @param {*} [overrides] Overrides.
+   */
+  static createFsHarness(overrides = {}) {
+    var errors = [];
+
+    var env = {
+      readFileSync: function() {
+        return fs.readFileSync.apply(fs, arguments);
+      },
+      writeFileSync: function() {
+        return fs.writeFileSync.apply(fs, arguments);
+      },
+      rmSync: function() {
+        return fs.rmSync.apply(fs, arguments);
+      },
+      readDir: function() {
+        return fs.readdirSync.apply(fs, arguments);
+      },
+      copyFileSync: function() {
+        return fs.copyFileSync.apply(fs, arguments);
+      },
+      pathJoin: function() {
+        return path.join.apply(path, arguments);
+      },
+      checkDirectory: function(target_path) {
+        return fs.existsSync(target_path) && fs.statSync(target_path).isDirectory();
+      },
+      checkFile: function(target_path) {
+        return fs.existsSync(target_path) && fs.statSync(target_path).isFile();
+      },
+      makeDirectory: function(dir_path) {
+        fs.mkdirSync(dir_path, { recursive: true });
+        return true;
+      },
+      showOpenDialogSync: function() {
+        return undefined;
+      },
+      getDefaultPath: function(type) {
+        return type === 'root' ? '/root' : '/tmp';
+      },
+      openFolder: function() {},
+      openDir: function() {},
+      showFileInFolder: function() {},
+      showFileInDir: function() {},
+      execSync: function() {},
+      bin7zip: '7z',
+      error: function(message) {
+        errors.push(message);
+      }
+    };
+
+    var path_api = {
+      comparePaths: function(a, b) {
+        return path.resolve(a) === path.resolve(b);
+      },
+      pathFileName: function(target_path) {
+        return path.basename(target_path, path.extname(target_path));
+      },
+      pathExtName: function(target_path) {
+        return path.extname(target_path);
+      }
+    };
+
+    var jsl = {
+      inter: {
+        env: env,
+        path: path_api,
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          }
+        }
+      },
+      error: function(message) {
+        errors.push(message);
+      }
+    };
+
+    if(overrides.env) {
+      Object.assign(env, overrides.env);
+    }
+    if(overrides.path) {
+      Object.assign(path_api, overrides.path);
+    }
+    if(overrides.jsl) {
+      Object.assign(jsl, overrides.jsl);
+    }
+
+    var file_system = new PRDC_JSLAB_LIB_FILE_SYSTEM(jsl);
+    return { file_system, jsl, env, errors };
+  }
+}
+
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PRDC_JSLAB_LIB_FILE_SYSTEM } = require('../file-system');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function withTempDir(fn) {
-  var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-fs-test-'));
-  try {
-    return fn(dir);
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-function createFsHarness(overrides = {}) {
-  var errors = [];
-
-  var env = {
-    readFileSync: function() {
-      return fs.readFileSync.apply(fs, arguments);
-    },
-    writeFileSync: function() {
-      return fs.writeFileSync.apply(fs, arguments);
-    },
-    rmSync: function() {
-      return fs.rmSync.apply(fs, arguments);
-    },
-    readDir: function() {
-      return fs.readdirSync.apply(fs, arguments);
-    },
-    copyFileSync: function() {
-      return fs.copyFileSync.apply(fs, arguments);
-    },
-    pathJoin: function() {
-      return path.join.apply(path, arguments);
-    },
-    checkDirectory: function(target_path) {
-      return fs.existsSync(target_path) && fs.statSync(target_path).isDirectory();
-    },
-    checkFile: function(target_path) {
-      return fs.existsSync(target_path) && fs.statSync(target_path).isFile();
-    },
-    makeDirectory: function(dir_path) {
-      fs.mkdirSync(dir_path, { recursive: true });
-      return true;
-    },
-    showOpenDialogSync: function() {
-      return undefined;
-    },
-    getDefaultPath: function(type) {
-      return type === 'root' ? '/root' : '/tmp';
-    },
-    openFolder: function() {},
-    openDir: function() {},
-    showFileInFolder: function() {},
-    showFileInDir: function() {},
-    execSync: function() {},
-    bin7zip: '7z',
-    error: function(message) {
-      errors.push(message);
-    }
-  };
-
-  var path_api = {
-    comparePaths: function(a, b) {
-      return path.resolve(a) === path.resolve(b);
-    },
-    pathFileName: function(target_path) {
-      return path.basename(target_path, path.extname(target_path));
-    },
-    pathExtName: function(target_path) {
-      return path.extname(target_path);
-    }
-  };
-
-  var jsl = {
-    inter: {
-      env: env,
-      path: path_api,
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
-        }
-      }
-    },
-    error: function(message) {
-      errors.push(message);
-    }
-  };
-
-  if(overrides.env) {
-    Object.assign(env, overrides.env);
-  }
-  if(overrides.path) {
-    Object.assign(path_api, overrides.path);
-  }
-  if(overrides.jsl) {
-    Object.assign(jsl, overrides.jsl);
-  }
-
-  var file_system = new PRDC_JSLAB_LIB_FILE_SYSTEM(jsl);
-  return { file_system, jsl, env, errors };
-}
 
 tests.add('getContentFromCharRange reads and slices file text', function(assert) {
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       readFileSync: function() {
         return 'abcdef';
@@ -127,7 +143,7 @@ tests.add('getContentFromCharRange reads and slices file text', function(assert)
 tests.add('moveFile short-circuits when source and destination are equal', function(assert) {
   var copied = 0;
   var removed = 0;
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       copyFileSync: function() {
         copied += 1;
@@ -150,8 +166,8 @@ tests.add('moveFile short-circuits when source and destination are equal', funct
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('moveFile copies and removes source when paths differ', function(assert) {
-  withTempDir(function(temp_dir) {
-    var harness = createFsHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.withTempDir(function(temp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness();
     var src = path.join(temp_dir, 'src.txt');
     var dest = path.join(temp_dir, 'dest.txt');
     fs.writeFileSync(src, 'hello');
@@ -164,7 +180,7 @@ tests.add('moveFile copies and removes source when paths differ', function(asser
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('filesInFolder filters by extension and returns joined paths', function(assert) {
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       readDir: function() {
         return ['a.txt', 'b.js', 'notes', 'c.js'];
@@ -183,28 +199,28 @@ tests.add('filesInFolder filters by extension and returns joined paths', functio
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('allFilesInFolder recursively flattens nested filenames', function(assert) {
-  withTempDir(function(temp_dir) {
+  PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.withTempDir(function(temp_dir) {
     var src = path.join(temp_dir, 'src');
     fs.mkdirSync(path.join(src, 'inner'), { recursive: true });
     fs.writeFileSync(path.join(src, 'a.txt'), 'a');
     fs.writeFileSync(path.join(src, 'inner', 'b.txt'), 'b');
     fs.writeFileSync(path.join(src, 'inner', 'c.js'), 'c');
 
-    var harness = createFsHarness();
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness();
     var files = harness.file_system.allFilesInFolder(src).slice().sort();
     assert.deepEqual(files, ['a.txt', 'b.txt', 'c.js']);
   });
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('copyDir recursively copies nested directory structure', function(assert) {
-  withTempDir(function(temp_dir) {
+  PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.withTempDir(function(temp_dir) {
     var src = path.join(temp_dir, 'src');
     var dest = path.join(temp_dir, 'dest');
     fs.mkdirSync(path.join(src, 'nested'), { recursive: true });
     fs.writeFileSync(path.join(src, 'root.txt'), 'root');
     fs.writeFileSync(path.join(src, 'nested', 'child.txt'), 'child');
 
-    var harness = createFsHarness();
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness();
     harness.file_system.copyDir(src, dest);
 
     assert.equal(fs.readFileSync(path.join(dest, 'root.txt'), 'utf8'), 'root');
@@ -213,10 +229,10 @@ tests.add('copyDir recursively copies nested directory structure', function(asse
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('readcsv parses both header and non-header content', function(assert) {
-  withTempDir(function(temp_dir) {
+  PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.withTempDir(function(temp_dir) {
     var file = path.join(temp_dir, 'data.csv');
     fs.writeFileSync(file, 'name,age\nAna,30\nBob,25\n');
-    var harness = createFsHarness();
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness();
 
     var with_header = harness.file_system.readcsv(file, ',', true);
     var without_header = harness.file_system.readcsv(file, ',', false);
@@ -234,7 +250,7 @@ tests.add('readcsv parses both header and non-header content', function(assert) 
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('chooseFile returns empty array and reports when user cancels', function(assert) {
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       showOpenDialogSync: function() {
         return undefined;
@@ -249,7 +265,7 @@ tests.add('chooseFile returns empty array and reports when user cancels', functi
 
 tests.add('chooseFile prefers synchronous dialog when both APIs are available', function(assert) {
   var async_calls = 0;
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       showOpenDialog: function() {
         async_calls += 1;
@@ -267,7 +283,7 @@ tests.add('chooseFile prefers synchronous dialog when both APIs are available', 
 }, { tags: ['unit', 'file-system'] });
 
 tests.add('chooseFile normalizes async Electron dialog results', async function(assert) {
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       showOpenDialog: function() {
         return Promise.resolve({
@@ -284,7 +300,7 @@ tests.add('chooseFile normalizes async Electron dialog results', async function(
 }, { tags: ['unit', 'file-system', 'async'] });
 
 tests.add('chooseFolder merges directory property and returns selected path list', function(assert) {
-  var harness = createFsHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
     env: {
       showOpenDialogSync: function(options) {
         return options.properties.includes('openDirectory') ? ['C:/tmp'] : [];

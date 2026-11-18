@@ -5,36 +5,52 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for geometry spacesearch test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_SPACESEARCH_TEST_HELPER {
+
+  /**
+   * Returns value at.
+   * @param {*} arr Arr.
+   * @param {*} indices Indices.
+   */
+  static getValueAt(arr, indices) {
+    return indices.reduce(function(current, index) {
+      return current[index];
+    }, arr);
+  }
+
+  /**
+   * Creates space search harness.
+   */
+  static createSpaceSearchHarness() {
+    var messages = [];
+    var jsl = {
+      inter: {
+        disp: function(message) {
+          messages.push(message);
+        },
+        array: {
+          getValueAt: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_SPACESEARCH_TEST_HELPER.getValueAt
+        }
+      }
+    };
+    return {
+      search: new PRDC_JSLAB_GEOMETRY_SPACE_SEARCH(jsl),
+      messages: messages
+    };
+  }
+}
+
+
 const { PRDC_JSLAB_GEOMETRY_SPACE_SEARCH } = require('../geometry-spacesearch');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function getValueAt(arr, indices) {
-  return indices.reduce(function(current, index) {
-    return current[index];
-  }, arr);
-}
-
-function createSpaceSearchHarness() {
-  var messages = [];
-  var jsl = {
-    inter: {
-      disp: function(message) {
-        messages.push(message);
-      },
-      array: {
-        getValueAt: getValueAt
-      }
-    }
-  };
-  return {
-    search: new PRDC_JSLAB_GEOMETRY_SPACE_SEARCH(jsl),
-    messages: messages
-  };
-}
 
 tests.add('splitSearchSpace divides first dimension and scales k for each worker', function(assert) {
-  var harness = createSpaceSearchHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_SPACESEARCH_TEST_HELPER.createSpaceSearchHarness();
   var split = harness.search.splitSearchSpace(
     [[0, 8], [10, 14]],
     [[8, 4], [1, 1]],
@@ -50,7 +66,7 @@ tests.add('splitSearchSpace divides first dimension and scales k for each worker
 }, { tags: ['unit', 'geometry-spacesearch'] });
 
 tests.add('corner and index helpers return expected multidimensional coordinates', function(assert) {
-  var harness = createSpaceSearchHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_SPACESEARCH_TEST_HELPER.createSpaceSearchHarness();
   assert.equal(harness.search.generateCornerShifts(3).length, 8);
   assert.deepEqual(
     harness.search.getCornerIndices([3, 4]),
@@ -66,7 +82,7 @@ tests.add('corner and index helpers return expected multidimensional coordinates
 }, { tags: ['unit', 'geometry-spacesearch'] });
 
 tests.add('dispElementSize reports initial and minimum element dimensions', function(assert) {
-  var harness = createSpaceSearchHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_SPACESEARCH_TEST_HELPER.createSpaceSearchHarness();
   harness.search.dispElementSize(
     [[0, 10], [0, 4]],
     [[2, 2], [5, 2]]
@@ -77,4 +93,3 @@ tests.add('dispElementSize reports initial and minimum element dimensions', func
 }, { tags: ['unit', 'geometry-spacesearch'] });
 
 exports.MODULE_TESTS = tests;
-

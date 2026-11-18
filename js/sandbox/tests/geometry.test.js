@@ -5,71 +5,117 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_GEOMETRY } = require('../geometry');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for geometry test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER {
 
-function vecMinus(a, b) {
-  return a.map(function(v, i) { return v - b[i]; });
-}
-
-function vecPlus(a, b) {
-  return a.map(function(v, i) { return v + b[i]; });
-}
-
-function vecScale(a, s) {
-  return a.map(function(v) { return v * s; });
-}
-
-function vecDot(a, b) {
-  var sum = 0;
-  for(var i = 0; i < a.length; i++) {
-    sum += a[i] * b[i];
+  /**
+   * Handles vec minus.
+   * @param {*} a A.
+   * @param {*} b B.
+   */
+  static vecMinus(a, b) {
+    return a.map(function(v, i) {
+      return v - b[i];
+    });
   }
-  return sum;
-}
 
-function vecNorm(a) {
-  return Math.sqrt(vecDot(a, a));
-}
+  /**
+   * Handles vec plus.
+   * @param {*} a A.
+   * @param {*} b B.
+   */
+  static vecPlus(a, b) {
+    return a.map(function(v, i) {
+      return v + b[i];
+    });
+  }
 
-function vecCross3(a, b) {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0]
-  ];
-}
+  /**
+   * Handles vec scale.
+   * @param {*} a A.
+   * @param {*} s S.
+   */
+  static vecScale(a, s) {
+    return a.map(function(v) {
+      return v * s;
+    });
+  }
 
-function createGeometryHarness() {
-  var jsl = {
-    inter: {
-      EPS: 1e-9,
-      minus: vecMinus,
-      plus: vecPlus,
-      scale: vecScale,
-      dot: vecDot,
-      norm: vecNorm,
-      cross3D: vecCross3,
-      array: {
-        createFilledArray: function(n, value) {
-          return Array(Math.max(0, n)).fill(value);
-        }
-      },
-      math: {
-        clamp: function(value, min, max) {
-          return Math.min(max, Math.max(min, value));
+  /**
+   * Handles vec dot.
+   * @param {*} a A.
+   * @param {*} b B.
+   */
+  static vecDot(a, b) {
+    var sum = 0;
+    for(var i = 0; i < a.length; i++) {
+      sum += a[i] * b[i];
+    }
+    return sum;
+  }
+
+  /**
+   * Handles vec norm.
+   * @param {*} a A.
+   */
+  static vecNorm(a) {
+    return Math.sqrt(PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecDot(a, a));
+  }
+
+  /**
+   * Handles vec cross3.
+   * @param {*} a A.
+   * @param {*} b B.
+   */
+  static vecCross3(a, b) {
+    return [
+      a[1] * b[2] - a[2] * b[1],
+      a[2] * b[0] - a[0] * b[2],
+      a[0] * b[1] - a[1] * b[0]
+    ];
+  }
+
+  /**
+   * Creates geometry harness.
+   */
+  static createGeometryHarness() {
+    var jsl = {
+      inter: {
+        EPS: 1e-9,
+        minus: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecMinus,
+        plus: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecPlus,
+        scale: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecScale,
+        dot: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecDot,
+        norm: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecNorm,
+        cross3D: PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.vecCross3,
+        array: {
+          createFilledArray: function(n, value) {
+            return Array(Math.max(0, n)).fill(value);
+          }
+        },
+        math: {
+          clamp: function(value, min, max) {
+            return Math.min(max, Math.max(min, value));
+          }
         }
       }
-    }
-  };
+    };
 
-  var geometry = new PRDC_JSLAB_LIB_GEOMETRY(jsl);
-  return { geometry };
+    var geometry = new PRDC_JSLAB_LIB_GEOMETRY(jsl);
+    return { geometry };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_GEOMETRY } = require('../geometry');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('findNearestPoints returns nearest index for each input point', function(assert) {
-  var harness = createGeometryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.createGeometryHarness();
   var indices = harness.geometry.findNearestPoints(
     [[0, 0], [2, 2], [10, 10]],
     [[0.1, -0.1], [3, 3], [100, 100]]
@@ -78,7 +124,7 @@ tests.add('findNearestPoints returns nearest index for each input point', functi
 }, { tags: ['unit', 'geometry'] });
 
 tests.add('pointLineDistance and pointSegmentDistance compute expected distances', function(assert) {
-  var harness = createGeometryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.createGeometryHarness();
   var d_line = harness.geometry.pointLineDistance([1, 1, 0], [0, 0, 0], [1, 0, 0]);
   assert.approx(d_line.d, 1, 1e-9);
   assert.deepEqual(d_line.P1, [1, 0, 0]);
@@ -99,7 +145,7 @@ tests.add('pointLineDistance and pointSegmentDistance compute expected distances
 }, { tags: ['unit', 'geometry'] });
 
 tests.add('lineCircleIntersection handles intersect, tangent and miss cases', function(assert) {
-  var harness = createGeometryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.createGeometryHarness();
 
   var hit = harness.geometry.lineCircleIntersection([-2, 0, 0], [1, 0, 0], [0, 0, 0], 1);
   assert.equal(hit.flag, 0);
@@ -118,7 +164,7 @@ tests.add('lineCircleIntersection handles intersect, tangent and miss cases', fu
 }, { tags: ['unit', 'geometry'] });
 
 tests.add('planesIntersection distinguishes intersecting, same and parallel planes', function(assert) {
-  var harness = createGeometryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.createGeometryHarness();
 
   var cross = harness.geometry.planesIntersection(
     [0, 0, 0], [0, 0, 1],
@@ -145,7 +191,7 @@ tests.add('planesIntersection distinguishes intersecting, same and parallel plan
 }, { tags: ['unit', 'geometry'] });
 
 tests.add('line overlap and minimum point distance utilities behave correctly', function(assert) {
-  var harness = createGeometryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_TEST_HELPER.createGeometryHarness();
 
   var overlap = harness.geometry.linesOverlap(
     [0, 0, 0], [2, 0, 0],

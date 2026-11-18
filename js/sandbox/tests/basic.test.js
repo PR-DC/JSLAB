@@ -5,57 +5,478 @@
  * info@pr-dc.com
  */
 
-const path = require('path');
-const { PRDC_JSLAB_LIB_BASIC } = require('../basic');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for basic test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER {
 
-function createBasicDiaryHarness(current_path = path.join('C:', 'work', 'jslab')) {
-  var diary_calls = [];
-  var error_calls = [];
+  /**
+   * Creates basic diary harness.
+   * @param {*} [current_path] Current path.
+   */
+  static createBasicDiaryHarness(current_path = path.join('C:', 'work', 'jslab')) {
+    var diary_calls = [];
+    var error_calls = [];
 
-  var jsl = {
-    app_path: path.join('C:', 'Electron', 'JSLAB'),
-    current_path: current_path,
-    no_ans: false,
-    ignore_output: false,
-    context: {},
-    inter: {
-      env: {
-        readFileSync: function() {
-          return '{}';
-        },
-        pathIsAbsolute: function(file_path) {
-          return path.isAbsolute(file_path);
-        },
-        pathResolve: function(file_path) {
-          return path.resolve(file_path);
-        },
-        pathJoin: function() {
-          return path.join.apply(path, arguments);
-        },
-        pathNormalize: function(file_path) {
-          return path.normalize(file_path);
-        },
-        diary: function(action, file_path) {
-          diary_calls.push({
-            action: action,
-            file_path: file_path
-          });
-        },
-        error: function(msg) {
-          error_calls.push(msg);
+    var jsl = {
+      app_path: path.join('C:', 'Electron', 'JSLAB'),
+      current_path: current_path,
+      no_ans: false,
+      ignore_output: false,
+      context: {},
+      inter: {
+        env: {
+          readFileSync: function() {
+            return '{}';
+          },
+          pathIsAbsolute: function(file_path) {
+            return path.isAbsolute(file_path);
+          },
+          pathResolve: function(file_path) {
+            return path.resolve(file_path);
+          },
+          pathJoin: function() {
+            return path.join.apply(path, arguments);
+          },
+          pathNormalize: function(file_path) {
+            return path.normalize(file_path);
+          },
+          diary: function(action, file_path) {
+            diary_calls.push({
+              action: action,
+              file_path: file_path
+            });
+          },
+          error: function(msg) {
+            error_calls.push(msg);
+          }
         }
       }
-    }
-  };
+    };
 
-  var basic = new PRDC_JSLAB_LIB_BASIC(jsl);
-  return { basic, jsl, diary_calls, error_calls };
+    var basic = new PRDC_JSLAB_LIB_BASIC(jsl);
+    return { basic, jsl, diary_calls, error_calls };
+  }
+
+  /**
+   * Creates basic beep harness.
+   */
+  static createBasicBeepHarness() {
+    var state = { beep_calls: 0 };
+    var jsl = {
+      no_ans: false,
+      ignore_output: false,
+      inter: {
+        env: {
+          beep: function() {
+            state.beep_calls += 1;
+            return true;
+          }
+        }
+      }
+    };
+
+    var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
+    basic.jsl = jsl;
+    return { basic, jsl, state };
+  }
+
+  /**
+   * Creates basic run harness.
+   * @param {Object} [options] Options.
+   */
+  static createBasicRunHarness(options = {}) {
+    var run_calls = [];
+    var jsl = {
+      current_script: options.current_script || 'jslcmdwindow',
+      jsl_file_name: options.jsl_file_name || 'jslcmdwindow',
+      last_script_path: undefined,
+      last_script_lines: undefined,
+      last_script_silent: undefined,
+      pending_top_level_script_finish: false,
+      inter: {
+        env: {
+          pathIsAbsolute: function(file_path) {
+            return path.isAbsolute(file_path);
+          },
+          checkScriptDir: function() {
+            return false;
+          }
+        },
+        eval: {
+          runScript: async function(script_path, lines, silent) {
+            run_calls.push([script_path, lines, silent]);
+            return 'run-result';
+          }
+        }
+      }
+    };
+
+    var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
+    basic.jsl = jsl;
+    return { basic, jsl, run_calls };
+  }
+
+  /**
+   * Creates basic install module harness.
+   * @param {*} [system_output] System output.
+   */
+  static createBasicInstallModuleHarness(system_output = 'install ok') {
+    var errors = [];
+    var disp_calls = [];
+    var system_calls = [];
+
+    var jsl = {
+      app_path: path.join('C:', 'Electron', 'JSLAB'),
+      pathResolve: function(file_path) {
+        return file_path;
+      },
+      inter: {
+        lang: {
+          currentString: function() {
+            return '';
+          },
+          string: function(id) {
+            return 'LANG_' + id;
+          }
+        },
+        env: {
+          showOpenDialogSync: function() {
+            return undefined;
+          },
+          error: function(msg) {
+            errors.push(msg);
+          },
+          addPathSep: function(input_path) {
+            if(input_path.endsWith('\\') || input_path.endsWith('/')) {
+              return input_path;
+            }
+            return input_path + '\\';
+          },
+          exe_path: 'C:\\node.exe',
+          pathJoin: function() {
+            return path.join.apply(path, arguments);
+          },
+          disp: function(msg) {
+            disp_calls.push(msg);
+          }
+        }
+      }
+    };
+
+    var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
+    basic.jsl = jsl;
+    basic.system = function(command, options) {
+      system_calls.push({
+        command: command,
+        options: options
+      });
+      return system_output;
+    };
+
+    jsl.inter.file_system = new (require('../file-system').PRDC_JSLAB_LIB_FILE_SYSTEM)(jsl);
+    return { basic, errors, disp_calls, system_calls };
+  }
+
+  /**
+   * Creates basic completions harness.
+   */
+  static createBasicCompletionsHarness() {
+    var jsl = {
+      context: {}
+    };
+    var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
+    basic.jsl = jsl;
+    return { basic, jsl };
+  }
+
+  /**
+   * Creates basic matlab path harness.
+   */
+  static createBasicMatlabPathHarness() {
+    var save_path_calls = [];
+    var remove_path_calls = [];
+    var disp_calls = [];
+    var disp_monospaced_calls = [];
+    var error_calls = [];
+    var path_resolve_calls = [];
+    var resolved_paths = {};
+    var workspace_properties = ['alpha', 'beta'];
+    var workspace_rows = [
+      ['alpha', 'number', 'Number'],
+      ['beta', 'object', 'Array']
+    ];
+    var files = new Set();
+    var directories = new Set();
+    var directory_entries = {};
+    var docs_map = {};
+    var lookfor_results = {};
+
+    function normalizeFsPath(path_in) {
+      return path.normalize(path_in);
+    }
+
+    function normalizeDirPath(path_in) {
+      var normalized = normalizeFsPath(path_in);
+      if(normalized.length > 1 &&
+          (normalized.endsWith('\\') || normalized.endsWith('/'))) {
+        return normalized.slice(0, -1);
+      }
+      return normalized;
+    }
+
+    function ensureDirectory(path_in) {
+      var normalized = normalizeDirPath(path_in);
+      directories.add(normalized);
+      if(!directory_entries.hasOwnProperty(normalized)) {
+        directory_entries[normalized] = [];
+      }
+    }
+
+    var jsl = {
+      app_path: path.join('C:', 'Electron', 'JSLAB'),
+      current_path: path.join('C:', 'workspace', 'project') + path.sep,
+      includes_path: path.join('C:', 'Electron', 'JSLAB', 'includes') + path.sep,
+      saved_paths: [],
+      initial_workspace: [],
+      no_ans: false,
+      ignore_output: false,
+      context: {},
+      pathResolve: function(file_path) {
+        path_resolve_calls.push(file_path);
+        if(Object.prototype.hasOwnProperty.call(resolved_paths, file_path)) {
+          return resolved_paths[file_path];
+        }
+        return false;
+      },
+      getWorkspaceProperties: function() {
+        return workspace_properties.slice();
+      },
+      getWorkspace: function() {
+        return workspace_rows.map(function(row) {
+          return row.slice();
+        });
+      },
+      inter: {
+        fs: {
+          lstatSync: function(path_in) {
+            var file_key = normalizeFsPath(path_in);
+            var dir_key = normalizeDirPath(path_in);
+            if(files.has(file_key)) {
+              return {
+                size: 128,
+                mtime: new Date('2026-02-22T00:00:00Z'),
+                isDirectory: function() {
+                  return false;
+                },
+                isFile: function() {
+                  return true;
+                }
+              };
+            }
+            if(directories.has(dir_key)) {
+              return {
+                size: 0,
+                mtime: new Date('2026-02-22T00:00:00Z'),
+                isDirectory: function() {
+                  return true;
+                },
+                isFile: function() {
+                  return false;
+                }
+              };
+            }
+            return undefined;
+          }
+        },
+        docs: {
+          helpToJSON: function(name) {
+            if(Object.prototype.hasOwnProperty.call(docs_map, name)) {
+              return JSON.stringify(docs_map[name]);
+            }
+            return false;
+          },
+          documentationSearch: function() {
+            return Object.assign({}, lookfor_results);
+          }
+        },
+        env: {
+          readFileSync: function() {
+            return '{}';
+          },
+          pathIsAbsolute: function(path_in) {
+            return path.isAbsolute(path_in);
+          },
+          pathJoin: function() {
+            return path.join.apply(path, arguments);
+          },
+          pathNormalize: function(path_in) {
+            return path.normalize(path_in);
+          },
+          pathDirName: function(path_in) {
+            return path.dirname(path_in);
+          },
+          pathBaseName: function(path_in) {
+            return path.basename(path_in);
+          },
+          checkFile: function(path_in) {
+            return files.has(normalizeFsPath(path_in));
+          },
+          checkDirectory: function(path_in) {
+            return directories.has(normalizeDirPath(path_in));
+          },
+          readDir: function(path_in) {
+            var key = normalizeDirPath(path_in);
+            if(Object.prototype.hasOwnProperty.call(directory_entries, key)) {
+              return directory_entries[key].slice();
+            }
+            return [];
+          },
+          listFolderContents: function() {
+            var key = normalizeDirPath(jsl.current_path);
+            if(Object.prototype.hasOwnProperty.call(directory_entries, key)) {
+              return directory_entries[key].slice();
+            }
+            return [];
+          },
+          addPathSep: function(path_in) {
+            if(path_in && path_in[path_in.length - 1] !== path.sep) {
+              return path_in + path.sep;
+            }
+            return path_in;
+          },
+          savePath: function(path_in) {
+            save_path_calls.push(path_in);
+          },
+          removePath: function(path_in) {
+            remove_path_calls.push(path_in);
+          },
+          pathSep: function() {
+            return path.sep;
+          },
+          disp: function(msg) {
+            disp_calls.push(msg);
+          },
+          dispMonospaced: function(msg) {
+            disp_monospaced_calls.push(msg);
+          },
+          error: function(msg) {
+            error_calls.push(msg);
+          }
+        }
+      }
+    };
+
+    ensureDirectory(jsl.current_path);
+    ensureDirectory(jsl.includes_path);
+
+    // Getter-based command aliases execute with jsl.context as receiver.
+    jsl.context.jsl = jsl;
+
+    var basic = new PRDC_JSLAB_LIB_BASIC(jsl);
+    jsl.basic = basic;
+    return {
+      basic,
+      jsl,
+      save_path_calls,
+      remove_path_calls,
+      disp_calls,
+      disp_monospaced_calls,
+      error_calls,
+      path_resolve_calls,
+      resolved_paths,
+      setWorkspaceProperties: function(values) {
+        workspace_properties = values.slice();
+      },
+      setWorkspaceRows: function(values) {
+        workspace_rows = values.map(function(row) {
+          return row.slice();
+        });
+      },
+      setFiles: function(values) {
+        files = new Set(values.map(normalizeFsPath));
+      },
+      setDirectories: function(values) {
+        directories = new Set(values.map(normalizeDirPath));
+        directories.add(normalizeDirPath(jsl.current_path));
+        directories.add(normalizeDirPath(jsl.includes_path));
+      },
+      setDirectoryEntries: function(directory, entries) {
+        var key = normalizeDirPath(directory);
+        ensureDirectory(key);
+        directory_entries[key] = entries.slice();
+      }
+    };
+  }
+
+  /**
+   * Normalizes path command output.
+   * @param {*} out Out.
+   */
+  static normalizePathCommandOutput(out) {
+    if(Array.isArray(out)) {
+      return out.map(function(entry) {
+        return String(entry);
+      });
+    }
+
+    if(typeof out === 'string') {
+      var trimmed = out.trim();
+      if(!trimmed.length) {
+        return [];
+      }
+      if(trimmed.includes(path.delimiter)) {
+        return trimmed.split(path.delimiter).map(function(entry) {
+          return entry.trim();
+        }).filter(function(entry) {
+          return entry.length > 0;
+        });
+      }
+      return trimmed.split(/\r?\n/).map(function(entry) {
+        return entry.trim();
+      }).filter(function(entry) {
+        return entry.length > 0;
+      });
+    }
+
+    return [];
+  }
+
+  /**
+   * Handles extract who names.
+   * @param {*} out Out.
+   */
+  static extractWhoNames(out) {
+    if(Array.isArray(out)) {
+      return out.map(function(entry) {
+        if(Array.isArray(entry)) {
+          return String(entry[0]);
+        }
+        return String(entry);
+      });
+    }
+
+    if(typeof out === 'string') {
+      return out.split(/[\s,\r\n]+/).map(function(entry) {
+        return entry.trim();
+      }).filter(function(entry) {
+        return entry.length > 0;
+      });
+    }
+
+    return [];
+  }
 }
 
+
+const path = require('path');
+const { PRDC_JSLAB_LIB_BASIC } = require('../basic');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('command getters retain their runtime when global jsl is replaced', function(assert) {
-  var harness = createBasicDiaryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   var jsl = harness.jsl;
   var calls = [];
   jsl.jsl_file_name = 'getter-test.jsl';
@@ -73,9 +494,15 @@ tests.add('command getters retain their runtime when global jsl is replaced', fu
     }
   }
 
-  jsl.clear = function() { calls.push('clear'); };
-  jsl.inter.env.clc = function() { calls.push('clc'); };
-  jsl.inter.env.setWorkspace = function() { calls.push('workspace'); };
+  jsl.clear = function() {
+    calls.push('clear');
+  };
+  jsl.inter.env.clc = function() {
+    calls.push('clc');
+  };
+  jsl.inter.env.setWorkspace = function() {
+    calls.push('workspace');
+  };
   void jsl.context.clear;
   void jsl.context.clc;
   void jsl.context.cls;
@@ -87,7 +514,7 @@ tests.add('command getters retain their runtime when global jsl is replaced', fu
 }, { tags: ['unit', 'basic'] });
 
 tests.add('diary without args toggles logging through environment bridge', function(assert) {
-  var harness = createBasicDiaryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   var ok = harness.basic.diary();
 
   assert.equal(ok, true);
@@ -99,21 +526,41 @@ tests.add('diary without args toggles logging through environment bridge', funct
 }, { tags: ['unit', 'basic'] });
 
 tests.add('assistant command opens the Assistant window without producing ans', function(assert) {
-  var harness = createBasicDiaryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   var calls = 0;
-  harness.jsl.inter.env.assistant = function() { calls++; };
+  harness.jsl.inter.env.assistant = function() {
+    calls++;
+  };
   harness.basic.assistant();
   assert.equal(calls, 1);
   assert.equal(harness.jsl.no_ans, true);
   assert.equal(harness.jsl.ignore_output, true);
 }, { tags: ['unit', 'basic', 'assistant'] });
 
+tests.add('simulate command opens and controls Simulate without producing ans', async function(assert) {
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
+  var opened;
+  harness.jsl.pathResolve = function(file) {
+    return 'C:\\work\\' + file;
+  };
+  harness.jsl.inter.env.simulate = function(file) {
+    opened = file;
+    return Promise.resolve({ success: true });
+  };
+  await harness.basic.simulate('Plant.mo', { run: true });
+  assert.equal(opened, 'C:\\work\\Plant.mo');
+  assert.equal(harness.jsl.no_ans, true);
+  assert.equal(harness.jsl.ignore_output, true);
+}, { tags: ['unit', 'basic', 'simulate', 'modelica'] });
+
 tests.add('terminal command returns an independently controllable window handle', function(assert) {
-  var harness = createBasicDiaryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   var calls = [];
   harness.jsl.inter.env.terminal = function(action, data) {
     calls.push({ action: action, data: data });
-    if(action === 'create') return { id: 7, name: data.name };
+    if(action === 'create') {
+      return { id: 7, name: data.name };
+    }
     return true;
   };
   var terminal_window = harness.basic.terminal('Codex', { cwd: 'C:\\work' });
@@ -121,8 +568,10 @@ tests.add('terminal command returns an independently controllable window handle'
   assert.equal(terminal_window.id, 7);
   assert.equal(terminal_window.name, 'Agent');
   assert.deepEqual(Object.keys(terminal_window), ['id', 'name']);
-  assert.deepEqual(calls.map(function(call) { return call.action; }),
-    ['create', 'write', 'clear', 'focus', 'restart', 'set-name']);
+  assert.deepEqual(calls.map(function(call) {
+    return call.action;
+  }),
+  ['create', 'write', 'clear', 'focus', 'restart', 'set-name']);
   assert.equal(calls[0].data.name, 'Codex');
   assert.equal(calls[0].data.options.cwd, 'C:\\work');
   assert.equal(calls[1].data.value, 'codex\r');
@@ -133,7 +582,7 @@ tests.add('terminal command returns an independently controllable window handle'
 }, { tags: ['unit', 'basic', 'terminal'] });
 
 tests.add('diary accepts explicit on/off tokens', function(assert) {
-  var harness = createBasicDiaryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   harness.basic.diary('on');
   harness.basic.diary('off');
 
@@ -144,7 +593,7 @@ tests.add('diary accepts explicit on/off tokens', function(assert) {
 
 tests.add('diary path argument resolves relative path against current path', function(assert) {
   var current_path = path.join('C:', 'workspace', 'project');
-  var harness = createBasicDiaryHarness(current_path);
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness(current_path);
   harness.basic.diary(path.join('logs', 'session.log'));
 
   assert.equal(harness.diary_calls.length, 1);
@@ -156,7 +605,7 @@ tests.add('diary path argument resolves relative path against current path', fun
 }, { tags: ['unit', 'basic'] });
 
 tests.add('diary rejects invalid argument type and reports error', function(assert) {
-  var harness = createBasicDiaryHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   var ok = harness.basic.diary(123);
 
   assert.equal(ok, false);
@@ -167,28 +616,9 @@ tests.add('diary rejects invalid argument type and reports error', function(asse
   assert.equal(harness.jsl.ignore_output, true);
 }, { tags: ['unit', 'basic'] });
 
-function createBasicBeepHarness() {
-  var state = { beep_calls: 0 };
-  var jsl = {
-    no_ans: false,
-    ignore_output: false,
-    inter: {
-      env: {
-        beep: function() {
-          state.beep_calls += 1;
-          return true;
-        }
-      }
-    }
-  };
-
-  var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
-  basic.jsl = jsl;
-  return { basic, jsl, state };
-}
 
 tests.add('beep delegates to environment bridge and suppresses ans output', function(assert) {
-  var harness = createBasicBeepHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicBeepHarness();
   var out = harness.basic.beep();
 
   assert.equal(out, true);
@@ -197,40 +627,9 @@ tests.add('beep delegates to environment bridge and suppresses ans output', func
   assert.equal(harness.jsl.ignore_output, true);
 }, { tags: ['unit', 'basic'] });
 
-function createBasicRunHarness(options = {}) {
-  var run_calls = [];
-  var jsl = {
-    current_script: options.current_script || 'jslcmdwindow',
-    jsl_file_name: options.jsl_file_name || 'jslcmdwindow',
-    last_script_path: undefined,
-    last_script_lines: undefined,
-    last_script_silent: undefined,
-    pending_top_level_script_finish: false,
-    inter: {
-      env: {
-        pathIsAbsolute: function(file_path) {
-          return path.isAbsolute(file_path);
-        },
-        checkScriptDir: function() {
-          return false;
-        }
-      },
-      eval: {
-        runScript: async function(script_path, lines, silent) {
-          run_calls.push([script_path, lines, silent]);
-          return 'run-result';
-        }
-      }
-    }
-  };
-
-  var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
-  basic.jsl = jsl;
-  return { basic, jsl, run_calls };
-}
 
 tests.add('run marks absolute top-level scripts for finish attention', async function(assert) {
-  var harness = createBasicRunHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicRunHarness();
   var script_path = path.join('C:', 'temp', 'outer.jsl');
 
   var out = await harness.basic.run(script_path, [1, 3], true);
@@ -242,7 +641,7 @@ tests.add('run marks absolute top-level scripts for finish attention', async fun
 }, { tags: ['unit', 'basic'] });
 
 tests.add('run leaves nested script executions without top-level finish attention', async function(assert) {
-  var harness = createBasicRunHarness({
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicRunHarness({
     current_script: path.join('C:', 'temp', 'parent.jsl'),
     jsl_file_name: 'parent.jsl'
   });
@@ -253,64 +652,9 @@ tests.add('run leaves nested script executions without top-level finish attentio
   assert.equal(harness.jsl.pending_top_level_script_finish, false);
 }, { tags: ['unit', 'basic'] });
 
-function createBasicInstallModuleHarness(system_output = 'install ok') {
-  var errors = [];
-  var disp_calls = [];
-  var system_calls = [];
-
-  var jsl = {
-    app_path: path.join('C:', 'Electron', 'JSLAB'),
-    pathResolve: function(file_path) {
-      return file_path;
-    },
-    inter: {
-      lang: {
-        currentString: function() {
-          return '';
-        },
-        string: function(id) {
-          return 'LANG_' + id;
-        }
-      },
-      env: {
-        showOpenDialogSync: function() {
-          return undefined;
-        },
-        error: function(msg) {
-          errors.push(msg);
-        },
-        addPathSep: function(input_path) {
-          if(input_path.endsWith('\\') || input_path.endsWith('/')) {
-            return input_path;
-          }
-          return input_path + '\\';
-        },
-        exe_path: 'C:\\node.exe',
-        pathJoin: function() {
-          return path.join.apply(path, arguments);
-        },
-        disp: function(msg) {
-          disp_calls.push(msg);
-        }
-      }
-    }
-  };
-
-  var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
-  basic.jsl = jsl;
-  basic.system = function(command, options) {
-    system_calls.push({
-      command: command,
-      options: options
-    });
-    return system_output;
-  };
-
-  return { basic, errors, disp_calls, system_calls };
-}
 
 tests.add('installModule in basic runs npm install and can show output', function(assert) {
-  var harness = createBasicInstallModuleHarness('install done');
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicInstallModuleHarness('install done');
 
   harness.basic.installModule('C:\\work\\module', true);
 
@@ -321,7 +665,7 @@ tests.add('installModule in basic runs npm install and can show output', functio
 }, { tags: ['unit', 'basic'] });
 
 tests.add('installModule in basic reports npm errors', function(assert) {
-  var harness = createBasicInstallModuleHarness('...\nnpm error broken');
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicInstallModuleHarness('...\nnpm error broken');
 
   harness.basic.installModule('C:\\work\\module');
 
@@ -329,17 +673,9 @@ tests.add('installModule in basic reports npm errors', function(assert) {
   assert.ok(harness.errors[0].includes('@installModule:'));
 }, { tags: ['unit', 'basic'] });
 
-function createBasicCompletionsHarness() {
-  var jsl = {
-    context: {}
-  };
-  var basic = Object.create(PRDC_JSLAB_LIB_BASIC.prototype);
-  basic.jsl = jsl;
-  return { basic, jsl };
-}
 
 tests.add('getCompletions prioritizes exact match and includes context symbols', function(assert) {
-  var harness = createBasicCompletionsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
   harness.jsl.context.customKeyword2 = true;
   harness.jsl.context.customAction = function() {};
 
@@ -354,7 +690,7 @@ tests.add('getCompletions prioritizes exact match and includes context symbols',
 }, { tags: ['unit', 'basic'] });
 
 tests.add('getCompletions uses DevTools-style prefix filtering and property ordering', function(assert) {
-  var harness = createBasicCompletionsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
   var prototype = { prop10: true, prop2: true, _private: true };
   var value = Object.create(prototype);
   value.prop1 = true;
@@ -369,12 +705,15 @@ tests.add('getCompletions uses DevTools-style prefix filtering and property orde
 }, { tags: ['unit', 'basic'] });
 
 tests.add('console completion and eager preview do not invoke accessors', function(assert) {
-  var harness = createBasicCompletionsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
   var getter_calls = 0;
   var value = { alpha: 1 };
   Object.defineProperty(value, 'computed', {
     enumerable: true,
-    get: function() { getter_calls++; return 2; }
+    get: function() {
+      getter_calls++;
+      return 2;
+    }
   });
   harness.jsl.context.value = value;
   harness.jsl.inter = {
@@ -387,7 +726,9 @@ tests.add('console completion and eager preview do not invoke accessors', functi
       }
     },
     format: {
-      _consoleValue: function(result) { return { description: result === value ? 'Object' : String(result) }; }
+      _consoleValue: function(result) {
+        return { description: result === value ? 'Object' : String(result) };
+      }
     }
   };
 
@@ -400,15 +741,20 @@ tests.add('console completion and eager preview do not invoke accessors', functi
 }, { tags: ['unit', 'basic', 'console'] });
 
 tests.add('console eager preview safely evaluates primitive expressions', function(assert) {
-  var harness = createBasicCompletionsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
   var getter_calls = 0;
   Object.defineProperty(harness.jsl.context, 'dangerous', {
     configurable: true,
-    get: function() { getter_calls++; return 99; }
+    get: function() {
+      getter_calls++;
+      return 99;
+    }
   });
   harness.jsl.inter = {
     env: { babel_parser: require('@babel/parser') },
-    format: { _consoleValue: function(value) { return { description: String(value), value: value }; } }
+    format: { _consoleValue: function(value) {
+      return { description: String(value), value: value };
+    } }
   };
 
   assert.equal(harness.basic._getConsolePreview('1 + 2 * 3').value.value, 7);
@@ -420,274 +766,21 @@ tests.add('console eager preview safely evaluates primitive expressions', functi
 }, { tags: ['unit', 'basic', 'console'] });
 
 tests.add('console history completions are ordered and deduplicated', function(assert) {
-  var harness = createBasicCompletionsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
   var completions = harness.basic.getCompletions({
     start: 'pri', input: 'pri', keywords: [], history: ['print(1)', 'print(1)', 'print(2)']
   });
-  var history = completions.items.filter(function(item) { return item && item.history; });
-  assert.deepEqual(history.map(function(item) { return item.text; }), ['print(1)', 'print(2)']);
+  var history = completions.items.filter(function(item) {
+    return item && item.history;
+  });
+  assert.deepEqual(history.map(function(item) {
+    return item.text;
+  }), ['print(1)', 'print(2)']);
 }, { tags: ['unit', 'basic', 'console'] });
 
-function createBasicMatlabPathHarness() {
-  var save_path_calls = [];
-  var remove_path_calls = [];
-  var disp_calls = [];
-  var disp_monospaced_calls = [];
-  var error_calls = [];
-  var path_resolve_calls = [];
-  var resolved_paths = {};
-  var workspace_properties = ['alpha', 'beta'];
-  var workspace_rows = [
-    ['alpha', 'number', 'Number'],
-    ['beta', 'object', 'Array']
-  ];
-  var files = new Set();
-  var directories = new Set();
-  var directory_entries = {};
-  var docs_map = {};
-  var lookfor_results = {};
-
-  function normalizeFsPath(path_in) {
-    return path.normalize(path_in);
-  }
-
-  function normalizeDirPath(path_in) {
-    var normalized = normalizeFsPath(path_in);
-    if(normalized.length > 1 &&
-        (normalized.endsWith('\\') || normalized.endsWith('/'))) {
-      return normalized.slice(0, -1);
-    }
-    return normalized;
-  }
-
-  function ensureDirectory(path_in) {
-    var normalized = normalizeDirPath(path_in);
-    directories.add(normalized);
-    if(!directory_entries.hasOwnProperty(normalized)) {
-      directory_entries[normalized] = [];
-    }
-  }
-
-  var jsl = {
-    app_path: path.join('C:', 'Electron', 'JSLAB'),
-    current_path: path.join('C:', 'workspace', 'project') + path.sep,
-    includes_path: path.join('C:', 'Electron', 'JSLAB', 'includes') + path.sep,
-    saved_paths: [],
-    initial_workspace: [],
-    no_ans: false,
-    ignore_output: false,
-    context: {},
-    pathResolve: function(file_path) {
-      path_resolve_calls.push(file_path);
-      if(Object.prototype.hasOwnProperty.call(resolved_paths, file_path)) {
-        return resolved_paths[file_path];
-      }
-      return false;
-    },
-    getWorkspaceProperties: function() {
-      return workspace_properties.slice();
-    },
-    getWorkspace: function() {
-      return workspace_rows.map(function(row) {
-        return row.slice();
-      });
-    },
-    inter: {
-      fs: {
-        lstatSync: function(path_in) {
-          var file_key = normalizeFsPath(path_in);
-          var dir_key = normalizeDirPath(path_in);
-          if(files.has(file_key)) {
-            return {
-              size: 128,
-              mtime: new Date('2026-02-22T00:00:00Z'),
-              isDirectory: function() { return false; },
-              isFile: function() { return true; }
-            };
-          }
-          if(directories.has(dir_key)) {
-            return {
-              size: 0,
-              mtime: new Date('2026-02-22T00:00:00Z'),
-              isDirectory: function() { return true; },
-              isFile: function() { return false; }
-            };
-          }
-          return undefined;
-        }
-      },
-      docs: {
-        helpToJSON: function(name) {
-          if(Object.prototype.hasOwnProperty.call(docs_map, name)) {
-            return JSON.stringify(docs_map[name]);
-          }
-          return false;
-        },
-        documentationSearch: function() {
-          return Object.assign({}, lookfor_results);
-        }
-      },
-      env: {
-        readFileSync: function() {
-          return '{}';
-        },
-        pathIsAbsolute: function(path_in) {
-          return path.isAbsolute(path_in);
-        },
-        pathJoin: function() {
-          return path.join.apply(path, arguments);
-        },
-        pathNormalize: function(path_in) {
-          return path.normalize(path_in);
-        },
-        pathDirName: function(path_in) {
-          return path.dirname(path_in);
-        },
-        pathBaseName: function(path_in) {
-          return path.basename(path_in);
-        },
-        checkFile: function(path_in) {
-          return files.has(normalizeFsPath(path_in));
-        },
-        checkDirectory: function(path_in) {
-          return directories.has(normalizeDirPath(path_in));
-        },
-        readDir: function(path_in) {
-          var key = normalizeDirPath(path_in);
-          if(Object.prototype.hasOwnProperty.call(directory_entries, key)) {
-            return directory_entries[key].slice();
-          }
-          return [];
-        },
-        listFolderContents: function() {
-          var key = normalizeDirPath(jsl.current_path);
-          if(Object.prototype.hasOwnProperty.call(directory_entries, key)) {
-            return directory_entries[key].slice();
-          }
-          return [];
-        },
-        addPathSep: function(path_in) {
-          if(path_in && path_in[path_in.length - 1] !== path.sep) {
-            return path_in + path.sep;
-          }
-          return path_in;
-        },
-        savePath: function(path_in) {
-          save_path_calls.push(path_in);
-        },
-        removePath: function(path_in) {
-          remove_path_calls.push(path_in);
-        },
-        pathSep: function() {
-          return path.sep;
-        },
-        disp: function(msg) {
-          disp_calls.push(msg);
-        },
-        dispMonospaced: function(msg) {
-          disp_monospaced_calls.push(msg);
-        },
-        error: function(msg) {
-          error_calls.push(msg);
-        }
-      }
-    }
-  };
-
-  ensureDirectory(jsl.current_path);
-  ensureDirectory(jsl.includes_path);
-
-  // Getter-based command aliases execute with jsl.context as receiver.
-  jsl.context.jsl = jsl;
-
-  var basic = new PRDC_JSLAB_LIB_BASIC(jsl);
-  jsl.basic = basic;
-  return {
-    basic,
-    jsl,
-    save_path_calls,
-    remove_path_calls,
-    disp_calls,
-    disp_monospaced_calls,
-    error_calls,
-    path_resolve_calls,
-    resolved_paths,
-    setWorkspaceProperties: function(values) {
-      workspace_properties = values.slice();
-    },
-    setWorkspaceRows: function(values) {
-      workspace_rows = values.map(function(row) {
-        return row.slice();
-      });
-    },
-    setFiles: function(values) {
-      files = new Set(values.map(normalizeFsPath));
-    },
-    setDirectories: function(values) {
-      directories = new Set(values.map(normalizeDirPath));
-      directories.add(normalizeDirPath(jsl.current_path));
-      directories.add(normalizeDirPath(jsl.includes_path));
-    },
-    setDirectoryEntries: function(directory, entries) {
-      var key = normalizeDirPath(directory);
-      ensureDirectory(key);
-      directory_entries[key] = entries.slice();
-    }
-  };
-}
-
-function normalizePathCommandOutput(out) {
-  if(Array.isArray(out)) {
-    return out.map(function(entry) {
-      return String(entry);
-    });
-  }
-
-  if(typeof out === 'string') {
-    var trimmed = out.trim();
-    if(!trimmed.length) {
-      return [];
-    }
-    if(trimmed.includes(path.delimiter)) {
-      return trimmed.split(path.delimiter).map(function(entry) {
-        return entry.trim();
-      }).filter(function(entry) {
-        return entry.length > 0;
-      });
-    }
-    return trimmed.split(/\r?\n/).map(function(entry) {
-      return entry.trim();
-    }).filter(function(entry) {
-      return entry.length > 0;
-    });
-  }
-
-  return [];
-}
-
-function extractWhoNames(out) {
-  if(Array.isArray(out)) {
-    return out.map(function(entry) {
-      if(Array.isArray(entry)) {
-        return String(entry[0]);
-      }
-      return String(entry);
-    });
-  }
-
-  if(typeof out === 'string') {
-    return out.split(/[\s,\r\n]+/).map(function(entry) {
-      return entry.trim();
-    }).filter(function(entry) {
-      return entry.length > 0;
-    });
-  }
-
-  return [];
-}
 
 tests.add('addpath normalizes path separator and deduplicates saved paths', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   var new_path = path.join('C:', 'workspace', 'libs');
 
   if(typeof harness.basic.addpath !== 'function') {
@@ -704,7 +797,7 @@ tests.add('addpath normalizes path separator and deduplicates saved paths', func
 }, { tags: ['unit', 'basic'] });
 
 tests.add('rmpath removes normalized path and forwards call to environment', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   var new_path = path.join('C:', 'workspace', 'libs') + path.sep;
 
   if(typeof harness.basic.rmpath !== 'function') {
@@ -720,7 +813,7 @@ tests.add('rmpath removes normalized path and forwards call to environment', fun
 }, { tags: ['unit', 'basic'] });
 
 tests.add('path exposes current/includes/saved search paths', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
 
   if(typeof harness.basic.path !== 'function') {
     assert.fail('path is not implemented on PRDC_JSLAB_LIB_BASIC.');
@@ -735,7 +828,7 @@ tests.add('path exposes current/includes/saved search paths', function(assert) {
   if(typeof out === 'undefined' && harness.disp_calls.length) {
     out = harness.disp_calls[harness.disp_calls.length - 1];
   }
-  var entries = normalizePathCommandOutput(out);
+  var entries = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.normalizePathCommandOutput(out);
 
   assert.ok(entries.includes(harness.jsl.current_path));
   assert.ok(entries.includes(harness.jsl.includes_path));
@@ -744,7 +837,7 @@ tests.add('path exposes current/includes/saved search paths', function(assert) {
 }, { tags: ['unit', 'basic'] });
 
 tests.add('which delegates file resolution to jsl.pathResolve', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
 
   if(typeof harness.basic.which !== 'function') {
     assert.fail('which is not implemented on PRDC_JSLAB_LIB_BASIC.');
@@ -759,7 +852,7 @@ tests.add('which delegates file resolution to jsl.pathResolve', function(assert)
 }, { tags: ['unit', 'basic'] });
 
 tests.add('who returns workspace variable names', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
 
   if(typeof harness.basic.who !== 'function') {
     assert.fail('who is not implemented on PRDC_JSLAB_LIB_BASIC.');
@@ -767,7 +860,7 @@ tests.add('who returns workspace variable names', function(assert) {
 
   harness.setWorkspaceProperties(['alpha', 'beta', 'gamma']);
   var out = harness.basic.who();
-  var names = extractWhoNames(out);
+  var names = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.extractWhoNames(out);
 
   assert.ok(names.includes('alpha'));
   assert.ok(names.includes('beta'));
@@ -775,11 +868,11 @@ tests.add('who returns workspace variable names', function(assert) {
 }, { tags: ['unit', 'basic'] });
 
 tests.add('who supports wildcard filters', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   harness.setWorkspaceProperties(['alpha', 'beta', 'gamma1', 'delta']);
 
   var out = harness.basic.who('a*', '*1');
-  var names = extractWhoNames(out);
+  var names = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.extractWhoNames(out);
 
   assert.equal(names.includes('alpha'), true);
   assert.equal(names.includes('gamma1'), true);
@@ -787,7 +880,7 @@ tests.add('who supports wildcard filters', function(assert) {
 }, { tags: ['unit', 'basic'] });
 
 tests.add('whos exposes workspace rows with type details', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
 
   if(typeof harness.basic.whos !== 'function') {
     assert.fail('whos is not implemented on PRDC_JSLAB_LIB_BASIC.');
@@ -815,7 +908,7 @@ tests.add('whos exposes workspace rows with type details', function(assert) {
 }, { tags: ['unit', 'basic'] });
 
 tests.add('whos supports wildcard filters', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   harness.setWorkspaceRows([
     ['alpha', 'number', 'Number'],
     ['beta', 'object', 'Array'],
@@ -829,7 +922,7 @@ tests.add('whos supports wildcard filters', function(assert) {
 }, { tags: ['unit', 'basic'] });
 
 tests.add('which supports -all option and returns all matches from search paths', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   var shared_name = 'demo-file.jsl';
   var saved = path.join('C:', 'workspace', 'saved') + path.sep;
   harness.jsl.saved_paths = [saved];
@@ -853,7 +946,7 @@ tests.add('which supports -all option and returns all matches from search paths'
 }, { tags: ['unit', 'basic'] });
 
 tests.add('isfile and isfolder detect entries through relative inputs', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   var folder = path.join(harness.jsl.current_path, 'logs');
   var file = path.join(folder, 'run.log');
 
@@ -871,7 +964,7 @@ tests.add('isfile and isfolder detect entries through relative inputs', function
 }, { tags: ['unit', 'basic'] });
 
 tests.add('dir and ls list directory contents and wildcard matches', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   var folder = path.join(harness.jsl.current_path, 'logs');
   var txt_file = path.join(folder, 'a.txt');
   var bin_file = path.join(folder, 'b.bin');
@@ -895,7 +988,7 @@ tests.add('dir and ls list directory contents and wildcard matches', function(as
 }, { tags: ['unit', 'basic'] });
 
 tests.add('exist returns MATLAB-like codes and supports typed checks', function(assert) {
-  var harness = createBasicMatlabPathHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicMatlabPathHarness();
   var folder = path.join(harness.jsl.current_path, 'data');
   var file = path.join(harness.jsl.current_path, 'data.txt');
 
@@ -920,19 +1013,28 @@ tests.add('exist returns MATLAB-like codes and supports typed checks', function(
 }, { tags: ['unit', 'basic'] });
 
 tests.add('dbstop dbclear and dbstatus validate and forward every configuration form', async assert => {
-  const { basic, jsl } = createBasicDiaryHarness();
+  const { basic, jsl } = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicDiaryHarness();
   const calls = [];
   jsl.pathResolve = value => '/workspace/' + value;
-  jsl.inter.env.debugCommand = (method, args) => { calls.push({ method, args }); return { success: true }; };
+  jsl.inter.env.debugCommand = (method, args) => {
+    calls.push({ method, args });
+    return { success: true };
+  };
   basic.dbstop('sample.jsl', 4, 'x > 2', false);
   assert.equal(calls.at(-1).args.path, '/workspace/sample.jsl');
   assert.equal(calls.at(-1).args.enabled, false);
-  basic.dbstop('error'); assert.equal(calls.at(-1).args.state, 'uncaught');
-  basic.dbstop('caught error'); assert.equal(calls.at(-1).args.state, 'all');
-  basic.dbclear('sample.jsl', 4); assert.equal(calls.at(-1).args.id, '/workspace/sample.jsl:4');
-  basic.dbclear('error'); assert.equal(calls.at(-1).args.state, 'none');
-  basic.dbclear(); assert.equal(calls.at(-1).method, 'clear_breakpoints');
-  basic.dbstatus(); assert.equal(calls.at(-1).method, 'get_debug_state');
+  basic.dbstop('error');
+  assert.equal(calls.at(-1).args.state, 'uncaught');
+  basic.dbstop('caught error');
+  assert.equal(calls.at(-1).args.state, 'all');
+  basic.dbclear('sample.jsl', 4);
+  assert.equal(calls.at(-1).args.id, '/workspace/sample.jsl:4');
+  basic.dbclear('error');
+  assert.equal(calls.at(-1).args.state, 'none');
+  basic.dbclear();
+  assert.equal(calls.at(-1).method, 'clear_breakpoints');
+  basic.dbstatus();
+  assert.equal(calls.at(-1).method, 'get_debug_state');
   assert.throws(() => basic.dbstop('file', 0));
   assert.throws(() => basic.dbstop('file', 2, 3));
   assert.throws(() => basic.dbclear('file', 0));

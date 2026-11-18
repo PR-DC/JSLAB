@@ -4,12 +4,57 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
+/**
+ * Class for sandbox sym math operations.
+ */
+class PRDC_JSLAB_SANDBOX_SYM_MATH_HELPER {
+
+  /**
+   * Parses a string representation of Python objects into JavaScript objects.
+   * Specifically handles conversion of SymPy Matrix objects to nested arrays.
+   * @param {string} str - The string to parse.
+   * @returns {Array<Array<*>>|Array<Array<Array<*>>>} The parsed JavaScript representation of the input string.
+   */
+  static parseString(str) {
+    // Remove any leading or trailing square brackets if the input is a list
+    const trimmed_str = str.trim().replace(/^\[|\]$/g, '');
+
+    // Find all occurrences of "Matrix([[...]])" using regex
+    const matrix_regex = /Matrix\(\[\[(.*?)\]\]\)/g;
+    const matrices = [];
+    let match;
+
+    // Iterate over all matches of the regex
+    while((match = matrix_regex.exec(trimmed_str)) !== null) {
+      // Each match's first capture group contains the matrix content
+      const matrix_content = match[1];
+
+      // Split rows by detecting "],[" pattern
+      const rows = matrix_content.split(/\],\s*\[/);
+
+      // For each row, split by commas while ignoring any spaces
+      const parsed_rows = rows.map(row => row.split(',').map(entry => {
+        const trimmed_entry = entry.trim();
+        // Convert numeric strings to numbers
+        return isNaN(trimmed_entry) ? trimmed_entry : Number(trimmed_entry);
+      }));
+
+      // Push the parsed rows (matrix) into the matrices array
+      matrices.push(parsed_rows);
+    }
+
+    // If only one Matrix(...) was found, return the array directly instead of wrapping in another array
+    return matrices.length === 1 ? matrices[0] : matrices;
+  }
+}
+
+
 /**
  * Class for JSLAB symbolic submodule.
  */
 class PRDC_JSLAB_SYMBOLIC_MATH {
-  
+
   /**
    * Constructs a symbolic submodule object with access to JSLAB's symbolic functions.
    * @constructor
@@ -18,13 +63,13 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    
+
     this.loaded = false;
-    
+
     this._var_counter = 0;
     this._symbols = [];
   }
-  
+
   /**
    * Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
    * Initializes the Python environment for symbolic computations.
@@ -44,16 +89,16 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
       `);
     }
   }
-  
+
   /**
    * Generates the next unique variable name for symbolic expressions.
    * @returns {string} The next unique variable name (e.g., 'jslabVar1').
    */
   _nextVar() {
     this._var_counter += 1;
-    return 'jslabVar'+this._var_counter;
+    return 'jslabVar' + this._var_counter;
   }
-  
+
   /**
    * Creates a new symbolic variable with an optional name and value.
    * @param {string} [name] - The name of the symbolic variable. If undefined, a unique name is generated.
@@ -68,7 +113,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     this._symbols.push(symbol);
     return symbol;
   }
-  
+
   /**
    * Retrieves the name of a symbolic variable.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} symbol - The symbolic variable or its name.
@@ -81,7 +126,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
       return symbol;
     }
   }
-  
+
   /**
    * Checks if the symbolic libraries are loaded. Throws an error if not.
    * @throws {Error} If the symbolic libraries are not loaded.
@@ -91,7 +136,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
       this.jsl.inter.env.error('@sym: ' + this.jsl.inter.lang.string(175));
     }
   }
-  
+
   /**
    * Evaluates a Python code string within the symbolic math environment.
    * @param {string} code - The Python code to evaluate.
@@ -110,7 +155,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     }
     return false;
   }
-  
+
   /**
    * Creates a single symbolic variable.
    * @param {string} name - The name of the symbolic variable.
@@ -118,11 +163,11 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   sym(name) {
     this.checkLoaded();
-    
+
     this.eval(`${name} = Symbol('${name}')`);
     return this._newSymbol(name, name);
   }
-  
+
   /**
    * Creates multiple symbolic variables.
    * @param {string[]} names - An array of names for the symbolic variables.
@@ -131,16 +176,16 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   syms(names) {
     var obj = this;
     this.checkLoaded();
-    
+
     this.eval(`${names.join(', ')} = symbols('${names.join(' ')}')`);
-    
+
     var symbols = [];
     names.forEach(function(name) {
       symbols.push(obj._newSymbol(name, name));
     });
     return symbols;
   }
-  
+
   /**
    * Creates a symbolic matrix from a nested array expression.
    * @param {Array<Array<PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string|number>>} expr - The nested array representing the matrix.
@@ -148,9 +193,9 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   mat(expr) {
     this.checkLoaded();
-    
+
     expr = JSON.stringify(expr.map(row => row.map(el => this.getSymbolName(el)))).replaceAll('"', '');
-    
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = Matrix(${expr})
@@ -158,7 +203,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     `));
     return symbol;
   }
-  
+
   /**
    * Multiplies multiple symbolic expressions.
    * @param {...PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string|number} args - The symbolic expressions to multiply.
@@ -167,12 +212,12 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   mul(...args) {
     var obj = this;
     this.checkLoaded();
-    
+
     var expr = args
       .map(function(item) {
         return obj.getSymbolName(item);
-      }).join(' * '); 
-      
+      }).join(' * ');
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}
@@ -189,12 +234,12 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   div(...args) {
     var obj = this;
     this.checkLoaded();
-    
+
     var expr = args
       .map(function(item) {
         return obj.getSymbolName(item);
-      }).join(' / '); 
-      
+      }).join(' / ');
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}
@@ -211,12 +256,12 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   plus(...args) {
     var obj = this;
     this.checkLoaded();
-    
+
     var expr = args
       .map(function(item) {
         return obj.getSymbolName(item);
-      }).join(' + '); 
-      
+      }).join(' + ');
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}
@@ -233,12 +278,12 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
   minus(...args) {
     var obj = this;
     this.checkLoaded();
-    
+
     var expr = args
       .map(function(item) {
         return obj.getSymbolName(item);
-      }).join(' - '); 
-      
+      }).join(' - ');
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}
@@ -246,7 +291,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     `));
     return symbol;
   }
-  
+
   /**
    * Raises a symbolic expression to a power.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string|number} expr - The base expression.
@@ -255,10 +300,10 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   pow(expr, n) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
     n = this.getSymbolName(n);
-        
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}**${n}
@@ -274,17 +319,17 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   transp(expr) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
-    
-    var symbol = this._newSymbol();  
+
+    var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}.T
       ${symbol.name}
     `));
     return symbol;
   }
-  
+
   /**
    * Computes the inverse of a symbolic matrix expression.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} expr - The matrix expression to invert.
@@ -292,9 +337,9 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   inv(expr) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
-        
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}.inv()
@@ -302,7 +347,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     `));
     return symbol;
   }
-  
+
   /**
    * Computes the determinant of a symbolic matrix expression.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} expr - The matrix expression whose determinant is to be computed.
@@ -310,9 +355,9 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   det(expr) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
-        
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = ${expr}.det()
@@ -320,7 +365,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     `));
     return symbol;
   }
-  
+
   /**
    * Differentiates a symbolic expression with respect to a variable.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} expr - The expression to differentiate.
@@ -330,9 +375,9 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   diff(expr, x, n = 1) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
-    
+
     var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = diff(${expr}, ${x}, ${n})
@@ -350,10 +395,10 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   intg(expr, x, lims) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
     x = this.getSymbolName(x);
-    
+
     var symbol = this._newSymbol();
     if(lims) {
       lims[0] = this.getSymbolName(lims[0]);
@@ -380,10 +425,10 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   subs(expr, x, val) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
     x = this.getSymbolName(x);
-    
+
     var symbol = this._newSymbol();
     if(Array.isArray(val)) {
       val = JSON.stringify(val);
@@ -407,7 +452,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     }
     return symbol;
   }
-  
+
   /**
    * Simplifies a symbolic expression.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} expr - The expression to simplify.
@@ -415,17 +460,17 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
    */
   simplify(expr) {
     this.checkLoaded();
-    
+
     expr = this.getSymbolName(expr);
-    
-    var symbol = this._newSymbol();  
+
+    var symbol = this._newSymbol();
     symbol.setValue(this.eval(`
       ${symbol.name} = simplify(${expr})
       ${symbol.name}
     `));
     return symbol;
   }
-  
+
   /**
    * Displays the LaTeX representation of a symbolic expression.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} expr - The expression to display in LaTeX format.
@@ -434,7 +479,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     expr = this.getSymbolName(expr);
     this.jsl.inter.env.dispLatex(this.eval(`latex(${expr})`));
   }
-  
+
   /**
    * Displays the LaTeX string of a symbolic expression.
    * @param {PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL|string} expr - The expression to convert to a LaTeX string.
@@ -443,7 +488,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH {
     expr = this.getSymbolName(expr);
     this.jsl.inter.env.disp(this.eval(`latex(${expr})`));
   }
-  
+
   /**
    * Clears all symbolic variables and resets the symbolic math environment.
    */
@@ -467,7 +512,7 @@ exports.PRDC_JSLAB_SYMBOLIC_MATH = PRDC_JSLAB_SYMBOLIC_MATH;
  */
 class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
   #jsl;
-  
+
   /**
    * Constructs a symbolic math symbol with a name and initial value.
    * @constructor
@@ -480,14 +525,14 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
     this.name = name;
     this.value = value;
   }
-  
+
   /**
    * Sets the value of the symbolic variable.
    * @param {*} value - The new value to assign to the symbolic variable.
    */
   setValue(value) {
     this.value = value;
-    this.parsed_value = parseString(value.toString());
+    this.parsed_value = PRDC_JSLAB_SANDBOX_SYM_MATH_HELPER.parseString(value.toString());
   }
 
   /**
@@ -505,7 +550,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
   toNumeric() {
     return this.parsed_value;
   }
-  
+
   /**
    * Converts the symbolic value to a JSON string.
    * @returns {string} The JSON string representation of the symbolic value.
@@ -516,7 +561,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
     }
     return this.parsed_value;
   }
-  
+
   /**
    * Converts the object to a safe JSON representation.
    * @returns {Object} The safe JSON representation of the object.
@@ -524,7 +569,7 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
   toSafeJSON() {
     return this.toJSON();
   }
-  
+
   /**
    * Converts the object to a pretty string representation.
    * @returns {string} The pretty string representation of the object.
@@ -532,42 +577,4 @@ class PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL {
   toPrettyString() {
     return this.toString();
   }
-}
-
-/**
- * Parses a string representation of Python objects into JavaScript objects.
- * Specifically handles conversion of SymPy Matrix objects to nested arrays.
- * @param {string} str - The string to parse.
- * @returns {Array<Array<*>>|Array<Array<Array<*>>>} The parsed JavaScript representation of the input string.
- */
-function parseString(str) {
-  // Remove any leading or trailing square brackets if the input is a list
-  const trimmed_str = str.trim().replace(/^\[|\]$/g, '');
-
-  // Find all occurrences of "Matrix([[...]])" using regex
-  const matrix_regex = /Matrix\(\[\[(.*?)\]\]\)/g;
-  const matrices = [];
-  let match;
-
-  // Iterate over all matches of the regex
-  while((match = matrix_regex.exec(trimmed_str)) !== null) {
-    // Each match's first capture group contains the matrix content
-    const matrix_content = match[1];
-
-    // Split rows by detecting "],[" pattern
-    const rows = matrix_content.split(/\],\s*\[/);
-
-    // For each row, split by commas while ignoring any spaces
-    const parsed_rows = rows.map(row => row.split(',').map(entry => {
-      const trimmed_entry = entry.trim();
-      // Convert numeric strings to numbers
-      return isNaN(trimmed_entry) ? trimmed_entry : Number(trimmed_entry);
-    }));
-
-    // Push the parsed rows (matrix) into the matrices array
-    matrices.push(parsed_rows);
-  }
-
-  // If only one Matrix(...) was found, return the array directly instead of wrapping in another array
-  return matrices.length === 1 ? matrices[0] : matrices;
 }

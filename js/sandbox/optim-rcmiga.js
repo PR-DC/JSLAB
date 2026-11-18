@@ -31,7 +31,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     this.stoped = 0;
 
     this.checkInputs();
-    if (this.bounded) {
+    if(this.bounded) {
       this.opts.lbm = this.inter.repCol(this.opts.lb, opts.PopulationSize);
       this.opts.ubm = this.inter.repCol(this.opts.ub, opts.PopulationSize);
     }
@@ -61,7 +61,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    * Executes the optimization process.
    */
   async run(parallel_context, parallel_setup_fun) {
-    if (this.opts.UseParallel) {
+    if(this.opts.UseParallel) {
       this.parallel_context = parallel_context;
       this.parallel_setup_fun = parallel_setup_fun;
       this.inter.parallel.terminate();
@@ -80,17 +80,17 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var nvars = this.problem.nvars;
     var newPopulation = this.inter.zeros(nvars * this.opts.PopulationSize);
     var stop = 0;
-    while (!stop) {// Petlja za optimizaciju
+    while(!stop) {// Petlja za optimizaciju
       // Merenje vremena
       this.state.GenTime = this.inter.tic;
 
       // Elitizam
-      if (this.state.ReproductionCount.elite > 0) {
+      if(this.state.ReproductionCount.elite > 0) {
         var [S, I] = this.inter.sorti(this.state.FunVal);
         this.selection.current_elite = this.inter.getSub(I, this.selection.elite);
         this.inter.setSub(newPopulation, this.inter.index(this.inter.range(0, nvars - 1),
-        this.selection.elite, nvars), this.inter.getSub(this.state.Population,
-        this.inter.index(this.inter.range(0, nvars - 1), this.selection.current_elite, nvars)));
+          this.selection.elite, nvars), this.inter.getSub(this.state.Population,
+          this.inter.index(this.inter.range(0, nvars - 1), this.selection.current_elite, nvars)));
       }
 
       //  Selekcija
@@ -98,16 +98,16 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
 
       // Ukrstanje
       this.inter.setSub(newPopulation, this.inter.index(this.inter.range(0, nvars - 1),
-      this.selection.children, nvars), this.crossoverFcn());
+        this.selection.children, nvars), this.crossoverFcn());
 
       // Mutacija
       this.inter.setSub(newPopulation, this.inter.index(this.inter.range(0, nvars - 1),
-      this.selection.mutants, nvars), this.mutationFcn());
+        this.selection.mutants, nvars), this.mutationFcn());
 
       // Provera granica
       this.state.Population = [...newPopulation];
       this.integerRestriction();
-      if (this.bounded) {
+      if(this.bounded) {
         this.checkBounds();
       }
 
@@ -125,11 +125,11 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     this.solution.generations = this.state.Generation;
     var [x_min, I] = this.inter.mini(this.state.FunVal);
     this.solution.feasible = 1;
-    if (this.constrained && this.state.ConSumVal[I] > 0) {
+    if(this.constrained && this.state.ConSumVal[I] > 0) {
       this.solution.feasible = 0;
     }
     this.solution.x = this.inter.getSub(this.state.Population,
-    this.inter.index(this.inter.range(0, nvars - 1), I, nvars));
+      this.inter.index(this.inter.range(0, nvars - 1), I, nvars));
     this.solution.fval = this.problem.fitnessfcn(this.solution.x);
     this.solution.StoppingCriteria = stop;
 
@@ -141,32 +141,32 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    * Validates the input parameters and options.
    */
   checkInputs() {
-    if (typeof this.problem.nonlconfcn === 'function') {
+    if(typeof this.problem.nonlconfcn === 'function') {
       this.constrained = 1;
     }
-    if (typeof this.problem.IntCon === 'undefined') {
+    if(typeof this.problem.IntCon === 'undefined') {
       this.problem.IntCon = [];
     }
 
     this.bounded = true;
-    if (typeof this.opts.lb === 'undefined' || typeof this.opts.ub === 'undefined') {
+    if(typeof this.opts.lb === 'undefined' || typeof this.opts.ub === 'undefined') {
       this.bounded = false;
-      if (typeof this.opts.InitalUnboundedRange === 'undefined') {
+      if(typeof this.opts.InitalUnboundedRange === 'undefined') {
         this.opts.InitalUnboundedRange = this.inter.createFilledArray(this.problem.nvars, [0, 1]);
       }
-    } else if (this.problem.lb && this.problem.lb.length != this.problem.nvars ||
+    } else if(this.problem.lb && this.problem.lb.length != this.problem.nvars ||
     this.problem.ub && this.problem.ub.length != this.problem.nvars) {
       throw new Error(this.lang.string(272));
     }
 
-    if (this.opts.UseVectorized) {
-      if (this.opts.UseParallel == true) {
+    if(this.opts.UseVectorized) {
+      if(this.opts.UseParallel == true) {
         this.inter.disp(this.lang.currentString(300));
-      } else if (this.opts.UseParallel != false) {
+      } else if(this.opts.UseParallel != false) {
         this.inter.disp(this.lang.currentString(273));
       }
     } else {
-      if (![true, false].includes(this.opts.UseParallel)) {
+      if(![true, false].includes(this.opts.UseParallel)) {
         throw new Error(this.lang.string(273));
       }
     }
@@ -232,7 +232,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    * Manages the output display based on configuration.
    */
   outputFcn() {
-    if (['iter', 'final'].includes(this.opts.Display)) {
+    if(['iter', 'final'].includes(this.opts.Display)) {
       this.displayOutput();
     }
   }
@@ -241,19 +241,19 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    * Displays the current state of optimization.
    */
   displayOutput() {
-    if (this.opts.Display === 'iter') {
-      switch (this.flag) {
+    if(this.opts.Display === 'iter') {
+      switch(this.flag) {
         case 'init':
           this.inter.disp(' ' + this.lang.currentString(301));
-          if (this.opts.UseVectorized) {
+          if(this.opts.UseVectorized) {
             this.inter.disp(' ' + this.lang.currentString(302));
-          } else if (this.opts.UseParallel) {
+          } else if(this.opts.UseParallel) {
             this.inter.disp(' ' + this.lang.currentString(303));
           }
           break;
         case 'iter':
-          if (this.state.Generation === 0 || this.state.Generation % 20 === 0) {
-            if (this.constrained) {
+          if(this.state.Generation === 0 || this.state.Generation % 20 === 0) {
+            if(this.constrained) {
               this.inter.dispMonospaced('\n                        Best        Max           Stall');
               this.inter.dispMonospaced('   Generation           f(x)     Constraint    Generations');
             } else {
@@ -263,8 +263,8 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
           }
 
           let fval_s = this.inter.num2str(this.state.Best[this.state.Generation], 5);
-          if (this.constrained) {
-            if (!this.state.Feasible[this.state.Generation]) {
+          if(this.constrained) {
+            if(!this.state.Feasible[this.state.Generation]) {
               fval_s += '*';
             }
             this.inter.dispMonospaced(
@@ -282,30 +282,12 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
           }
           break;
         case 'done':
-          var str = '\n' + this.lang.currentString(304);
-          if (this.constrained) {
-            if (this.state.Feasible[this.state.Generation]) {
-              str += ', ' + this.lang.currentString(305);
-            } else {
-              str += ', ' + this.lang.currentString(306);
-            }
-          }
-          var stop_str = this.lang.currentString(307) + ' ' + this.solution.StoppingCriteria + '!';
-          this.inter.disp(` ${str}, ${stop_str}\n`);
+          this._displayFinalStatus();
           break;
       }
-    } else if (this.opts.Display === 'final') {
-      if (this.flag === 'done') {
-        var str = '\n' + this.lang.currentString(304);
-        if (this.constrained) {
-          if (this.state.Feasible[this.state.Generation]) {
-            str += ', ' + this.lang.currentString(305);
-          } else {
-            str += ', ' + this.lang.currentString(306);
-          }
-        }
-        var stop_str = this.lang.currentString(307) + ' ' + this.solution.StoppingCriteria + '!';
-        this.inter.disp(` ${str}, ${stop_str}\n`);
+    } else if(this.opts.Display === 'final') {
+      if(this.flag === 'done') {
+        this._displayFinalStatus();
       }
     }
   }
@@ -316,17 +298,17 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
   creationMixedUniform() {
     var lb = this.opts.lb;
     var ub = this.opts.ub;
-    if (!this.bounded) {
+    if(!this.bounded) {
       lb = this.opts.InitalUnboundedRange.map((v) => v[0]);
       ub = this.opts.InitalUnboundedRange.map((v) => v[1]);
     }
     var N = this.problem.IntCon.length;
     var population = this.inter.arrayRand(lb, ub,
-    this.problem.nvars, this.opts.PopulationSize, this.rand);
-    if (N) {
+      this.problem.nvars, this.opts.PopulationSize, this.rand);
+    if(N) {
       var r = this.inter.arrayRandi([0, 1], N, this.opts.PopulationSize, this.rand);
       var I = this.inter.index(this.problem.IntCon,
-      this.inter.range(0, this.opts.PopulationSize - 1), this.problem.nvars);
+        this.inter.range(0, this.opts.PopulationSize - 1), this.problem.nvars);
 
       this.inter.setSub(population, I, this.inter.plus(this.inter.fix(this.inter.getSub(population, I)), r));
     }
@@ -339,9 +321,9 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
   binaryTournamentSelection() {
     var parents = this.inter.zeros(this.state.nParents);
     var r1 = this.inter.arrayRandi([0, this.opts.PopulationSize - 1], 2,
-    this.state.nParents, this.rand);
+      this.state.nParents, this.rand);
     var r2 = this.inter.arrayRandi([0, this.opts.PopulationSize - 1], 2,
-    this.state.nParents, this.rand);
+      this.state.nParents, this.rand);
     var neq = this.inter.elementWise((a, b) => a > b, r1, r2);
     var I1 = this.inter.indexOfAll(neq, true); // closer r2
     var I2 = this.inter.indexOfAll(neq, false); // closer r1
@@ -362,24 +344,24 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var sParents = this.state.parentsSelection.crossover;
 
     var b = this.inter.scale(this.inter.ones(nvars * nChildren / 2), this.opts.b_real);
-    if (N) {
+    if(N) {
       this.inter.setSub(b, this.inter.index(this.problem.IntCon, this.inter.range(0, nChildren / 2 - 1), nvars),
-      this.inter.scale(this.inter.ones(N * nChildren / 2), this.opts.b_integer));
+        this.inter.scale(this.inter.ones(N * nChildren / 2), this.opts.b_integer));
     }
     var u = this.inter.arrayRand(this.inter.zeros(nvars), this.inter.ones(nvars), nvars, nChildren / 2, this.rand);
     var r = this.inter.arrayRand(this.inter.zeros(nvars), this.inter.ones(nvars), nvars, nChildren / 2, this.rand);
     var beta = this.inter.elementWise((x, y) => this.opts.a - x * this.inter.log10(y), b, u); // a-b*log10(u)
     var I = this.inter.indexOfAll(r.map((ri) => ri > 0.5), true);
     this.inter.setSub(beta, I, this.inter.elementWise((x, y) => this.opts.a + x * this.inter.log10(y),
-    this.inter.getSub(b, I), this.inter.getSub(u, I))); // a+b*log10(u)
+      this.inter.getSub(b, I), this.inter.getSub(u, I))); // a+b*log10(u)
 
     var mother = this.inter.getSub(this.state.Population, this.inter.index(this.inter.range(0, nvars - 1),
-    this.inter.getSub(iParents, this.inter.getSub(sParents, this.inter.range(0, nParents / 2 - 1))), nvars));
+      this.inter.getSub(iParents, this.inter.getSub(sParents, this.inter.range(0, nParents / 2 - 1))), nvars));
     var father = this.inter.getSub(this.state.Population, this.inter.index(this.inter.range(0, nvars - 1),
-    this.inter.getSub(iParents, this.inter.getSub(sParents, this.inter.range(nParents / 2, nParents - 1))), nvars));
+      this.inter.getSub(iParents, this.inter.getSub(sParents, this.inter.range(nParents / 2, nParents - 1))), nvars));
     var children = this.inter.plus(this.inter.concatRow(nvars, mother, father),
-    this.inter.elementWise((a, b, c) => a * this.inter.abs(b - c),
-    this.inter.repCol(beta, 2), this.inter.repCol(mother, 2), this.inter.repCol(father, 2)));
+      this.inter.elementWise((a, b, c) => a * this.inter.abs(b - c),
+        this.inter.repCol(beta, 2), this.inter.repCol(mother, 2), this.inter.repCol(father, 2)));
     return children;
   }
 
@@ -393,19 +375,19 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var sParents = this.state.parentsSelection.mutation;
 
     var p = this.inter.scale(this.inter.ones(nvars * nMutants), this.opts.p_real);
-    if (N) {
+    if(N) {
       this.inter.setSub(p, this.inter.index(this.problem.IntCon, this.inter.range(0, nMutants - 1), nvars),
-      this.inter.scale(this.inter.ones(N * nMutants), this.opts.p_integer));
+        this.inter.scale(this.inter.ones(N * nMutants), this.opts.p_integer));
     }
     var s1 = this.inter.arrayRand(this.inter.zeros(nvars), this.inter.ones(nvars), nvars, nMutants, this.rand);
     var r = this.inter.arrayRand(this.inter.zeros(nvars), this.inter.ones(nvars), nvars, nMutants, this.rand);
     var s = this.inter.elementWise((a, b) => Math.pow(a, b), s1, p);
 
     var parents = this.inter.getSub(this.state.Population,
-    this.inter.getSub(sParents, this.inter.index(this.inter.range(0, nvars - 1), sParents, nvars)));
+      this.inter.getSub(sParents, this.inter.index(this.inter.range(0, nvars - 1), sParents, nvars)));
     var mutants;
 
-    if (!this.bounded) {
+    if(!this.bounded) {
       mutants = this.inter.elementWise((a, b, c) => c < 0.5 ? a + b : a - b, parents, s, r);
     } else {
       var ubm = this.inter.repCol(this.opts.ub, nMutants);
@@ -415,7 +397,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
 
       var I = this.inter.indexOfAll(this.inter.elementWise((a, b) => a < b, t, r), true);
       this.inter.setSub(mutants, I, this.inter.elementWise((a, b, c) => a - b * (c - a),
-      this.inter.getSub(parents, I), this.inter.getSub(s, I), this.inter.getSub(ubm, I)));
+        this.inter.getSub(parents, I), this.inter.getSub(s, I), this.inter.getSub(ubm, I)));
     }
 
     return mutants;
@@ -433,13 +415,13 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    */
   integerRestriction() {
     var N = this.problem.IntCon.length;
-    if (N) {
+    if(N) {
       var I = this.inter.index(this.problem.IntCon,
-      [...this.selection.children, ...this.selection.mutants], this.problem.nvars);
+        [...this.selection.children, ...this.selection.mutants], this.problem.nvars);
       var p = this.inter.getSub(this.state.Population, I);
 
       var r = this.inter.arrayRandi([0, 1], N,
-      this.state.ReproductionCount.children +
+        this.state.ReproductionCount.children +
       this.state.ReproductionCount.mutants, this.rand);
 
       var Is = this.inter.indexOfAll(this.inter.neg(this.inter.isInteger(p)), true);
@@ -453,7 +435,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    */
   checkBounds() {
     this.state.Population = this.inter.elementWise((a, b, c) => this.inter.min([this.inter.max([a, b]), c]),
-    this.state.Population, this.opts.lbm, this.opts.ubm);
+      this.state.Population, this.opts.lbm, this.opts.ubm);
   }
 
   /**
@@ -464,8 +446,8 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var stop = 0;
     var gen = this.state.Generation;
 
-    if (gen > 0) {
-      if (this.state.Best[gen] < this.state.Best[gen - 1] ||
+    if(gen > 0) {
+      if(this.state.Best[gen] < this.state.Best[gen - 1] ||
       !this.state.Feasible[gen] ||
       this.state.Feasible[gen] > this.state.Feasible[gen - 1]) {
         this.state.StallTime = this.inter.tic;
@@ -475,30 +457,30 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
       }
     }
 
-    if (gen >= this.opts.MaxGenerations - 1) {
+    if(gen >= this.opts.MaxGenerations - 1) {
       // 1 - Maksimalni broj generacija ostvaren
       stop = 1;
-    } else if (this.inter.toc(this.state.StartTime) >= this.opts.MaxTime) {
+    } else if(this.inter.toc(this.state.StartTime) >= this.opts.MaxTime) {
       // 2 - Proteklo maksimalno vreme trajanja optimizacije
       stop = 2;
-    } else if (this.state.Feasible[gen] &&
+    } else if(this.state.Feasible[gen] &&
     this.state.Best[gen] <= this.opts.FitnessLimit) {
       // 3 - Funkcija prilagodjenosti dostiglja ciljanu vrednost
       stop = 3;
-    } else if (gen > this.opts.MaxStallGenerations - 2 &&
+    } else if(gen > this.opts.MaxStallGenerations - 2 &&
     this.state.Feasible[gen - (this.opts.MaxStallGenerations - 2)] &&
     this.state.Feasible[gen] &&
     this.state.Best[gen - (this.opts.MaxStallGenerations - 2)] -
     this.state.Best[gen] <= this.opts.FunctionTolerance) {
       // 4 - Promena vrednosti funkcija manja od tolerancije
       stop = 4;
-    } else if (this.state.StallGenerations >= this.opts.MaxStallGenerations) {
+    } else if(this.state.StallGenerations >= this.opts.MaxStallGenerations) {
       // 5 - Bez promene vrednosti funkcije kroz odredjeni broj generacija
       stop = 5;
-    } else if (this.inter.toc(this.state.StallTime) >= this.opts.MaxStallTime) {
+    } else if(this.inter.toc(this.state.StallTime) >= this.opts.MaxStallTime) {
       // 6 - Bez promene vrednosti funkcije odredjeno vreme
       stop = 6;
-    } else if (this.stoped) {
+    } else if(this.stoped) {
       // 7 - Korisnik zaustavlja proces
       stop = 7;
     }
@@ -511,7 +493,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
   initPopulation() {
     this.state.Population = this.creationFcn();
     this.integerRestriction();
-    if (this.bounded) {
+    if(this.bounded) {
       this.checkBounds();
     }
   }
@@ -534,14 +516,14 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     this.state.ReproductionCount = {};
     this.state.ReproductionCount.elite = this.opts.EliteCount;
     this.state.ReproductionCount.children = this.inter.fix(this.opts.CrossoverFraction * (
-    this.opts.PopulationSize - this.opts.EliteCount));
+      this.opts.PopulationSize - this.opts.EliteCount));
 
-    if (this.inter.mod(this.state.ReproductionCount.children, 2) != 0) {
+    if(this.inter.mod(this.state.ReproductionCount.children, 2) != 0) {
       this.state.ReproductionCount.children = this.state.ReproductionCount.children - 1;
     }
 
     this.state.ReproductionCount.mutants = this.opts.PopulationSize - (
-    this.state.ReproductionCount.elite + this.state.ReproductionCount.children);
+      this.state.ReproductionCount.elite + this.state.ReproductionCount.children);
 
     this.state.parentsCount = {};
     this.state.parentsCount.crossover = this.state.ReproductionCount.children;
@@ -551,21 +533,21 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
 
     this.state.parentsSelection = {};
     this.state.parentsSelection.crossover = this.inter.range(0,
-    this.state.parentsCount.crossover - 1);
+      this.state.parentsCount.crossover - 1);
     this.state.parentsSelection.mutation = this.inter.plus(
       this.state.parentsCount.crossover,
       this.inter.range(0, this.state.parentsCount.mutation - 1));
 
     this.selection.elite = this.inter.range(0, this.state.ReproductionCount.elite - 1);
     this.selection.children = this.inter.plus(this.state.ReproductionCount.elite,
-    this.inter.range(0, this.state.ReproductionCount.children - 1));
+      this.inter.range(0, this.state.ReproductionCount.children - 1));
     this.selection.mutants = this.inter.plus(this.state.ReproductionCount.elite +
     this.state.ReproductionCount.children,
     this.inter.range(0, this.state.ReproductionCount.mutants - 1));
 
-    if (this.constrained) {
+    if(this.constrained) {
       this.state.ConSize = [
-      this.problem.nonlconfcn(this.inter.zeros(this.problem.nvars)).length, this.opts.PopulationSize];
+        this.problem.nonlconfcn(this.inter.zeros(this.problem.nvars)).length, this.opts.PopulationSize];
 
       this.state.ConVal = this.inter.zeros(this.state.ConSize[0] * this.state.ConSize[1]);
       this.state.ConNormVal = this.inter.zeros(this.state.ConSize[0] * this.state.ConSize[1]);
@@ -577,7 +559,7 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    */
   async updateState() {
     await this.evalFitnessFcn();
-    if (this.constrained) {
+    if(this.constrained) {
       await this.evalConstraintsFcn();
       this.updatePenalty();
     }
@@ -585,11 +567,11 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var i;
     [this.state.Best[this.state.Generation], i] = this.inter.mini(this.state.FunVal);
     this.inter.setSub(this.state.x, this.inter.index(this.inter.range(0, this.problem.nvars - 1),
-    this.state.Generation, this.problem.nvars),
+      this.state.Generation, this.problem.nvars),
     this.inter.getSub(this.state.Population,
-    this.inter.index(this.inter.range(0, this.problem.nvars - 1), i, this.problem.nvars)));
+      this.inter.index(this.inter.range(0, this.problem.nvars - 1), i, this.problem.nvars)));
 
-    if (this.constrained && this.state.ConSumVal[i] > 0) {
+    if(this.constrained && this.state.ConSumVal[i] > 0) {
       this.state.Feasible[this.state.Generation] = 0;
     }
   }
@@ -598,13 +580,13 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
    * Updates penalty values based on constraint violations.
    */
   updatePenalty() {
-    if (this.inter.any(this.state.ConSumVal.map((a) => a == 0))) {
-      if (this.state.Generation == 0) {
+    if(this.inter.any(this.state.ConSumVal.map((a) => a == 0))) {
+      if(this.state.Generation == 0) {
         var [s, i] = this.inter.sorti(this.state.FunVal);
         this.selection.current_elite = this.inter.getSub(i, this.selection.elite);
       }
       var fmin;
-      if (this.state.ReproductionCount.elite > 0) {
+      if(this.state.ReproductionCount.elite > 0) {
         // Ne moze da bude bolje od najgore elitne jedinke
         fmin = this.inter.max(this.inter.getSub(this.state.FunVal, this.selection.current_elite));
       } else {
@@ -612,13 +594,13 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
         fmin = this.inter.min(this.inter.getSub(this.state.FunVal, this.selection.current_elite));
       }
       var I1 = this.inter.indexOfAll(this.inter.elementWise((a, b) => a > 0 && b <= fmin,
-      this.state.ConSumVal, this.state.FunVal), true);
+        this.state.ConSumVal, this.state.FunVal), true);
       var I2 = this.inter.indexOfAll(this.inter.elementWise((a, b) => a > 0 && b > fmin,
-      this.state.ConSumVal, this.state.FunVal), true);
+        this.state.ConSumVal, this.state.FunVal), true);
       this.inter.setSub(this.state.FunVal, I1, this.inter.plus(fmin,
-      this.inter.getSub(this.state.ConSumVal, I1)));
+        this.inter.getSub(this.state.ConSumVal, I1)));
       this.inter.setSub(this.state.FunVal, I2, this.inter.plus(this.inter.getSub(this.state.FunVal, I2),
-      this.inter.getSub(this.state.ConSumVal, I2)));
+        this.inter.getSub(this.state.ConSumVal, I2)));
     } else {
       this.state.FunVal = this.state.ConSumVal;
     }
@@ -633,34 +615,27 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
 
     var p;
     var n;
-    if (this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
-      p = this.inter.getSub(this.state.Population, this.inter.index(this.inter.range(0, nvars - 1),
-      [...this.selection.children, ...this.selection.mutants], nvars));
-      n = this.state.ReproductionCount.children + this.state.ReproductionCount.mutants;
-    } else {
-      p = this.state.Population;
-      n = this.opts.PopulationSize;
-    }
+    ({ p, n } = this._evaluationPopulation());
 
     var val;
-    if (this.opts.UseVectorized) {
+    if(this.opts.UseVectorized) {
       val = this.problem.fitnessfcn(p);
     } else {
-      if (this.opts.UseParallel) {
+      if(this.opts.UseParallel) {
         val = await this.inter.parallel.parfor(0, n - 1, 1, this.inter.parallel.getProcessorsNum(),
-        this.parallel_context, this.parallel_setup_fun, `function(i) {
+          this.parallel_context, this.parallel_setup_fun, `function(i) {
             var fun = ${obj.problem.fitnessfcn.toString()};
             return fun(getSub(${JSON.stringify(p)}, index(range(0, ${nvars} - 1), i, ${nvars})));
         }`);
       } else {
         val = this.inter.zeros(n);
-        for (var i = 0; i < n; i++) {
+        for(var i = 0; i < n; i++) {
           val[i] = this.problem.fitnessfcn(this.inter.getSub(p, this.inter.index(this.inter.range(0, nvars - 1), i, nvars)));
         }
       }
     }
 
-    if (this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
+    if(this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
       this.state.FunVal = [...this.inter.getSub(this.state.FunVal, this.selection.current_elite), ...val];
     } else {
       this.state.FunVal = val;
@@ -677,22 +652,15 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var p;
     var n;
     var m = this.state.ConSize[0];
-    if (this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
-      p = this.inter.getSub(this.state.Population, this.inter.index(this.inter.range(0, nvars - 1),
-      [...this.selection.children, ...this.selection.mutants], nvars));
-      n = this.state.ReproductionCount.children + this.state.ReproductionCount.mutants;
-    } else {
-      p = this.state.Population;
-      n = this.opts.PopulationSize;
-    }
+    ({ p, n } = this._evaluationPopulation());
 
     var val;
-    if (this.opts.UseVectorized) {
+    if(this.opts.UseVectorized) {
       val = obj.problem.nonlconfcn(p);
     } else {
-      if (this.opts.UseParallel) {
+      if(this.opts.UseParallel) {
         val = await this.inter.parallel.parfor(0, n - 1, 1, this.inter.parallel.getProcessorsNum(),
-        this.parallel_context, this.parallel_setup_fun, `function(i) {
+          this.parallel_context, this.parallel_setup_fun, `function(i) {
             var fun = ${obj.problem.nonlconfcn.toString()};
             return fun(getSub(${JSON.stringify(p)}, index(range(0, ${nvars} - 1), i, ${nvars})));
         }`);
@@ -700,16 +668,16 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
       } else {
         m = this.state.ConSize[0];
         val = this.inter.zeros(m * n);
-        for (var i = 0; i < n; i++) {
+        for(var i = 0; i < n; i++) {
           this.inter.setSub(val, this.inter.index(this.inter.range(0, m - 1), i, m),
-          this.problem.nonlconfcn(this.inter.getSub(p,
-          this.inter.index(this.inter.range(0, nvars - 1), i, nvars))));
+            this.problem.nonlconfcn(this.inter.getSub(p,
+              this.inter.index(this.inter.range(0, nvars - 1), i, nvars))));
         }
       }
     }
-    if (this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
+    if(this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
       this.state.ConVal = this.inter.concatCol(m, this.inter.getSub(this.state.ConVal,
-      this.inter.index(this.inter.range(0, m - 1), this.selection.current_elite, m)), val);
+        this.inter.index(this.inter.range(0, m - 1), this.selection.current_elite, m)), val);
     } else {
       this.state.ConVal = val;
     }
@@ -733,17 +701,17 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     var m = this.state.ConSize[0];
     var n = this.opts.PopulationSize;
 
-    if (this.state.Generation == 0 ||
+    if(this.state.Generation == 0 ||
     this.state.Generation > 0 &&
     this.state.Feasible[this.state.Generation - 1]) {
 
       // Use first values of the first generation for normalization of
       // constraints until there is a feasible solution
       var l = this.inter.elementWise((a) => Math.sqrt(a),
-      this.inter.sumRow(this.inter.elementWise((a) => Math.pow(a, 2), ConNormVal), m, n));
+        this.inter.sumRow(this.inter.elementWise((a) => Math.pow(a, 2), ConNormVal), m, n));
       var I = this.inter.indexOfAll(l, 0);
       this.inter.setSub(l, I, this.inter.ones(I.length));
-      if (this.inter.isEmpty(this.l)) {
+      if(this.inter.isEmpty(this.l)) {
         this.l = l;
       } else {
         var s = this.inter.indexOfAll(this.inter.elementWise((a, b) => a > b, this.l, l), true);
@@ -757,6 +725,41 @@ class PRDC_JSLAB_OPTIM_RCMIGA {
     this.inter.setSub(ConNormVal, sInf, this.inter.getSub(this.lm, sInf));
     this.state.ConNormVal = this.inter.divideEl(ConNormVal, this.lm);
   }
+  /**
+   * Selects the population requiring fresh fitness or constraint evaluations.
+   * @returns {Object} Population values and number of individuals.
+   */
+  _evaluationPopulation() {
+    var nvars = this.problem.nvars;
+    var p;
+    var n;
+    if(this.state.ReproductionCount.elite > 0 && this.state.Generation > 0) {
+      p = this.inter.getSub(this.state.Population, this.inter.index(this.inter.range(0, nvars - 1),
+        [...this.selection.children, ...this.selection.mutants], nvars));
+      n = this.state.ReproductionCount.children + this.state.ReproductionCount.mutants;
+    } else {
+      p = this.state.Population;
+      n = this.opts.PopulationSize;
+    }
+    return { p, n };
+  }
+
+  /**
+   * Displays final feasibility and stopping criteria in either display mode.
+   */
+  _displayFinalStatus() {
+    var str = '\n' + this.lang.currentString(304);
+    if(this.constrained) {
+      if(this.state.Feasible[this.state.Generation]) {
+        str += ', ' + this.lang.currentString(305);
+      } else {
+        str += ', ' + this.lang.currentString(306);
+      }
+    }
+    var stop_str = this.lang.currentString(307) + ' ' + this.solution.StoppingCriteria + '!';
+    this.inter.disp(` ${str}, ${stop_str}\n`);
+  }
+
 }
 
 exports.PRDC_JSLAB_OPTIM_RCMIGA = PRDC_JSLAB_OPTIM_RCMIGA;

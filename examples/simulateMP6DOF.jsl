@@ -1,0 +1,45 @@
+/**
+ * @file Simulate a 6-DOF motion platform
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+clear; clc;
+disp(' --- ' + jsl_file_name + ' ---');
+
+var project = jsl.app_path + '/examples/resources/simulate-6dof.jslmo';
+
+// Run the model with its nominal 150 kg platform mass.
+await simulate(project, { run: true });
+var time_150 = simulation.time.slice();
+var torque_150 = simulation.get('leg1.revolute.tau').slice();
+var angle_150 = simulation.get('drive1.phi').slice();
+
+// Change the JSLAB mass parameter and run the same complete model again.
+await simulate('', { parameters: { m: 200 }, run: true });
+var time_200 = simulation.time.slice();
+var torque_200 = simulation.get('leg1.revolute.tau').slice();
+var angle_200 = simulation.get('drive1.phi').slice();
+
+figure(1);
+plot([
+  { x: time_150, y: torque_150, name: 'm = 150 kg' },
+  { x: time_200, y: torque_200, name: 'm = 200 kg' }
+]);
+xlabel('t [s]');
+ylabel('M1 [Nm]');
+title('Motor torque');
+
+figure(2);
+plot([
+  { x: time_150, y: multiplyEl(angle_150, r2d), name: 'm = 150 kg' },
+  { x: time_200, y: multiplyEl(angle_200, r2d), name: 'm = 200 kg' }
+]);
+xlabel('t [s]');
+ylabel('phi1 [deg]');
+title('Motor angle');
+
+await simulate('', { animation: { loop: true, interval_ms: 40 } });
+
+disp(' Simulation completed. The 3D mechanism animation is playing in a loop.');

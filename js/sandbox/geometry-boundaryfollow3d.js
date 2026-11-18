@@ -6,7 +6,13 @@
  * @version 0.0.2
  */
 
-class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
+const { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW } = require('./geometry-boundaryfollow');
+
+/**
+ * Class for geometry boundary follow 3 d.
+ * @extends PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW
+ */
+class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D extends PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW {
 
   /**
    * Boundary follower (3D).
@@ -16,7 +22,7 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * - builds a fine grid with spacing dx/dy/dz
    * - refines the coarse flip edge to a fine flip bracket
    * - starts from a nearby mixed voxel and flood-fills the mixed-voxel component
-   *   to decide if the boundary is closed (does not touch bbox boundary)
+   * to decide if the boundary is closed (does not touch bbox boundary)
    *
    * @param {Object} jsl - Reference to main JSLAB object.
    * @param {Function} feasibleFn - Feasibility oracle called as feasibleFn(x,y,z) returning true (inside) or false (outside).
@@ -35,9 +41,11 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * @param {number} [opts.maxVisitedArrayCells=50000000] - Threshold on voxel count to choose dense visited array vs Set in flood-fill.
    */
   constructor(jsl, feasibleFn, opts) {
-    this.jsl = jsl;
+    super(jsl);
 
-    if(!opts || !opts.bbox) throw new Error(this.jsl.inter.lang.string(274));
+    if(!opts || !opts.bbox) {
+      throw new Error(this.jsl.inter.lang.string(274));
+    }
     this._fUser = feasibleFn;
 
     this.opts = {
@@ -65,7 +73,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       Number.isFinite(b.xmin) && Number.isFinite(b.xmax) &&
       Number.isFinite(b.ymin) && Number.isFinite(b.ymax) &&
       Number.isFinite(b.zmin) && Number.isFinite(b.zmax);
-    if(!ok) throw new Error(this.jsl.inter.lang.string(275));
+    if(!ok) {
+      throw new Error(this.jsl.inter.lang.string(275));
+    }
 
     this._bbox = {
       xmin: Math.min(b.xmin, b.xmax),
@@ -87,22 +97,10 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     this.N = [[], []];
   }
 
-  /**
-   * Resets logging and optionally clears the feasibility cache.
-   * @param {boolean} [keepCache=false] - If true, keeps the feasibility cache; otherwise cache is cleared.
-   * @returns {void} No return value.
-   */
-  resetLogs(keepCache = false) {
-    this.evalCount = 0;
-    if(!keepCache) this._cache.clear();
-    this._loggedKeys.clear();
-    this.N[0].length = 0;
-    this.N[1].length = 0;
-  }
 
   /**
    * Logs an evaluated point (depending on opts.logMode).
-
+   *
    * @param {number} x - X coordinate being evaluated.
    * @param {number} y - Y coordinate being evaluated.
    * @param {number} z - Z coordinate being evaluated.
@@ -111,12 +109,16 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    */
   _logPoint(x, y, z, ok) {
     const log_mode = this.opts.logMode;
-    if(log_mode === "off") return;
+    if(log_mode === "off") {
+      return;
+    }
 
     if(log_mode === "unique") {
       const d = this.opts.logKeyDecimals;
       const key = x.toFixed(d) + "," + y.toFixed(d) + "," + z.toFixed(d);
-      if(this._loggedKeys.has(key)) return;
+      if(this._loggedKeys.has(key)) {
+        return;
+      }
       this._loggedKeys.add(key);
     }
 
@@ -145,7 +147,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
 
     if(z_map.has(z)) {
       const cached = z_map.get(z);
-      if(this.opts.logMode === "all") this._logPoint(x, y, z, cached);
+      if(this.opts.logMode === "all") {
+        this._logPoint(x, y, z, cached);
+      }
       return cached;
     }
 
@@ -169,7 +173,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    */
   _buildAxis(min, max, d) {
     const span = max - min;
-    if(span <= 0) return new Float64Array([min]);
+    if(span <= 0) {
+      return new Float64Array([min]);
+    }
     const n = Math.ceil(span / d);
     const A = new Float64Array(n + 1);
     for(let i = 0; i <= n; i++) {
@@ -179,19 +185,6 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     return A;
   }
 
-  /**
-   * Nearest node index to v on a uniform axis described by (min, step, n).
-   * @param {number} min - Axis minimum (origin) value.
-   * @param {number} step - Axis step size.
-   * @param {number} n - Maximum node index (axis has n+1 nodes).
-   * @param {number} v - Value to locate on the axis.
-   * @returns {number} Clamped nearest node index in [0,n].
-   */
-  _closestNodeIndex(min, step, n, v) {
-    if(n <= 0) return 0;
-    const i = Math.round((v - min) / step);
-    return this.jsl.inter.math.clamp(i, 0, n);
-  }
 
   /**
    * Coarse search from origin to find the first feasibility flip edge (3D).
@@ -200,8 +193,8 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * @param {number} step_y - Coarse grid spacing in Y.
    * @param {number} step_z - Coarse grid spacing in Z.
    * @returns {Object|null} Null if none found; otherwise {hit, usedAxes} where:
-   *   hit: {orient:"X"|"Y"|"Z", a:{x,y,z}, b:{x,y,z}, sa:boolean, sb:boolean}
-   *   usedAxes: {X:Float64Array, Y:Float64Array, Z:Float64Array}
+   * hit: {orient:"X"|"Y"|"Z", a:{x,y,z}, b:{x,y,z}, sa:boolean, sb:boolean}
+   * usedAxes: {X:Float64Array, Y:Float64Array, Z:Float64Array}
    */
   _findFirstFlipFromOrigin3D(step_x, step_y, step_z) {
     const box = this._bbox;
@@ -234,7 +227,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     const eval_node = (i, j, k)=>{
       const p = pack(i, j, k);
       const s = node_state[p];
-      if(s !== -1) return s;
+      if(s !== -1) {
+        return s;
+      }
       const ok = this._feasibleXYZ(X[i], Y[j], Z[k]) ? 1 : 0;
       node_state[p] = ok;
       return ok;
@@ -243,17 +238,26 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     const get_state = (i, j, k)=>node_state[pack(i, j, k)];
 
     const flip_if_known = (i, j, k, ii, jj, kk)=>{
-      if(ii < 0 || ii > nx || jj < 0 || jj > ny || kk < 0 || kk > nz) return null;
+      if(ii < 0 || ii > nx || jj < 0 || jj > ny || kk < 0 || kk > nz) {
+        return null;
+      }
 
       const s1 = get_state(i, j, k);
       const s2 = get_state(ii, jj, kk);
 
-      if(s1 === -1 || s2 === -1) return null;
-      if(s1 === s2) return null;
+      if(s1 === -1 || s2 === -1) {
+        return null;
+      }
+      if(s1 === s2) {
+        return null;
+      }
 
       let orient = "X";
-      if(ii === i && jj !== j && kk === k) orient = "Y";
-      else if(ii === i && jj === j && kk !== k) orient = "Z";
+      if(ii === i && jj !== j && kk === k) {
+        orient = "Y";
+      } else if(ii === i && jj === j && kk !== k) {
+        orient = "Z";
+      }
 
       return {
         orient,
@@ -274,28 +278,45 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       if(di !== 0) {
         const ii = i - (di > 0 ? 1 : -1);
         const hit = flip_if_known(i, j, k, ii, j, k);
-        if(hit) return hit;
+        if(hit) {
+          return hit;
+        }
       }
       if(dj !== 0) {
         const jj = j - (dj > 0 ? 1 : -1);
         const hit = flip_if_known(i, j, k, i, jj, k);
-        if(hit) return hit;
+        if(hit) {
+          return hit;
+        }
       }
       if(dk !== 0) {
         const kk = k - (dk > 0 ? 1 : -1);
         const hit = flip_if_known(i, j, k, i, j, kk);
-        if(hit) return hit;
+        if(hit) {
+          return hit;
+        }
       }
 
-      let hit = flip_if_known(i, j, k, i - 1, j, k); if(hit) return hit;
-      hit = flip_if_known(i, j, k, i, j - 1, k);     if(hit) return hit;
-      hit = flip_if_known(i, j, k, i, j, k - 1);     if(hit) return hit;
+      let hit = flip_if_known(i, j, k, i - 1, j, k);
+      if(hit) {
+        return hit;
+      }
+      hit = flip_if_known(i, j, k, i, j - 1, k);
+      if(hit) {
+        return hit;
+      }
+      hit = flip_if_known(i, j, k, i, j, k - 1);
+      if(hit) {
+        return hit;
+      }
 
       return null;
     };
 
     let hit = visit(i0, j0, k0);
-    if(hit) return { hit, usedAxes: { X, Y, Z } };
+    if(hit) {
+      return { hit, usedAxes: { X, Y, Z } };
+    }
 
     const max_r = Math.max(i0, nx - i0, j0, ny - j0, k0, nz - k0);
 
@@ -307,18 +328,36 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       const k_min = Math.max(0, k0 - r);
       const k_max = Math.min(nz, k0 + r);
 
-      for(let j = j_min; j <= j_max; j++) for(let k = k_min; k <= k_max; k++) {
-        hit = visit(i_min, j, k); if(hit) return { hit, usedAxes: { X, Y, Z } };
-        if(i_max !== i_min) { hit = visit(i_max, j, k); if(hit) return { hit, usedAxes: { X, Y, Z } }; }
+      for(let j = j_min; j <= j_max; j++) {
+        for(let k = k_min; k <= k_max; k++) {
+          hit = visit(i_min, j, k);
+          if(hit) {
+            return { hit, usedAxes: { X, Y, Z } };
+          }
+          if(i_max !== i_min) {
+            hit = visit(i_max, j, k);
+            if(hit) {
+              return { hit, usedAxes: { X, Y, Z } };
+            }
+          }
+        }
       }
 
       if(j_max !== j_min) {
         const ii0 = i_min + 1;
         const ii1 = i_max - 1;
         if(ii0 <= ii1) {
-          for(let i = ii0; i <= ii1; i++) for(let k = k_min; k <= k_max; k++) {
-            hit = visit(i, j_min, k); if(hit) return { hit, usedAxes: { X, Y, Z } };
-            hit = visit(i, j_max, k); if(hit) return { hit, usedAxes: { X, Y, Z } };
+          for(let i = ii0; i <= ii1; i++) {
+            for(let k = k_min; k <= k_max; k++) {
+              hit = visit(i, j_min, k);
+              if(hit) {
+                return { hit, usedAxes: { X, Y, Z } };
+              }
+              hit = visit(i, j_max, k);
+              if(hit) {
+                return { hit, usedAxes: { X, Y, Z } };
+              }
+            }
           }
         }
       }
@@ -329,9 +368,17 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
         const jj0 = j_min + 1;
         const jj1 = j_max - 1;
         if(ii0 <= ii1 && jj0 <= jj1) {
-          for(let i = ii0; i <= ii1; i++) for(let j = jj0; j <= jj1; j++) {
-            hit = visit(i, j, k_min); if(hit) return { hit, usedAxes: { X, Y, Z } };
-            hit = visit(i, j, k_max); if(hit) return { hit, usedAxes: { X, Y, Z } };
+          for(let i = ii0; i <= ii1; i++) {
+            for(let j = jj0; j <= jj1; j++) {
+              hit = visit(i, j, k_min);
+              if(hit) {
+                return { hit, usedAxes: { X, Y, Z } };
+              }
+              hit = visit(i, j, k_max);
+              if(hit) {
+                return { hit, usedAxes: { X, Y, Z } };
+              }
+            }
           }
         }
       }
@@ -358,7 +405,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     const seed_nz = Math.max(1, this.opts.seedNz | 0);
 
     const refine = this.opts.seedRefine;
-    if(!(refine > 0 && refine < 1)) throw new Error(this.jsl.inter.lang.string(277));
+    if(!(refine > 0 && refine < 1)) {
+      throw new Error(this.jsl.inter.lang.string(277));
+    }
 
     let step_x = Math.max(dx_target, wx > 0 ? (wx / seed_nx) : dx_target);
     let step_y = Math.max(dy_target, wy > 0 ? (wy / seed_ny) : dy_target);
@@ -366,9 +415,13 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
 
     for(let iter = 0; iter < 64; iter++) {
       const r = this._findFirstFlipFromOrigin3D(step_x, step_y, step_z);
-      if(r && r.hit) return { edge: r.hit, usedStepX: step_x, usedStepY: step_y, usedStepZ: step_z };
+      if(r && r.hit) {
+        return { edge: r.hit, usedStepX: step_x, usedStepY: step_y, usedStepZ: step_z };
+      }
 
-      if(step_x <= dx_target + 1e-15 && step_y <= dy_target + 1e-15 && step_z <= dz_target + 1e-15) break;
+      if(step_x <= dx_target + 1e-15 && step_y <= dy_target + 1e-15 && step_z <= dz_target + 1e-15) {
+        break;
+      }
       step_x = Math.max(dx_target, step_x * refine);
       step_y = Math.max(dy_target, step_y * refine);
       step_z = Math.max(dz_target, step_z * refine);
@@ -383,7 +436,7 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * @param {number} dy - Fine grid spacing in Y.
    * @param {number} dz - Fine grid spacing in Z.
    * @returns {Object} Fine context with:
-   *   {X,Y,Z,nx,ny,nz,getS(i,j,k),cellMixed(i,j,k),pack_voxel(i,j,k)}.
+   * {X,Y,Z,nx,ny,nz,getS(i,j,k),cellMixed(i,j,k),pack_voxel(i,j,k)}.
    */
   _makeFineContext(dx, dy, dz) {
     const box = this._bbox;
@@ -416,7 +469,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     const getS = (i, j, k)=>{
       const p = pack_node(i, j, k);
       const s = node_state[p];
-      if(s !== -1) return s === 1;
+      if(s !== -1) {
+        return s === 1;
+      }
       const ok = this._feasibleXYZ(X[i], Y[j], Z[k]);
       node_state[p] = ok ? 1 : 0;
       return ok;
@@ -425,7 +480,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     const cellMixed = (i, j, k)=>{
       const p = pack_voxel(i, j, k);
       const cm = voxel_mixed[p];
-      if(cm !== -1) return cm === 1;
+      if(cm !== -1) {
+        return cm === 1;
+      }
 
       const s000 = getS(i, j, k) ? 1 : 0;
       const s100 = getS(i + 1, j, k) ? 1 : 0;
@@ -451,9 +508,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * @param {Object} ctx - Fine context returned by _makeFineContext(dx,dy,dz).
    * @param {Object} coarse_edge - Coarse flip edge returned by _findFirstFlipFromOrigin3D(...).hit.
    * @returns {Object} Fine bracket describing the refined flip location:
-   *   X-edge: {orient:"X", i:number, jNode:number, kNode:number, s0:boolean, s1:boolean}
-   *   Y-edge: {orient:"Y", iNode:number, j:number, kNode:number, s0:boolean, s1:boolean}
-   *   Z-edge: {orient:"Z", iNode:number, jNode:number, k:number, s0:boolean, s1:boolean}.
+   * X-edge: {orient:"X", i:number, jNode:number, kNode:number, s0:boolean, s1:boolean}
+   * Y-edge: {orient:"Y", iNode:number, j:number, kNode:number, s0:boolean, s1:boolean}
+   * Z-edge: {orient:"Z", iNode:number, jNode:number, k:number, s0:boolean, s1:boolean}.
    */
   _refineEdgeToFineBracket(ctx, coarse_edge) {
     const X = ctx.X;
@@ -466,19 +523,16 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
 
     const snap_band = Math.max(0, Math.floor(this.opts.snapBand));
 
-    const nearest_index = (A, v, max_i)=>{
-      if(max_i <= 0) return 0;
-      const d = (A[max_i] - A[0]) / max_i;
-      const i = Math.round((v - A[0]) / d);
-      return this.jsl.inter.math.clamp(i, 0, max_i);
-    };
+    const nearest_index = this._nearestAxisIndex.bind(this);
 
     const build_candidates = (i0, max_i)=>{
       const out = [];
       const seen = new Set();
       const push = (v)=>{
         v = this.jsl.inter.math.clamp(v, 0, max_i);
-        if(seen.has(v)) return;
+        if(seen.has(v)) {
+          return;
+        }
         seen.add(v);
         out.push(v);
       };
@@ -486,7 +540,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       push(i0);
       push(Math.floor(i0));
       push(Math.ceil(i0));
-      for(let k = -snap_band; k <= snap_band; k++) push(i0 + k);
+      for(let k = -snap_band; k <= snap_band; k++) {
+        push(i0 + k);
+      }
 
       return out;
     };
@@ -495,7 +551,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       let prev = getS(lo, j, k);
       for(let i = lo + 1; i <= hi; i++) {
         const si = getS(i, j, k);
-        if(si !== prev) return { lo: i - 1, hi: i, sLo: prev, sHi: si };
+        if(si !== prev) {
+          return { lo: i - 1, hi: i, sLo: prev, sHi: si };
+        }
         prev = si;
       }
       return null;
@@ -505,7 +563,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       let prev = getS(i, lo, k);
       for(let j = lo + 1; j <= hi; j++) {
         const sj = getS(i, j, k);
-        if(sj !== prev) return { lo: j - 1, hi: j, sLo: prev, sHi: sj };
+        if(sj !== prev) {
+          return { lo: j - 1, hi: j, sLo: prev, sHi: sj };
+        }
         prev = sj;
       }
       return null;
@@ -515,7 +575,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       let prev = getS(i, j, lo);
       for(let k = lo + 1; k <= hi; k++) {
         const sk = getS(i, j, k);
-        if(sk !== prev) return { lo: k - 1, hi: k, sLo: prev, sHi: sk };
+        if(sk !== prev) {
+          return { lo: k - 1, hi: k, sLo: prev, sHi: sk };
+        }
         prev = sk;
       }
       return null;
@@ -531,27 +593,40 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       const i_b = nearest_index(X, coarse_edge.b.x, nx);
       let lo0 = this.jsl.inter.math.clamp(Math.min(i_a, i_b), 0, nx);
       let hi0 = this.jsl.inter.math.clamp(Math.max(i_a, i_b), 0, nx);
-      if(hi0 - lo0 < 1) { lo0 = Math.max(0, lo0 - 1); hi0 = Math.min(nx, hi0 + 1); }
+      if(hi0 - lo0 < 1) {
+        lo0 = Math.max(0, lo0 - 1);
+        hi0 = Math.min(nx, hi0 + 1);
+      }
 
-      for(let jj = 0; jj < j_cand.length; jj++) for(let kk = 0; kk < k_cand.length; kk++) {
-        const j = j_cand[jj];
-        const k = k_cand[kk];
+      for(let jj = 0; jj < j_cand.length; jj++) {
+        for(let kk = 0; kk < k_cand.length; kk++) {
+          const j = j_cand[jj];
+          const k = k_cand[kk];
 
-        const flip = scan_flip_x(lo0, hi0, j, k);
-        if(!flip) continue;
+          const flip = scan_flip_x(lo0, hi0, j, k);
+          if(!flip) {
+            continue;
+          }
 
-        let lo = flip.lo;
-        let hi = flip.hi;
-        let s_lo = flip.sLo;
-        let s_hi = flip.sHi;
+          let lo = flip.lo;
+          let hi = flip.hi;
+          let s_lo = flip.sLo;
+          let s_hi = flip.sHi;
 
-        while(hi - lo > 1) {
-          const mid = (lo + hi) >> 1;
-          const s_mid = getS(mid, j, k);
-          if(s_mid === s_lo) { lo = mid; s_lo = s_mid; } else { hi = mid; s_hi = s_mid; }
+          while(hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            const s_mid = getS(mid, j, k);
+            if(s_mid === s_lo) {
+              lo = mid;
+              s_lo = s_mid;
+            } else {
+              hi = mid;
+              s_hi = s_mid;
+            }
+          }
+
+          return { orient: "X", i: lo, jNode: j, kNode: k, s0: s_lo, s1: s_hi };
         }
-
-        return { orient: "X", i: lo, jNode: j, kNode: k, s0: s_lo, s1: s_hi };
       }
 
       throw new Error(this.jsl.inter.lang.string(279));
@@ -567,27 +642,40 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       const j_b = nearest_index(Y, coarse_edge.b.y, ny);
       let lo0 = this.jsl.inter.math.clamp(Math.min(j_a, j_b), 0, ny);
       let hi0 = this.jsl.inter.math.clamp(Math.max(j_a, j_b), 0, ny);
-      if(hi0 - lo0 < 1) { lo0 = Math.max(0, lo0 - 1); hi0 = Math.min(ny, hi0 + 1); }
+      if(hi0 - lo0 < 1) {
+        lo0 = Math.max(0, lo0 - 1);
+        hi0 = Math.min(ny, hi0 + 1);
+      }
 
-      for(let ii = 0; ii < i_cand.length; ii++) for(let kk = 0; kk < k_cand.length; kk++) {
-        const i = i_cand[ii];
-        const k = k_cand[kk];
+      for(let ii = 0; ii < i_cand.length; ii++) {
+        for(let kk = 0; kk < k_cand.length; kk++) {
+          const i = i_cand[ii];
+          const k = k_cand[kk];
 
-        const flip = scan_flip_y(lo0, hi0, i, k);
-        if(!flip) continue;
+          const flip = scan_flip_y(lo0, hi0, i, k);
+          if(!flip) {
+            continue;
+          }
 
-        let lo = flip.lo;
-        let hi = flip.hi;
-        let s_lo = flip.sLo;
-        let s_hi = flip.sHi;
+          let lo = flip.lo;
+          let hi = flip.hi;
+          let s_lo = flip.sLo;
+          let s_hi = flip.sHi;
 
-        while(hi - lo > 1) {
-          const mid = (lo + hi) >> 1;
-          const s_mid = getS(i, mid, k);
-          if(s_mid === s_lo) { lo = mid; s_lo = s_mid; } else { hi = mid; s_hi = s_mid; }
+          while(hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            const s_mid = getS(i, mid, k);
+            if(s_mid === s_lo) {
+              lo = mid;
+              s_lo = s_mid;
+            } else {
+              hi = mid;
+              s_hi = s_mid;
+            }
+          }
+
+          return { orient: "Y", iNode: i, j: lo, kNode: k, s0: s_lo, s1: s_hi };
         }
-
-        return { orient: "Y", iNode: i, j: lo, kNode: k, s0: s_lo, s1: s_hi };
       }
 
       throw new Error(this.jsl.inter.lang.string(280));
@@ -604,27 +692,40 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       const k_b = nearest_index(Z, coarse_edge.b.z, nz);
       let lo0 = this.jsl.inter.math.clamp(Math.min(k_a, k_b), 0, nz);
       let hi0 = this.jsl.inter.math.clamp(Math.max(k_a, k_b), 0, nz);
-      if(hi0 - lo0 < 1) { lo0 = Math.max(0, lo0 - 1); hi0 = Math.min(nz, hi0 + 1); }
+      if(hi0 - lo0 < 1) {
+        lo0 = Math.max(0, lo0 - 1);
+        hi0 = Math.min(nz, hi0 + 1);
+      }
 
-      for(let ii = 0; ii < i_cand.length; ii++) for(let jj = 0; jj < j_cand.length; jj++) {
-        const i = i_cand[ii];
-        const j = j_cand[jj];
+      for(let ii = 0; ii < i_cand.length; ii++) {
+        for(let jj = 0; jj < j_cand.length; jj++) {
+          const i = i_cand[ii];
+          const j = j_cand[jj];
 
-        const flip = scan_flip_z(lo0, hi0, i, j);
-        if(!flip) continue;
+          const flip = scan_flip_z(lo0, hi0, i, j);
+          if(!flip) {
+            continue;
+          }
 
-        let lo = flip.lo;
-        let hi = flip.hi;
-        let s_lo = flip.sLo;
-        let s_hi = flip.sHi;
+          let lo = flip.lo;
+          let hi = flip.hi;
+          let s_lo = flip.sLo;
+          let s_hi = flip.sHi;
 
-        while(hi - lo > 1) {
-          const mid = (lo + hi) >> 1;
-          const s_mid = getS(i, j, mid);
-          if(s_mid === s_lo) { lo = mid; s_lo = s_mid; } else { hi = mid; s_hi = s_mid; }
+          while(hi - lo > 1) {
+            const mid = (lo + hi) >> 1;
+            const s_mid = getS(i, j, mid);
+            if(s_mid === s_lo) {
+              lo = mid;
+              s_lo = s_mid;
+            } else {
+              hi = mid;
+              s_hi = s_mid;
+            }
+          }
+
+          return { orient: "Z", iNode: i, jNode: j, k: lo, s0: s_lo, s1: s_hi };
         }
-
-        return { orient: "Z", iNode: i, jNode: j, k: lo, s0: s_lo, s1: s_hi };
       }
 
       throw new Error(this.jsl.inter.lang.string(281));
@@ -645,8 +746,12 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     const cellMixed = ctx.cellMixed;
 
     const try_voxel = (ic, jc, kc)=>{
-      if(ic < 0 || ic >= nx || jc < 0 || jc >= ny || kc < 0 || kc >= nz) return null;
-      if(cellMixed(ic, jc, kc)) return { i: ic, j: jc, k: kc };
+      if(ic < 0 || ic >= nx || jc < 0 || jc >= ny || kc < 0 || kc >= nz) {
+        return null;
+      }
+      if(cellMixed(ic, jc, kc)) {
+        return { i: ic, j: jc, k: kc };
+      }
       return null;
     };
 
@@ -654,26 +759,64 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
 
     if(br.orient === "X") {
       const i = br.i, j = br.jNode, k = br.kNode;
-      v = try_voxel(i, j - 1, k - 1); if(v) return v;
-      v = try_voxel(i, j, k - 1);     if(v) return v;
-      v = try_voxel(i, j - 1, k);     if(v) return v;
-      v = try_voxel(i, j, k);         if(v) return v;
+      v = try_voxel(i, j - 1, k - 1);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j, k - 1);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j - 1, k);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j, k);
+      if(v) {
+        return v;
+      }
     } else if(br.orient === "Y") {
       const i = br.iNode, j = br.j, k = br.kNode;
-      v = try_voxel(i - 1, j, k - 1); if(v) return v;
-      v = try_voxel(i, j, k - 1);     if(v) return v;
-      v = try_voxel(i - 1, j, k);     if(v) return v;
-      v = try_voxel(i, j, k);         if(v) return v;
+      v = try_voxel(i - 1, j, k - 1);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j, k - 1);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i - 1, j, k);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j, k);
+      if(v) {
+        return v;
+      }
     } else {
       const i = br.iNode, j = br.jNode, k = br.k;
-      v = try_voxel(i - 1, j - 1, k); if(v) return v;
-      v = try_voxel(i, j - 1, k);     if(v) return v;
-      v = try_voxel(i - 1, j, k);     if(v) return v;
-      v = try_voxel(i, j, k);         if(v) return v;
+      v = try_voxel(i - 1, j - 1, k);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j - 1, k);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i - 1, j, k);
+      if(v) {
+        return v;
+      }
+      v = try_voxel(i, j, k);
+      if(v) {
+        return v;
+      }
     }
 
     const take_first_valid = (ic, jc, kc)=>{
-      if(ic < 0 || ic >= nx || jc < 0 || jc >= ny || kc < 0 || kc >= nz) return null;
+      if(ic < 0 || ic >= nx || jc < 0 || jc >= ny || kc < 0 || kc >= nz) {
+        return null;
+      }
       return { i: ic, j: jc, k: kc };
     };
 
@@ -697,9 +840,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * @param {Object} ctx - Fine context returned by _makeFineContext(dx,dy,dz).
    * @param {Object} start_voxel - Start voxel indices {i,j,k}.
    * @returns {Object} Flood result:
-   *   - closed:boolean (true if component does NOT touch bbox boundary)
-   *   - surfaceCells:number (count of mixed voxels reached)
-   *   - touchesBoundary:boolean (true if any visited mixed voxel is on voxel-grid boundary)
+   * - closed:boolean (true if component does NOT touch bbox boundary)
+   * - surfaceCells:number (count of mixed voxels reached)
+   * - touchesBoundary:boolean (true if any visited mixed voxel is on voxel-grid boundary)
    */
   _floodMixedComponent(ctx, start_voxel) {
     const nx = ctx.nx;
@@ -715,16 +858,23 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
     let visited_arr = null;
     let visited_set = null;
 
-    if(use_dense) visited_arr = new Uint8Array(voxel_count);
-    else visited_set = new Set();
+    if(use_dense) {
+      visited_arr = new Uint8Array(voxel_count);
+    } else {
+      visited_set = new Set();
+    }
 
     const push_mark = (p)=>{
       if(use_dense) {
-        if(visited_arr[p]) return false;
+        if(visited_arr[p]) {
+          return false;
+        }
         visited_arr[p] = 1;
         return true;
       }
-      if(visited_set.has(p)) return false;
+      if(visited_set.has(p)) {
+        return false;
+      }
       visited_set.add(p);
       return true;
     };
@@ -747,21 +897,57 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
       const j = t % ny;
       const k = (t - j) / ny;
 
-      if(!cellMixed(i, j, k)) continue;
+      if(!cellMixed(i, j, k)) {
+        continue;
+      }
 
       count++;
-      if(count > this.opts.maxFloodCells) throw new Error(this.jsl.inter.lang.string(282).replace('{max}', this.opts.maxFloodCells));
+      if(count > this.opts.maxFloodCells) {
+        throw new Error(this.jsl.inter.lang.string(282).replace('{max}', this.opts.maxFloodCells));
+      }
 
-      if(i === 0 || j === 0 || k === 0 || i === nx - 1 || j === ny - 1 || k === nz - 1) touches_boundary = true;
+      if(i === 0 || j === 0 || k === 0 || i === nx - 1 || j === ny - 1 || k === nz - 1) {
+        touches_boundary = true;
+      }
 
-      if(i > 0) { const pp = p - 1; if(push_mark(pp)) stack.push(pp); }
-      if(i + 1 < nx) { const pp = p + 1; if(push_mark(pp)) stack.push(pp); }
+      if(i > 0) {
+        const pp = p - 1;
+        if(push_mark(pp)) {
+          stack.push(pp);
+        }
+      }
+      if(i + 1 < nx) {
+        const pp = p + 1;
+        if(push_mark(pp)) {
+          stack.push(pp);
+        }
+      }
 
-      if(j > 0) { const pp = p - nx; if(push_mark(pp)) stack.push(pp); }
-      if(j + 1 < ny) { const pp = p + nx; if(push_mark(pp)) stack.push(pp); }
+      if(j > 0) {
+        const pp = p - nx;
+        if(push_mark(pp)) {
+          stack.push(pp);
+        }
+      }
+      if(j + 1 < ny) {
+        const pp = p + nx;
+        if(push_mark(pp)) {
+          stack.push(pp);
+        }
+      }
 
-      if(k > 0) { const pp = p - slice; if(push_mark(pp)) stack.push(pp); }
-      if(k + 1 < nz) { const pp = p + slice; if(push_mark(pp)) stack.push(pp); }
+      if(k > 0) {
+        const pp = p - slice;
+        if(push_mark(pp)) {
+          stack.push(pp);
+        }
+      }
+      if(k + 1 < nz) {
+        const pp = p + slice;
+        if(push_mark(pp)) {
+          stack.push(pp);
+        }
+      }
     }
 
     return { closed: !touches_boundary, surfaceCells: count, touchesBoundary: touches_boundary };
@@ -774,20 +960,22 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
    * @param {number} dy - Fine grid spacing in Y (must be >0).
    * @param {number} dz - Fine grid spacing in Z (must be >0).
    * @returns {Object} Result object:
-   *   - dim: 3
-   *   - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
-   *   - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
-   *   - surfaceCells: number of mixed voxels visited (surface voxel count)
-   *   - evalCount: total feasibility evaluations performed
-   *   - N: [feasible_points,infeasible_points], each is an array of [x,y,z]
-   *   - grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics
-   *   - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
-   *   - fineBracket: refined fine flip bracket used to start flood-fill
-   *   - startVoxel: voxel indices used as flood-fill start
+   * - dim: 3
+   * - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
+   * - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
+   * - surfaceCells: number of mixed voxels visited (surface voxel count)
+   * - evalCount: total feasibility evaluations performed
+   * - N: [feasible_points,infeasible_points], each is an array of [x,y,z]
+   * - grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics
+   * - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
+   * - fineBracket: refined fine flip bracket used to start flood-fill
+   * - startVoxel: voxel indices used as flood-fill start
    */
   trace(dx, dy, dz) {
     this.resetLogs();
-    if(!(dx > 0) || !(dy > 0) || !(dz > 0)) throw new Error(this.jsl.inter.lang.string(283));
+    if(!(dx > 0) || !(dy > 0) || !(dz > 0)) {
+      throw new Error(this.jsl.inter.lang.string(283));
+    }
 
     const seed = this._findSeedEdgeAdaptive(dx, dy, dz);
     const coarse_edge = seed.edge;
@@ -821,4 +1009,3 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D {
 }
 
 exports.PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D = PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D;
-

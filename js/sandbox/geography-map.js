@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for map.
  */
 class PRDC_JSLAB_GEOGRAPHY_MAP {
-  
+
   /**
    * Creates a new map instance.
    * @param {Object} jsl - The JSLAB instance or environment reference.
@@ -17,14 +17,14 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
    */
   constructor(jsl, tileset = 'OpenStreetMap') {
     this.jsl = jsl;
-    
+
     // Default map parameters
     this.lat = 44.8768331;
     this.lon = 20.112352;
     this.zoom = 12;
     this.tileset = tileset;
     this.tileset_url;
-    
+
     this.tilesets = {
       // OpenStreetMap Standard
       'OpenStreetMap': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -51,17 +51,17 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
       'Wikimedia Cycle Map': 'https://maps.wikimedia.org/osm-intl-cycle/{z}/{x}/{y}.png',
       'Wikimedia Transport Map': 'https://maps.wikimedia.org/osm-intl-transport/{z}/{x}/{y}.png',
     };
-    
+
     if(this.jsl.inter.format.hasKey(this.tilesets, this.tileset)) {
       this.tileset_url = this.tilesets[this.tileset];
     } else {
       this.tileset_url = this.tileset;
     }
-    
+
     this.wid;
     this.ready = false;
   }
-  
+
   /**
    * Opens a window with Leaflet and initializes the map.
    * @returns {Promise<void>}
@@ -84,13 +84,13 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
     this.context = context;
     context.map_cont = context.document.getElementById('map-cont');
     context.map_cont.style = 'position: absolute;top:0;left:0;right:0;bottom:0;';
-    this.leaflet_obj = context.L.map('map-cont', 
+    this.leaflet_obj = context.L.map('map-cont',
       { attributionControl: false }
     ).setView([this.lat, this.lon], this.zoom);
     context.L.tileLayer(this.tileset_url).addTo(this.leaflet_obj);
     this.ready = true;
   }
-  
+
   /**
    * Sets the center of the map to the specified latitude and longitude.
    * This will update the internal state and move the Leaflet map if it is ready.
@@ -104,7 +104,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
       this.leaflet_obj.setView([lat, lon], this.zoom);
     }
   }
-  
+
   /**
    * Sets the zoom level of the map.
    * This will update the internal state and adjust the Leaflet map if it is ready.
@@ -116,7 +116,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
       this.leaflet_obj.setZoom(zoom);
     }
   }
-  
+
   /**
    * Adds a marker to the map at the specified latitude and longitude.
    * @param {number} lat - Latitude.
@@ -130,8 +130,11 @@ class PRDC_JSLAB_GEOGRAPHY_MAP {
 
 exports.PRDC_JSLAB_GEOGRAPHY_MAP = PRDC_JSLAB_GEOGRAPHY_MAP;
 
+/**
+ * Class for geography map marker.
+ */
 class PRDC_JSLAB_GEOGRAPHY_MAP_MARKER {
-  
+
   /**
    * Creates a new marker and adds it to the map.
    * @param {Object} jsl - The JSLAB instance or environment reference.
@@ -142,12 +145,12 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_MARKER {
   constructor(jsl, map, lat, lon) {
     this.jsl = jsl;
     this.map = map;
-    
+
     this.leaflet_obj = this.map.context.L.marker([lat, lon]).addTo(this.map.leaflet_obj);
     this.lat = lat;
     this.lon = lon;
   }
-  
+
   /**
    * Sets a custom icon for the marker.
    * @param {Object} iconOptions - Leaflet icon options: { iconUrl: '...', iconSize: [...], iconAnchor: [...], etc. }
@@ -171,7 +174,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_MARKER {
       this.leaflet_obj.setRotationOrigin('center center');
     }
   }
-  
+
   /**
    * Sets the position of the marker.
    * @param {number} lat - New latitude.
@@ -184,7 +187,7 @@ class PRDC_JSLAB_GEOGRAPHY_MAP_MARKER {
       this.leaflet_obj.setLatLng([lat, lon]);
     }
   }
-  
+
   /**
    * Sets the rotation (in degrees) of the marker.
    * Leaflet markers can be rotated via CSS transform if using a DivIcon or a custom class.

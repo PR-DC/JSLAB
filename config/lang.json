@@ -1939,1419 +1939,1544 @@
     "rs": "Inspektor",
     "rsc": "Инспектор"
   },
-  "390": {
+  "389": {
     "en": "Value",
     "rs": "Vrednost",
     "rsc": "Вредност"
   },
-  "391": {
+  "390": {
     "en": "Apply",
     "rs": "Primeni",
     "rsc": "Примени"
   },
-  "392": {
+  "391": {
     "en": "Filter",
     "rs": "Filter",
     "rsc": "Филтер"
   },
-  "393": {
+  "392": {
     "en": "Clear Filter",
     "rs": "Obriši filter",
     "rsc": "Обриши филтер"
   },
-  "394": {
+  "393": {
     "en": "Filter Expr",
     "rs": "Filter izraz",
     "rsc": "Филтер израз"
   },
-  "395": {
+  "394": {
     "en": "Clear Expr",
     "rs": "Obriši izraz",
     "rsc": "Обриши израз"
   },
-  "396": {
+  "395": {
     "en": "Refresh",
     "rs": "Osveži",
     "rsc": "Освежи"
   },
-  "397": {
+  "396": {
     "en": "Double-click value cells to edit.",
     "rs": "Dvaput kliknite na polje vrednosti za izmenu.",
     "rsc": "Двапут кликните на поље вредности за измену."
   },
-  "398": {
+  "397": {
     "en": "Add Var",
     "rs": "Dodaj promenljivu",
     "rsc": "Додај променљиву"
   },
-  "399": {
+  "398": {
     "en": "Rename Var",
     "rs": "Preimenuj promenljivu",
     "rsc": "Преименуј променљиву"
   },
-  "400": {
+  "399": {
     "en": "Remove Var",
     "rs": "Ukloni promenljivu",
     "rsc": "Уклони променљиву"
   },
-  "401": {
+  "400": {
     "en": "Copy CSV Text",
     "rs": "Kopiraj CSV tekst",
     "rsc": "Копирај CSV текст"
   },
-  "402": {
+  "401": {
     "en": "Inspect",
     "rs": "Inspektuj",
     "rsc": "Инспектуј"
   },
-  "403": {
+  "402": {
     "en": "type",
     "rs": "tip",
     "rsc": "тип"
   },
-  "404": {
+  "403": {
     "en": "size",
     "rs": "veličina",
     "rsc": "величина"
   },
-  "405": {
+  "404": {
     "en": "row times",
     "rs": "vremena redova",
     "rsc": "времена редова"
   },
-  "406": {
+  "405": {
     "en": "types",
     "rs": "tipovi",
     "rsc": "типови"
   },
-  "407": {
+  "406": {
     "en": "rows",
     "rs": "redovi",
     "rsc": "редови"
   },
-  "408": {
+  "407": {
     "en": "fields",
     "rs": "polja",
     "rsc": "поља"
   },
-  "409": {
+  "408": {
     "en": "length",
     "rs": "dužina",
     "rsc": "дужина"
   },
-  "410": {
+  "409": {
     "en": "entries",
     "rs": "stavke",
     "rsc": "ставке"
   },
-  "411": {
+  "410": {
     "en": "No enumerable properties.",
     "rs": "Nema nabrojivih svojstava.",
     "rsc": "Нема набројивих својстава."
   },
-  "412": {
+  "411": {
     "en": "Edit Value",
     "rs": "Izmeni vrednost",
     "rsc": "Измени вредност"
   },
-  "413": {
+  "412": {
     "en": "asc",
     "rs": "rastuće",
     "rsc": "растуће"
   },
-  "414": {
+  "413": {
     "en": "desc",
     "rs": "opadajuće",
     "rsc": "опадајуће"
   },
-  "415": {
+  "414": {
     "en": "showing {shown} of {total} rows",
     "rs": "prikazano {shown} od {total} redova",
     "rsc": "приказано {shown} од {total} редова"
   },
-  "416": {
+  "415": {
     "en": "showing {shown} of {total} columns",
     "rs": "prikazano {shown} od {total} kolona",
     "rsc": "приказано {shown} од {total} колона"
   },
-  "417": {
+  "416": {
     "en": "filter \"{filter}\" matched {matched} of {total} rows",
     "rs": "filter \"{filter}\" je pogodio {matched} od {total} redova",
     "rsc": "филтер \"{filter}\" је погодио {matched} од {total} редмова"
   },
-  "418": {
+  "417": {
     "en": "invalid filter expression: {error}",
     "rs": "neispravan izraz filtera: {error}",
     "rsc": "неисправан израз филтера: {error}"
   },
-  "419": {
+  "418": {
     "en": "expression filter matched {matched} of {total} rows",
     "rs": "filter izraz je pogodio {matched} od {total} redova",
     "rsc": "филтер израз је погодио {matched} од {total} редова"
   },
-  "420": {
+  "419": {
     "en": "Double-click to edit",
     "rs": "Dvaput kliknite za izmenu",
     "rsc": "Двапут кликните за измену"
   },
-  "421": {
+  "420": {
     "en": "Key",
     "rs": "Kljuć",
     "rsc": "Кључ"
   },
-  "422": {
+  "421": {
     "en": "Value",
     "rs": "Vrednost",
     "rsc": "Вредност"
   },
-  "423": {
+  "422": {
     "en": "Filter rows (substring match)",
     "rs": "Filtriraj redove (podniz)",
     "rsc": "Филтрирај редове (podniz)"
   },
-  "424": {
+  "423": {
     "en": "Filter expression (row object available as \"row\")",
     "rs": "Filter izraz (objekat reda je dostupan kao \"row\")",
     "rsc": "Филтер израза (објекат реда је доступан као \"row\")"
   },
-  "425": {
+  "424": {
     "en": "New variable name",
     "rs": "Novo ime promenljive",
     "rsc": "Ново име променљиве"
   },
-  "426": {
+  "425": {
     "en": "Values expression (array or scalar)",
     "rs": "Izraz vrednosti (niz ili skalar)",
     "rsc": "Израз вредности (низ или скалар)"
   },
-  "427": {
+  "426": {
     "en": "Current variable name",
     "rs": "Trenutno ime promenljive",
     "rsc": "Тренутно име променљиве"
   },
-  "428": {
+  "427": {
     "en": "Variable name(s) to remove (comma separated)",
     "rs": "Ime(na) promenljivih za uklanjanje (odvojeno zarezom)",
     "rsc": "Име(на) променљивих за уклањање (одвојено зарезом)"
   },
-  "429": {
+  "428": {
     "en": "Set {variable} at path {path} to expression",
     "rs": "Postavi {variable} na putanji {path} na izraz",
     "rsc": "Постави {variable} на путањи {path} на израз"
   },
-  "430": {
+  "429": {
     "en": "Expression",
     "rs": "Izraz",
     "rsc": "Израз"
   },
-  "431": {
+  "430": {
     "en": "variable name must be a non-empty string.",
     "rs": "ime promenljive mora biti neprazan string.",
     "rsc": "име променљиве мора бити непразан string."
   },
-  "432": {
+  "431": {
     "en": "variable \"{name}\" not found in workspace.",
     "rs": "promenljiva \"{name}\" nije pronadjena u radnom prostoru.",
     "rsc": "променљива \"{name}\" није пронађена у радном простору."
   },
-  "433": {
+  "432": {
     "en": "path must be an array.",
     "rs": "putanja mora biti niz.",
     "rsc": "путања мора бити низ."
   },
-  "434": {
+  "433": {
     "en": "expression must be a string.",
     "rs": "izraz mora biti string.",
     "rsc": "израз мора бити string."
   },
-  "435": {
+  "434": {
     "en": "invalid expression: {error}",
     "rs": "neispravan izraz: {error}",
     "rsc": "неисправан израз: {error}"
   },
-  "436": {
+  "435": {
     "en": "invalid path.",
     "rs": "neispravna putanja.",
     "rsc": "неисправна путања."
   },
-  "437": {
+  "436": {
     "en": "invalid target.",
     "rs": "neispravan cilj.",
     "rsc": "неисправан циљ."
   },
-  "438": {
+  "437": {
     "en": "action must be a non-empty string.",
     "rs": "akcija mora biti neprazan string.",
     "rsc": "акција мора бити непразан string."
   },
-  "439": {
+  "438": {
     "en": "variable \"{name}\" is not a table/timetable.",
     "rs": "promenljiva \"{name}\" nije table/timetable.",
     "rsc": "променљива \"{name}\" није table/timetable."
   },
-  "440": {
+  "439": {
     "en": "addvar requires \"name\".",
     "rs": "addvar zahteva \"name\".",
     "rsc": "addvar захтева \"name\"."
   },
-  "441": {
+  "440": {
     "en": "addvar requires \"expression\".",
     "rs": "addvar zahteva \"expression\".",
     "rsc": "addvar захтева \"expression\"."
   },
-  "442": {
+  "441": {
     "en": "renamevar requires \"old_name\" and \"new_name\".",
     "rs": "renamevar zahteva \"old_name\" i \"new_name\".",
     "rsc": "renamevar захтева \"old_name\" и \"new_name\"."
   },
-  "443": {
+  "442": {
     "en": "removevar requires \"names\".",
     "rs": "removevar zahteva \"names\".",
     "rsc": "removevar захтева \"names\"."
   },
-  "444": {
+  "443": {
     "en": "table2csv is not available.",
     "rs": "table2csv nije dostupan.",
     "rsc": "table2csv није доступан."
   },
-  "445": {
+  "444": {
     "en": "unsupported action \"{action}\".",
     "rs": "nepodržana akcija \"{action}\".",
     "rsc": "неподржана акција \"{action}\"."
   },
-  "446": {
+  "445": {
     "en": "invalid path payload.",
     "rs": "neispravan payload putanje.",
     "rsc": "неисправан payload путање."
   },
-  "447": {
+  "446": {
     "en": "keys",
     "rs": "ključevi",
     "rsc": "кључеви"
   },
-  "448": {
+  "447": {
     "en": "{label} must be an Array or TypedArray.",
     "rs": "{label} mora biti Array ili TypedArray.",
     "rsc": "{label} мора бити Array или TypedArray."
   },
-  "449": {
+  "448": {
     "en": "{error_label} must be an Array or CSV string.",
     "rs": "{error_label} mora biti Array ili CSV string.",
     "rsc": "{error_label} мора бити Array или CSV string."
   },
-  "450": {
+  "449": {
     "en": "empty name at index {index}.",
     "rs": "prazno ime na indeksu {index}.",
     "rsc": "празно име на индексу {index}."
   },
-  "451": {
+  "450": {
     "en": "duplicate name \"{name}\".",
     "rs": "duplirano ime \"{name}\".",
     "rsc": "дуплирано име \"{name}\"."
   },
-  "452": {
+  "451": {
     "en": "unsupported step value \"{step}\".",
     "rs": "nepodržana vrednost koraka \"{step}\".",
     "rsc": "неподржана вредност корака \"{step}\"."
   },
-  "453": {
+  "452": {
     "en": "input must be an Array.",
     "rs": "ulaz mora biti Array.",
     "rsc": "улаз мора бити Array."
   },
-  "454": {
+  "453": {
     "en": "each row must be an Array or TypedArray.",
     "rs": "svaki red mora biti Array ili TypedArray.",
     "rsc": "сваки ред мора бити Array или TypedArray."
   },
-  "455": {
+  "454": {
     "en": "VariableNames size mismatch.",
     "rs": "neodgovarajuća dužina VariableNames.",
     "rsc": "неодговарајућа дужина VariableNames."
   },
-  "456": {
+  "455": {
     "en": "input must be an Array of objects.",
     "rs": "ulaz mora biti Array objekata.",
     "rsc": "улаз мора бити Array објеката."
   },
-  "457": {
+  "456": {
     "en": "row at index {index} must be an object.",
     "rs": "red na indeksu {index} mora biti objekat.",
     "rsc": "ред на индексу {index} мора бити објекат."
   },
-  "458": {
+  "457": {
     "en": "input must be table/timetable.",
     "rs": "ulaz mora biti table/timetable.",
     "rsc": "улаз мора бити table/timetable."
   },
-  "459": {
+  "458": {
     "en": "file_path must be a non-empty string.",
     "rs": "file_path mora biti neprazan string.",
     "rsc": "file_path мора бити непразан string."
   },
-  "460": {
+  "459": {
     "en": "file does not exist: {file_path}",
     "rs": "fajl ne postoji: {file_path}",
     "rsc": "фајл не постоји: {file_path}"
   },
-  "461": {
+  "460": {
     "en": "row times variable \"{name}\" not found.",
     "rs": "promenljiva vremena redova \"{name}\" nije pronađena.",
     "rsc": "променљива времена редова \"{name}\" није пронађена."
   },
-  "462": {
+  "461": {
     "en": "file_path must be a non-empty string.",
     "rs": "file_path mora biti neprazan string.",
     "rsc": "file_path мора бити непразан string."
   },
-  "463": {
+  "462": {
     "en": "invalid row time value.",
     "rs": "neispravna vrednost vremena reda.",
     "rsc": "неисправна вредност времена реда."
   },
-  "464": {
+  "463": {
     "en": "group variable \"{name}\" not found.",
     "rs": "grupna promenljiva \"{name}\" nije pronađena.",
     "rsc": "групна променљива \"{name}\" није пронађена."
   },
-  "465": {
+  "464": {
     "en": "data variable \"{name}\" not found.",
     "rs": "data promenljiva \"{name}\" nije pronađena.",
     "rsc": "data променљива \"{name}\" није пронађена."
   },
-  "466": {
+  "465": {
     "en": "variable \"{name}\" not found.",
     "rs": "promenljiva \"{name}\" nije pronađena.",
     "rsc": "променљива \"{name}\" није пронађена."
   },
-  "467": {
+  "466": {
     "en": "fun must be a function or string.",
     "rs": "fun mora biti funkcija ili string.",
     "rsc": "fun мора бити функција или string."
   },
-  "468": {
+  "467": {
     "en": "VariableNames size mismatch.",
     "rs": "neodgovarajuća dužina VariableNames.",
     "rsc": "неодговарајућа дужина VariableNames."
   },
-  "469": {
+  "468": {
     "en": "options must be provided as name/value pairs.",
     "rs": "options mora biti zadat kao parovi ime/vrednost.",
     "rsc": "options мора бити задат као парови име/вредност."
   },
-  "470": {
+  "469": {
     "en": "invalid option \"{key}\".",
     "rs": "neispravna opcija \"{key}\".",
     "rsc": "неисправна опција \"{key}\"."
   },
-  "471": {
+  "470": {
     "en": "input must be table/timetable.",
     "rs": "ulaz mora biti table/timetable.",
     "rsc": "улаз мора бити table/timetable."
   },
-  "472": {
+  "471": {
     "en": "input must be timetable.",
     "rs": "ulaz mora biti timetable.",
     "rsc": "улаз мора бити timetable."
   },
-  "473": {
+  "472": {
     "en": "unsupported method \"{method}\".",
     "rs": "nepodržana metoda \"{method}\".",
     "rsc": "неподржана метода \"{method}\"."
   },
-  "474": {
+  "473": {
     "en": "LeftKeys and RightKeys size mismatch.",
     "rs": "LeftKeys i RightKeys nisu iste dužine.",
     "rsc": "LeftKeys и RightKeys нису исте дужине."
   },
-  "475": {
+  "474": {
     "en": "no join keys resolved.",
     "rs": "nije pronađen nijedan ključ za spajanje.",
     "rsc": "није пронађен ниједан кључ за спајање."
   },
-  "476": {
+  "475": {
     "en": "left key \"{name}\" not found.",
     "rs": "levi ključ \"{name}\" nije pronađen.",
     "rsc": "леви кључ \"{name}\" није пронађен."
   },
-  "477": {
+  "476": {
     "en": "right key \"{name}\" not found.",
     "rs": "desni ključ \"{name}\" nije pronađen.",
     "rsc": "десни кључ \"{name}\" није пронађен."
   },
-  "478": {
+  "477": {
     "en": "variable \"{key}\" not found.",
     "rs": "promenljiva \"{key}\" nije pronađena.",
     "rsc": "променљива \"{key}\" није пронађена."
   },
-  "479": {
+  "478": {
     "en": "variable name must be non-empty.",
     "rs": "ime promenljive mora biti neprazno.",
     "rsc": "име променљиве мора бити непразно."
   },
-  "480": {
+  "479": {
     "en": "variable \"{key}\" height mismatch.",
     "rs": "promenljiva \"{key}\" nema odgovarajuću visinu.",
     "rsc": "променљива \"{key}\" нема одговарајућу висину."
   },
-  "481": {
+  "480": {
     "en": "variable \"{name}\" not found.",
     "rs": "promenljiva \"{name}\" nije pronađena.",
     "rsc": "променљива \"{name}\" није пронађена."
   },
-  "482": {
+  "481": {
     "en": "old_names/new_names size mismatch.",
     "rs": "old_names/new_names nemaju istu dužinu.",
     "rsc": "old_names/new_names немају исту дужину."
   },
-  "483": {
+  "482": {
     "en": "variable \"{name}\" not found.",
     "rs": "promenljiva \"{name}\" nije pronađena.",
     "rsc": "променљива \"{name}\" није пронађена."
   },
-  "484": {
+  "483": {
     "en": "NewVariableNames size mismatch.",
     "rs": "NewVariableNames ne odgovara broju promenljivih.",
     "rsc": "NewVariableNames не одговара броју променљивих."
   },
-  "485": {
+  "484": {
     "en": "variable \"{name}\" height mismatch.",
     "rs": "promenljiva \"{name}\" nema odgovarajuću visinu.",
     "rsc": "променљива \"{name}\" нема одговарајућу висину."
   },
-  "486": {
+  "485": {
     "en": "predicate must be a function.",
     "rs": "predicate mora biti funkcija.",
     "rsc": "predicate мора бити функција."
   },
-  "487": {
+  "486": {
     "en": "invalid sort key.",
     "rs": "neispravan ključ sortiranja.",
     "rsc": "неисправан кључ сортирања."
   },
-  "488": {
+  "487": {
     "en": "invalid row index.",
     "rs": "neispravan indeks reda.",
     "rsc": "неисправан индекс реда."
+  },
+  "488": {
+    "en": "invalid column \"{col}\".",
+    "rs": "neispravna kolona \"{col}\".",
+    "rsc": "неисправна колона \"{col}\"."
   },
   "489": {
-    "en": "invalid column \"{col}\".",
-    "rs": "neispravna kolona \"{col}\".",
-    "rsc": "неисправна колона \"{col}\"."
-  },
-  "490": {
     "en": "invalid row index.",
     "rs": "neispravan indeks reda.",
     "rsc": "неисправан индекс реда."
   },
-  "491": {
+  "490": {
     "en": "invalid column \"{col}\".",
     "rs": "neispravna kolona \"{col}\".",
     "rsc": "неисправна колона \"{col}\"."
   },
-  "492": {
+  "491": {
     "en": "all variables must have equal height.",
     "rs": "sve promenljive moraju imati istu visinu.",
     "rsc": "све променљиве морају имати исту висину."
   },
-  "493": {
+  "492": {
     "en": "columns must be Array or plain object.",
     "rs": "columns mora biti Array ili plain object.",
     "rsc": "columns мора бити Array или plain object."
   },
-  "494": {
+  "493": {
     "en": "RowNames size mismatch.",
     "rs": "RowNames nema odgovarajuću dužinu.",
     "rsc": "RowNames нема одговарајућу дужину."
   },
-  "495": {
+  "494": {
     "en": "invalid row index.",
     "rs": "neispravan indeks reda.",
     "rsc": "неисправан индекс реда."
   },
-  "496": {
+  "495": {
     "en": "unsupported row selector.",
     "rs": "nepodržan selektor redova.",
     "rsc": "неподржан селектор редова."
   },
-  "497": {
+  "496": {
     "en": "row_times size mismatch.",
     "rs": "row_times nema odgovarajuću dužinu.",
     "rsc": "row_times нема одговарајућу дужину."
   },
-  "498": {
+  "497": {
     "en": "RowNames size mismatch.",
     "rs": "RowNames nema odgovarajuću dužinu.",
     "rsc": "RowNames нема одговарајућу дужину."
   },
-  "499": {
+  "498": {
     "en": "invalid sort key.",
     "rs": "neispravan ključ sortiranja.",
     "rsc": "неисправан кључ сортирања."
   },
-  "500": {
+  "499": {
     "en": "invalid row index.",
     "rs": "neispravan indeks reda.",
     "rsc": "неисправан индекс реда."
   },
-  "501": {
+  "500": {
     "en": "Unable to load class \"{class_name}\" from path: {class_path}",
     "rs": "Nije moguće učitati klasu \"{class_name}\" sa putanje: {class_path}",
     "rsc": "Није могуће учитати класу \"{class_name}\" са путање: {class_path}"
   },
-  "502": {
+  "501": {
     "en": "invalid line range argument.",
     "rs": "neispravan argument opsega linija.",
     "rsc": "неисправан аргумент опсега линија."
   },
-  "503": {
+  "502": {
     "en": "RowName",
     "rs": "Ime reda",
     "rsc": "Име реда"
   },
-  "504": {
+  "503": {
     "en": "Time",
     "rs": "Vreme",
     "rsc": "Време"
   },
-  "505": {
+  "504": {
     "en": "Main",
     "rs": "Glavni",
     "rsc": "Главни"
   },
-  "506": {
+  "505": {
     "en": "JSLAB / MAIN",
     "rs": "JSLAB / GLAVNI",
     "rsc": "JSLAB / ГЛАВНИ"
   },
-  "507": {
+  "506": {
     "en": "JSLAB / EDITOR",
     "rs": "JSLAB / UREĐIVAČ",
     "rsc": "JSLAB / УРЕЂИВАЧ"
   },
-  "508": {
+  "507": {
     "en": "JavaScript LABoratory",
     "rs": "JavaScript LABoratory",
     "rsc": "JavaScript LABoratory"
   },
-  "509": {
+  "508": {
     "en": "by PR-DC company",
     "rs": "by PR-DC company",
     "rsc": "by PR-DC company"
   },
-  "510": {
+  "509": {
     "en": "Infinity",
     "rs": "Beskonačno",
     "rsc": "Бесконачно"
   },
-  "511": {
-    "en": "PRDC_TERMINAL_BUFFER is not available.",
-    "rs": "PRDC_TERMINAL_BUFFER nije dostupan.",
-    "rsc": "PRDC_TERMINAL_BUFFER није доступан."
+  "510": {
+    "en": "PRDC_JSLAB_TERMINAL_BUFFER is not available.",
+    "rs": "PRDC_JSLAB_TERMINAL_BUFFER nije dostupan.",
+    "rsc": "PRDC_JSLAB_TERMINAL_BUFFER није доступан."
   },
-  "512": {
+  "511": {
     "en": "JSLAB",
     "rs": "JSLAB",
     "rsc": "JSLAB"
   },
-  "513": {
+  "512": {
     "en": "Sandbox | JSLAB",
     "rs": "Radni prostor | JSLAB",
     "rsc": "Радни простор | JSLAB"
   },
-  "514": {
+  "513": {
     "en": "Editor | JSLAB",
     "rs": "Uređivač | JSLAB",
     "rsc": "Уређивач | JSLAB"
   },
-  "515": {
+  "514": {
     "en": "Presentation - JSLAB | PR-DC",
     "rs": "Prezentacija - JSLAB | PR-DC",
     "rsc": "Презентација - JSLAB | PR-DC"
   },
-  "516": {
+  "515": {
     "en": "Presentation editor - JSLAB | PR-DC",
     "rs": "Uređivač prezentacije - JSLAB | PR-DC",
     "rsc": "Уређивач презентације - JSLAB | PR-DC"
   },
-  "517": {
+  "516": {
     "en": "Serial Terminal - JSLAB | PR-DC",
     "rs": "Serijski terminal - JSLAB | PR-DC",
     "rsc": "Серијски терминал - JSLAB | PR-DC"
   },
-  "518": {
+  "517": {
     "en": "Editor - JSLAB | PR-DC",
     "rs": "Uređivač - JSLAB | PR-DC",
     "rsc": "Уређивач - JSLAB | PR-DC"
   },
-  "519": {
+  "518": {
     "en": "JSLAB | PR-DC",
     "rs": "JSLAB | PR-DC",
     "rsc": "JSLAB | PR-DC"
   },
-  "520": {
+  "519": {
     "en": "Serial Terminal",
     "rs": "Serijski terminal",
     "rsc": "Серијски терминал"
   },
-  "521": {
+  "520": {
     "en": "Window - JSLAB | PR-DC",
     "rs": "Prozor - JSLAB | PR-DC",
     "rsc": "Прозор - JSLAB | PR-DC"
   },
-  "522": {
+  "521": {
     "en": "Figure - JSLAB | PR-DC",
     "rs": "Figura - JSLAB | PR-DC",
     "rsc": "Фигура - JSLAB | PR-DC"
   },
-  "523": {
+  "522": {
     "en": "Leaflet Plot - JSLAB | PR-DC",
     "rs": "Leaflet graf - JSLAB | PR-DC",
     "rsc": "Leaflet граф - JSLAB | PR-DC"
   },
-  "524": {
+  "523": {
     "en": "Plotlyjs Plot - JSLAB | PR-DC",
     "rs": "Plotlyjs graf - JSLAB | PR-DC",
     "rsc": "Plotlyjs граф - JSLAB | PR-DC"
   },
-  "525": {
+  "524": {
     "en": "D3 Canvas - JSLAB | PR-DC",
     "rs": "D3 platno - JSLAB | PR-DC",
     "rsc": "D3 платно - JSLAB | PR-DC"
   },
-  "526": {
+  "525": {
     "en": "THREE - JSLAB | PR-DC",
     "rs": "THREE - JSLAB | PR-DC",
     "rsc": "THREE - JSLAB | PR-DC"
   },
-  "527": {
+  "526": {
     "en": "URL - JSLAB | PR-DC",
     "rs": "URL - JSLAB | PR-DC",
     "rsc": "URL - JSLAB | PR-DC"
   },
-  "528": {
+  "527": {
     "en": "Graph - JSLAB | PR-DC",
     "rs": "Graf - JSLAB | PR-DC",
     "rsc": "Граф - JSLAB | PR-DC"
   },
-  "529": {
+  "528": {
     "en": "Cesium Plot - JSLAB | PR-DC",
     "rs": "Cesium graf - JSLAB | PR-DC",
     "rsc": "Cesium граф - JSLAB | PR-DC"
   },
-  "530": {
+  "529": {
     "en": "Webcam",
     "rs": "Veb kamera",
     "rsc": "Веб камера"
   },
-  "531": {
+  "530": {
     "en": "Audio Waveform",
     "rs": "Audio talasni oblik",
     "rsc": "Аудио таласни облик"
   },
-  "532": {
+  "531": {
     "en": "Beam Diagrams",
     "rs": "Dijagrami grede",
     "rsc": "Дијаграми греде"
   },
-  "533": {
+  "532": {
     "en": "Video call",
     "rs": "Video poziv",
     "rsc": "Видео позив"
   },
-  "534": {
+  "533": {
     "en": "JSLAB / DOCUMENTATION",
     "rs": "JSLAB / DOKUMENTACIJA",
     "rsc": "JSLAB / ДОКУМЕНТАЦИЈА"
   },
-  "535": {
+  "534": {
     "en": "JSLAB Discourse",
     "rs": "JSLAB diskusija",
     "rsc": "JSLAB дискусија"
   },
-  "536": {
+  "535": {
     "en": "20",
     "rs": "20",
     "rsc": "20"
   },
-  "537": {
+  "536": {
     "en": "Insert Slide After",
     "rs": "Umetni slajd posle",
     "rsc": "Уметни слајд после"
   },
-  "538": {
+  "537": {
     "en": "Duplicate Slide",
     "rs": "Dupliciraj slajd",
     "rsc": "Дуплирај слајд"
   },
-  "539": {
+  "538": {
     "en": "Presentation modified",
     "rs": "Prezentacija je izmenjena",
     "rsc": "Презентација је измењена"
   },
-  "540": {
+  "539": {
     "en": "The presentation",
     "rs": "Prezentacija",
     "rsc": "Презентација"
   },
-  "541": {
+  "540": {
     "en": "is about to be closed but has been modified. Do you want to save or discard the changes?",
     "rs": "će biti zatvorena ali je izmenjena. Da li želite da sačuvate ili odbacite izmene?",
     "rsc": "ће бити затворена али је измењена. Да ли желите да сачувате или одбаците измене?"
   },
-  "542": {
+  "541": {
     "en": "This presentation must be opened inside JSLAB.",
     "rs": "Ova prezentacija mora biti otvorena unutar JSLAB-a.",
     "rsc": "Ова презентација мора бити отворена унутар JSLAB-а."
   },
-  "543": {
+  "542": {
     "en": "Import from URL",
     "rs": "Uvezi sa URL-a",
     "rsc": "Увези са URL-а"
   },
-  "544": {
+  "543": {
     "en": "Enter a direct file URL. The remote server must allow CORS.",
     "rs": "Unesite direktan URL datoteke. Udaljeni server mora da dozvoli CORS.",
     "rsc": "Унесите директан URL датотеке. Удаљени сервер мора да дозволи CORS."
   },
-  "545": {
+  "544": {
     "en": "URL",
     "rs": "URL",
     "rsc": "URL"
   },
-  "546": {
+  "545": {
     "en": "Imported file from URL:",
     "rs": "Uvezena datoteka sa URL-a:",
     "rsc": "Увезена датотека са URL-а:"
   },
-  "547": {
+  "546": {
     "en": "Failed to import from URL:",
     "rs": "Neuspešan uvoz sa URL-a:",
     "rsc": "Неуспешан увоз са URL-а:"
   },
-  "548": {
+  "547": {
     "en": "Copy share link",
     "rs": "Kopiraj link za deljenje",
     "rsc": "Копирај линк за дељење"
   },
-  "549": {
+  "548": {
     "en": "Share link copied:",
     "rs": "Link za deljenje je kopiran:",
     "rsc": "Линк за дељење је копиран:"
   },
-  "550": {
+  "549": {
     "en": "Unable to copy automatically. Copy this share link manually.",
     "rs": "Automatsko kopiranje nije uspelo. Ručno kopirajte ovaj link za deljenje.",
     "rsc": "Аутоматско копирање није успело. Ручно копирајте овај линк за дељење."
   },
-  "551": {
+  "550": {
     "en": "Enter a direct file URL to generate a JSLAB share link.",
     "rs": "Unesite direktan URL datoteke za generisanje JSLAB linka za deljenje.",
     "rsc": "Унесите директан URL датотеке за генерисање JSLAB линка за дељење."
   },
-  "552": {
+  "551": {
     "en": "Share link",
     "rs": "Link za deljenje",
     "rsc": "Линк за дељење"
   },
-  "553": {
+  "552": {
     "en": "IMPORT",
     "rs": "UVEZI",
     "rsc": "УВЕЗИ"
   },
-  "554": {
+  "553": {
     "en": "Notes",
     "rs": "Beleške",
     "rsc": "Белешке"
   },
-  "555": {
+  "554": {
     "en": "Debugger",
     "rs": "Debager",
     "rsc": "Дебагер"
   },
-  "556": {
+  "555": {
     "en": "Debugger (paused)",
     "rs": "Debager (pauzirano)",
     "rsc": "Дебагер (паузирано)"
   },
-  "557": {
+  "556": {
     "en": "Execution controls",
     "rs": "Kontrole izvršavanja",
     "rsc": "Контроле извршавања"
   },
-  "558": {
+  "557": {
     "en": "Errors",
     "rs": "Greške",
     "rsc": "Грешке"
   },
-  "559": {
+  "558": {
     "en": "Do not pause",
     "rs": "Ne pauziraj",
     "rsc": "Не паузирај"
   },
-  "560": {
+  "559": {
     "en": "Uncaught by user",
     "rs": "Nepresretnute greške",
     "rsc": "Непресретнуте грешке"
   },
-  "561": {
+  "560": {
     "en": "All exceptions",
     "rs": "Sve greške",
     "rsc": "Све грешке"
   },
-  "562": {
+  "561": {
     "en": "Pause",
     "rs": "Pauziraj",
     "rsc": "Паузирај"
   },
-  "563": {
+  "562": {
     "en": "Continue",
     "rs": "Nastavi",
     "rsc": "Настави"
   },
-  "564": {
+  "563": {
     "en": "Step over",
     "rs": "Korak preko",
     "rsc": "Корак преко"
   },
-  "565": {
+  "564": {
     "en": "Step into",
     "rs": "Korak u",
     "rsc": "Корак у"
   },
-  "566": {
+  "565": {
     "en": "Step out",
     "rs": "Korak iz",
     "rsc": "Корак из"
   },
-  "567": {
+  "566": {
     "en": "Apply saved source",
     "rs": "Primeni sačuvani izvor",
     "rsc": "Примени сачувани извор"
   },
-  "568": {
+  "567": {
     "en": "Apply saved functions",
     "rs": "Primeni sačuvane funkcije",
     "rsc": "Примени сачуване функције"
   },
-  "569": {
+  "568": {
     "en": "Restart frame",
     "rs": "Ponovo pokreni okvir",
     "rsc": "Поново покрени оквир"
   },
-  "570": {
+  "569": {
     "en": "Reset worker",
     "rs": "Ponovo pokreni radnika",
     "rsc": "Поново покрени радника"
   },
-  "571": {
+  "570": {
     "en": "Target",
     "rs": "Cilj",
     "rsc": "Циљ"
   },
-  "572": {
+  "571": {
     "en": "Call stack",
     "rs": "Stek poziva",
     "rsc": "Стек позива"
   },
-  "573": {
+  "572": {
     "en": "Scope",
     "rs": "Opseg",
     "rsc": "Опсег"
   },
-  "574": {
+  "573": {
     "en": "Main workspace",
     "rs": "Glavni radni prostor",
     "rsc": "Главни радни простор"
   },
-  "575": {
+  "574": {
     "en": "Pause execution",
     "rs": "Pauziraj izvršavanje",
     "rsc": "Паузирај извршавање"
   },
-  "576": {
+  "575": {
     "en": "Interrupt execution (Ctrl+C)",
     "rs": "Prekini izvršavanje (Ctrl+C)",
     "rsc": "Прекини извршавање (Ctrl+C)"
   },
-  "577": {
+  "576": {
     "en": "Apply the selected saved source while paused",
     "rs": "Primeni izabrani sačuvani izvor tokom pauze",
     "rsc": "Примени изабрани сачувани извор током паузе"
   },
-  "578": {
+  "577": {
     "en": "Restart the selected frame; preceding side effects may execute again",
     "rs": "Ponovo pokreni izabrani okvir; prethodni sporedni efekti mogu se ponoviti",
     "rsc": "Поново покрени изабрани оквир; претходни споредни ефекти могу се поновити"
   },
-  "579": {
+  "578": {
     "en": "Apply saved top-level functions to future calls; current frames keep their code",
     "rs": "Primeni sačuvane funkcije najvišeg nivoa na buduće pozive; trenutni okviri zadržavaju svoj kod",
     "rsc": "Примени сачуване функције највишег нивоа на будуће позиве; тренутни оквири задржавају свој код"
   },
-  "580": {
+  "579": {
     "en": "Discard the worker workspace and restart",
     "rs": "Odbaci radni prostor radnika i ponovo ga pokreni",
     "rsc": "Одбаци радни простор радника и поново га покрени"
   },
-  "581": {
+  "580": {
     "en": "Debugging is unavailable with this hosting setup.",
     "rs": "Otklanjanje grešaka nije dostupno sa ovim podešavanjima servera.",
     "rsc": "Отклањање грешака није доступно са овим подешавањима сервера."
   },
-  "582": {
+  "581": {
     "en": "Paused. Inspect variables or enter a debug command.",
     "rs": "Pauzirano. Pregledajte promenljive ili unesite komandu debagera.",
     "rsc": "Паузирано. Прегледајте променљиве или унесите команду дебагера."
   },
-  "583": {
+  "582": {
     "en": "Paused",
     "rs": "Pauzirano",
     "rsc": "Паузирано"
   },
-  "584": {
+  "583": {
     "en": "Edit was not applied: ",
     "rs": "Izmena nije primenjena: ",
     "rsc": "Измена није примењена: "
   },
-  "585": {
+  "584": {
     "en": "Save the source file before applying debugger edits.",
     "rs": "Sačuvajte izvornu datoteku pre primene izmena debagera.",
     "rsc": "Сачувајте изворну датотеку пре примене измена дебагера."
   },
-  "586": {
+  "585": {
     "en": "Save this script before setting a breakpoint.",
     "rs": "Sačuvajte ovu skriptu pre postavljanja prekidne tačke.",
     "rsc": "Сачувајте ову скрипту пре постављања прекидне тачке."
   },
-  "587": {
+  "586": {
     "en": "Breakpoint condition",
     "rs": "Uslov prekidne tačke",
     "rsc": "Услов прекидне тачке"
   },
-  "588": {
+  "587": {
     "en": "Condition (empty means always)",
     "rs": "Uslov (prazno znači uvek)",
     "rsc": "Услов (празно значи увек)"
   },
-  "589": {
+  "588": {
     "en": "Enabled",
     "rs": "Omogućeno",
     "rsc": "Омогућено"
   },
-  "590": {
+  "589": {
     "en": "Save breakpoint",
     "rs": "Sačuvaj prekidnu tačku",
     "rsc": "Сачувај прекидну тачку"
   },
-  "591": {
+  "590": {
     "en": "Always pause",
     "rs": "Uvek pauziraj",
     "rsc": "Увек паузирај"
   },
-  "592": {
+  "591": {
     "en": "Disabled: ",
     "rs": "Onemogućeno: ",
     "rsc": "Онемогућено: "
   },
-  "593": {
+  "592": {
     "en": " (Shift-click to edit)",
     "rs": " (Shift-klik za izmenu)",
     "rsc": " (Shift-клик за измену)"
   },
-  "594": {
+  "593": {
     "en": "[accessor]",
     "rs": "[pristupnik]",
     "rsc": "[приступник]"
   },
-  "595": {
+  "594": {
     "en": "[unavailable]",
     "rs": "[nedostupno]",
     "rsc": "[недоступно]"
   },
-  "596": {
+  "595": {
     "en": "Local Disk (C:)",
     "rs": "Lokalni disk (C:)",
     "rsc": "Локални диск (C:)"
   },
-  "597": {
+  "596": {
     "en": "Download",
     "rs": "Preuzmi",
     "rsc": "Преузми"
   },
-  "598": {
+  "597": {
     "en": "Import",
     "rs": "Uvezi",
     "rsc": "Увези"
   },
-  "599": {
+  "598": {
     "en": "Import files",
     "rs": "Uvezi datoteke",
     "rsc": "Увези датотеке"
   },
-  "600": {
+  "599": {
     "en": "Import folder",
     "rs": "Uvezi fasciklu",
     "rsc": "Увези фасциклу"
   },
-  "601": {
+  "600": {
     "en": "See More",
     "rs": "Više detalja",
     "rsc": "Више детаља"
   },
-  "602": {
+  "601": {
     "en": "Parameters",
     "rs": "Parametri",
     "rsc": "Параметри"
   },
-  "603": {
+  "602": {
     "en": "Returns",
     "rs": "Vraća",
     "rsc": "Враћа"
   },
-  "604": {
+  "603": {
     "en": "Minimize",
     "rs": "Umanji",
     "rsc": "Умањи"
   },
-  "605": {
+  "604": {
     "en": "Maximize",
     "rs": "Uvećaj",
     "rsc": "Увећај"
   },
-  "606": {
+  "605": {
     "en": "Close",
     "rs": "Zatvori",
     "rsc": "Затвори"
   },
-  "607": {
+  "606": {
     "en": "Start",
     "rs": "Pokreni",
     "rsc": "Покрени"
   },
-  "608": {
+  "607": {
     "en": "Window",
     "rs": "Prozor",
     "rsc": "Прозор"
   },
-  "609": {
+  "608": {
     "en": "Plotlyjs Plot",
     "rs": "Plotlyjs grafikon",
     "rsc": "Plotlyjs графикон"
   },
-  "610": {
+  "609": {
     "en": "D3 Canvas",
     "rs": "D3 platno",
     "rsc": "D3 платно"
   },
-  "611": {
+  "610": {
     "en": "Leaflet Plot",
     "rs": "Leaflet grafikon",
     "rsc": "Leaflet графикон"
   },
-  "612": {
+  "611": {
     "en": "Cesium Plot",
     "rs": "Cesium grafikon",
     "rsc": "Cesium графикон"
   },
-  "613": {
+  "612": {
     "en": "Figure",
     "rs": "Grafikon",
     "rsc": "Графикон"
   },
-  "614": {
+  "613": {
     "en": "Graph",
     "rs": "Graf",
     "rsc": "Граф"
   },
-  "615": {
+  "614": {
     "en": "Presentation Editor",
     "rs": "Uređivač prezentacija",
     "rsc": "Уређивач презентација"
   },
-  "616": {
+  "615": {
     "en": "Save log as",
     "rs": "Sačuvaj dnevnik kao",
     "rsc": "Сачувај дневник као"
   },
-  "617": {
+  "616": {
     "en": "Move Slide Up",
     "rs": "Pomeri slajd nagore",
     "rsc": "Помери слајд нагоре"
   },
-  "618": {
+  "617": {
     "en": "Move Slide Down",
     "rs": "Pomeri slajd nadole",
     "rsc": "Помери слајд надоле"
   },
-  "619": {
+  "618": {
     "en": "Delete Slide",
     "rs": "Obriši slajd",
     "rsc": "Обриши слајд"
   },
-  "620": {
+  "619": {
     "en": "This paused frame is no longer available.",
     "rs": "Ovaj pauzirani okvir više nije dostupan.",
     "rsc": "Овај паузирани оквир више није доступан."
   },
-  "621": {
+  "620": {
     "en": "Only a bounded preview is shown.",
     "rs": "Prikazan je samo ograničen pregled.",
     "rsc": "Приказан је само ограничен преглед."
   },
-  "622": {
+  "621": {
     "en": "Running",
     "rs": "Izvršavanje",
     "rsc": "Извршавање"
   },
-  "623": {
+  "622": {
     "en": "Advanced",
     "rs": "Napredno",
     "rsc": "Напредно"
   },
-  "624": {
+  "623": {
     "en": "Async call history",
     "rs": "Istorija asinhronih poziva",
     "rsc": "Историја асинхроних позива"
   },
-  "625": {
+  "624": {
     "en": "The call stack appears while execution is paused in your code.",
     "rs": "Stek poziva se prikazuje dok je izvršavanje vašeg koda pauzirano.",
     "rsc": "Стек позива се приказује док је извршавање вашег кода паузирано."
   },
-  "626": {
+  "625": {
     "en": "Continue to the next breakpoint or finish execution.",
     "rs": "Nastavi do sledeće tačke prekida ili kraja izvršavanja.",
     "rsc": "Настави до следеће тачке прекида или краја извршавања."
   },
-  "627": {
+  "626": {
     "en": "Execute the next line without entering called functions.",
     "rs": "Izvrši sledeći red bez ulaska u pozvane funkcije.",
     "rsc": "Изврши следећи ред без уласка у позване функције."
   },
-  "628": {
+  "627": {
     "en": "Enter the function called on the current line.",
     "rs": "Uđi u funkciju pozvanu u trenutnom redu.",
     "rsc": "Уђи у функцију позвану у тренутном реду."
   },
-  "629": {
+  "628": {
     "en": "Finish the current function and pause in its caller.",
     "rs": "Završi trenutnu funkciju i pauziraj u pozivaocu.",
     "rsc": "Заврши тренутну функцију и паузирај у позиваоцу."
   },
-  "630": {
+  "629": {
     "en": "Console object is no longer available.",
     "rs": "Objekat konzole više nije dostupan.",
     "rsc": "Објекат конзоле више није доступан."
   },
-  "631": {
+  "630": {
     "en": "Unable to inspect value.",
     "rs": "Nije moguće pregledati vrednost.",
     "rsc": "Није могуће прегледати вредност."
   },
-  "632": {
+  "631": {
     "en": "Sandbox is not ready.",
     "rs": "Sandbox nije spreman.",
     "rsc": "Sandbox није спреман."
   },
-  "634": {
+  "632": {
+    "en": "{count} more",
+    "rs": "još {count}",
+    "rsc": "још {count}"
+  },
+  "633": {
     "en": "Getter is not available.",
     "rs": "Getter nije dostupan.",
     "rsc": "Getter није доступан."
   },
-  "635": {
+  "634": {
     "en": "Add live expression",
     "rs": "Dodaj aktivni izraz",
     "rsc": "Додај активни израз"
   },
-  "636": {
+  "635": {
     "en": "Remove live expression",
     "rs": "Ukloni aktivni izraz",
     "rsc": "Уклони активни израз"
   },
-  "637": {
+  "636": {
     "en": "Live expressions",
     "rs": "Aktivni izrazi",
     "rsc": "Активни изрази"
   },
-  "638": {
+  "637": {
     "en": "Filter console",
     "rs": "Filtriraj konzolu",
     "rsc": "Филтрирај конзолу"
   },
-  "639": {
+  "638": {
     "en": "All levels",
     "rs": "Svi nivoi",
     "rsc": "Сви нивои"
   },
-  "640": {
+  "639": {
     "en": "Expand all",
     "rs": "Proširi sve",
     "rsc": "Прошири све"
   },
-  "641": {
+  "640": {
     "en": "Collapse all",
     "rs": "Skupi sve",
     "rsc": "Скупи све"
   },
-  "642": {
+  "641": {
     "en": "Copy console",
     "rs": "Kopiraj konzolu",
     "rsc": "Копирај конзолу"
   },
-  "643": {
+  "642": {
     "en": "Info",
     "rs": "Informacije",
     "rsc": "Информације"
   },
-  "644": {
+  "643": {
     "en": "Warnings",
     "rs": "Upozorenja",
     "rsc": "Упозорења"
   },
-  "645": {
+  "644": {
     "en": "Errors",
     "rs": "Greške",
     "rsc": "Грешке"
   },
-  "646": {
+  "645": {
     "en": "Try it online",
     "rs": "Probaj onlajn",
     "rsc": "Пробај онлајн"
   },
-  "647": {
+  "646": {
     "en": "Windows CLI",
     "rs": "Windows komandna linija",
     "rsc": "Windows командна линија"
   },
-  "648": {
+  "647": {
     "en": "AI agents and MCP",
     "rs": "AI agenti i MCP",
     "rsc": "AI агенти и MCP"
   },
-  "649": {
+  "648": {
     "en": "Clear console output",
     "rs": "Obriši izlaz konzole",
     "rsc": "Обриши излаз конзоле"
   },
-  "650": {
+  "649": {
     "en": "Show completion suggestions",
     "rs": "Prikaži predloge za dovršavanje",
     "rsc": "Прикажи предлоге за довршавање"
   },
-  "651": {
+  "650": {
     "en": "Assistant",
     "rs": "Asistent",
     "rsc": "Асистент"
   },
-  "652": {
+  "651": {
     "en": "OpenAI API key",
     "rs": "OpenAI API ključ",
     "rsc": "OpenAI API кључ"
   },
-  "653": {
+  "652": {
     "en": "API key saved",
     "rs": "API ključ je sačuvan",
     "rsc": "API кључ је сачуван"
   },
-  "654": {
+  "653": {
     "en": "Send",
     "rs": "Pošalji",
     "rsc": "Пошаљи"
   },
-  "655": {
+  "654": {
     "en": "Stop",
     "rs": "Zaustavi",
     "rsc": "Заустави"
   },
-  "656": {
+  "655": {
     "en": "Clear conversation",
     "rs": "Obriši razgovor",
     "rsc": "Обриши разговор"
   },
-  "657": {
+  "656": {
     "en": "Ask Assistant...",
     "rs": "Pitaj Asistenta...",
     "rsc": "Питај Асистента..."
   },
-  "658": {
+  "657": {
     "en": "Configure an OpenAI API key in Settings.",
     "rs": "Podesite OpenAI API ključ u Podešavanjima.",
     "rsc": "Подесите OpenAI API кључ у Подешавањима."
   },
-  "659": {
+  "658": {
     "en": "New conversation",
     "rs": "Novi razgovor",
     "rsc": "Нови разговор"
   },
-  "660": {
+  "659": {
     "en": "Assistant | JSLAB",
     "rs": "Asistent | JSLAB",
     "rsc": "Асистент | JSLAB"
   },
-  "661": {
+  "660": {
     "en": "Allow Assistant to replace the selected Editor text?",
     "rs": "Dozvoliti Asistentu da zameni izabrani tekst u Editoru?",
     "rsc": "Дозволити Асистенту да замени изабрани текст у Едитору?"
   },
-  "662": {
+  "661": {
     "en": "Apply",
     "rs": "Primeni",
     "rsc": "Примени"
   },
-  "663": {
+  "662": {
     "en": "Clear API key",
     "rs": "Obriši API ključ",
     "rsc": "Обриши API кључ"
   },
-  "664": {
+  "663": {
     "en": "The API key is stored securely on this device.",
     "rs": "API ključ je bezbedno sačuvan na ovom uređaju.",
     "rsc": "API кључ је безбедно сачуван на овом уређају."
   },
-  "665": {
+  "664": {
     "en": "Thinking...",
     "rs": "Razmišljam...",
     "rsc": "Размишљам..."
   },
-  "666": {
+  "665": {
     "en": "You",
     "rs": "Vi",
     "rsc": "Ви"
   },
-  "667": {
+  "666": {
     "en": "Terminal",
     "rs": "Terminal",
     "rsc": "Терминал"
   },
-  "668": {
+  "667": {
     "en": "New terminal",
     "rs": "Novi terminal",
     "rsc": "Нови терминал"
   },
-  "669": {
+  "668": {
     "en": "Clear terminal",
     "rs": "Obriši terminal",
     "rsc": "Обриши терминал"
   },
-  "670": {
+  "669": {
     "en": "Terminal | JSLAB",
     "rs": "Terminal | JSLAB",
     "rsc": "Терминал | JSLAB"
   },
-  "671": {
+  "670": {
     "en": "Process exited with code {code}",
     "rs": "Proces je završen kodom {code}",
     "rsc": "Процес је завршен кодом {code}"
   },
-  "672": {
+  "671": {
     "en": "Save conversation",
     "rs": "Sačuvaj razgovor",
     "rsc": "Сачувај разговор"
   },
-  "633": {
-    "en": "{count} more",
-    "rs": "još {count}",
-    "rsc": "још {count}"
+  "672": {
+    "en": "Simulate",
+    "rs": "Simuliraj",
+    "rsc": "Симулирај"
+  },
+  "673": {
+    "en": "JSLAB / SIMULATE",
+    "rs": "JSLAB / SIMULIRAJ",
+    "rsc": "JSLAB / СИМУЛИРАЈ"
+  },
+  "674": {
+    "en": "Simulate project or source file was not found.",
+    "rs": "Simulate projekat ili izvorni fajl nije pronađen.",
+    "rsc": "Simulate пројекат или изворни фајл није пронађен."
+  },
+  "675": {
+    "en": "Simulation stopped by user.",
+    "rs": "Korisnik je zaustavio simulaciju.",
+    "rsc": "Корисник је зауставио симулацију."
+  },
+  "676": {
+    "en": "Simulation of {model} completed: {samples} samples and {variables} variables. Results are available in the workspace as simulation.",
+    "rs": "Simulacija modela {model} je završena: {samples} uzoraka i {variables} promenljivih. Rezultati su dostupni u radnom prostoru kao simulation.",
+    "rsc": "Симулација модела {model} је завршена: {samples} узорака и {variables} променљивих. Резултати су доступни у радном простору као simulation."
+  },
+  "677": {
+    "en": "The result does not contain a 3D scene.",
+    "rs": "Rezultat ne sadrži 3D scenu.",
+    "rsc": "Резултат не садржи 3D сцену."
+  },
+  "678": {
+    "en": "The API key is available until this page is closed.",
+    "rs": "API ključ je dostupan dok se ova stranica ne zatvori.",
+    "rsc": "API кључ је доступан док се ова страница не затвори."
+  },
+  "679": {
+    "en": "Playback speed",
+    "rs": "Brzina reprodukcije",
+    "rsc": "Брзина репродукције"
+  },
+  "680": {
+    "en": "Add block…",
+    "rs": "Dodaj blok…",
+    "rsc": "Додај блок…"
+  },
+  "681": {
+    "en": "Categories",
+    "rs": "Kategorije",
+    "rsc": "Категорије"
+  },
+  "682": {
+    "en": "Recommended blocks",
+    "rs": "Preporučeni blokovi",
+    "rsc": "Препоручени блокови"
+  },
+  "683": {
+    "en": "Properties…",
+    "rs": "Svojstva…",
+    "rsc": "Својства…"
+  },
+  "684": {
+    "en": "Duplicate",
+    "rs": "Dupliraj",
+    "rsc": "Дуплирај"
+  },
+  "685": {
+    "en": "Rotate clockwise",
+    "rs": "Rotiraj udesno",
+    "rsc": "Ротирај удесно"
+  },
+  "686": {
+    "en": "Rotate counterclockwise",
+    "rs": "Rotiraj ulevo",
+    "rsc": "Ротирај улево"
+  },
+  "687": {
+    "en": "Flip horizontally",
+    "rs": "Preslikaj horizontalno",
+    "rsc": "Пресликај хоризонтално"
+  },
+  "688": {
+    "en": "Flip vertically",
+    "rs": "Preslikaj vertikalno",
+    "rsc": "Пресликај вертикално"
+  },
+  "689": {
+    "en": "There are no blocks in this category. Choose a subcategory on the left.",
+    "rs": "U ovoj kategoriji nema blokova. Izaberite potkategoriju sa leve strane.",
+    "rsc": "У овој категорији нема блокова. Изаберите поткатегорију са леве стране."
+  },
+  "690": {
+    "en": "Standard library",
+    "rs": "Standardna biblioteka",
+    "rsc": "Стандардна библиотека"
+  },
+  "691": {
+    "en": "Show in block library",
+    "rs": "Prikaži u biblioteci blokova",
+    "rsc": "Прикажи у библиотеци блокова"
+  },
+  "692": {
+    "en": "Search results",
+    "rs": "Rezultati pretrage",
+    "rsc": "Резултати претраге"
+  },
+  "693": {
+    "en": "No matching blocks.",
+    "rs": "Nema odgovarajućih blokova.",
+    "rsc": "Нема одговарајућих блокова."
+  },
+  "694": {
+    "en": "Play",
+    "rs": "Pokreni",
+    "rsc": "Покрени"
+  },
+  "695": {
+    "en": "Pause",
+    "rs": "Pauziraj",
+    "rsc": "Паузирај"
+  },
+  "696": {
+    "en": "Animation position",
+    "rs": "Položaj animacije",
+    "rsc": "Положај анимације"
   }
 }

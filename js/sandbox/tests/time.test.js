@@ -5,45 +5,57 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_TIME } = require('../time');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for time test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_TIME_TEST_HELPER {
 
-function createTimeHarness(millis_value = 1700000000000) {
-  var format_calls = [];
+  /**
+   * Creates time harness.
+   * @param {*} [millis_value] Millis value.
+   */
+  static createTimeHarness(millis_value = 1700000000000) {
+    var format_calls = [];
 
-  var jsl = {
-    context: {},
-    inter: {
-      luxon: {
-        DateTime: {
-          now: function() {
-            return {
-              zone: '',
-              setZone: function(zone) {
-                this.zone = zone;
-                return this;
-              },
-              toMillis: function() {
-                return millis_value;
-              },
-              toFormat: function(format) {
-                format_calls.push({ zone: this.zone, format: format });
-                return this.zone + '|' + format;
-              }
-            };
+    var jsl = {
+      context: {},
+      inter: {
+        luxon: {
+          DateTime: {
+            now: function() {
+              return {
+                zone: '',
+                setZone: function(zone) {
+                  this.zone = zone;
+                  return this;
+                },
+                toMillis: function() {
+                  return millis_value;
+                },
+                toFormat: function(format) {
+                  format_calls.push({ zone: this.zone, format: format });
+                  return this.zone + '|' + format;
+                }
+              };
+            }
           }
         }
       }
-    }
-  };
+    };
 
-  var time = new PRDC_JSLAB_LIB_TIME(jsl);
-  return { time, jsl, format_calls };
+    var time = new PRDC_JSLAB_LIB_TIME(jsl);
+    return { time, jsl, format_calls };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_TIME } = require('../time');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('tic getter stores last_tic on context', function(assert) {
-  var harness = createTimeHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_TIME_TEST_HELPER.createTimeHarness();
   var tic_value = harness.jsl.context.tic;
 
   assert.ok(typeof tic_value === 'number');
@@ -51,7 +63,7 @@ tests.add('tic getter stores last_tic on context', function(assert) {
 }, { tags: ['unit', 'time'] });
 
 tests.add('toc and tocms return non-negative elapsed durations', function(assert) {
-  var harness = createTimeHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_TIME_TEST_HELPER.createTimeHarness();
   var start = harness.jsl.context.tic;
   var elapsed_s = harness.time.toc(start);
   var elapsed_ms = harness.time.tocms(start);
@@ -63,7 +75,7 @@ tests.add('toc and tocms return non-negative elapsed durations', function(assert
 }, { tags: ['unit', 'time'] });
 
 tests.add('tic retains its runtime when global jsl is replaced', function(assert) {
-  var harness = createTimeHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_TIME_TEST_HELPER.createTimeHarness();
   for(const global_jsl of [undefined, null, { context: {} }]) {
     harness.jsl.context.jsl = global_jsl;
     var start = harness.jsl.context.tic;
@@ -74,7 +86,7 @@ tests.add('tic retains its runtime when global jsl is replaced', function(assert
 }, { tags: ['unit', 'time'] });
 
 tests.add('timezone-aware date/time formatting delegates expected format strings', function(assert) {
-  var harness = createTimeHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_TIME_TEST_HELPER.createTimeHarness();
   harness.time.setTimezone('UTC');
 
   assert.equal(harness.time.getTime(), 'UTC|HH:mm:ss');
@@ -86,7 +98,7 @@ tests.add('timezone-aware date/time formatting delegates expected format strings
 }, { tags: ['unit', 'time'] });
 
 tests.add('getTimestamp uses configured timezone and returns milliseconds', function(assert) {
-  var harness = createTimeHarness(123456789);
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_TIME_TEST_HELPER.createTimeHarness(123456789);
   harness.time.setTimezone('Europe/Belgrade');
   var ts = harness.time.getTimestamp();
 

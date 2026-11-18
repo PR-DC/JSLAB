@@ -5,68 +5,87 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
- 
+
+/**
+ * Class for dev prepare libs operations.
+ */
+class PRDC_JSLAB_DEV_PREPARE_LIBS_HELPER {
+
+  /**
+   * Runs the module entry point.
+   */
+  static async main() {
+    for(const lib of config.COMPRESSED_LIBS) {
+      const lib_dir = path.join('./lib', lib);
+      const lib_7z = path.join('./lib', `${lib}.7z`);
+
+      // Check if lib folder exists locally
+      if(!fs.existsSync(lib_dir)) {
+        await PRDC_JSLAB_DEV_PREPARE_LIBS_HELPER.extractWithProgress(lib, lib_7z, './lib');
+      } else {
+        console.log(`Lib ${lib} already uncompressed.`);
+      }
+    }
+
+    console.log('\nAll libraries ready.');
+    console.log('[prepare-libs.js] Execution done in ' + ((performance.now() - t) / 1000).toFixed(3) + ' s');
+  }
+
+  // Function to extract .7z with progress
+  /**
+   * Handles extract with progress.
+   * @param {*} lib Lib.
+   * @param {*} archive Archive.
+   * @param {*} dest Dest.
+   */
+  static async extractWithProgress(lib, archive, dest) {
+    return new Promise((resolve, reject) => {
+      const extractor = extractFull(archive, dest, {
+        $bin: bin_path,
+        $progress: true
+      });
+
+      extractor.on('progress', (progress) => {
+        if(!process.stdout.isTTY) {
+          return;
+        }
+        const percent = progress.percent.toFixed(0);
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+        process.stdout.write(`Extracting ${lib}: ${percent}%`);
+      });
+
+      extractor.on('end', () => {
+        if(process.stdout.isTTY) {
+          process.stdout.clearLine(0);
+          process.stdout.cursorTo(0);
+        }
+        console.log(`Extraction of ${lib} complete.`);
+        resolve();
+      });
+
+      extractor.on('error', (err) => {
+        console.error(`Extraction error for ${lib}:`, err);
+        reject(err);
+      });
+    });
+  }
+}
+
+
 // Import modules
 const fs = require('fs');
 const path = require('path');
 const { extractFull } = require('node-7z');
 const bin_path = require('7zip-bin').path7za;
 
-require('../shared/init-config.js');
+require('../other-shared/init-config.js');
 
 console.log('[prepare-libs.js] Started');
 var t = performance.now();
 
-async function main() {
-  for(const lib of config.COMPRESSED_LIBS) {
-    const lib_dir = path.join('./lib', lib);
-    const lib_7z = path.join('./lib', `${lib}.7z`);
 
-    // Check if lib folder exists locally
-    if(!fs.existsSync(lib_dir)) {
-      await extractWithProgress(lib, lib_7z, './lib');
-    } else {
-      console.log(`Lib ${lib} already uncompressed.`);
-    }
-  }
-
-  console.log('\nAll libraries ready.');
-  console.log('[prepare-libs.js] Execution done in ' + ((performance.now() - t) / 1000).toFixed(3) + ' s');
-}
-
-main().catch(function(err) {
+PRDC_JSLAB_DEV_PREPARE_LIBS_HELPER.main().catch(function(err) {
   console.error(err && err.stack ? err.stack : err);
   process.exitCode = 1;
 });
-
-// Function to extract .7z with progress
-async function extractWithProgress(lib, archive, dest) {
-  return new Promise((resolve, reject) => {
-    const extractor = extractFull(archive, dest, {
-      $bin: bin_path,
-      $progress: true
-    });
-
-    extractor.on('progress', (progress) => {
-      if(!process.stdout.isTTY) return;
-      const percent = progress.percent.toFixed(0);
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
-      process.stdout.write(`Extracting ${lib}: ${percent}%`);
-    });
-
-    extractor.on('end', () => {
-      if(process.stdout.isTTY) {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-      }
-      console.log(`Extraction of ${lib} complete.`);
-      resolve();
-    });
-
-    extractor.on('error', (err) => {
-      console.error(`Extraction error for ${lib}:`, err);
-      reject(err);
-    });
-  });
-}

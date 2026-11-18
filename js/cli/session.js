@@ -16,6 +16,7 @@ const { PRDC_JSLAB_BRIDGE_CLIENT } = require('../mcp/bridge-client');
  */
 class PRDC_JSLAB_CLI_SESSION {
   /**
+   * Initializes the cli session instance.
    * @param {Object} options CLI options.
    */
   constructor(options) {
@@ -45,27 +46,39 @@ class PRDC_JSLAB_CLI_SESSION {
     this.profile = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-cli-'));
     var args = (packaged ? [] : [root]).concat(['--cli-runtime', '--cli-parent-pid=' + process.pid,
       '--user-data-dir=' + this.profile]);
-    if(this.options.headless) args.push('--disable-gpu', '--in-process-gpu');
+    if(this.options.headless) {
+      args.push('--disable-gpu', '--in-process-gpu');
+    }
     this.child = cp.spawn(executable, args, { env: env, cwd: this.options.cwd,
       windowsHide: true, detached: this.options.detached === true, stdio: ['pipe', 'pipe', 'pipe'] });
-    this.child.on('error', function(err) { obj.start_error = err; });
+    this.child.on('error', function(err) {
+      obj.start_error = err;
+    });
     [this.child.stdout, this.child.stderr].forEach(function(stream) {
-      stream.on('data', function(data) { obj.diagnostics = (obj.diagnostics + data.toString()).slice(-8000); });
+      stream.on('data', function(data) {
+        obj.diagnostics = (obj.diagnostics + data.toString()).slice(-8000);
+      });
     });
     this.bridge = new PRDC_JSLAB_BRIDGE_CLIENT({ pid: this.child.pid });
     var deadline = Date.now() + 45000;
     var last_status;
     while(Date.now() < deadline) {
-      if(this.start_error) throw this.start_error;
+      if(this.start_error) {
+        throw this.start_error;
+      }
       if(this.child.exitCode !== null || this.child.signalCode !== null) {
         throw new Error('JSLAB runtime exited during startup.\n' + this.diagnostics);
       }
       try {
         var status = await this.bridge.call('get_session_status');
         last_status = status;
-        if(status.ready) return;
+        if(status.ready) {
+          return;
+        }
       } catch(err) {}
-      await new Promise(function(resolve) { setTimeout(resolve, 100); });
+      await new Promise(function(resolve) {
+        setTimeout(resolve, 100);
+      });
     }
     throw new Error('JSLAB runtime did not become ready within 45 seconds.' +
       (last_status ? '\nLast status: ' + JSON.stringify(last_status) : '') + '\n' + this.diagnostics);
@@ -90,7 +103,9 @@ class PRDC_JSLAB_CLI_SESSION {
           timeout.exit_code = 124;
           throw timeout;
         }
-        await new Promise(function(resolve) { setTimeout(resolve, 50); });
+        await new Promise(function(resolve) {
+          setTimeout(resolve, 50);
+        });
         job = await this.bridge.call('get_execution', { execution_id: this.execution_id });
       }
       return job.result;
@@ -104,7 +119,9 @@ class PRDC_JSLAB_CLI_SESSION {
    */
   async interrupt() {
     this.interrupted = true;
-    if(this.bridge) await this.bridge.call('interrupt_execution');
+    if(this.bridge) {
+      await this.bridge.call('interrupt_execution');
+    }
   }
 
   /**
@@ -114,23 +131,35 @@ class PRDC_JSLAB_CLI_SESSION {
     if(this.child && this.child.exitCode === null && this.child.signalCode === null) {
       var child = this.child;
       if(this.bridge) {
-        try { await this.bridge.call('close_cli_session'); } catch(err) {}
+        try {
+          await this.bridge.call('close_cli_session');
+        } catch(err) {}
       }
       child.stdin.on('error', function() {});
       child.stdin.end();
       await new Promise(function(resolve) {
-        if(child.exitCode !== null || child.signalCode !== null) { resolve(); return; }
+        if(child.exitCode !== null || child.signalCode !== null) {
+          resolve();
+          return;
+        }
         var timer = setTimeout(function() {
           child.kill();
           resolve();
         }, 3000);
-        child.once('exit', function() { clearTimeout(timer); resolve(); });
+        child.once('exit', function() {
+          clearTimeout(timer);
+          resolve();
+        });
       });
     }
     if(this.profile) {
       const target = path.resolve(this.profile);
-      if(path.dirname(target) !== path.resolve(os.tmpdir()) || !path.basename(target).startsWith('jslab-cli-')) throw Error('Unexpected CLI profile cleanup path.');
-      try { await fs.promises.rm(this.profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch(err) {}
+      if(path.dirname(target) !== path.resolve(os.tmpdir()) || !path.basename(target).startsWith('jslab-cli-')) {
+        throw Error('Unexpected CLI profile cleanup path.');
+      }
+      try {
+        await fs.promises.rm(this.profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      } catch(err) {}
     }
   }
 }

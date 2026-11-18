@@ -5,19 +5,30 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for table test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER {
 
-function makeSampleTable() {
-  return jsl.table.table(
-    [1, 2, 3],
-    ['c', 'a', 'b'],
-    { VariableNames: ['id', 'label'] }
-  );
+  /**
+   * Creates sample table.
+   */
+  static makeSampleTable() {
+    return jsl.table.table(
+      [1, 2, 3],
+      ['c', 'a', 'b'],
+      { VariableNames: ['id', 'label'] }
+    );
+  }
 }
 
+
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('table constructor creates correct shape and names', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   assert.equal(T.height(), 3);
   assert.equal(T.width(), 2);
   assert.deepEqual(T.VariableNames, ['id', 'label']);
@@ -25,14 +36,14 @@ tests.add('table constructor creates correct shape and names', function(assert) 
 }, { tags: ['unit', 'table'] });
 
 tests.add('setVariable and hasVariable update table columns', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   T.setVariable('score', [10, 20, 30]);
   assert.equal(T.hasVariable('score'), true);
   assert.deepEqual(T.getVariable('score'), [10, 20, 30]);
 }, { tags: ['unit', 'table'] });
 
 tests.add('selectvars and removevars return projected tables', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   var selected = T.selectvars(['label']);
   assert.deepEqual(selected.VariableNames, ['label']);
   assert.equal(selected.width(), 1);
@@ -43,21 +54,21 @@ tests.add('selectvars and removevars return projected tables', function(assert) 
 }, { tags: ['unit', 'table'] });
 
 tests.add('renamevars renames columns', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   var R = T.renamevars(['label'], ['name']);
   assert.equal(R.hasVariable('name'), true);
   assert.equal(R.hasVariable('label'), false);
 }, { tags: ['unit', 'table'] });
 
 tests.add('sortrows sorts by selected variable', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   var S = T.sortrows('label', 'asc');
   assert.deepEqual(S.getVariable('label'), ['a', 'b', 'c']);
   assert.deepEqual(S.getVariable('id'), [2, 3, 1]);
 }, { tags: ['unit', 'table'] });
 
 tests.add('filter and rows return subsets', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   var F = T.filter(function(row) {
     return row.id >= 2;
   });
@@ -70,7 +81,7 @@ tests.add('filter and rows return subsets', function(assert) {
 }, { tags: ['unit', 'table'] });
 
 tests.add('table2array and array2table are consistent', function(assert) {
-  var T = makeSampleTable();
+  var T = PRDC_JSLAB_SANDBOX_TESTS_TABLE_TEST_HELPER.makeSampleTable();
   var A = jsl.table.table2array(T);
   var T2 = jsl.table.array2table(A, { VariableNames: ['id', 'label'] });
   assert.deepEqual(T2.toArray(), T.toArray());

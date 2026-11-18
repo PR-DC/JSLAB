@@ -1,6 +1,11 @@
 /**
  * @file JSLAB editor search all module
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
  */
+
+const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
 
 /**
  * Class for editor-wide search in open files.
@@ -411,7 +416,7 @@ class PRDC_JSLAB_EDITOR_SEARCH_ALL {
       }
     }
 
-    var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var escaped = PRDC_JSLAB_TEXT.escapeRegExp(query);
     return { regex: new RegExp(escaped, flags) };
   }
 
@@ -785,10 +790,18 @@ class PRDC_JSLAB_EDITOR_SEARCH_ALL {
   parseEscapedString(value) {
     return String(value == null ? '' : value).replace(/\\([nrt\\])/g,
       function(match, ch) {
-        if(ch === 'n') return '\n';
-        if(ch === 'r') return '\r';
-        if(ch === 't') return '\t';
-        if(ch === '\\') return '\\';
+        if(ch === 'n') {
+          return '\n';
+        }
+        if(ch === 'r') {
+          return '\r';
+        }
+        if(ch === 't') {
+          return '\t';
+        }
+        if(ch === '\\') {
+          return '\\';
+        }
         return match;
       });
   }
@@ -818,13 +831,13 @@ class PRDC_JSLAB_EDITOR_SEARCH_ALL {
   }
 
   /**
-   * Loads panel height percent from local storage.
+   * Loads panel height percent from application storage.
    * @returns {number}
    */
   loadPanelHeightPercent() {
     var stored_percent = undefined;
     try {
-      stored_percent = window.localStorage.getItem(this.storage_height_percent_key);
+      stored_percent = this.win.platform.store.get(this.storage_height_percent_key);
     } catch(err) {
       return this.panelHeightToPercent(this.default_panel_height);
     }
@@ -846,8 +859,7 @@ class PRDC_JSLAB_EDITOR_SEARCH_ALL {
    */
   persistPanelHeight() {
     try {
-      window.localStorage.setItem(this.storage_height_percent_key,
-        String(this.panel_height_percent));
+      this.win.platform.store.set(this.storage_height_percent_key, this.panel_height_percent);
     } catch(err) {
       // Ignore persistence failures.
     }
@@ -986,12 +998,7 @@ class PRDC_JSLAB_EDITOR_SEARCH_ALL {
    * @returns {string}
    */
   escapeHtml(value) {
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+    return PRDC_JSLAB_TEXT.escapeHTML(value);
   }
 
   /**

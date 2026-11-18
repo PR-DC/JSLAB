@@ -4,12 +4,15 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
+const { PRDC_JSLAB_NETWORKING_ENDPOINT } = require('./networking-endpoint');
+
 /**
  * Class representing a TCP client for handling network communications.
+ * @extends PRDC_JSLAB_NETWORKING_ENDPOINT
  */
-class PRDC_JSLAB_TCP_CLIENT {
-  
+class PRDC_JSLAB_TCP_CLIENT extends PRDC_JSLAB_NETWORKING_ENDPOINT {
+
   /**
    * Creates an instance of the TCP client.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -18,19 +21,20 @@ class PRDC_JSLAB_TCP_CLIENT {
    * @param {function} onConnectCallback - A callback to execute upon successful connection.
    */
   constructor(jsl, host, port, onConnectCallback) {
+    super(jsl);
     var obj = this;
-    this.jsl = jsl;
+
     this.host = host;
     this.port = port;
     this.onConnectCallback = onConnectCallback;
     this.onDataCallback;
     this.onErrorCallback;
-    
-    this.buffer = [];
+
+
     this.active = false;
-    
-    this._data_callback = false;
-    
+
+
+
     this.com = this.jsl.inter.env.net.createConnection(port, host);
     this.com.setTimeout(0);
     this.com.on('connect', function() {
@@ -50,12 +54,12 @@ class PRDC_JSLAB_TCP_CLIENT {
     this.com.on('end', function() {
       obj.active = false;
     });
-    
+
     this.jsl.addForCleanup(this, function() {
       obj.close();
     });
   }
-  
+
   /**
    * Handles successful connection establishment by setting the client's active status to true.
    */
@@ -65,7 +69,7 @@ class PRDC_JSLAB_TCP_CLIENT {
       this.onConnectCallback();
     }
   }
-  
+
   /**
    * Handles errors by setting the client's active status to false and possibly logging the error.
    * @param {Error} err - The error object that was thrown.
@@ -76,31 +80,11 @@ class PRDC_JSLAB_TCP_CLIENT {
       this.onErrorCallback(err);
     }
   }
+
   
-  /**
-   * Handles incoming data by appending it to the buffer.
-   * @param {Buffer} data - The incoming data buffer.
-   */
-  _onData(data) {
-    if(this._data_callback) {
-      this.onDataCallback(data);
-    } else {
-      this.buffer.push(...data);
-    }
-  }
+
   
-  /**
-   * Sets the callback function to handle incoming data events.
-   * @param {Function} callback - The function to be called when data is received.
-   */
-  setOnData(callback) {
-    if(this.jsl.inter.format.isFunction(callback)) {
-      this.buffer = [];
-      this.onDataCallback = callback;
-      this._data_callback = true;
-    }
-  }
-  
+
   /**
    * Sets the callback function to handle error events.
    * @param {Function} callback - The function to be called when an error occurs.
@@ -146,7 +130,7 @@ class PRDC_JSLAB_TCP_CLIENT {
     N = Math.min(N, this.buffer.length);
     return this.buffer.splice(0, N);
   }
-  
+
   /**
    * Writes data to the TCP connection if the client is active.
    * @param {Buffer|string} data - The data to send over the TCP connection.
@@ -156,7 +140,7 @@ class PRDC_JSLAB_TCP_CLIENT {
       this.com.write(data);
     }
   }
-  
+
   /**
    * Returns the number of bytes available in the buffer.
    * @returns {number} The number of available bytes.
@@ -164,7 +148,7 @@ class PRDC_JSLAB_TCP_CLIENT {
   availableBytes() {
     return this.buffer.length;
   }
-  
+
   /**
    * Closes the TCP connection and cleans up resources.
    */
@@ -182,7 +166,7 @@ exports.PRDC_JSLAB_TCP_CLIENT = PRDC_JSLAB_TCP_CLIENT;
  * Class representing a TCP server for handling network communications.
  */
 class PRDC_JSLAB_TCP_SERVER {
-  
+
   /**
    * Creates an instance of the TCP server.
    * @param {Object} jsl - Reference to the main JSLAB object.
@@ -197,20 +181,20 @@ class PRDC_JSLAB_TCP_SERVER {
     this.port = port;
     this.sockets = {};
     this.sid = 0;
-    
+
     this.onConnectCallback = onConnectCallback;
     this.onDataCallback = null;
     this.onErrorCallback = null;
     this.onDisconnectCallback = null;
-    
+
     this.buffer = [];
     this.active = false;
-    
+
     this._data_callback = false;
-    
+
     this.server = this.jsl.inter.env.net.createServer(function(socket) {
       obj._onConnect(socket);
-      
+
       socket.on('data', function(data) {
         obj._onData(socket, data);
       });
@@ -223,8 +207,8 @@ class PRDC_JSLAB_TCP_SERVER {
         obj._onError(socket, err);
       });
     });
-    
-    this.server.listen(this.port, this.host, function() { 
+
+    this.server.listen(this.port, this.host, function() {
       obj.active = true;
     });
 
@@ -232,7 +216,7 @@ class PRDC_JSLAB_TCP_SERVER {
       obj.close();
     });
   }
-  
+
   /**
    * Handles new client connections.
    * @param {Object} socket - The connected socket.
@@ -246,7 +230,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onConnectCallback(socket);
     }
   }
-  
+
   /**
    * Handles socket errors.
    * @param {Object} socket - The socket that encountered an error.
@@ -257,7 +241,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onErrorCallback(socket, err);
     }
   }
-  
+
   /**
    * Handles incoming data from sockets.
    * @param {Object} socket - The socket that received data.
@@ -268,7 +252,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onDataCallback(socket, data);
     }
   }
-  
+
   /**
    * Handles socket disconnections.
    * @param {Object} socket - The socket that disconnected.
@@ -278,7 +262,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onDisconnectCallback(socket);
     }
   }
-  
+
   /**
    * Sets the callback function to handle incoming data events.
    * @param {Function} callback - Function called when data is received.
@@ -288,7 +272,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onDataCallback = callback;
     }
   }
-  
+
   /**
    * Sets the callback function to handle error events.
    * @param {Function} callback - Function called when an error occurs.
@@ -298,7 +282,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onErrorCallback = callback;
     }
   }
-  
+
   /**
    * Sets the callback function to handle disconnection events.
    * @param {Function} callback - Function called when a socket disconnects.
@@ -308,7 +292,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.onDisconnectCallback = callback;
     }
   }
-  
+
   /**
    * Writes data to a specific TCP connection.
    * @param {Object} socket - The socket to write data to.
@@ -319,7 +303,7 @@ class PRDC_JSLAB_TCP_SERVER {
       this.sockets[socket.sid].write(data);
     }
   }
-  
+
   /**
    * Closes the TCP server and all active connections.
    */

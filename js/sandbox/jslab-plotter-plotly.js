@@ -9,38 +9,38 @@
  * Class for JSLAB plotter plotly based.
  */
 class PRDC_JSLAB_PLOTTER {
-  
+
   /**
    * Initializes the plotter object, setting Plotly as the underlying library for plotting operations.
- * @param {Object} jsl - Reference to the JSLAB environment.
+   * @param {Object} jsl - Reference to the JSLAB environment.
    */
   constructor(jsl) {
     this.jsl = jsl;
     this.library = 'plotly';
-    
+
   }
-  
+
   /**
    * Sets the plot for the given figure identifier, displaying data and configuration.
    * @param {number} fid - The identifier for the figure to update.
    */
   async plot(fid) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
-      this.jsl.inter.env.error('@plotter/plot: '+this.jsl.inter.lang.string(172));
+      this.jsl.inter.env.error('@plotter/plot: ' + this.jsl.inter.lang.string(172));
       return;
     }
-    
+
     var obj = this;
     var figure = this.jsl.inter.figures.open_figures[fid];
     var plot = figure.plot;
     var context_plot = figure.context.plot;
-    
+
     var plot_cont = figure.dom.querySelector('#figure-content .plot-cont');
     if(!plot_cont) {
       context_plot.setCont();
       plot_cont = context_plot.plot_cont;
     }
-    
+
     // Plot traces
     var traces = [];
     var plot_traces = structuredClone(plot.traces);
@@ -49,13 +49,13 @@ class PRDC_JSLAB_PLOTTER {
     }
     var ci = 0;
     figure.layout_3d = false;
-    
+
     plot_traces.forEach(function(trace_options) {
-      if(!figure.layout_3d && (trace_options.hasOwnProperty('z') && 
+      if(!figure.layout_3d && (trace_options.hasOwnProperty('z') &&
           (trace_options.hasOwnProperty('type') && trace_options.type != 'heatmap'))) {
         figure.layout_3d = true; // It is 3D plot
       }
-      
+
       var type;
       if(trace_options.hasOwnProperty('type')) {
         type = trace_options.type;
@@ -63,9 +63,10 @@ class PRDC_JSLAB_PLOTTER {
       if(type != 'pie') {
         var trace = {};
         trace.type = type;
-        
+
         Object.keys(trace_options).forEach(function(key) {
-          if(['x', 'y', 'z'].includes(key) && !Array.isArray(trace_options[key])) {
+          if(['x', 'y', 'z'].includes(key) && !Array.isArray(trace_options[key]) &&
+              !(ArrayBuffer.isView(trace_options[key]) && typeof trace_options[key].length == 'number')) {
             trace[key] = [trace_options[key]];
           } else if((!['mesh3d'].includes(type) && key == 'color') || key == 'width') {
             if(!trace.hasOwnProperty('line')) {
@@ -81,9 +82,9 @@ class PRDC_JSLAB_PLOTTER {
             }
           }
         });
-        
+
         if(!['mesh3d'].includes(type) && (!trace.hasOwnProperty('line') || !trace.line.hasOwnProperty('color'))) {
-         if(!trace.hasOwnProperty('line')) {
+          if(!trace.hasOwnProperty('line')) {
             trace.line = {};
           }
           trace.line.color = obj.jsl.inter.color.colororder[ci];
@@ -96,7 +97,7 @@ class PRDC_JSLAB_PLOTTER {
         traces.push(trace_options);
       }
     });
-    
+
     if(figure.layout_3d) {
       figure.dom.getElementById('figure-menu').className = 'figure-3d';
       if(!plot.axis_style_val) {
@@ -108,7 +109,7 @@ class PRDC_JSLAB_PLOTTER {
         plot.axis_style_val = 'normal';
       }
     }
-      
+
     // Plot config
     var config = {
       responsive: true,
@@ -116,25 +117,25 @@ class PRDC_JSLAB_PLOTTER {
     };
 
     var layout = {};
-    
+
     await context_plot.newPlot(plot, traces, layout, config);
     figure.dom.getElementById('rotate-menu').style.display = "none";
   }
-  
+
   /**
    * Updates the layout for the plot associated with the specified figure identifier.
    * @param {number} fid - The identifier for the figure whose layout is to be updated.
    */
   async updatePlotLayout(fid) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
-      this.jsl.inter.env.error('@plotter/updatePlotLayout: '+this.jsl.inter.lang.string(172));
+      this.jsl.inter.env.error('@plotter/updatePlotLayout: ' + this.jsl.inter.lang.string(172));
       return;
     }
     var figure = this.jsl.inter.figures.open_figures[fid];
     var plot = figure.plot;
     var context_plot = figure.context.plot;
     var plot_cont = context_plot.plot_cont;
-    
+
     // Plot layout
     var layout = {
       title: {},
@@ -156,9 +157,9 @@ class PRDC_JSLAB_PLOTTER {
         size: 18
       }
     };
-    
+
     if(figure.layout_3d) {
-      Object.assign(layout, 
+      Object.assign(layout,
         {
           margin: {
             l: 0,
@@ -236,7 +237,7 @@ class PRDC_JSLAB_PLOTTER {
         }
       );
     } else {
-      Object.assign(layout, 
+      Object.assign(layout,
         {
           margin: {
             l: 60,
@@ -277,7 +278,14 @@ class PRDC_JSLAB_PLOTTER {
       );
     }
 
-    // Options    
+    if(plot.options.hasOwnProperty('uirevision')) {
+      layout.uirevision = plot.options.uirevision;
+      if(figure.layout_3d) {
+        layout.scene.uirevision = plot.options.uirevision;
+      }
+    }
+
+    // Options
     if(plot.options.hasOwnProperty('legend')) {
       Object.assign(layout.legend, plot.options.legend);
     }
@@ -392,16 +400,19 @@ class PRDC_JSLAB_PLOTTER {
         layout.legend.orientation = 'v';
       }
     }
-    
+
     if(figure.layout_3d) {
       if(plot.options.hasOwnProperty('xlim')) {
         layout.scene.xaxis.range = plot.options.xlim;
+        layout.scene.xaxis.autorange = !Array.isArray(plot.options.xlim) || !plot.options.xlim.every(Number.isFinite);
       }
       if(plot.options.hasOwnProperty('ylim')) {
         layout.scene.yaxis.range = plot.options.ylim;
+        layout.scene.yaxis.autorange = !Array.isArray(plot.options.ylim) || !plot.options.ylim.every(Number.isFinite);
       }
       if(plot.options.hasOwnProperty('zlim')) {
         layout.scene.zaxis.range = plot.options.zlim;
+        layout.scene.zaxis.autorange = !Array.isArray(plot.options.zlim) || !plot.options.zlim.every(Number.isFinite);
       }
     } else {
       if(plot.options.hasOwnProperty('xlim')) {
@@ -411,7 +422,7 @@ class PRDC_JSLAB_PLOTTER {
         layout.yaxis.range = plot.options.ylim;
       }
     }
-    
+
     if(plot.options.hasOwnProperty('font')) {
       layout.font = plot.options.font;
     }
@@ -437,7 +448,7 @@ class PRDC_JSLAB_PLOTTER {
     if(plot.options.hasOwnProperty('yaxisType')) {
       layout.yaxis.type = plot.options.yaxisType;
     }
-    
+
     if(plot.hasOwnProperty('title_val')) {
       layout.title.text = plot.title_val;
       layout.title.font = {
@@ -445,12 +456,12 @@ class PRDC_JSLAB_PLOTTER {
       };
       layout.margin.t = 40;
     }
-    
-    if(plot.hasOwnProperty('legend_state_val') && 
+
+    if(plot.hasOwnProperty('legend_state_val') &&
         ['on', 'off', 1, 0].includes(plot.legend_state_val)) {
       layout.showlegend = plot.legend_state_val == 'on' || plot.legend_state_val;
     }
-    
+
     if(figure.layout_3d) {
       if(plot.hasOwnProperty('xlabel_val')) {
         layout.scene.xaxis.title =  { text: plot.xlabel_val };
@@ -484,10 +495,10 @@ class PRDC_JSLAB_PLOTTER {
         layout.yaxis.scaleanchor = false;
       }
     }
-    
+
     await context_plot.relayout(layout);
     context_plot.resize();
-    
+
     if(plot.lim_update) {
       plot.lim_update = false;
       var layout2 = {};
@@ -495,85 +506,91 @@ class PRDC_JSLAB_PLOTTER {
         if(plot.hasOwnProperty('xlim_val')) {
           if(plot.xlim_val[0] == 'auto') {
             plot.xlim_val[0] = plot_cont._fullLayout.scene.xaxis.range[0];
-          } 
+          }
           if(plot.xlim_val[1] == 'auto') {
             plot.xlim_val[1] = plot_cont._fullLayout.scene.xaxis.range[1];
-          } 
+          }
           layout2['scene.xaxis.range'] = plot.xlim_val;
+          layout2['scene.xaxis.autorange'] = false;
         }
         if(plot.hasOwnProperty('ylim_val')) {
           if(plot.ylim_val[0] == 'auto') {
             plot.ylim_val[0] = plot_cont._fullLayout.scene.yaxis.range[0];
-          } 
+          }
           if(plot.ylim_val[1] == 'auto') {
             plot.ylim_val[1] = plot_cont._fullLayout.scene.yaxis.range[1];
-          } 
+          }
           layout2['scene.yaxis.range'] = plot.ylim_val;
+          layout2['scene.yaxis.autorange'] = false;
         }
         if(plot.hasOwnProperty('zlim_val')) {
           if(plot.zlim_val[0] == 'auto') {
             plot.zlim_val[0] = plot_cont._fullLayout.scene.zaxis.range[0];
-          } 
+          }
           if(plot.zlim_val[1] == 'auto') {
             plot.zlim_val[1] = plot_cont._fullLayout.scene.zaxis.range[1];
-          } 
+          }
           layout2['scene.zaxis.range'] = plot.zlim_val;
+          layout2['scene.zaxis.autorange'] = false;
         }
       } else {
         if(plot.hasOwnProperty('xlim_val')) {
           if(plot.xlim_val[0] == 'auto') {
             plot.xlim_val[0] = plot_cont._fullLayout.xaxis.range[0];
-          } 
+          }
           if(plot.xlim_val[1] == 'auto') {
             plot.xlim_val[1] = plot_cont._fullLayout.xaxis.range[1];
-          } 
+          }
           layout2['xaxis.range'] = plot.xlim_val;
         }
         if(plot.hasOwnProperty('ylim_val')) {
           if(plot.ylim_val[0] == 'auto') {
             plot.ylim_val[0] = plot_cont._fullLayout.yaxis.range[0];
-          } 
+          }
           if(plot.ylim_val[1] == 'auto') {
             plot.ylim_val[1] = plot_cont._fullLayout.yaxis.range[1];
-          } 
+          }
           layout2['yaxis.range'] = plot.ylim_val;
         }
       }
       await context_plot.relayout(layout2);
       context_plot.resize();
     }
-    
+
     if(figure.layout_3d) {
       var layout3 = {};
-      
+
       // Equal axes
       var xRange = plot_cont._fullLayout.scene.xaxis.range;
       if(plot.hasOwnProperty('xlim_val')) {
         xRange = plot.xlim_val;
         layout3['scene.xaxis.range'] = plot.xlim_val;
+        layout3['scene.xaxis.autorange'] = false;
       }
       var yRange = plot_cont._fullLayout.scene.yaxis.range;
       if(plot.hasOwnProperty('ylim_val')) {
         yRange = plot.ylim_val;
         layout3['scene.yaxis.range'] = plot.ylim_val;
+        layout3['scene.yaxis.autorange'] = false;
       }
       var zRange = plot_cont._fullLayout.scene.zaxis.range;
       if(plot.hasOwnProperty('zlim_val')) {
         zRange = plot.zlim_val;
         layout3['scene.zaxis.range'] = plot.zlim_val;
+        layout3['scene.zaxis.autorange'] = false;
       }
 
       var zoom = 1;
       if(typeof plot.zoom_val != 'undefined') {
         zoom = plot.zoom_val;
       }
-      
+
       if(plot.axis_style_val == 'equal') {
         var xRangeSize = Math.abs(xRange[1] - xRange[0]);
         var yRangeSize = Math.abs(yRange[1] - yRange[0]);
         var zRangeSize = Math.abs(zRange[1] - zRange[0]);
         var maxRange = Math.max(xRangeSize, yRangeSize, zRangeSize);
-        
+
         layout3["scene.aspectratio"] =  {
           x: xRangeSize / maxRange * zoom,
           y: yRangeSize / maxRange * zoom,
@@ -586,8 +603,8 @@ class PRDC_JSLAB_PLOTTER {
           z: zoom
         };
       }
-     
-      var radius = maxRange/2;
+
+      var radius = maxRange / 2;
       var azimuthRad = plot.view_val[0] * Math.PI / 180;
       var elevationRad = plot.view_val[1] * Math.PI / 180;
 
@@ -596,12 +613,12 @@ class PRDC_JSLAB_PLOTTER {
         y: radius * Math.cos(elevationRad) * Math.sin(azimuthRad),
         z: radius * Math.sin(elevationRad)
       };
-      
+
       var up = { x: 0, y: 0, z: 1 };
 
       layout3['scene.camera.eye'] = eye;
       layout3['scene.camera.up'] = up;
-      
+
       await context_plot.relayout(layout3);
       context_plot.resize();
     }
@@ -615,13 +632,13 @@ class PRDC_JSLAB_PLOTTER {
    */
   updateData(fid, traces, N) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
-      this.jsl.inter.env.error('@plotter/updateData: '+this.jsl.inter.lang.string(172));
+      this.jsl.inter.env.error('@plotter/updateData: ' + this.jsl.inter.lang.string(172));
       return;
     }
     var figure = this.jsl.inter.figures.open_figures[fid];
     figure.context.plot.updateData(traces, N);
   }
-  
+
   /**
    * Updates plot data for a specified figure.
    * @param {string} fid - Identifier of the figure to update.
@@ -629,33 +646,33 @@ class PRDC_JSLAB_PLOTTER {
    */
   updateDataById(fid, data) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
-      this.jsl.inter.env.error('@plotter/updateDataById: '+this.jsl.inter.lang.string(172));
+      this.jsl.inter.env.error('@plotter/updateDataById: ' + this.jsl.inter.lang.string(172));
       return;
     }
     var figure = this.jsl.inter.figures.open_figures[fid];
     figure.context.plot.updateDataById(data);
   }
-  
+
   /**
    * Handles plot resizing for a specified figure identifier.
    * @param {number} fid - The identifier for the figure to resize.
    */
   onResize(fid) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
-      this.jsl.inter.env.error('@plotter/onResize: '+this.jsl.inter.lang.string(172));
+      this.jsl.inter.env.error('@plotter/onResize: ' + this.jsl.inter.lang.string(172));
       return;
     }
     var figure = this.jsl.inter.figures.open_figures[fid];
     figure.context.plot.resize();
   }
-  
+
   /**
    * Removes the plot container for a specified figure identifier.
    * @param {number} fid - The identifier for the figure from which to remove the plot container.
    */
   remove(fid) {
     if(!this.jsl.inter.figures.open_figures.hasOwnProperty(fid)) {
-      this.jsl.inter.env.error('@plotter/remove: '+this.jsl.inter.lang.string(172));
+      this.jsl.inter.env.error('@plotter/remove: ' + this.jsl.inter.lang.string(172));
       return;
     }
     var figure = this.jsl.inter.figures.open_figures[fid];
@@ -664,7 +681,7 @@ class PRDC_JSLAB_PLOTTER {
       plot_cont.remove();
     }
   }
-  
+
   /**
    * Sets the plot data from JSON.
    * @param {number} fid - The identifier for the figure to update.
@@ -674,7 +691,7 @@ class PRDC_JSLAB_PLOTTER {
     var figure = this.jsl.inter.figures.open_figures[fid];
     var plot = figure.plot;
     var context_plot = figure.context.plot;
-    
+
     var plot_cont = figure.dom.querySelector('#figure-content .plot-cont');
     if(!plot_cont) {
       context_plot.setCont();
@@ -684,7 +701,7 @@ class PRDC_JSLAB_PLOTTER {
     this._JsonToOptions(figure, data);
     await context_plot.fromJSON(data);
   }
-  
+
   /**
    * Sets the plot data from JSON.
    * @param {Array} fig Data for the plot.
@@ -697,10 +714,10 @@ class PRDC_JSLAB_PLOTTER {
     ]);
     var trace_is_3d = fig.data?.some(t => types_3d.has(t.type));
     var layout_has_scene = Object.keys(fig.layout || {})
-                                 .some(k => k.startsWith('scene'));
+      .some(k => k.startsWith('scene'));
     return trace_is_3d || layout_has_scene;
   }
-  
+
   /**
    * Re-creates plot.options and the extra “synthetic” fields
    * (title_val, xlim_val, …) from a saved Plotly figure JSON.
@@ -732,37 +749,52 @@ class PRDC_JSLAB_PLOTTER {
       var lg = JSON.parse(JSON.stringify(layout.legend));
       options.legend = lg;
 
-      if(lg.orientation)
+      if(lg.orientation) {
         options.legendOrientation =
           lg.orientation === 'h' ? 'horizontal' : 'vertical';
+      }
 
       {
-        var { x=0, y=0 } = lg;
+        var { x = 0, y = 0 } = lg;
         var outsideX = x < 0 || x > 1;
         var outsideY = y < 0 || y > 1;
 
         var dirNS = y <= (outsideY ? -0.02 : 0.02) ? 'south'
-                    : y >= (outsideY ? 1.02 : 0.98) ? 'north' : '';
+          : y >= (outsideY ? 1.02 : 0.98) ? 'north' : '';
         var dirEW = x <= (outsideX ? -0.02 : 0.02) ? 'west'
-                    : x >= (outsideX ? 1.02 : 0.98) ? 'east' : '';
+          : x >= (outsideX ? 1.02 : 0.98) ? 'east' : '';
 
         let loc = (dirNS + dirEW) || 'north';
-        if(outsideX || outsideY) loc += 'outside';
+        if(outsideX || outsideY) {
+          loc += 'outside';
+        }
         options.legendLocation = loc.toLowerCase();
       }
     }
 
     if(figure.layout_3d) {
       var sc = layout.scene ?? {};
-      if(sc.xaxis?.range) options.xlim = plot.xlim_val = [...sc.xaxis.range];
-      if(sc.yaxis?.range) options.ylim = plot.ylim_val = [...sc.yaxis.range];
-      if(sc.zaxis?.range) options.zlim = plot.zlim_val = [...sc.zaxis.range];
+      if(sc.xaxis?.range) {
+        options.xlim = plot.xlim_val = [...sc.xaxis.range];
+      }
+      if(sc.yaxis?.range) {
+        options.ylim = plot.ylim_val = [...sc.yaxis.range];
+      }
+      if(sc.zaxis?.range) {
+        options.zlim = plot.zlim_val = [...sc.zaxis.range];
+      }
     } else {
-      if(layout.xaxis?.range) options.xlim = plot.xlim_val = [...layout.xaxis.range];
-      if(layout.yaxis?.range) options.ylim = plot.ylim_val = [...layout.yaxis.range];
+      if(layout.xaxis?.range) {
+        options.xlim = plot.xlim_val = [...layout.xaxis.range];
+      }
+      if(layout.yaxis?.range) {
+        options.ylim = plot.ylim_val = [...layout.yaxis.range];
+      }
     }
 
-    if(layout.font)   options.font   = JSON.parse(JSON.stringify(layout.font));
+    if(layout.font)   {
+      options.font   = JSON.parse(JSON.stringify(layout.font));
+    }
     if(layout.margin) {
       var {t, b, l, r} = layout.margin;
       options.margin = {
@@ -773,16 +805,28 @@ class PRDC_JSLAB_PLOTTER {
       };
     }
 
-    if(layout.title?.text) plot.title_val  = layout.title.text;
+    if(layout.title?.text) {
+      plot.title_val  = layout.title.text;
+    }
 
     if(figure.layout_3d) {
       var sc = layout.scene ?? {};
-      if(sc.xaxis?.title?.text) plot.xlabel_val = sc.xaxis.title.text;
-      if(sc.yaxis?.title?.text) plot.ylabel_val = sc.yaxis.title.text;
-      if(sc.zaxis?.title?.text) plot.zlabel_val = sc.zaxis.title.text;
+      if(sc.xaxis?.title?.text) {
+        plot.xlabel_val = sc.xaxis.title.text;
+      }
+      if(sc.yaxis?.title?.text) {
+        plot.ylabel_val = sc.yaxis.title.text;
+      }
+      if(sc.zaxis?.title?.text) {
+        plot.zlabel_val = sc.zaxis.title.text;
+      }
     } else {
-      if(layout.xaxis?.title?.text) plot.xlabel_val = layout.xaxis.title.text;
-      if(layout.yaxis?.title?.text) plot.ylabel_val = layout.yaxis.title.text;
+      if(layout.xaxis?.title?.text) {
+        plot.xlabel_val = layout.xaxis.title.text;
+      }
+      if(layout.yaxis?.title?.text) {
+        plot.ylabel_val = layout.yaxis.title.text;
+      }
     }
 
     if(figure.layout_3d) {
@@ -790,7 +834,7 @@ class PRDC_JSLAB_PLOTTER {
 
       if(sc.aspectratio) {
         var {x = 1, y = 1, z = 1} = sc.aspectratio;
-        var minAR = Math.min(x,y,z), maxAR = Math.max(x,y,z);
+        var minAR = Math.min(x, y, z), maxAR = Math.max(x, y, z);
         var approxEqual = (maxAR - minAR) < 1e-6;
         plot.axis_style_val = approxEqual ? 'equal' : 'normal';
       }
@@ -807,11 +851,11 @@ class PRDC_JSLAB_PLOTTER {
           var dy = Math.abs(plot.ylim_val[1] - plot.ylim_val[0]);
           var dz = Math.abs(plot.zlim_val[1] - plot.zlim_val[0]);
           var maxRange = Math.max(dx, dy, dz);
-          var intrinsicAR = { x: dx/maxRange, y: dy/maxRange, z: dz/maxRange };
+          var intrinsicAR = { x: dx / maxRange, y: dy / maxRange, z: dz / maxRange };
           var {x: ax = 1, y: ay = 1, z: az = 1} = sc.aspectratio;
-          var zoom = (ax/(intrinsicAR.x || 1) +
-                        ay/(intrinsicAR.y || 1) +
-                        az/(intrinsicAR.z || 1)) / 3;
+          var zoom = (ax / (intrinsicAR.x || 1) +
+                        ay / (intrinsicAR.y || 1) +
+                        az / (intrinsicAR.z || 1)) / 3;
           plot.zoom_val = zoom;
         }
       }

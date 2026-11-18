@@ -5,15 +5,55 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for serial device test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_SERIAL_DEVICE_TEST_HELPER {
+
+  /**
+   * Creates serial harness.
+   */
+  static createSerialHarness() {
+    MockSerialPort.instances = [];
+    var cleanup_callbacks = [];
+
+    var jsl = {
+      debug: false,
+      inter: {
+        env: {
+          SerialPort: MockSerialPort
+        }
+      },
+      addForCleanup: function(_target, callback) {
+        cleanup_callbacks.push(callback);
+      }
+    };
+
+    var serial = new PRDC_JSLAB_LIB_SERIAL_DEVICE(jsl);
+    return { serial, cleanup_callbacks };
+  }
+}
+
+
 const { PRDC_JSLAB_LIB_SERIAL_DEVICE } = require('../serial-device');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
+/**
+ * Class for mock serial port.
+ */
 class MockSerialPort {
+  /**
+   * Lists.
+   */
   static async list() {
     return MockSerialPort._list_result;
   }
 
+  /**
+   * Initializes mock serial port.
+   * @param {Object} options Options.
+   */
   constructor(options) {
     this.options = options;
     this.handlers = {};
@@ -23,14 +63,26 @@ class MockSerialPort {
     MockSerialPort.instances.push(this);
   }
 
+  /**
+   * Handles the incoming event.
+   * @param {string} name Name.
+   * @param {Function} handler Handler.
+   */
   on(name, handler) {
     this.handlers[name] = handler;
   }
 
+  /**
+   * Updates the current value.
+   * @param {Object} options Options.
+   */
   set(options) {
     this.set_calls.push(options);
   }
 
+  /**
+   * Closes.
+   */
   close() {
     this.closed = true;
     this.isOpen = false;
@@ -40,29 +92,10 @@ class MockSerialPort {
 MockSerialPort.instances = [];
 MockSerialPort._list_result = [];
 
-function createSerialHarness() {
-  MockSerialPort.instances = [];
-  var cleanup_callbacks = [];
-
-  var jsl = {
-    debug: false,
-    inter: {
-      env: {
-        SerialPort: MockSerialPort
-      }
-    },
-    addForCleanup: function(_target, callback) {
-      cleanup_callbacks.push(callback);
-    }
-  };
-
-  var serial = new PRDC_JSLAB_LIB_SERIAL_DEVICE(jsl);
-  return { serial, cleanup_callbacks };
-}
 
 tests.add('listSerialPorts proxies SerialPort.list()', async function(assert) {
   MockSerialPort._list_result = [{ path: 'COM1' }, { path: 'COM2' }];
-  var harness = createSerialHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SERIAL_DEVICE_TEST_HELPER.createSerialHarness();
   var ports = await harness.serial.listSerialPorts();
   assert.deepEqual(ports, [{ path: 'COM1' }, { path: 'COM2' }]);
 }, { tags: ['unit', 'serial'] });
@@ -72,7 +105,7 @@ tests.add('USB device checks match vendor/product pairs', async function(assert)
     { path: 'COM3', vendorId: '0483', productId: '5740' },
     { path: 'COM4', vendorId: '1A86', productId: '7523' }
   ];
-  var harness = createSerialHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SERIAL_DEVICE_TEST_HELPER.createSerialHarness();
 
   assert.equal(await harness.serial.checkDeviceUSB('0483', '5740'), true);
   assert.equal(await harness.serial.checkDeviceUSB('0483', '0000'), false);
@@ -81,7 +114,7 @@ tests.add('USB device checks match vendor/product pairs', async function(assert)
 }, { tags: ['unit', 'serial'] });
 
 tests.add('connectSerialPorts opens port with merged options and cleanup closes it', function(assert) {
-  var harness = createSerialHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SERIAL_DEVICE_TEST_HELPER.createSerialHarness();
   var port = harness.serial.connectSerialPorts('COM8', 115200, { parity: 'odd', flowControl: true });
 
   assert.equal(port.options.path, 'COM8');

@@ -17,7 +17,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
   constructor(jsl) {
     this.jsl = jsl;
   }
-  
+
   /**
    * Displays the size of elements based on bounds and subdivisions.
    * @param {Array} bounds - Array of [min, max] for each dimension.
@@ -27,7 +27,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
     var numDimensions = bounds.length;
     // Calculate the initial differences between bounds for each dimension
     var dq = bounds.map((bound, index) => (bound[1] - bound[0]) / subdivisionPerDepth[0][index]);
-    
+
     // Copy dq to dqmin for further subdivision calculations
     var dqmin = [...dq];
 
@@ -42,7 +42,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
     this.jsl.inter.disp(` Dimenzije inicijalnih elemenata: ${dq.map(val => val.toFixed(2)).join('x')}`);
     this.jsl.inter.disp(` Dimenzije najmanjih elemenata: ${dqmin.map(val => val.toFixed(2)).join('x')}`);
   }
-  
+
   /**
    * Splits the search space into smaller intervals for parallel processing.
    * @param {Array.<Array.<number>>} x_lim - The limits of the search space, where each sub-array represents [start, end] for a dimension.
@@ -53,16 +53,16 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
   splitSearchSpace(x_lim, k, N_proc) {
     const [start, end] = x_lim[0];
     const interval = (end - start) / N_proc;
-    
+
     var k_out = [...k];
-    k_out[0][0] = k_out[0][0]/N_proc;
-      
+    k_out[0][0] = k_out[0][0] / N_proc;
+
     return [Array.from({ length: N_proc }, (_, i) => [
       [start + i * interval, start + (i + 1) * interval],
       ...x_lim.slice(1)
     ]), k_out];
   }
-  
+
   /**
    * Executes a provided function in parallel across the split search spaces.
    * @param {Array.<Array.<number>>} x_lim - The limits of the search space, where each sub-array represents [start, end] for a dimension.
@@ -74,25 +74,25 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
    */
   async runParallel(x_lim, k, context, setup, fun) {
     var N_proc = this.jsl.inter.parallel.getProcessorsNum();
-    
+
     var funStr = fun.toString();
     var funBody = funStr.slice(funStr.indexOf("{") + 1, funStr.lastIndexOf("}"));
     var funArgs = funStr.slice(funStr.indexOf("(") + 1, funStr.indexOf(")"));
-    
+
     var [x_lim_parallel, k_parallel] = this.splitSearchSpace(x_lim, k, N_proc);
-    
-    var res = await this.jsl.inter.parallel.parfor(0, N_proc-1, 1, N_proc, 
-        Object.assign(context, {x_lim_parallel, k_parallel, 
+
+    var res = await this.jsl.inter.parallel.parfor(0, N_proc - 1, 1, N_proc,
+      Object.assign(context, {x_lim_parallel, k_parallel,
         funArgs, funBody}), setup, function(i) {
-      var new_fun = new Function(funArgs, funBody);
-      return this.jsl.context.crawler.run(
-        x_lim_parallel[i], k_parallel, new_fun);
-    });
+        var new_fun = new Function(funArgs, funBody);
+        return this.jsl.context.crawler.run(
+          x_lim_parallel[i], k_parallel, new_fun);
+      });
     var Nin = res.map(pair => pair[0]).flat();
     var Nout = res.map(pair => pair[1]).flat();
     return [Nin, Nout];
   }
-  
+
   /**
    * Executes the space search algorithm.
    * @param {number[][]} bounds - Array of [min, max] for each dimension.
@@ -106,12 +106,12 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
 
     // Initial starting point
     var startCoordinates = bounds.map(([min]) => min);
-    
+
     // Calculate initial step sizes (dq)
     var initialStepSizes = bounds.map(
       ([min, max], idx) => (max - min) / subdivisionPerDepth[0][idx]
     );
-    
+
     // Generate step sizes for each depth
     var stepSizesPerDepth = [initialStepSizes];
     for(var depth = 1; depth < maxDepth; depth++) {
@@ -128,7 +128,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
       return shift.map((s, idx) => startCoordinates[idx] + s * (bounds[idx][1] - bounds[idx][0]));
     });
     var boundaryValues = boundaryPoints.map(point => (conditionFunction(point) ? 1 : 0));
-    
+
     // Call makeNodesND
     var [Nin, Nout] = this.makeNodesND(
       startCoordinates,
@@ -164,7 +164,7 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
     var maxDepth = subdivisionPerDepth.length; // maximum depth
     var Nin = [];
     var Nout = [];
-      
+
     // Generate coordinate arrays for each dimension
     var stepSizes = stepSizesPerDepth[currentDepth];
     var numSteps = subdivisionPerDepth[currentDepth];
@@ -183,10 +183,10 @@ class PRDC_JSLAB_GEOMETRY_SPACE_SEARCH {
     // Initialize N-dimensional grid
     var gridShape = coordsArray.map(A => A.length);
     var N = this.jsl.inter.array.createFilledArray(...gridShape, null);
-      
+
     // Mark whether a node needs to be calculated
     var nf = this.jsl.inter.array.createFilledArray(...gridShape, 1);
-      
+
     // Set nf to 0 for corner points (boundary points)
     var cornerIndices = this.getCornerIndices(gridShape);
     cornerIndices.forEach(indices => {

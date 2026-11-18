@@ -6,67 +6,393 @@
  *
  * CodeMirror, copyright (c) by Marijn Haverbeke and others
  * Distributed under an MIT license: https://codemirror.net/LICENSE
- *
  */
- 
+
 (function(mod) {
-  if(typeof exports == "object" && typeof module == "object") // CommonJS
+  // CommonJS
+  if(typeof exports == "object" && typeof module == "object") {
     mod(require("../../lib/codemirror"), require("./searchcursor"));
-  else if(typeof define == "function" && define.amd) // AMD
+  } else if(typeof define == "function" && define.amd) {
+    // AMD
     define(["../../lib/codemirror", "./searchcursor"], mod);
-  else // Plain browser env
+  } else {
+    // Plain browser env
     mod(CodeMirror);
+  }
 })(function(CodeMirror) {
   "use strict";
-  
+
+
+  /**
+   * Class for code dialog search helper.
+   */
+  class PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER {
+
+    /**
+     * Loads search history.
+     * @param {Object} cm CodeMirror instance with injected application storage.
+     */
+    static loadSearchHistory(cm) {
+      try {
+        var parsed = cm.getOption('jslabStorage')?.get(SEARCH_HISTORY_KEY, []);
+        if(!Array.isArray(parsed)) {
+          return [];
+        }
+        return parsed.filter(function(item) {
+          return typeof item === "string" && item.length > 0;
+        }).slice(0, SEARCH_HISTORY_MAX);
+      } catch(err) {
+        return [];
+      }
+    }
+
+    /**
+     * Saves search history.
+     * @param {Object} cm CodeMirror instance with injected application storage.
+     * @param {*} history History.
+     */
+    static saveSearchHistory(cm, history) {
+      try {
+        cm.getOption('jslabStorage')?.set(SEARCH_HISTORY_KEY, history.slice(0, SEARCH_HISTORY_MAX));
+      } catch(err) {
+        // Ignore storage failures.
+      }
+    }
+
+    /**
+     * Adds search history item.
+     * @param {*} cm Cm.
+     * @param {*} query Query.
+     */
+    static addSearchHistoryItem(cm, query) {
+      query = String(query || "").trim();
+      if(!query.length) {
+        return;
+      }
+      var history = cm.search_history || [];
+      var found_index = history.indexOf(query);
+      if(found_index > -1) {
+        history.splice(found_index, 1);
+      }
+      history.unshift(query);
+      if(history.length > SEARCH_HISTORY_MAX) {
+        history.length = SEARCH_HISTORY_MAX;
+      }
+      cm.search_history = history;
+      cm.search_history_index = -1;
+      cm.search_history_draft = "";
+      PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.saveSearchHistory(cm, history);
+    }
+
+    /**
+     * Searches overlay.
+     * @param {*} query Query.
+     * @param {*} caseInsensitive Case insensitive.
+     */
+    static searchOverlay(query, caseInsensitive) {
+      if(typeof query == "string") {
+        query = new RegExp(query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), caseInsensitive ? "gi" : "g");
+      } else if(!query.global) {
+        query = new RegExp(query.source, query.ignoreCase ? "gi" : "g");
+      }
+
+      return {token: function(stream) {
+        query.lastIndex = stream.pos;
+        var match = query.exec(stream.string);
+        if(match && match.index == stream.pos) {
+          stream.pos += match[0].length || 1;
+          return "searching";
+        } else if(match) {
+          stream.pos = match.index;
+        } else {
+          stream.skipToEnd();
+        }
+        return false;
+      }};
+    }
+
+
+    /**
+     * Returns search state.
+     * @param {*} cm Cm.
+     */
+    static getSearchState(cm) {
+      return cm.state.search || (cm.state.search = { posFrom: null, posTo: null, lastQuery: null, query: null, overlay: null });
+    }
+
+    /**
+     * Queries case insensitive.
+     * @param {*} cm Cm.
+     * @param {*} query Query.
+     */
+    static queryCaseInsensitive(cm, query) {
+      return !cm.search_match_case && typeof query == "string";
+    }
+
+    /**
+     * Returns search cursor.
+     * @param {*} cm Cm.
+     * @param {*} query Query.
+     * @param {*} pos Pos.
+     */
+    static getSearchCursor(cm, query, pos) {
+      return cm.getSearchCursor(query, pos, {caseFold: PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.queryCaseInsensitive(cm, query), multiline: true});
+    }
+
+    /**
+     * Parses string.
+     * @param {*} string String.
+     */
+    static parseString(string) {
+      if(string == null) {
+        return "";
+      }
+      if(typeof string !== "string") {
+        string = String(string);
+      }
+      return string.replace(/\\([nrt\\])/g, function(match, ch) {
+        if(ch == "n") {
+          return "\n";
+        }
+        if(ch == "r") {
+          return "\r";
+        }
+        if(ch == "t") {
+          return "\t";
+        }
+        if(ch == "\\") {
+          return "\\";
+        }
+        return match;
+      });
+    }
+
+    /**
+     * Parses query.
+     * @param {*} cm Cm.
+     * @param {*} query Query.
+     */
+    static parseQuery(cm, query) {
+      if(query == null) {
+        query = "";
+      }
+      if(query instanceof RegExp) {
+        if(cm.search_regex) {
+          return query.test("") ? /x^/ : query;
+        }
+        query = String(query);
+      }
+      if(typeof query !== "string") {
+        query = String(query);
+      }
+      if(cm.search_regex) {
+        var isRE = query.match(/^\/(.*)\/([a-z]*)$/);
+        if(isRE) {
+          try {
+            query = new RegExp(isRE[1], isRE[2].indexOf("i") == -1 ? "" : "i");
+          } catch(e) {}
+        }
+      } else {
+        query = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.parseString(query);
+      }
+      if(typeof query == "string" ? query == "" : query.test("")) {
+        query = /x^/;
+      }
+      return query;
+    }
+
+    /**
+     * Starts search.
+     * @param {*} cm Cm.
+     * @param {*} state State.
+     * @param {*} query Query.
+     */
+    static startSearch(cm, state, query) {
+      state.queryText = query;
+      state.query = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.parseQuery(cm, query);
+      cm.removeOverlay(state.overlay, PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.queryCaseInsensitive(cm, state.query));
+      state.overlay = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.searchOverlay(state.query, PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.queryCaseInsensitive(cm, state.query));
+      cm.addOverlay(state.overlay);
+      if(state.annotate) {
+        state.annotate.clear();
+        state.annotate = null;
+      }
+      state.annotate = cm.showMatchesOnScrollbar(state.query, PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.queryCaseInsensitive(cm, state.query));
+    }
+
+    /**
+     * Shows search dialog.
+     * @param {*} cm Cm.
+     */
+    static showSearchDialog(cm) {
+      var div = cm.display.wrapper.querySelector('.CodeMirror-search-dialog');
+      if(window.jQuery) {
+        $(div).slideDown(200);
+      } else {
+        div.style.display = 'block';
+      }
+      var query = cm.getSelection();
+      var find_input = cm.display.wrapper.querySelector('.CodeMirror-search-find');
+      if(query) {
+        find_input.value = query;
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
+        state.query = query;
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm);
+      }
+      find_input.focus();
+    }
+
+    /**
+     * Hides search dialog.
+     * @param {*} cm Cm.
+     */
+    static hideSearchDialog(cm) {
+      var div = cm.display.wrapper.querySelector('.CodeMirror-search-dialog');
+      if(window.jQuery) {
+        $(div).slideUp(200);
+      } else {
+        div.style.display = 'none';
+      }
+    }
+
+    /**
+     * Handles do search.
+     * @param {*} cm Cm.
+     * @param {*} rev Rev.
+     */
+    static doSearch(cm, rev) {
+      var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
+      var q = state.query;
+      if(q != state.queryText) {
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.startSearch(cm, state, q);
+        state.posFrom = state.posTo = cm.getCursor();
+      }
+      if(q) {
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.findNext(cm, rev);
+      }
+      if(state.annotate) {
+        var current_match_index = state.annotate.matches.findIndex(function(e) {
+          return e.from.line == state.posFrom.line &&
+            e.from.ch == state.posFrom.ch && e.to.line == state.posTo.line &&
+            e.to.ch == state.posTo.ch;
+        }) + 1;
+        var total_matchs = cm.display.wrapper.querySelector('.CodeMirror-search-total-matchs');
+        total_matchs.innerText = state.annotate.matches.length;
+        var current_match = cm.display.wrapper.querySelector('.CodeMirror-search-current-match');
+        current_match.innerText = current_match_index;
+      }
+    }
+
+    /**
+     * Finds next.
+     * @param {*} cm Cm.
+     * @param {*} rev Rev.
+     * @param {Function} callback Callback.
+     */
+    static findNext(cm, rev, callback) {
+      cm.operation(function() {
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
+        var cursor = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchCursor(cm, state.query, rev ? state.posFrom : state.posTo);
+        if(!cursor.find(rev)) {
+          cursor = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchCursor(cm, state.query, rev ? CodeMirror.Pos(cm.lastLine()) : CodeMirror.Pos(cm.firstLine(), 0));
+          if(!cursor.find(rev)) {
+            return;
+          }
+        }
+        cm.setSelection(cursor.from(), cursor.to());
+        cm.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
+        state.posFrom = cursor.from();
+        state.posTo = cursor.to();
+        if(callback) {
+          callback(cursor.from(), cursor.to());
+        }
+      });
+    }
+
+    /**
+     * Clears search.
+     * @param {*} cm Cm.
+     */
+    static clearSearch(cm) {
+      cm.operation(function() {
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
+        state.lastQuery = state.query;
+        if(!state.query) {
+          return;
+        }
+        state.query = state.queryText = null;
+        cm.removeOverlay(state.overlay);
+        if(state.annotate) {
+          state.annotate.clear();
+          state.annotate = null;
+        }
+      });
+    }
+
+    /**
+     * Replaces all.
+     * @param {*} cm Cm.
+     * @param {*} query Query.
+     * @param {string} text Text.
+     */
+    static replaceAll(cm, query, text) {
+      PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+      cm.operation(function() {
+        for(var cursor = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchCursor(cm, query); cursor.findNext();) {
+          if(typeof query != "string") {
+            var match = cm.getRange(cursor.from(), cursor.to()).match(query);
+            cursor.replace(text.replace(/\$(\d)/g, function(_, i) {
+              return match[i];
+            }));
+          } else {
+            cursor.replace(text);
+          }
+        }
+      });
+    }
+
+    /**
+     * Replaces.
+     * @param {*} cm Cm.
+     * @param {string} text Text.
+     * @param {*} all All.
+     */
+    static replace(cm, text, all) {
+      if(cm.getOption("readOnly")) {
+        return;
+      }
+      var query = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm).query;
+      if(query) {
+        text = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.parseString(text);
+        if(all) {
+          PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.replaceAll(cm, query, text);
+        } else {
+          var cursor = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchCursor(cm, query, cm.getCursor());
+          var start = cursor.from(), match;
+          if(!(match = cursor.findNext())) {
+            cursor = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchCursor(cm, query);
+            if(!(match = cursor.findNext()) ||
+              (start && cursor.from().line == start.line && cursor.from().ch == start.ch)) {
+              return;
+            }
+          }
+          cm.setSelection(cursor.from(), cursor.to());
+          cursor.replace(typeof query == "string" ? text :
+            text.replace(/\$(\d)/, function(w, i) {
+              return match[i];
+            }));
+        }
+      }
+    }
+  }
+
+
   var SEARCH_HISTORY_KEY = "editor_search_history";
   var SEARCH_HISTORY_MAX = 100;
 
-  function loadSearchHistory() {
-    try {
-      var raw = window.localStorage.getItem(SEARCH_HISTORY_KEY);
-      if(!raw) {
-        return [];
-      }
-      var parsed = JSON.parse(raw);
-      if(!Array.isArray(parsed)) {
-        return [];
-      }
-      return parsed.filter(function(item) {
-        return typeof item === "string" && item.length > 0;
-      }).slice(0, SEARCH_HISTORY_MAX);
-    } catch(err) {
-      return [];
-    }
-  }
-  
-  function saveSearchHistory(history) {
-    try {
-      window.localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history.slice(0, SEARCH_HISTORY_MAX)));
-    } catch(err) {
-      // Ignore storage failures.
-    }
-  }
-  
-  function addSearchHistoryItem(cm, query) {
-    query = String(query || "").trim();
-    if(!query.length) {
-      return;
-    }
-    var history = cm.search_history || [];
-    var found_index = history.indexOf(query);
-    if(found_index > -1) {
-      history.splice(found_index, 1);
-    }
-    history.unshift(query);
-    if(history.length > SEARCH_HISTORY_MAX) {
-      history.length = SEARCH_HISTORY_MAX;
-    }
-    cm.search_history = history;
-    cm.search_history_index = -1;
-    cm.search_history_draft = "";
-    saveSearchHistory(history);
-  }
+  CodeMirror.defineOption('jslabStorage', null);
+
 
   CodeMirror.defineOption('searchDialog', false, function(cm, val) {
     if(val) {
@@ -96,7 +422,7 @@
         ' <span class="CodeMirror-search-total-matchs">0</span><i class="CodeMirror-search-close-btn" title="' + closeLabel + '"></i></div>' +
         '<br class="clear"/>';
       div.setAttribute('tabindex', 0);
-      
+
       var find_input = div.querySelector('.CodeMirror-search-find');
       var replace_input = div.querySelector('.CodeMirror-search-replace');
       var find_prev_btn = div.querySelector('.CodeMirror-search-find-prev-btn');
@@ -106,30 +432,30 @@
       var match_case_btn = div.querySelector('.CodeMirror-search-case-btn');
       var regex_btn = div.querySelector('.CodeMirror-search-regex-btn');
       var close = div.querySelector('.CodeMirror-search-close-btn');
-      
+
       cm.search_match_case = false;
       cm.search_regex = false;
-      cm.search_history = loadSearchHistory();
+      cm.search_history = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.loadSearchHistory(cm);
       cm.search_history_index = -1;
       cm.search_history_draft = "";
-      
+
       function applySearchQuery(query) {
-        clearSearch(cm);
-        var state = getSearchState(cm);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
         state.query = query;
-        doSearch(cm);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm);
       }
-      
+
       function navigateSearchHistory(up) {
         var history = cm.search_history || [];
         if(!history.length) {
           return;
         }
-        
+
         if(cm.search_history_index === -1) {
           cm.search_history_draft = find_input.value;
         }
-        
+
         if(up) {
           if(cm.search_history_index < history.length - 1) {
             cm.search_history_index += 1;
@@ -139,14 +465,14 @@
             cm.search_history_index -= 1;
           }
         }
-        
+
         var query = cm.search_history_index === -1 ?
           cm.search_history_draft : history[cm.search_history_index];
         find_input.value = query;
         applySearchQuery(query);
         find_input.setSelectionRange(query.length, query.length);
       }
-      
+
       div.addEventListener('keydown', function(e) {
         if(e.key == 'Escape') {
           // ESC
@@ -158,14 +484,14 @@
           cm.focus();
         }
       });
-      
+
       replace_input.addEventListener('keydown', function(e) {
         if(e.key == 'Enter') {
           // Replace
-          replace(cm, replace_input.value, false);
+          PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.replace(cm, replace_input.value, false);
         }
       });
-      
+
       find_input.addEventListener('keydown', function(e) {
         if(e.key === 'ArrowUp' && e.altKey) {
           navigateSearchHistory(true);
@@ -176,15 +502,15 @@
           e.stopPropagation();
           e.preventDefault();
         } else if(e.key === 'Enter') {
-          var state = getSearchState(cm);
+          var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
           state.query = find_input.value;
-          addSearchHistoryItem(cm, find_input.value);
-          doSearch(cm, e.shiftKey);
+          PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.addSearchHistoryItem(cm, find_input.value);
+          PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm, e.shiftKey);
           e.stopPropagation();
           e.preventDefault();
         }
       });
-      
+
       find_input.addEventListener('keyup', function(e) {
         if(((e.key === 'ArrowUp' || e.key === 'ArrowDown') && e.altKey) || e.key === 'Enter') {
           return;
@@ -192,40 +518,40 @@
         // Find match
         cm.search_history_index = -1;
         cm.search_history_draft = this.value;
-        clearSearch(cm); 
-        var state = getSearchState(cm);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
         state.query = this.value;
-        doSearch(cm);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm);
       });
-      
+
       find_prev_btn.addEventListener('click', function() {
         // Show previous match
-        var state = getSearchState(cm);
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
         state.query = find_input.value;
-        addSearchHistoryItem(cm, find_input.value);
-        doSearch(cm, true);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.addSearchHistoryItem(cm, find_input.value);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm, true);
       });
-      
+
       find_next_btn.addEventListener('click', function() {
         // Show next match
-        var state = getSearchState(cm);
+        var state = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.getSearchState(cm);
         state.query = find_input.value;
-        addSearchHistoryItem(cm, find_input.value);
-        doSearch(cm, false);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.addSearchHistoryItem(cm, find_input.value);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm, false);
       });
-      
+
       replace_btn.addEventListener('click', function() {
         // Replace
-        addSearchHistoryItem(cm, find_input.value);
-        replace(cm, replace_input.value, false)
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.addSearchHistoryItem(cm, find_input.value);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.replace(cm, replace_input.value, false);
       });
-      
+
       replace_all_btn.addEventListener('click', function() {
         // Replace all
-        addSearchHistoryItem(cm, find_input.value);
-        replace(cm, replace_input.value, true)
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.addSearchHistoryItem(cm, find_input.value);
+        PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.replace(cm, replace_input.value, true);
       });
-      
+
       match_case_btn.addEventListener('click', function() {
         if(this.classList.contains('active')) {
           cm.search_match_case = false;
@@ -235,7 +561,7 @@
           this.classList.add('active');
         }
       });
-      
+
       regex_btn.addEventListener('click', function() {
         if(this.classList.contains('active')) {
           cm.search_regex = false;
@@ -245,7 +571,7 @@
           this.classList.add('active');
         }
       });
-      
+
       close.addEventListener('click', function() {
         if(window.jQuery) {
           $(div).slideUp(200);
@@ -254,215 +580,33 @@
         }
         cm.focus();
       });
-      
+
       cm.display.wrapper.appendChild(div);
     }
   });
-  
-  function searchOverlay(query, caseInsensitive) {
-    if(typeof query == "string")
-      query = new RegExp(query.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), caseInsensitive ? "gi" : "g");
-    else if(!query.global)
-      query = new RegExp(query.source, query.ignoreCase ? "gi" : "g");
 
-    return {token: function(stream) {
-      query.lastIndex = stream.pos;
-      var match = query.exec(stream.string);
-      if(match && match.index == stream.pos) {
-        stream.pos += match[0].length || 1;
-        return "searching";
-      } else if(match) {
-        stream.pos = match.index;
-      } else {
-        stream.skipToEnd();
-      }
-      return false;
-    }};
-  }
 
-  function SearchState() {
-    this.posFrom = this.posTo = this.lastQuery = this.query = null;
-    this.overlay = null;
-  }
-
-  function getSearchState(cm) {
-    return cm.state.search || (cm.state.search = new SearchState());
-  }
-
-  function queryCaseInsensitive(cm, query) {
-    return !cm.search_match_case && typeof query == "string";
-  }
-
-  function getSearchCursor(cm, query, pos) {
-    return cm.getSearchCursor(query, pos, {caseFold: queryCaseInsensitive(cm, query), multiline: true});
-  }
-
-  function parseString(string) {
-    if(string == null) {
-      return "";
-    }
-    if(typeof string !== "string") {
-      string = String(string);
-    }
-    return string.replace(/\\([nrt\\])/g, function(match, ch) {
-      if(ch == "n") return "\n";
-      if(ch == "r") return "\r";
-      if(ch == "t") return "\t";
-      if(ch == "\\") return "\\";
-      return match;
-    });
-  }
-
-  function parseQuery(cm, query) {
-    if(query == null) {
-      query = "";
-    }
-    if(query instanceof RegExp) {
-      if(cm.search_regex) {
-        return query.test("") ? /x^/ : query;
-      }
-      query = String(query);
-    }
-    if(typeof query !== "string") {
-      query = String(query);
-    }
-    if(cm.search_regex) {
-      var isRE = query.match(/^\/(.*)\/([a-z]*)$/);
-      if(isRE) {
-        try { query = new RegExp(isRE[1], isRE[2].indexOf("i") == -1 ? "" : "i"); }
-        catch(e) {}
-      }
-    } else {
-      query = parseString(query);
-    }
-    if(typeof query == "string" ? query == "" : query.test(""))
-      query = /x^/;
-    return query;
-  }
-
-  function startSearch(cm, state, query) {
-    state.queryText = query;
-    state.query = parseQuery(cm, query);
-    cm.removeOverlay(state.overlay, queryCaseInsensitive(cm, state.query));
-    state.overlay = searchOverlay(state.query, queryCaseInsensitive(cm, state.query));
-    cm.addOverlay(state.overlay);
-    if(state.annotate) { state.annotate.clear(); state.annotate = null; }
-    state.annotate = cm.showMatchesOnScrollbar(state.query, queryCaseInsensitive(cm, state.query));
-  }
-
-  function showSearchDialog(cm) {
-    var div = cm.display.wrapper.querySelector('.CodeMirror-search-dialog');
-    if(window.jQuery) {
-      $(div).slideDown(200);
-    } else {
-      div.style.display = 'block';
-    }
-    var query = cm.getSelection();
-    var find_input = cm.display.wrapper.querySelector('.CodeMirror-search-find');
-    if(query) {
-      find_input.value = query;
-      clearSearch(cm); 
-      var state = getSearchState(cm);
-      state.query = query;
-      doSearch(cm);
-    }
-    find_input.focus();
-  }
- 
-  function hideSearchDialog(cm) {
-    var div = cm.display.wrapper.querySelector('.CodeMirror-search-dialog');
-    if(window.jQuery) {
-      $(div).slideUp(200);
-    } else {
-      div.style.display = 'none';
-    }
-  }
- 
-  function doSearch(cm, rev) {
-    var state = getSearchState(cm);
-    var q = state.query;
-    if(q != state.queryText) {
-      startSearch(cm, state, q);
-      state.posFrom = state.posTo = cm.getCursor();
-    }
-    if(q) {
-      findNext(cm, rev);
-    }
-    if(state.annotate) {
-      var current_match_index = state.annotate.matches.findIndex(function(e) {
-        return e.from.line == state.posFrom.line && 
-          e.from.ch == state.posFrom.ch && e.to.line == state.posTo.line && 
-          e.to.ch == state.posTo.ch;
-      })+1;
-      var total_matchs = cm.display.wrapper.querySelector('.CodeMirror-search-total-matchs');
-      total_matchs.innerText = state.annotate.matches.length;
-      var current_match = cm.display.wrapper.querySelector('.CodeMirror-search-current-match');
-      current_match.innerText = current_match_index;
-    }
-  }
-
-  function findNext(cm, rev, callback) {cm.operation(function() {
-    var state = getSearchState(cm);
-    var cursor = getSearchCursor(cm, state.query, rev ? state.posFrom : state.posTo);
-    if(!cursor.find(rev)) {
-      cursor = getSearchCursor(cm, state.query, rev ? CodeMirror.Pos(cm.lastLine()) : CodeMirror.Pos(cm.firstLine(), 0));
-      if(!cursor.find(rev)) return;
-    }
-    cm.setSelection(cursor.from(), cursor.to());
-    cm.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
-    state.posFrom = cursor.from(); state.posTo = cursor.to();
-    if(callback) callback(cursor.from(), cursor.to());
-  });}
-
-  function clearSearch(cm) {cm.operation(function() {
-    var state = getSearchState(cm);
-    state.lastQuery = state.query;
-    if(!state.query) return;
-    state.query = state.queryText = null;
-    cm.removeOverlay(state.overlay);
-    if(state.annotate) { state.annotate.clear(); state.annotate = null; }
-  });}
-
-  function replaceAll(cm, query, text) {
-    clearSearch(cm);
-    cm.operation(function() {
-      for(var cursor = getSearchCursor(cm, query); cursor.findNext();) {
-        if(typeof query != "string") {
-          var match = cm.getRange(cursor.from(), cursor.to()).match(query);
-          cursor.replace(text.replace(/\$(\d)/g, function(_, i) { return match[i]; }));
-        } else cursor.replace(text);
-      }
-    });
-  }
-
-  function replace(cm, text, all) {
-    if(cm.getOption("readOnly")) return;
-    var query = getSearchState(cm).query;
-    if(query) {
-      text = parseString(text);
-      if(all) {
-        replaceAll(cm, query, text);
-      } else {
-        var cursor = getSearchCursor(cm, query, cm.getCursor());
-        var start = cursor.from(), match;
-        if(!(match = cursor.findNext())) {
-          cursor = getSearchCursor(cm, query);
-          if(!(match = cursor.findNext()) ||
-            (start && cursor.from().line == start.line && cursor.from().ch == start.ch)) return;
-        }
-        cm.setSelection(cursor.from(), cursor.to());
-        cursor.replace(typeof query == "string" ? text :
-          text.replace(/\$(\d)/, function(w, i) {return match[i];}));
-      }
-    }
-  }
-  
-  CodeMirror.commands.showSearchDialog = function(cm) {clearSearch(cm); showSearchDialog(cm);};
-  CodeMirror.commands.hideSearchDialog = function(cm) {clearSearch(cm); hideSearchDialog(cm);};
-  CodeMirror.commands.find = function(cm) {clearSearch(cm); doSearch(cm);};
-  CodeMirror.commands.findNext = function(cm) {doSearch(cm, false);};
-  CodeMirror.commands.findPrev = function(cm) {doSearch(cm, true);};
-  CodeMirror.commands.clearSearch = clearSearch;
-  CodeMirror.commands.replace = replace;
-  CodeMirror.commands.replaceAll = function(cm) {replace(cm, true);};
+  CodeMirror.commands.showSearchDialog = function(cm) {
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.showSearchDialog(cm);
+  };
+  CodeMirror.commands.hideSearchDialog = function(cm) {
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.hideSearchDialog(cm);
+  };
+  CodeMirror.commands.find = function(cm) {
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch(cm);
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm);
+  };
+  CodeMirror.commands.findNext = function(cm) {
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm, false);
+  };
+  CodeMirror.commands.findPrev = function(cm) {
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.doSearch(cm, true);
+  };
+  CodeMirror.commands.clearSearch = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.clearSearch;
+  CodeMirror.commands.replace = PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.replace;
+  CodeMirror.commands.replaceAll = function(cm) {
+    PRDC_JSLAB_CODE_DIALOG_SEARCH_HELPER.replace(cm, true);
+  };
 });

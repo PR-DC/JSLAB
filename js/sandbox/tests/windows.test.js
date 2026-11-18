@@ -5,67 +5,129 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for windows test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER {
+
+  /**
+   * Creates window stub.
+   * @param {*} id Id.
+   * @param {*} log Log.
+   */
+  static createWindowStub(id, log) {
+    return {
+      openDevTools: function() {
+        return 'devtools-' + id;
+      },
+      getMediaSourceId: function() {
+        return 'media-' + id;
+      },
+      startVideoRecording: function(opts) {
+        return { id: id, opts: opts };
+      },
+      close: function() {
+        return 'close-' + id;
+      },
+      show: function() {
+        return 'show-' + id;
+      },
+      hide: function() {
+        return 'hide-' + id;
+      },
+      focus: function() {
+        return 'focus-' + id;
+      },
+      minimize: function() {
+        return 'minimize-' + id;
+      },
+      center: function() {
+        return 'center-' + id;
+      },
+      moveTop: function() {
+        return 'movetop-' + id;
+      },
+      setSize: function(w, h) {
+        return [w, h];
+      },
+      setPos: function(x, y) {
+        return [x, y];
+      },
+      setResizable: function(state) {
+        return state;
+      },
+      setMovable: function(state) {
+        return state;
+      },
+      setAspectRatio: function(value) {
+        return value;
+      },
+      setOpacity: function(value) {
+        return value;
+      },
+      setFullscreen: function(state) {
+        return state;
+      },
+      setTitle: function(title) {
+        return title;
+      },
+      getSize: function() {
+        return [800, 600];
+      },
+      getPos: function() {
+        return [10, 20];
+      },
+      printToPdf: function(options) {
+        return { pdf: id, options: options };
+      },
+      _updateLanguage: function(flag) {
+        log.push(['lang', id, flag]);
+      },
+      onClosed: function() {
+        log.push(['closed', id]);
+      }
+    };
+  }
+
+  /**
+   * Creates windows harness.
+   */
+  static createWindowsHarness() {
+    var close_window_calls = [];
+    var log = [];
+    var jsl = {
+      no_ans: false,
+      ignore_output: false,
+      inter: {
+        env: {
+          closeWindow: function(wid) {
+            close_window_calls.push(wid);
+          }
+        },
+        windows: null
+      }
+    };
+
+    var windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
+    jsl.inter.windows = windows;
+    windows.open_windows = {
+      1: PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER.createWindowStub(1, log),
+      2: PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER.createWindowStub(2, log)
+    };
+    windows.active_window = 1;
+
+    return { windows, jsl, close_window_calls, log };
+  }
+}
+
+
 const { PRDC_JSLAB_LIB_WINDOWS } = require('../windows');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function createWindowStub(id, log) {
-  return {
-    openDevTools: function() { return 'devtools-' + id; },
-    getMediaSourceId: function() { return 'media-' + id; },
-    startVideoRecording: function(opts) { return { id: id, opts: opts }; },
-    close: function() { return 'close-' + id; },
-    show: function() { return 'show-' + id; },
-    hide: function() { return 'hide-' + id; },
-    focus: function() { return 'focus-' + id; },
-    minimize: function() { return 'minimize-' + id; },
-    center: function() { return 'center-' + id; },
-    moveTop: function() { return 'movetop-' + id; },
-    setSize: function(w, h) { return [w, h]; },
-    setPos: function(x, y) { return [x, y]; },
-    setResizable: function(state) { return state; },
-    setMovable: function(state) { return state; },
-    setAspectRatio: function(value) { return value; },
-    setOpacity: function(value) { return value; },
-    setFullscreen: function(state) { return state; },
-    setTitle: function(title) { return title; },
-    getSize: function() { return [800, 600]; },
-    getPos: function() { return [10, 20]; },
-    printToPdf: function(options) { return { pdf: id, options: options }; },
-    _updateLanguage: function(flag) { log.push(['lang', id, flag]); },
-    onClosed: function() { log.push(['closed', id]); }
-  };
-}
-
-function createWindowsHarness() {
-  var close_window_calls = [];
-  var log = [];
-  var jsl = {
-    no_ans: false,
-    ignore_output: false,
-    inter: {
-      env: {
-        closeWindow: function(wid) {
-          close_window_calls.push(wid);
-        }
-      },
-      windows: null
-    }
-  };
-
-  var windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
-  jsl.inter.windows = windows;
-  windows.open_windows = {
-    1: createWindowStub(1, log),
-    2: createWindowStub(2, log)
-  };
-  windows.active_window = 1;
-
-  return { windows, jsl, close_window_calls, log };
-}
 
 tests.add('window proxy methods delegate to targeted window objects', function(assert) {
-  var harness = createWindowsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER.createWindowsHarness();
   var windows = harness.windows;
 
   assert.equal(windows.openWindowDevTools(1), 'devtools-1');
@@ -92,7 +154,7 @@ tests.add('window proxy methods delegate to targeted window objects', function(a
 }, { tags: ['unit', 'windows'] });
 
 tests.add('window helpers return false for unknown IDs', function(assert) {
-  var harness = createWindowsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER.createWindowsHarness();
   var windows = harness.windows;
 
   assert.equal(windows.openWindowDevTools(99), false);
@@ -120,7 +182,7 @@ tests.add('window helpers return false for unknown IDs', function(assert) {
 }, { tags: ['unit', 'windows'] });
 
 tests.add('active window helpers and closeWindows side effects work', function(assert) {
-  var harness = createWindowsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER.createWindowsHarness();
   var windows = harness.windows;
 
   assert.equal(windows.getWindow(1), windows.open_windows[1]);
@@ -134,7 +196,7 @@ tests.add('active window helpers and closeWindows side effects work', function(a
 }, { tags: ['unit', 'windows'] });
 
 tests.add('internal active-window bookkeeping updates language and closed windows', function(assert) {
-  var harness = createWindowsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_TEST_HELPER.createWindowsHarness();
   var windows = harness.windows;
 
   windows._setActiveWindow(2);
@@ -161,7 +223,10 @@ tests.add('internal active-window bookkeeping updates language and closed window
 tests.add('openCanvas readiness wait propagates execution cancellation without polling', async function(assert) {
   let wait_calls = 0;
   const jsl = { inter: { env: {}, non_blocking: {
-    waitMSeconds: async function() { wait_calls++; throw new Error('Execution interrupted.'); }
+    waitMSeconds: async function() {
+      wait_calls++;
+      throw new Error('Execution interrupted.');
+    }
   } } };
   const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
   windows.openWindow = () => 1;
@@ -176,7 +241,10 @@ tests.add('a ready window closes through the environment window API', async func
     pathIsAbsolute: () => true,
     checkFile: () => true,
     openWindow: () => [{ document: {} }, Promise.resolve()],
-    closeWindow: wid => { calls.push(wid); return true; }
+    closeWindow: wid => {
+      calls.push(wid);
+      return true;
+    }
   } } };
   const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
   jsl.inter.windows = windows;
@@ -193,7 +261,10 @@ tests.add('a loading window closes without waiting for document readiness', asyn
     pathIsAbsolute: () => true,
     checkFile: () => true,
     openWindow: () => [{ document: {} }, new Promise(() => {})],
-    closeWindow: wid => { calls.push(wid); return true; }
+    closeWindow: wid => {
+      calls.push(wid);
+      return true;
+    }
   } } };
   const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
   jsl.inter.windows = windows;
@@ -212,14 +283,21 @@ tests.add('window readiness survives the internal module view wrapping registry 
   const windows = new PRDC_JSLAB_LIB_WINDOWS(jsl);
   const views = new Map();
   jsl.inter.windows = new Proxy(windows, { get(target, key) {
-    if(key !== 'open_windows') return target[key];
+    if(key !== 'open_windows') {
+      return target[key];
+    }
     return new Proxy(target.open_windows, { get(registry, id) {
-      if(!registry[id]) return undefined;
-      if(!views.has(registry[id])) views.set(registry[id], new Proxy(registry[id], {}));
+      if(!registry[id]) {
+        return undefined;
+      }
+      if(!views.has(registry[id])) {
+        views.set(registry[id], new Proxy(registry[id], {}));
+      }
       return views.get(registry[id]);
     } });
   } });
-  const wid = windows.openWindow('/figure.html'); const win = windows.open_windows[wid];
+  const wid = windows.openWindow('/figure.html');
+  const win = windows.open_windows[wid];
   win._onReady = () => win._readyResolve(true);
   assert.equal(await Promise.race([win.ready, new Promise(resolve => setTimeout(() => resolve(false), 100))]), true);
 }, { tags: ['unit', 'windows'] });

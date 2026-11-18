@@ -10,7 +10,10 @@
  * No loop instrumentation or polling is needed to interrupt JavaScript.
  */
 class PRDC_JSLAB_EXECUTION {
-  /** @param {Object} jsl Persistent runtime. */
+  /**
+   * Initializes the execution instance.
+   * @param {Object} jsl Persistent runtime.
+   */
   constructor(jsl) {
     this.jsl = jsl;
     this.generation = 0;
@@ -20,16 +23,25 @@ class PRDC_JSLAB_EXECUTION {
     this.abort_controller = new AbortController();
   }
 
-  /** @returns {Object} Identity and cancellation promise for one evaluation. */
+  /**
+   * Handles begin.
+   * @returns {Object} Identity and cancellation promise for one evaluation.
+   */
   begin() {
     const NativePromise = this.jsl._Promise || Promise;
     const token = { id: String(++this.sequence), generation: this.generation, cancelled: false };
-    token.cancellation = new NativePromise(resolve => { token.cancel = resolve; });
+    token.cancellation = new NativePromise(resolve => {
+      token.cancel = resolve;
+    });
     this.current = token;
     return token;
   }
 
-  /** @param {Object} token Execution identity. @returns {boolean} Still valid. */
+  /**
+   * Handles valid.
+   * @param {Object} token Execution identity.
+   * @returns {boolean} Still valid.
+   */
   valid(token) {
     return !token || (!token.cancelled && token.generation === this.generation);
   }
@@ -40,16 +52,23 @@ class PRDC_JSLAB_EXECUTION {
    * @param {Object} token Evaluation token.
    */
   wait(promise, token = this.current) {
-    if(!token) return promise;
+    if(!token) {
+      return promise;
+    }
     const NativePromise = this.jsl._Promise || Promise;
     return NativePromise.race([promise, token.cancellation.then(() => {
       throw Object.assign(new Error('Execution interrupted.'), { name: 'JslabInterrupted' });
     })]);
   }
 
-  /** @param {Object} token Completed evaluation. */
+  /**
+   * Handles finish.
+   * @param {Object} token Completed evaluation.
+   */
   finish(token) {
-    if(this.current?.id === token?.id) this.current = null;
+    if(this.current?.id === token?.id) {
+      this.current = null;
+    }
   }
 
   /**
@@ -60,18 +79,28 @@ class PRDC_JSLAB_EXECUTION {
   wrap(callback) {
     const execution = this;
     const generation = this.generation;
-    const debugger_runtime = this.jsl.inter.execution?.web_debugger;
+    const debugger_runtime = this.jsl.inter.execution?.debugger_runtime;
     const history = debugger_runtime?.captureAsync();
     return function(...args) {
-      if(generation !== execution.generation) return;
-      if(debugger_runtime) return debugger_runtime.withAsync(history, callback, this, args);
+      if(generation !== execution.generation) {
+        return;
+      }
+      if(debugger_runtime) {
+        return debugger_runtime.withAsync(history, callback, this, args);
+      }
       return callback.apply(this, args);
     };
   }
 
-  /** @param {Worker} worker Worker owned by this runtime. @returns {Worker} Worker. */
+  /**
+   * Handles track worker.
+   * @param {Worker} worker Worker owned by this runtime.
+   * @returns {Worker} Worker.
+   */
   trackWorker(worker) {
-    if(this.workers.has(worker)) return worker;
+    if(this.workers.has(worker)) {
+      return worker;
+    }
     this.workers.add(worker);
     const terminate = worker.terminate.bind(worker);
     worker.terminate = () => {
@@ -81,12 +110,19 @@ class PRDC_JSLAB_EXECUTION {
     return worker;
   }
 
-  /** Stops explicitly registered workers, including workers outside the pool. */
+  /**
+   * Stops explicitly registered workers, including workers outside the pool.
+   */
   stopWorkers() {
-    for(const worker of Array.from(this.workers)) worker.terminate();
+    for(const worker of Array.from(this.workers)) {
+      worker.terminate();
+    }
   }
 
-  /** @returns {AbortSignal} Signal for explicitly cancellable operations. */
+  /**
+   * Handles signal.
+   * @returns {AbortSignal} Signal for explicitly cancellable operations.
+   */
   signal() {
     return this.abort_controller.signal;
   }
@@ -98,8 +134,12 @@ class PRDC_JSLAB_EXECUTION {
    */
   cancel(id) {
     const token = this.current;
-    if(id !== null && token && id !== token.id) throw new Error('Stale interruption request.');
-    if(token?.cancelled) return;
+    if(id !== null && token && id !== token.id) {
+      throw new Error('Stale interruption request.');
+    }
+    if(token?.cancelled) {
+      return;
+    }
     this.generation++;
     if(token) {
       token.cancelled = true;
@@ -107,7 +147,9 @@ class PRDC_JSLAB_EXECUTION {
     }
   }
 
-  /** Releases registered resources after an error or an explicit interruption. */
+  /**
+   * Releases registered resources after an error or an explicit interruption.
+   */
   async cleanupResources() {
     this.abort_controller.abort();
     this.abort_controller = new AbortController();
@@ -128,7 +170,11 @@ class PRDC_JSLAB_EXECUTION {
       () => this.jsl.doCleanup()
     ];
     for(const operation of operations) {
-      try { await operation(); } catch(error) { errors.push(String(error.message || error)); }
+      try {
+        await operation();
+      } catch(error) {
+        errors.push(String(error.message || error));
+      }
     }
     return errors;
   }
@@ -139,15 +185,24 @@ class PRDC_JSLAB_EXECUTION {
    * @returns {Promise<Object>} Cleanup result, without clearing workspace variables.
    */
   interrupt(id) {
-    if(this._interruption) return this._interruption;
-    this._interruption = this._interrupt(id).finally(() => { this._interruption = null; });
+    if(this._interruption) {
+      return this._interruption;
+    }
+    this._interruption = this._interrupt(id).finally(() => {
+      this._interruption = null;
+    });
     return this._interruption;
   }
 
-  /** @private Releases resources once even when multiple transports request a stop. */
+  /**
+   * Handles interrupt.
+   * @private Releases resources once even when multiple transports request a stop.
+   */
   async _interrupt(id) {
     const token = this.current;
-    if(id !== null && token && id !== token.id) throw new Error('Stale interruption request.');
+    if(id !== null && token && id !== token.id) {
+      throw new Error('Stale interruption request.');
+    }
     this.cancel(id);
     this.current = null;
     const errors = await this.cleanupResources();
@@ -162,6 +217,25 @@ class PRDC_JSLAB_EXECUTION {
     this.jsl.inter.env.setStatus('ready', this.jsl.inter.lang.string(87));
     return { success: true, interrupted: true, cleanup_errors: errors };
   }
+  /**
+   * Dispatches module-worker configuration and method messages in either host.
+   * @param {Object} context Worker context.
+   * @param {Function} load Module loader.
+   * @param {Object} [events=context] Worker event target.
+   */
+  static initializeModuleWorker(context, load, events = context) {
+    context.worker_module = undefined;
+    events.addEventListener('message', event => {
+      const data = event.data;
+      if(data.type === 'configureWorker') {
+        const { PRDC_WORKER } = load(data.module_path);
+        context.worker_module = new PRDC_WORKER();
+      } else if(context.worker_module && Object.prototype.hasOwnProperty.call(data, 'method')) {
+        context.worker_module[data.method](data);
+      }
+    });
+  }
+
 }
 
 exports.PRDC_JSLAB_EXECUTION = PRDC_JSLAB_EXECUTION;

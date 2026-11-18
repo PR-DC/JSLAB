@@ -5,23 +5,56 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_EXECUTION } = require('./jslab-execution');
+
+const { PRDC_JSLAB_WEB_PRESENTATION_TRANSPORT } = require('../backend-web/presentation-transport');
+
+const { getWebSubmoduleConstructor, getWebUnavailableSubmodule } = require('../backend-web/sandbox-modules');
+const { instrumentWebDebug } = require('../backend-web/debug-instrument');
+
+const { PRDC_JSLAB_WEB_BROWSER } = require('../backend-web/browser');
+
+const { PRDC_JSLAB_SIMULATE_ASSETS } = require('../backend-web/simulate-assets');
+const { PRDC_JSLAB_SANDBOX_SIMULATE } = require('./jslab-simulate');
 var recast = require('recast');
 var babel_parser = require('@babel/parser');
 var seedrandom = require('seedrandom');
 var { PolynomialRegression } = require('ml-regression-polynomial');
 var egm96 = require('egm96-universal');
-var { PRDC_JSLAB_WEB_SERIAL_PORT } = require('../web/web-serial-port');
+var { PRDC_JSLAB_WEB_SERIAL_PORT } = require('../backend-web/serial-port');
 var { createLazyNativeModule } = require('./jslab-wasm-native');
 var { createLazyAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
 var { getWasmModule } = require('./jslab-wasm-loader');
 
 const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
+/**
+ * Class for web source map.
+ */
 class PRDC_JSLAB_WEB_SOURCE_MAP {
-  constructor(map) { this.map = new TraceMap(map); }
-  originalPositionFor(position) { return originalPositionFor(this.map, position); }
+  /**
+   * Initializes the web source map instance.
+   * @param {*} map Map.
+   */
+  constructor(map) {
+    this.map = new TraceMap(map);
+  }
+  /**
+   * Maps a generated source location to the original source.
+   * @param {*} position Position.
+   */
+  originalPositionFor(position) {
+    return originalPositionFor(this.map, position);
+  }
+  /**
+   * Releases resources owned by the instance.
+   */
   destroy() {}
+
 }
 
+/**
+ * Class for env.
+ */
 class PRDC_JSLAB_ENV {
 
   /**
@@ -33,6 +66,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Initializes the env instance.
    * @param {Object} jsl
    */
   constructor(jsl) {
@@ -63,7 +97,7 @@ class PRDC_JSLAB_ENV {
         } else if(globalThis.__JSLAB_WEB_BRIDGE__) {
           this.bridge = globalThis.__JSLAB_WEB_BRIDGE__;
         }
-      } catch {}
+      } catch{}
     }
     this.runtime_info = this._getRuntimeInfo();
     this.web = Object.freeze(Object.assign({}, this.runtime_info));
@@ -146,6 +180,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Returns the capabilities.
    * @returns {Object}
    */
   getCapabilities() {
@@ -154,7 +189,9 @@ class PRDC_JSLAB_ENV {
     });
   }
 
-  /** Opens Assistant when the browser host provides a secure server integration. */
+  /**
+   * Opens Assistant when the browser host provides a secure server integration.
+   */
   assistant() {
     if(this.bridge && typeof this.bridge.openAssistant == 'function') {
       return this.bridge.openAssistant();
@@ -162,15 +199,160 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
-  /** System terminals are available only in the desktop application. */
+  /**
+   * Opens Simulate when the browser host provides an integration.
+   */
+  async simulate(filepath, options) {
+    if(this.bridge && typeof this.bridge.openSimulate == 'function') {
+      const request_options = Object.assign({}, options || {});
+      if(request_options.parameters) {
+        const library = await this._getSimulateValues();
+        request_options.parameters = library.safeWorkspaceValue(request_options.parameters);
+      }
+      const owner = {};
+      const request_id = 'simulate-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      this.jsl.addForCleanup(owner, () => this.bridge.cancelSimulate(request_id));
+      try {
+        return await this.bridge.openSimulate(filepath, request_options, request_id);
+      } finally {
+        const index = this.jsl.cleanup_registry.findIndex(entry => entry.obj === owner);
+        if(index >= 0) {
+          this.jsl.cleanup_registry.splice(index, 1);
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Loads compiler-owned value helpers only when Simulate uses the workspace.
+   * @returns {Promise<Object>} Compiler value conversion API.
+   */
+  async _getSimulateValues() {
+    if(!this._simulate_values) {
+      this._simulate_values = (async () => {
+        const url = await this.bridge.getSimulateLibraryURL();
+        const module = await import(url);
+        return module.default;
+      })().catch(error => {
+        this._simulate_values = null;
+        throw error;
+      });
+    }
+    return this._simulate_values;
+  }
+
+  /**
+   * Resolves a model expression without beginning a second user execution.
+   * @param {string} expression Workspace expression.
+   * @returns {Promise<Object>} Safe value or structured expression error.
+   */
+  async _resolveSimulateValue(expression) {
+    try {
+      const library = await this._getSimulateValues();
+      const value = await this.jsl.inter.eval.evalString('(' + String(expression || '') + ')');
+      return { success: true, js_value: library.safeWorkspaceValue(value) };
+    } catch(error) {
+      return { success: false, error: String(error.message || error),
+        value_code: error.value_code, value_path: error.value_path };
+    }
+  }
+
+  /**
+   * Loads a figure-owned native scene without downloading compiler catalogs.
+   * @param {string} xml Compiler scene description.
+   * @param {Array} time Simulation times.
+   * @param {Object} variables Referenced simulation series.
+   * @param {Object} [resources={}] Referenced CAD and material bytes.
+   * @returns {Promise<Object>} Native scene instance.
+   */
+  async _createSimulateScene(xml, time, variables, resources = {}) {
+    const module = await import(new URL('scene.js', PRDC_JSLAB_SIMULATE_ASSETS.getCodeRoot()).href);
+    // The scientific workspace removes browser globals, including caches.
+    // Keep persistence in the owning application rather than exposing it as a
+    // workspace variable or downloading the same scene core in another worker.
+    var owner = globalThis.parent && globalThis.parent.__JSLAB_WEB_BRIDGE__ ? globalThis.parent : globalThis;
+    return module.PRDC_OMJSL_SCENE.create(xml, time, variables, resources,
+      { cacheStorage: owner.caches });
+  }
+
+  /**
+   * Keeps component-owned window controls available after workspace interruption.
+   * @returns {Function|undefined} Listener disposal callback when using the worker bridge.
+   */
+  _bindUIEvent(target, type, callback, options) {
+    return this.jsl.inter.execution.remote_ui?.listenPersistent(target, type, callback, options);
+  }
+
+  /**
+   * Returns the private simulation services shared by all platform environments.
+   * @returns {Object} Sandbox simulation helper.
+   */
+  _getSimulate() {
+    if(!this._simulate) {
+      this._simulate = new PRDC_JSLAB_SANDBOX_SIMULATE(this);
+    }
+    return this._simulate;
+  }
+
+  /**
+   * Publishes a complete simulation result as one lossless workspace value.
+   */
+  _publishSimulateResult(...args) {
+    return this._getSimulate()._publishSimulateResult(...args);
+  }
+
+  /**
+   * Extracts moving MultiBody frame coordinates from the last simulation.
+   */
+  _simulateAnimationData(...args) {
+    return this._getSimulate()._simulateAnimationData(...args);
+  }
+
+  /**
+   * Copies only serializable numeric fields from Plotly's managed camera object.
+   */
+  _simulateCameraSnapshot(...args) {
+    return this._getSimulate()._simulateCameraSnapshot(...args);
+  }
+
+  /**
+   * Calculates a bounded orthographic scene scale for wheel zoom.
+   */
+  _simulateZoomScale(...args) {
+    return this._getSimulate()._simulateZoomScale(...args);
+  }
+
+  /**
+   * Opens a shared JSLAB 3D mechanism figure with a time slider.
+   */
+  _openSimulateAnimation(...args) {
+    return this._getSimulate()._openSimulateAnimation(...args);
+  }
+
+  /**
+   * System terminals are available only in the desktop application.
+   */
   terminal(action, data) {
     return false;
   }
 
+  /**
+   * Handles terminal on.
+   * @param {*} id Id.
+   * @param {*} type Type.
+   * @param {Function} callback Callback.
+   */
   terminalOn(id, type, callback) {
     return false;
   }
 
+  /**
+   * Handles terminal off.
+   * @param {*} id Id.
+   * @param {*} type Type.
+   * @param {Function} callback Callback.
+   */
   terminalOff(id, type, callback) {
     return false;
   }
@@ -187,15 +369,19 @@ class PRDC_JSLAB_ENV {
       app_location = typeof globalThis.importScripts == 'function'
         ? new URL('../', globalThis.location.href).href
         : globalThis.parent && globalThis.parent.location
-        ? globalThis.parent.location.href
-        : globalThis.location.href;
-    } catch {
+          ? globalThis.parent.location.href
+          : globalThis.location.href;
+    } catch{
       app_location = globalThis.location.href;
     }
     var index_url = String(normalized_options.indexURL || './lib/sympy-0.26.2/');
-    if(index_url.startsWith('/lib/')) index_url = '.'+index_url;
+    if(index_url.startsWith('/lib/')) {
+      index_url = '.' + index_url;
+    }
     index_url = new URL(index_url, app_location).href;
-    if(!index_url.endsWith('/')) index_url += '/';
+    if(!index_url.endsWith('/')) {
+      index_url += '/';
+    }
     normalized_options.indexURL = index_url;
 
     if(!this._pyodide_factory) {
@@ -227,7 +413,7 @@ class PRDC_JSLAB_ENV {
             this._pyodide_factory = factory;
             resolve(factory);
           };
-          script.onerror = () => reject(new Error('Unable to load Pyodide from '+index_url));
+          script.onerror = () => reject(new Error('Unable to load Pyodide from ' + index_url));
           (globalThis.document.head || globalThis.document.documentElement).appendChild(script);
         }).catch((error) => {
           this._pyodide_loader = null;
@@ -244,43 +430,7 @@ class PRDC_JSLAB_ENV {
    * @returns {Object}
    */
   _detectRuntimeInfo() {
-    var protocol = '';
-    var origin = '';
-    var supports_local_storage = false;
-
-    try {
-      protocol = globalThis.location && globalThis.location.protocol ? globalThis.location.protocol : '';
-      origin = globalThis.location && typeof globalThis.location.origin == 'string'
-        ? globalThis.location.origin
-        : '';
-    } catch {}
-
-    try {
-      supports_local_storage = !!globalThis.localStorage;
-    } catch {}
-
-    return {
-      protocol: protocol,
-      origin: origin,
-      is_local_file: protocol == 'file:',
-      is_served: protocol == 'http:' || protocol == 'https:',
-      is_secure_context: !!globalThis.isSecureContext,
-      supports_opfs: !!(globalThis.navigator &&
-        globalThis.navigator.storage &&
-        typeof globalThis.navigator.storage.getDirectory == 'function'),
-      supports_save_picker: typeof globalThis.showSaveFilePicker == 'function',
-      supports_open_picker: typeof globalThis.showOpenFilePicker == 'function',
-      supports_directory_picker: typeof globalThis.showDirectoryPicker == 'function',
-      supports_web_serial: !!(globalThis.navigator &&
-        globalThis.navigator.serial &&
-        typeof globalThis.navigator.serial.getPorts == 'function'),
-      supports_local_storage: supports_local_storage,
-      supports_download_fallback: !!(typeof Blob != 'undefined' &&
-        globalThis.URL &&
-        typeof globalThis.URL.createObjectURL == 'function'),
-      workspace_storage_mode: 'memory',
-      workspace_storage_label: 'Ephemeral memory storage'
-    };
+    return PRDC_JSLAB_WEB_BROWSER.runtimeInfo();
   }
 
   /**
@@ -293,7 +443,7 @@ class PRDC_JSLAB_ENV {
     if(this.bridge && typeof this.bridge.getRuntimeInfo == 'function') {
       try {
         runtime_info = this.bridge.getRuntimeInfo();
-      } catch {}
+      } catch{}
     }
 
     if(!runtime_info || typeof runtime_info != 'object') {
@@ -312,6 +462,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Handles report unavailable.
    * @param {string} feature
    * @param {boolean} [throw_flag=true]
    * @returns {false}
@@ -328,6 +479,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Handles disp.
    * @param {...*} args
    */
   disp(...args) {
@@ -340,7 +492,9 @@ class PRDC_JSLAB_ENV {
     }
   }
 
-  /** Writes text through the browser or worker UI clipboard bridge. */
+  /**
+   * Writes text through the browser or worker UI clipboard bridge.
+   */
   async copyText(text) {
     var value = String(text);
     if(this.jsl.inter.execution?.web_ui) {
@@ -354,6 +508,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Handles warn.
    * @param {...*} args
    */
   warn(...args) {
@@ -362,24 +517,38 @@ class PRDC_JSLAB_ENV {
     }
   }
 
+  /**
+   * Handles disp monospaced.
+   * @param {string} text Text.
+   */
   dispMonospaced(text) {
     if(this.jsl && typeof this.jsl.emitRuntimeMessage == 'function') {
       this.jsl.emitRuntimeMessage(String(text), 'monospaced');
     }
   }
 
+  /**
+   * Handles disp latex.
+   * @param {string} text Text.
+   */
   dispLatex(text) {
     if(this.jsl && typeof this.jsl.emitRuntimeMessage == 'function') {
       this.jsl.emitRuntimeMessage(String(text), 'latex');
     }
   }
 
+  /**
+   * Handles clc.
+   */
   clc() {
     if(this.jsl && typeof this.jsl.emitRuntimeMessage == 'function') {
       this.jsl.emitRuntimeMessage('', 'clear');
     }
   }
 
+  /**
+   * Handles beep.
+   */
   beep() {
     var context;
     var oscillator;
@@ -402,14 +571,15 @@ class PRDC_JSLAB_ENV {
       oscillator.onended = function() {
         try {
           context.close();
-        } catch {}
+        } catch{}
       };
       return true;
-    } catch {}
+    } catch{}
     return false;
   }
 
   /**
+   * Handles show ans.
    * @param {string} text
    */
   showAns(text) {
@@ -418,40 +588,68 @@ class PRDC_JSLAB_ENV {
     }
   }
 
+  /**
+   * Sets workspace.
+   */
   setWorkspace() {
     if(this.jsl && typeof this.jsl.onWorkspaceUpdated == 'function') {
       this.jsl.onWorkspaceUpdated();
     }
   }
 
+  /**
+   * Sets stats.
+   * @param {*} stats Stats.
+   */
   setStats(stats) {
     if(this.jsl && typeof this.jsl.onStatsUpdated == 'function') {
       this.jsl.onStatsUpdated(stats);
     }
   }
 
+  /**
+   * Sets status.
+   * @param {*} state State.
+   * @param {*} txt Txt.
+   */
   setStatus(state, txt) {
     if(this.jsl && typeof this.jsl.onStatusUpdated == 'function') {
       this.jsl.onStatusUpdated(state, txt);
     }
   }
 
+  /**
+   * Handles code evaluating.
+   */
   codeEvaluating() {}
+  /**
+   * Handles code evaluated.
+   */
   codeEvaluated() {}
+  /**
+   * Stops subprocesses.
+   */
   stopSubprocesses() {}
 
+  /**
+   * Handles interrupt execution.
+   */
   interruptExecution() {
-    if(this.jsl.inter.execution.web_debugger) {
-      this.jsl.inter.execution.web_debugger.interrupt();
+    if(this.jsl.inter.execution.debugger_runtime) {
+      this.jsl.inter.execution.debugger_runtime.interrupt();
       return;
     }
     throw new Error('Use the isolated worker debugger to interrupt browser execution.');
   }
 
-  /** Applies debugger configuration from numerical worker scripts. */
+  /**
+   * Applies debugger configuration from numerical worker scripts.
+   */
   debugCommand(method, args = {}) {
-    const debugger_runtime = this.jsl.inter.execution.web_debugger;
-    if(!debugger_runtime) throw Error('Enable the Worker debugger for debugger commands.');
+    const debugger_runtime = this.jsl.inter.execution.debugger_runtime;
+    if(!debugger_runtime) {
+      throw Error('Enable the Worker debugger for debugger commands.');
+    }
     switch(method) {
       case 'get_debug_state': return { state: debugger_runtime.active ? 'running' : 'idle',
         breakpoints: Array.from(debugger_runtime.breakpoints.values()), pause_on_exceptions: debugger_runtime.pause_on_exceptions };
@@ -471,15 +669,27 @@ class PRDC_JSLAB_ENV {
     return { success: true };
   }
 
+  /**
+   * Adds path sep.
+   * @param {*} path_in Path in.
+   */
   addPathSep(path_in) {
     var out = String(path_in || '');
     return out.endsWith('/') ? out : out + '/';
   }
 
+  /**
+   * Handles path is absolute.
+   * @param {*} path_in Path in.
+   */
   pathIsAbsolute(path_in) {
     return String(path_in || '').startsWith('/');
   }
 
+  /**
+   * Handles path normalize.
+   * @param {*} path_in Path in.
+   */
   pathNormalize(path_in) {
     var path_value = String(path_in || '').replace(/\\/g, '/').replace(/\/+/g, '/');
     var is_absolute = path_value.startsWith('/');
@@ -502,36 +712,62 @@ class PRDC_JSLAB_ENV {
     return (is_absolute ? '/' : '') + normalized.join('/');
   }
 
+  /**
+   * Handles path join.
+   */
   pathJoin() {
     return this.pathNormalize([].slice.call(arguments).join('/'));
   }
 
+  /**
+   * Handles path sep.
+   */
   pathSep() {
     return '/';
   }
 
+  /**
+   * Handles path dir name.
+   * @param {*} path_in Path in.
+   */
   pathDirName(path_in) {
     var normalized = this.pathNormalize(path_in);
     var idx = normalized.lastIndexOf('/');
     return idx >= 0 ? normalized.slice(0, idx) || '/' : '.';
   }
 
+  /**
+   * Handles path base name.
+   * @param {*} path_in Path in.
+   */
   pathBaseName(path_in) {
     var normalized = this.pathNormalize(path_in);
     var idx = normalized.lastIndexOf('/');
     return idx >= 0 ? normalized.slice(idx + 1) : normalized;
   }
 
+  /**
+   * Handles path file name.
+   * @param {*} path_in Path in.
+   */
   pathFileName(path_in) {
     return this.pathBaseName(path_in);
   }
 
+  /**
+   * Handles path ext name.
+   * @param {*} path_in Path in.
+   */
   pathExtName(path_in) {
     var name = this.pathBaseName(path_in);
     var idx = name.lastIndexOf('.');
     return idx >= 0 ? name.slice(idx) : '';
   }
 
+  /**
+   * Handles path resolve.
+   * @param {*} path_in Path in.
+   */
   pathResolve(path_in) {
     var path_value = String(path_in || '');
     if(!path_value.length) {
@@ -546,6 +782,11 @@ class PRDC_JSLAB_ENV {
     return this.pathNormalize(this.pathJoin(base_path, path_value));
   }
 
+  /**
+   * Handles path relative.
+   * @param {*} from_path From path.
+   * @param {*} to_path To path.
+   */
   pathRelative(from_path, to_path) {
     var from_parts = this.pathResolve(from_path).split('/').filter(Boolean);
     var to_parts = this.pathResolve(to_path).split('/').filter(Boolean);
@@ -561,10 +802,16 @@ class PRDC_JSLAB_ENV {
     ) || '.';
   }
 
+  /**
+   * Saves path.
+   */
   savePath() {
     return true;
   }
 
+  /**
+   * Clears storage.
+   */
   clearStorage() {
     if(this.bridge && typeof this.bridge.clearWorkspaceStorage == 'function') {
       var result = this.bridge.clearWorkspaceStorage();
@@ -576,6 +823,10 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Workspace storage reset');
   }
 
+  /**
+   * Checks directory.
+   * @param {*} path_in Path in.
+   */
   checkDirectory(path_in) {
     var normalized = this.pathNormalize(this.pathResolve(path_in));
     if(normalized == '/workspace' || normalized == '/workspace/' ||
@@ -595,10 +846,17 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Checks script dir.
+   */
   checkScriptDir() {
     return false;
   }
 
+  /**
+   * Handles cd.
+   * @param {*} new_path New path.
+   */
   cd(new_path) {
     if(this.jsl && typeof this.jsl.setPath == 'function') {
       this.jsl.setPath(this.pathResolve(new_path));
@@ -607,6 +865,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Handles editor.
+   */
   editor() {
     if(this.bridge && typeof this.bridge.openEditorFile == 'function') {
       return this.bridge.openEditorFile(...arguments);
@@ -614,6 +875,9 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Desktop editor integration');
   }
 
+  /**
+   * Handles info.
+   */
   info() {
     if(this.bridge && typeof this.bridge.openMainDialog == 'function') {
       this.bridge.openMainDialog('info-container');
@@ -622,6 +886,9 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Desktop info dialog');
   }
 
+  /**
+   * Handles settings.
+   */
   settings() {
     if(this.bridge && typeof this.bridge.openMainDialog == 'function') {
       this.bridge.openMainDialog('settings-container');
@@ -630,6 +897,9 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Desktop settings dialog');
   }
 
+  /**
+   * Handles cmd help.
+   */
   cmd_help() {
     if(this.bridge && typeof this.bridge.openMainDialog == 'function') {
       this.bridge.openMainDialog('help-container');
@@ -638,6 +908,10 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Desktop help dialog');
   }
 
+  /**
+   * Shows inspector.
+   * @param {*} model Model.
+   */
   showInspector(model) {
     if(this.bridge && typeof this.bridge.showInspector == 'function') {
       this.bridge.showInspector(model);
@@ -646,14 +920,24 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Inspector');
   }
 
+  /**
+   * Opens sandbox dev tools.
+   */
   openSandboxDevTools() {
     return this.reportUnavailable('Sandbox DevTools');
   }
 
+  /**
+   * Handles error.
+   * @param {Object} message Message.
+   * @param {*} [throw_flag] Throw flag.
+   */
   error(message, throw_flag = true) {
     if(!this._formatting_error && this.jsl?.inter?.execution?.current) {
       const error = new Error(String(message));
-      if(throw_flag) throw error;
+      if(throw_flag) {
+        throw error;
+      }
       this._reported_error = error;
       return;
     }
@@ -666,12 +950,19 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Displays an internal error message.
+   * @param {Object} message Message.
+   */
   errorInternal(message) {
     if(this.jsl && typeof this.jsl.emitRuntimeMessage == 'function') {
       this.jsl.emitRuntimeMessage(String(message || 'Internal browser-mode error'), 'error');
     }
   }
 
+  /**
+   * Reads file sync.
+   */
   readFileSync() {
     var file_path = this.pathNormalize(this.pathResolve(arguments[0]));
     var encoding = arguments[1];
@@ -700,13 +991,24 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Copies file sync.
+   */
   copyFileSync() {
+    if(this._isAppAssetPath(this.pathNormalize(arguments[0]))) {
+      var data = this.readFileSync(arguments[0]);
+      return data === false ? false : this.writeFileSync(arguments[1], data);
+    }
+
     if(this.bridge && typeof this.bridge.copyWorkspaceFileSync == 'function') {
       return this.bridge.copyWorkspaceFileSync(arguments[0], arguments[1]);
     }
     return this.reportUnavailable('Direct filesystem copies');
-  }
+    }
 
+  /**
+   * Writes file sync.
+   */
   writeFileSync() {
     var file_path = this.pathNormalize(this.pathResolve(arguments[0]));
     var data = arguments[1];
@@ -737,6 +1039,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Handles rm sync.
+   */
   rmSync() {
     var file_path = this.pathNormalize(this.pathResolve(arguments[0]));
     if(this._isWorkspacePath(file_path) && this.bridge &&
@@ -754,6 +1059,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Reads dir.
+   */
   readDir() {
     var dir_path = this.pathNormalize(this.pathResolve(arguments[0]));
     var options = arguments[1];
@@ -764,6 +1072,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Checks file.
+   */
   checkFile() {
     var file_path = this.pathNormalize(this.pathResolve(arguments[0]));
     if(this._isAppAssetPath(file_path)) {
@@ -776,6 +1087,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Shows open dialog.
+   */
   showOpenDialog() {
     if(this.bridge && typeof this.bridge.showOpenDialog == 'function') {
       return this.bridge.showOpenDialog(arguments[0]);
@@ -783,10 +1097,16 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Shows open dialog sync.
+   */
   showOpenDialogSync() {
     return false;
   }
 
+  /**
+   * Builds share link.
+   */
   buildShareLink() {
     if(this.bridge && typeof this.bridge.buildShareLink == 'function') {
       return this.bridge.buildShareLink(arguments[0]);
@@ -794,6 +1114,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Shows save dialog.
+   */
   showSaveDialog() {
     if(this.bridge && typeof this.bridge.showSaveDialog == 'function') {
       return this.bridge.showSaveDialog(arguments[0]);
@@ -801,10 +1124,16 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Shows save dialog sync.
+   */
   showSaveDialogSync() {
     return false;
   }
 
+  /**
+   * Saves local file.
+   */
   saveLocalFile() {
     if(this.bridge && typeof this.bridge.saveLocalFile == 'function') {
       return this.bridge.saveLocalFile(arguments[0], arguments[1], arguments[2]);
@@ -812,6 +1141,9 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Handles svg to pdf.
+   */
   svgToPdf() {
     if(this.bridge && typeof this.bridge.svgToPdf == 'function') {
       return this.bridge.svgToPdf(arguments[0], arguments[1], arguments[2], arguments[3]);
@@ -819,31 +1151,55 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Shows message box.
+   */
   showMessageBox() {
     return this.reportUnavailable('Native message boxes');
   }
 
+  /**
+   * Handles exec.
+   */
   exec() {
     return this.reportUnavailable('Child process execution');
   }
 
+  /**
+   * Handles exec sync.
+   */
   execSync() {
     return this.reportUnavailable('Child process execution');
   }
 
+  /**
+   * Handles spawn.
+   */
   spawn() {
     return this.reportUnavailable('Child process execution');
   }
 
+  /**
+   * Handles spawn sync.
+   */
   spawnSync() {
     return this.reportUnavailable('Child process execution');
   }
 
+  /**
+   * Sends pty.
+   */
   sendPty() {
-    if(arguments[0] === 'killAll') return true;
+    if(arguments[0] === 'killAll') {
+      return true;
+    }
     return this.reportUnavailable('PTY support');
   }
 
+  /**
+   * Returns default path.
+   * @param {*} type Type.
+   */
   getDefaultPath(type) {
     if(type == 'root') {
       return '/';
@@ -854,6 +1210,10 @@ class PRDC_JSLAB_ENV {
     return '/workspace/';
   }
 
+  /**
+   * Creates directory.
+   * @param {*} directory Directory.
+   */
   makeDirectory(directory) {
     var dir_path = this.pathNormalize(this.pathResolve(directory));
     if(this._isWorkspacePath(dir_path) && this.bridge &&
@@ -867,6 +1227,11 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Opens window.
+   * @param {*} wid Wid.
+   * @param {*} [file] File.
+   */
   openWindow(wid, file = 'blank.html') {
     if(!this.bridge || typeof this.bridge.openManagedWindow != 'function') {
       return [false, Promise.resolve(false)];
@@ -878,152 +1243,268 @@ class PRDC_JSLAB_ENV {
     return [opened.context, opened.ready || Promise.resolve(opened.context)];
   }
 
+  /**
+   * Closes window.
+   * @param {*} wid Wid.
+   */
   closeWindow(wid) {
     if(!this.bridge || typeof this.bridge.closeManagedWindow != 'function') {
       return false;
     }
     const closed = this.bridge.closeManagedWindow(wid, { notifySandbox: false });
-    if(closed) this.jsl.inter.windows._closedWindow(wid);
+    if(closed) {
+      this.jsl.inter.windows._closedWindow(wid);
+    }
     return closed;
   }
 
+  /**
+   * Closes windows.
+   * @param {*} wid Wid.
+   */
   closeWindows(wid) {
     return this.closeWindow(wid);
   }
 
+  /**
+   * Shows window.
+   * @param {*} wid Wid.
+   */
   showWindow(wid) {
     return this.bridge && typeof this.bridge.showWindow == 'function'
       ? this.bridge.showWindow(wid)
       : false;
   }
 
+  /**
+   * Hides window.
+   * @param {*} wid Wid.
+   */
   hideWindow(wid) {
     return this.bridge && typeof this.bridge.hideWindow == 'function'
       ? this.bridge.hideWindow(wid)
       : false;
   }
 
+  /**
+   * Focuses window.
+   * @param {*} wid Wid.
+   */
   focusWindow(wid) {
     return this.bridge && typeof this.bridge.focusWindow == 'function'
       ? this.bridge.focusWindow(wid)
       : false;
   }
 
+  /**
+   * Handles minimize window.
+   * @param {*} wid Wid.
+   */
   minimizeWindow(wid) {
     return this.bridge && typeof this.bridge.minimizeWindow == 'function'
       ? this.bridge.minimizeWindow(wid)
       : false;
   }
 
+  /**
+   * Handles center window.
+   * @param {*} wid Wid.
+   */
   centerWindow(wid) {
     return this.bridge && typeof this.bridge.centerWindow == 'function'
       ? this.bridge.centerWindow(wid)
       : false;
   }
 
+  /**
+   * Moves top window.
+   * @param {*} wid Wid.
+   */
   moveTopWindow(wid) {
     return this.bridge && typeof this.bridge.moveTopWindow == 'function'
       ? this.bridge.moveTopWindow(wid)
       : false;
   }
 
+  /**
+   * Sets window size.
+   * @param {*} wid Wid.
+   * @param {number} width Width.
+   * @param {number} height Height.
+   */
   setWindowSize(wid, width, height) {
     return this.bridge && typeof this.bridge.setWindowSize == 'function'
       ? this.bridge.setWindowSize(wid, width, height)
       : false;
   }
 
+  /**
+   * Sets window pos.
+   * @param {*} wid Wid.
+   * @param {*} left Left.
+   * @param {*} top Top.
+   */
   setWindowPos(wid, left, top) {
     return this.bridge && typeof this.bridge.setWindowPos == 'function'
       ? this.bridge.setWindowPos(wid, left, top)
       : false;
   }
 
+  /**
+   * Sets window resizable.
+   * @param {*} wid Wid.
+   * @param {*} state State.
+   */
   setWindowResizable(wid, state) {
     return this.bridge && typeof this.bridge.setWindowResizable == 'function'
       ? this.bridge.setWindowResizable(wid, state)
       : false;
   }
 
+  /**
+   * Sets window movable.
+   * @param {*} wid Wid.
+   * @param {*} state State.
+   */
   setWindowMovable(wid, state) {
     return this.bridge && typeof this.bridge.setWindowMovable == 'function'
       ? this.bridge.setWindowMovable(wid, state)
       : false;
   }
 
+  /**
+   * Sets window aspect ratio.
+   * @param {*} wid Wid.
+   * @param {*} aspect_ratio Aspect ratio.
+   */
   setWindowAspectRatio(wid, aspect_ratio) {
     return this.bridge && typeof this.bridge.setWindowAspectRatio == 'function'
       ? this.bridge.setWindowAspectRatio(wid, aspect_ratio)
       : false;
   }
 
+  /**
+   * Sets window opacity.
+   * @param {*} wid Wid.
+   * @param {*} opacity Opacity.
+   */
   setWindowOpacity(wid, opacity) {
     return this.bridge && typeof this.bridge.setWindowOpacity == 'function'
       ? this.bridge.setWindowOpacity(wid, opacity)
       : false;
   }
 
+  /**
+   * Sets window fullscreen.
+   * @param {*} wid Wid.
+   * @param {*} state State.
+   */
   setWindowFullscreen(wid, state) {
     return this.bridge && typeof this.bridge.setWindowFullscreen == 'function'
       ? this.bridge.setWindowFullscreen(wid, state)
       : false;
   }
 
+  /**
+   * Sets window title.
+   * @param {*} wid Wid.
+   * @param {string} title Title.
+   */
   setWindowTitle(wid, title) {
     return this.bridge && typeof this.bridge.setWindowTitle == 'function'
       ? this.bridge.setWindowTitle(wid, title)
       : false;
   }
 
+  /**
+   * Returns window size.
+   * @param {*} wid Wid.
+   */
   getWindowSize(wid) {
     return this.bridge && typeof this.bridge.getWindowSize == 'function'
       ? this.bridge.getWindowSize(wid)
       : false;
   }
 
+  /**
+   * Returns window pos.
+   * @param {*} wid Wid.
+   */
   getWindowPos(wid) {
     return this.bridge && typeof this.bridge.getWindowPos == 'function'
       ? this.bridge.getWindowPos(wid)
       : false;
   }
 
+  /**
+   * Opens window dev tools.
+   */
   openWindowDevTools() {
     return this.reportUnavailable('Window DevTools', false);
   }
 
+  /**
+   * Returns window media source id.
+   */
   getWindowMediaSourceId() {
     return false;
   }
 
+  /**
+   * Prints window to pdf.
+   */
   printWindowToPdf() {
     return this.reportUnavailable('Window PDF printing', false);
   }
 
+  /**
+   * Opens folder.
+   */
   openFolder() {
     return this.reportUnavailable('Open folder in host system', false);
   }
 
+  /**
+   * Opens dir.
+   */
   openDir() {
     return this.reportUnavailable('Open directory in host system', false);
   }
 
+  /**
+   * Shows file in folder.
+   */
   showFileInFolder() {
     return this.reportUnavailable('Reveal file in host system', false);
   }
 
+  /**
+   * Shows file in dir.
+   */
   showFileInDir() {
     return this.reportUnavailable('Reveal file in host system', false);
   }
 
+  /**
+   * Returns desktop sources.
+   */
   getDesktopSources() {
     return false;
   }
 
+  /**
+   * Checks whether workspace path.
+   * @param {*} path_in Path in.
+   */
   _isWorkspacePath(path_in) {
     return typeof path_in == 'string' &&
       (path_in == '/workspace' || path_in == '/workspace/' || path_in.startsWith('/workspace/'));
   }
 
+  /**
+   * Checks whether app asset path.
+   * @param {*} path_in Path in.
+   */
   _isAppAssetPath(path_in) {
     return typeof path_in == 'string' &&
       !this._isWorkspacePath(path_in) &&
@@ -1036,6 +1517,10 @@ class PRDC_JSLAB_ENV {
         path_in.startsWith('/docs/'));
   }
 
+  /**
+   * Returns app asset sync.
+   * @param {*} path_in Path in.
+   */
   _getAppAssetSync(path_in) {
     if(this.bridge && typeof this.bridge.getAppAssetSync == 'function') {
       return this.bridge.getAppAssetSync(path_in);
@@ -1043,6 +1528,10 @@ class PRDC_JSLAB_ENV {
     return false;
   }
 
+  /**
+   * Converts to binary blob.
+   * @param {*} bytes Bytes.
+   */
   _toBinaryBlob(bytes) {
     if(typeof Buffer != 'undefined' && typeof Buffer.from == 'function') {
       return Buffer.from(bytes);
@@ -1053,6 +1542,153 @@ class PRDC_JSLAB_ENV {
     };
     return data;
   }
+  /**
+   * Returns the browser module adapter used before workspace require is installed.
+   * @returns {Function} Module constructor.
+   */
+  _getModuleRuntime() {
+    const env = this;
+    class PRDC_JSLAB_BROWSER_MODULE {}
+    PRDC_JSLAB_BROWSER_MODULE.prototype.require = name => env.reportUnavailable('Module "' + name + '"');
+    PRDC_JSLAB_BROWSER_MODULE._resolveFilename = name => {
+      throw Error('Module "' + name + '" is not available in this environment.');
+    };
+    return PRDC_JSLAB_BROWSER_MODULE;
+  }
+
+  /**
+   * Resolves statically bundled scientific modules.
+   * @param {Object} module_data Configured module.
+   * @returns {Function|undefined} Module constructor.
+   */
+  _getSubmoduleConstructor(module_data) {
+    return getWebSubmoduleConstructor(module_data);
+  }
+
+  /**
+   * Returns a configured unavailable-module descriptor.
+   * @param {Object} module_data Configured module.
+   * @returns {Object|undefined} Availability descriptor.
+   */
+  _getUnavailableSubmodule(module_data) {
+    return getWebUnavailableSubmodule(module_data);
+  }
+
+  /**
+   * Installs browser module loading until the worker workspace supplies require.
+   * @param {Function} Module Module constructor.
+   */
+  _configureModuleRequire(Module) {
+    Module.prototype.require = name => this.reportUnavailable('Module "' + name + '"');
+  }
+
+  /**
+   * Ensures the browser context has an explicit module-loading result.
+   */
+  _initializeContextRequire() {
+    if(typeof this.context.require != 'function') {
+      this.context.require = name => this.reportUnavailable('Module "' + name + '"');
+    }
+  }
+
+  /**
+   * Keeps worker message dispatchers installed during workspace cleanup.
+   * @param {string} name Global name.
+   * @returns {boolean} Whether the host owns this global.
+   */
+  _preserveContextGlobal(name) {
+    return this.is_worker && ['onmessage', 'onmessageerror'].includes(name);
+  }
+
+  /**
+   * Instruments browser code through the debugger backend.
+   * @param {Object} ast Source AST.
+   * @param {string} identifier Runtime identifier.
+   * @param {string} path Source path.
+   */
+  _instrumentDebug(ast, identifier, path) {
+    if(this.jsl.inter.execution.debugger_runtime?.enabled) {
+      instrumentWebDebug(ast, this.recast, identifier, path);
+    }
+  }
+
+  /**
+   * Settles interrupted detached callbacks and resets the worker control buffer.
+   * @param {*} error Detached callback failure.
+   * @returns {Promise<boolean>} Whether interruption consumed the failure.
+   */
+  async _handleDetachedInterruption(error) {
+    const execution = this.jsl.inter.execution;
+    const runtime = execution?.debugger_runtime;
+    if(error?.name !== 'JslabInterrupted' || !runtime || runtime.active) {
+      return false;
+    }
+    await execution.interrupt(null);
+    runtime.resetControl();
+    (execution._send || globalThis.postMessage.bind(globalThis))({ type: 'debug-state', state: 'idle' });
+    return true;
+  }
+
+  /**
+   * Resolves application scripts relative to a managed browser window.
+   * @param {string} script_path Requested script path.
+   * @returns {string} Window-relative script path.
+   */
+  _windowScriptPath(script_path) {
+    return script_path.replace(/^(\.\.\/)?js\/(windows|other-shared)\//, '../js/$2/');
+  }
+
+  /**
+   * Builds the initialization source for a child scientific worker.
+   * @returns {string} Worker initialization source.
+   */
+  _getWorkerInit() {
+    return `
+      global.is_worker = true;
+      global.debug = ${this.debug};
+      global.version = '${this.version}';
+      global.platform = 'web';
+
+      const internal_app_path = ${JSON.stringify(this.jsl.app_path)};
+      const internal_packed = ${JSON.stringify(this.jsl.packed)};
+    `;
+  }
+
+  /**
+   * Connects presentation behavior to the host's storage and preview transport.
+   * @param {Object} presentation Shared presentation controller.
+   * @returns {Object} Presentation transport.
+   */
+  _createPresentationTransport(presentation) {
+    return new PRDC_JSLAB_WEB_PRESENTATION_TRANSPORT(presentation);
+  }
+
+  /**
+   * Wraps source with a lexical evaluator outside strict class and function bodies.
+   * @param {string} code Rewritten scientific source.
+   * @param {string} identifier Runtime identifier.
+   * @returns {string} Executable source with an async entry point.
+   */
+  _wrapCompiledSource(code, identifier) {
+    return '((eval) => (async () => {\n' + code + '\n})())(' + identifier + '._eval);';
+  }
+
+  /**
+   * Creates a module worker through the browser's owned worker transport.
+   * @returns {Worker} Module worker.
+   */
+  _createModuleWorker() {
+    const source = '(function ' + PRDC_JSLAB_EXECUTION.initializeModuleWorker.toString() + ')(globalThis, require);';
+    const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+    const worker = new this.context.Worker(url);
+    const terminate = worker.terminate.bind(worker);
+    worker.terminate = () => {
+      URL.revokeObjectURL(url);
+      return terminate();
+    };
+    return worker;
+  }
+
 }
 
 exports.PRDC_JSLAB_ENV = PRDC_JSLAB_ENV;

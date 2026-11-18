@@ -5,19 +5,143 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_UI_ANIMATION } = require('../windows/ui');
+
+const animation_timers = {
+  setInterval: globalThis.setInterval.bind(globalThis),
+  clearInterval: globalThis.clearInterval.bind(globalThis),
+  setTimeout: globalThis.setTimeout.bind(globalThis)
+};
+
 /**
  * Class for JSLAB gui submodule.
  */
 class PRDC_JSLAB_LIB_GUI {
-  
+
   /**
    * Initializes the gui submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
+   * @param {Object} [timers] Captured platform interval functions.
    */
-  constructor(jsl) {
+  constructor(jsl, timers = animation_timers) {
     this.jsl = jsl;
+    this._timers = timers;
+    this._animation_timers = new Set();
   }
-  
+
+  /**
+   * Adds reusable animation controls to an existing figure and renders its first sample.
+   * @param {number} fid Figure identifier returned by plot().fid or figure().
+   * @param {Object} options Playback configuration.
+   * @param {Array<number>} options.time Ordered sample timestamps in seconds.
+   * @param {Function} options.onFrame Callback receiving index, timestamp and controller; may return a Promise.
+   * @param {boolean} [options.play=false] Start playing immediately.
+   * @param {boolean} [options.loop=false] Repeat after the final timestamp.
+   * @param {number} [options.speed=1] Positive playback speed multiplier.
+   * @param {Array<number>} [options.speeds] Speed choices displayed by the control.
+   * @param {number} [options.index=0] Initial zero-based sample index.
+   * @param {number} [options.interval_ms=16] Minimum interval between frame requests.
+   * @param {string} [options.position='bottom'] Control placement: bottom, top or inline.
+   * @param {Function} [options.formatTime] Callback formatting the displayed timestamp.
+   * @param {string|HTMLElement} [options.parent] Container selector or element in the figure document.
+   * @param {number|string} [options.width] Control width in pixels or CSS units.
+   * @param {string} [options.unit='s'] Unit shown by the default timestamp formatter.
+   * @param {Function} [options.onError] Callback for frame rendering errors.
+   * @returns {Promise<Object>} Controller with play(), pause(), seek(index), setSpeed(speed), setLoop(loop) and dispose().
+   */
+  async animationControls(fid, options = {}) {
+    var figure = this.jsl.inter.figures.getFigure(fid);
+    if(!figure) {
+      throw new Error('Animation controls require an existing figure.');
+    }
+    await this.jsl.awaitResource(figure.ready);
+    if(figure._animation_controls) {
+      figure._animation_controls.dispose();
+    }
+    var controls = new PRDC_JSLAB_UI_ANIMATION(figure.dom, Object.assign({}, options, {
+      language: this.jsl.inter.lang,
+      createTimer: this._createAnimationTimer.bind(this),
+      listen: this.jsl.inter.env._bindUIEvent?.bind(this.jsl.inter.env),
+      defer: callback => animation_timers.setTimeout(callback, 0),
+      onError: options.onError || (error => this.jsl.inter.env.error(String(error.stack || error), false))
+    }));
+    figure._animation_controls = controls;
+    return controls;
+  }
+
+  /**
+   * Creates an interval owned by JSLAB interruption and figure cleanup.
+   */
+  _createAnimationTimer(callback, delay, on_cleanup) {
+    var obj = this;
+    var owner = {};
+    var interval = null;
+    var registered = false;
+    var unregister = function() {
+      if(!registered) {
+        return;
+      }
+      registered = false;
+      var index = obj.jsl.cleanup_registry.findIndex(function(entry) {
+        return entry.obj === owner;
+      });
+      if(index >= 0) {
+        obj.jsl.cleanup_registry.splice(index, 1);
+      }
+    };
+    var stop = function(from_cleanup = false) {
+      if(interval !== null) {
+        obj._timers.clearInterval(interval);
+      }
+      interval = null;
+      obj._animation_timers.delete(control);
+      if(from_cleanup && typeof on_cleanup == 'function') {
+        on_cleanup();
+      }
+      if(!from_cleanup) {
+        unregister();
+      }
+    };
+    const control = {
+      start: function() {
+        if(interval !== null) {
+          return false;
+        }
+        var execution = obj.jsl.inter && obj.jsl.inter.execution;
+        var guarded_callback = execution && typeof execution.wrap == 'function' ?
+          execution.wrap(callback) : callback;
+        interval = obj._timers.setInterval(guarded_callback, delay);
+        registered = true;
+        obj._animation_timers.add(control);
+        obj.jsl.addForCleanup(owner, function() {
+          registered = false;
+          stop(true);
+        });
+        return true;
+      },
+      stop: stop,
+      stopAndNotify: function() {
+        stop();
+        if(typeof on_cleanup == 'function') {
+          on_cleanup();
+        }
+      },
+      isRunning: function() {
+        return interval !== null;
+      }
+    };
+    return control;
+  }
+
+  /**
+   * Pauses active animation controls during interruption without closing their figures.
+   */
+  _stopAnimations() {
+    for(const timer of Array.from(this._animation_timers)) {
+      timer.stopAndNotify();
+    }
+  }
+
   /**
    * Reports whether an element participates in layout flow (i.e., is not `display:none`).
    * @param {HTMLElement|null} el The element to test for visibility in normal document flow.
@@ -39,7 +163,7 @@ class PRDC_JSLAB_LIB_GUI {
     }
     return this.jsl.inter.format.escapeHTML(this._readVal(el));
   }
-  
+
   /**
    * Reads an input-like element’s value, converts it to a number, and returns the result.
    * @param {string|HTMLElement} el_or_sel The element itself or a selector/ID string used to locate it.
@@ -59,7 +183,9 @@ class PRDC_JSLAB_LIB_GUI {
    * @param {Function} fun The function to invoke each time the slider emits `input` or `change`.
    */
   onSliderInput(el, fun) {
-    var handler = function (e) { fun.call(this, e); };
+    var handler = function(e) {
+      fun.call(this, e);
+    };
 
     if(typeof el === 'string') {
       var doc = this._resolveDoc(el);
@@ -71,7 +197,7 @@ class PRDC_JSLAB_LIB_GUI {
       n.addEventListener('change', handler);
     }
   }
-  
+
   /**
    * Fires a callback when an input loses focus or the user presses Enter, with optional delegation.
    * @param {string|HTMLElement} el Target element or CSS selector for delegation.
@@ -88,7 +214,9 @@ class PRDC_JSLAB_LIB_GUI {
       nodes.forEach(n => {
         n.addEventListener('blur', e => fun.call(n, e));
         n.addEventListener('keyup', e => {
-          if(e.keyCode === this._ENTER) fun.call(n, e);
+          if(e.keyCode === this._ENTER) {
+            fun.call(n, e);
+          }
         });
       });
     }
@@ -101,41 +229,7 @@ class PRDC_JSLAB_LIB_GUI {
    * @param {Function} [validator] Optional predicate to approve or reject the change.
    */
   onInputChange(el, fun, validator) {
-    var initLastVal = n =>
-      n.setAttribute('last-val', this.jsl.inter.format.escapeHTML(this._readVal(n)));
-
-    var hasChanged = n =>
-      this.jsl.inter.format.escapeHTML(this._readVal(n)) !== n.getAttribute('last-val');
-
-    var maybeFire = (n, e) => {
-      if(!hasChanged(n)) return;
-
-      if(typeof validator === 'function' && !validator.call(this, n, e)) {
-        n.value = n.getAttribute('last-val');
-        n.focus();
-        this.addClassMs(n, 'error', 400); 
-        return;
-      }
-
-      initLastVal(n);
-      fun.call(n, e); 
-    };
-
-    this._resolveEls(el).forEach(initLastVal);
-
-    if(typeof el === 'string') {
-      var always = () => true;
-      var doc = this._resolveDoc(el);
-      this._delegate(doc, 'focusout', el, always, e => maybeFire(e.target, e), true);
-      this._delegate(doc, 'keyup', el, e => e.keyCode === this._ENTER, e => maybeFire(e.target, e));
-      this._delegate(doc, 'change', el, always, e => maybeFire(e.target, e));
-    } else {
-      var n = el;
-      ['blur', 'change'].forEach(t => n.addEventListener(t, e => maybeFire(n, e)));
-      n.addEventListener('keyup', e => {
-        if(e.keyCode === this._ENTER) maybeFire(n, e);
-      });
-    }
+    this._bindInputChange(el, fun, validator, true);
   }
 
   /**
@@ -145,40 +239,9 @@ class PRDC_JSLAB_LIB_GUI {
    * @param {Function} [validator] Optional predicate to approve or reject the change.
    */
   onActiveInputChange(el, fun, validator) {
-    var initLastVal = n =>
-      n.setAttribute('last-val', this.jsl.inter.format.escapeHTML(this._readVal(n)));
-    var hasChanged = n =>
-      this.jsl.inter.format.escapeHTML(this._readVal(n)) !== n.getAttribute('last-val');
-
-    var maybeFire = (n, e) => {
-      if(!hasChanged(n)) return;
-
-      if(typeof validator === 'function' && !validator.call(this, n, e)) {
-        n.value = n.getAttribute('last-val');
-        n.focus();
-        this.addClassMs(n, 'error', 400); 
-        return;
-      }
-
-      initLastVal(n);
-      fun.call(n, e); 
-    };
-
-    this._resolveEls(el).forEach(initLastVal);
-
-    if(typeof el === 'string') {
-      var doc = this._resolveDoc(el);
-      this._delegate(doc, 'focusout', el, () => true, e => maybeFire(e.target, e), true);
-      this._delegate(doc, 'keyup', el, e => e.keyCode === this._ENTER, e => maybeFire(e.target, e));
-    } else {
-      var n = el;
-      n.addEventListener('blur', e => maybeFire(n, e));
-      n.addEventListener('keyup', e => {
-        if(e.keyCode === this._ENTER) maybeFire(n, e);
-      });
-    }
+    this._bindInputChange(el, fun, validator, false);
   }
-  
+
   /**
    * Programmatically sets an input’s value and records it as the baseline for change tracking.
    * @param {string|HTMLElement} el_or_sel The input element or selector identifying it.
@@ -186,7 +249,9 @@ class PRDC_JSLAB_LIB_GUI {
    */
   setInputValue(el_or_sel, val) {
     var n = this._resolveEl(el_or_sel);
-    if(!n) return;
+    if(!n) {
+      return;
+    }
     n.value = val;
     n.setAttribute('last-val', String(val));
     n.setAttribute('set-val',  String(val));
@@ -199,23 +264,29 @@ class PRDC_JSLAB_LIB_GUI {
    */
   updateInputValue(el_or_sel, val) {
     var n = this._resolveEl(el_or_sel);
-    if(!n) return;
+    if(!n) {
+      return;
+    }
     if(n.value != val) {
       n.value = val;
       n.setAttribute('last-val', String(val));
       n.setAttribute('set-val',  String(val));
     }
   }
-  
+
   /**
    * Restores an input to the value previously stored with `setInputValue`.
    * @param {string|HTMLElement} el_or_sel The input element or selector identifying it.
    */
   resetInputValue(el_or_sel) {
     var n = this._resolveEl(el_or_sel);
-    if(!n) return;
+    if(!n) {
+      return;
+    }
     var v = n.getAttribute('set-val');
-    if(v !== null) n.value = v;
+    if(v !== null) {
+      n.value = v;
+    }
   }
 
   /**
@@ -224,7 +295,9 @@ class PRDC_JSLAB_LIB_GUI {
    */
   showInputChanged(el_or_sel) {
     var n = this._resolveEl(el_or_sel);
-    if(!n) return;
+    if(!n) {
+      return;
+    }
     var set_val = n.getAttribute('set-val') ?? '';
     n.classList.toggle('changed', String(n.value) !== set_val);
   }
@@ -236,7 +309,9 @@ class PRDC_JSLAB_LIB_GUI {
    */
   validateInputNumber(el_or_sel) {
     var n = this._resolveEl(el_or_sel);
-    if(!n) return [NaN, false];
+    if(!n) {
+      return [NaN, false];
+    }
     var str = this._readVal(n).trim();
     var num = Number(str);
     if(str === '' || Number.isNaN(num)) {
@@ -246,7 +321,7 @@ class PRDC_JSLAB_LIB_GUI {
     }
     return [num, true];
   }
-  
+
   /**
    * Sets an input’s value and temporarily applies a `warning` class for visual feedback.
    * @param {string|HTMLElement} el_or_sel The input element or selector identifying it.
@@ -254,7 +329,9 @@ class PRDC_JSLAB_LIB_GUI {
    */
   setInputWithWarning(el_or_sel, val) {
     var n = this._resolveEl(el_or_sel);
-    if(!n) return;
+    if(!n) {
+      return;
+    }
     n.value = val;
     this.addClassMs(n, 'warning', 400);
   }
@@ -278,7 +355,9 @@ class PRDC_JSLAB_LIB_GUI {
    */
   onResize(el_or_sel, cb) {
     var el = this._resolveEl(el_or_sel);
-    if(!el) return;
+    if(!el) {
+      return;
+    }
     var ro = new this.jsl.inter.ResizeObserver(ent => cb(ent[0].contentRect));
     ro.observe(el);
     return ro;
@@ -290,7 +369,9 @@ class PRDC_JSLAB_LIB_GUI {
    * @returns {HTMLElement[]} An array of resolved elements (possibly empty).
    */
   _resolveEls(el_or_sel) {
-    if(!el_or_sel) return [];
+    if(!el_or_sel) {
+      return [];
+    }
     if(typeof el_or_sel === 'string') {
       return Array.from(document.querySelectorAll(el_or_sel));
     }
@@ -311,7 +392,7 @@ class PRDC_JSLAB_LIB_GUI {
   _resolveEl(el_or_sel) {
     return this._resolveEls(el_or_sel)[0] ?? null;
   }
-  
+
   /**
    * Retrieves the textual value from an input-type or content-editable element.
    * @param {HTMLElement} el The element whose value or text content should be read.
@@ -326,15 +407,16 @@ class PRDC_JSLAB_LIB_GUI {
     }
     return el.value;
   }
-  
+
   /**
    * Determines the appropriate `Document` context for a given element or selector.
    * @param {string|Node} el_or_sel Element, node list, or selector used to infer a document.
    * @returns {Document} The resolved document object.
    */
   _resolveDoc(el_or_sel) {
-    if(typeof el_or_sel !== 'string' && el_or_sel?.ownerDocument)
+    if(typeof el_or_sel !== 'string' && el_or_sel?.ownerDocument) {
       return el_or_sel.ownerDocument;
+    }
     return document;
   }
 
@@ -352,11 +434,65 @@ class PRDC_JSLAB_LIB_GUI {
       type,
       e => {
         const t = e.target;
-        if(t && t.matches(selector) && filter(e)) handler.call(t, e);
+        if(t && t.matches(selector) && filter(e)) {
+          handler.call(t, e);
+        }
       },
       useCapture
     );
   }
+
+  /**
+   * Shares input change tracking, validation and delegated event registration.
+   * @param {*} el Element or delegated selector.
+   * @param {Function} fun Change handler.
+   * @param {Function} validator Optional validation callback.
+   * @param {boolean} change_events Whether native change events participate.
+   */
+  _bindInputChange(el, fun, validator, change_events) {
+    var initLastVal = n =>
+      n.setAttribute('last-val', this.jsl.inter.format.escapeHTML(this._readVal(n)));
+
+    var hasChanged = n =>
+      this.jsl.inter.format.escapeHTML(this._readVal(n)) !== n.getAttribute('last-val');
+
+    var maybeFire = (n, e) => {
+      if(!hasChanged(n)) {
+        return;
+      }
+
+      if(typeof validator === 'function' && !validator.call(this, n, e)) {
+        n.value = n.getAttribute('last-val');
+        n.focus();
+        this.addClassMs(n, 'error', 400);
+        return;
+      }
+
+      initLastVal(n);
+      fun.call(n, e);
+    };
+
+    this._resolveEls(el).forEach(initLastVal);
+
+    if(typeof el === 'string') {
+      var always = () => true;
+      var doc = this._resolveDoc(el);
+      this._delegate(doc, 'focusout', el, always, e => maybeFire(e.target, e), true);
+      this._delegate(doc, 'keyup', el, e => e.keyCode === this._ENTER, e => maybeFire(e.target, e));
+      if(change_events) {
+        this._delegate(doc, 'change', el, always, e => maybeFire(e.target, e));
+      }
+    } else {
+      var n = el;
+      (change_events ? ['blur', 'change'] : ['blur']).forEach(t => n.addEventListener(t, e => maybeFire(n, e)));
+      n.addEventListener('keyup', e => {
+        if(e.keyCode === this._ENTER) {
+          maybeFire(n, e);
+        }
+      });
+    }
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_GUI = PRDC_JSLAB_LIB_GUI;

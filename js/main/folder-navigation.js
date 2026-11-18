@@ -5,12 +5,6 @@
  * info@pr-dc.com
  */
 
-const fs = require('fs');
-const path = require('path');
-const { pathEqual } = require('path-equal');
-const Store = require('electron-store');
-
-const store = new Store();
 
 /**
  * Class for JSLAB folder navigation.
@@ -19,19 +13,20 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
 
   /**
    * Initializes folder navigation, setting up UI components and event listeners for folder navigation actions.
-   * @param {object} win The window object representing the current Electron window.
+   * @param {object} win The window object representing the owning window controller.
    */
   constructor(win) {
+    const { fs, path, store, host } = win.platform;
     var obj = this;
     this.win = win;
-    
+
     this.current_path = undefined;
     this.saved_paths = [];
     this.path_history = [];
     this.i_path_history = 0;
-    
+
     this.folder_navigation_cont = document.getElementById('folder-navigation-container');
-    
+
     // Folder navigation
     $('#folder-navigation-container .address-line').blur(function() {
       obj.onPathInput(this);
@@ -49,12 +44,12 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
     });
     $('#folder-navigation-container .open-folder').click(function() {
       let options = {
-       title: language.currentString(148),
-       defaultPath: obj.current_path,
-       buttonLabel: language.currentString(149),
-       properties: ['openDirectory']
+        title: language.currentString(148),
+        defaultPath: obj.current_path,
+        buttonLabel: language.currentString(149),
+        properties: ['openDirectory']
       };
-      ipcRenderer.invoke('dialog', 'showOpenDialog', options).then(function(result) {
+      host.invoke('dialog', 'showOpenDialog', options).then(function(result) {
         if(!result.canceled) {
           obj.setPath(result.filePaths[0]);
         }
@@ -63,22 +58,15 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
       });
     });
     $('#folder-navigation-container .up-folder').click(function() {
-      var folders = obj.current_path.split(path.sep);
-      folders = folders.filter(function(el) { return el != ''; });
-      folders.pop();
-      if(folders.length == 1) {
-        obj.setPath(folders);
-      } else {
-        obj.setPath(path.join(...folders));
-      }
+      obj.setPath(path.dirname(obj.current_path));
     });
     $('#folder-navigation-container .previous-folder').click(function() {
-      obj.setPath(obj.current_path, obj.i_path_history+1);
+      obj.setPath(obj.current_path, obj.i_path_history + 1);
     });
     $('#folder-navigation-container .next-folder').click(function() {
-      obj.setPath(obj.current_path, obj.i_path_history-1);
+      obj.setPath(obj.current_path, obj.i_path_history - 1);
     });
-    
+
     // Paths logic
     $('#paths-menu').click(function() {
       obj.updatePathsList();
@@ -98,7 +86,7 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
     $('#save-path').click(function() {
       obj.toggleSavePath();
     });
-    
+
     // Script path logic
     $('#script-path-close').click(function() {
       obj.win.gui.closeDialog($('#script-path-container'));
@@ -111,28 +99,29 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
         e.preventDefault();
       }
     });
-    
+
     // Saved paths
     this.saved_paths = store.get('saved_paths');
     if(!this.saved_paths) {
       this.saved_paths = [];
     }
-    ipcRenderer.send('SandboxWindow', 'set-saved-paths', this.saved_paths);
-    
+    host.send('SandboxWindow', 'set-saved-paths', this.saved_paths);
+
     // Set path
     var current_path = store.get('current_path');
-    if(!current_path || !(fs.existsSync(current_path) && 
+    if(!current_path || !(fs.existsSync(current_path) &&
         fs.lstatSync(current_path, {throwIfNoEntry: false}).isDirectory())) {
       current_path = this.win.app.documents_path;
     }
     this.setPath(current_path);
   }
- 
+
   /**
    * Processes the input from the address line, navigating to the specified path if it is different from the current path.
    * @param {HTMLElement} e The HTML input element containing the path.
    */
   onPathInput(e) {
+    const { pathEqual } = this.win.platform;
     var new_path = $(e).val();
     new_path = this.addPathSep(new_path);
     if(!pathEqual(new_path, this.current_path)) {
@@ -148,6 +137,7 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
    * @param {boolean} [inform_sandbox=true] Whether to inform the sandbox process of the path change.
    */
   setPath(new_path, i = undefined, inform_sandbox = true) {
+    const { pathEqual, host } = this.win.platform;
     new_path = this.addPathSep(new_path);
     if(this.checkDirectory(new_path)) {
       if(!pathEqual(new_path, this.current_path) && i === undefined) {
@@ -162,20 +152,20 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
         this.i_path_history = i;
         new_path = this.path_history[i];
         if(i == 0) {
-          $('#folder-navigation-container .next-folder').addClass('disabled'); 
+          $('#folder-navigation-container .next-folder').addClass('disabled');
         } else {
-          $('#folder-navigation-container .next-folder').removeClass('disabled'); 
+          $('#folder-navigation-container .next-folder').removeClass('disabled');
         }
-        if(i == (this.path_history.length-1)) {
-          $('#folder-navigation-container .previous-folder').addClass('disabled'); 
+        if(i == (this.path_history.length - 1)) {
+          $('#folder-navigation-container .previous-folder').addClass('disabled');
         } else {
-          $('#folder-navigation-container .previous-folder').removeClass('disabled'); 
+          $('#folder-navigation-container .previous-folder').removeClass('disabled');
         }
       }
 
       this.current_path = new_path;
       if(inform_sandbox) {
-        ipcRenderer.send('SandboxWindow', 'set-current-path', new_path);
+        host.send('SandboxWindow', 'set-current-path', new_path);
       }
       if(this.saved_paths.indexOf(this.current_path) >= 0) {
         $('#save-path').addClass('saved');
@@ -186,7 +176,7 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
     } else {
       this.setPath(this.win.app.documents_path);
     }
-   this.showCurrentPath();
+    this.showCurrentPath();
   }
 
   /**
@@ -195,13 +185,14 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
    * @param {boolean} [inform_sandbox=true] Whether to inform the sandbox process of the update.
    */
   savePath(new_path, inform_sandbox = true) {
+    const { host } = this.win.platform;
     new_path = this.addPathSep(new_path);
     var i = this.saved_paths.indexOf(new_path);
     if(i < 0) {
       this.saved_paths.push(new_path);
     }
     if(inform_sandbox) {
-      ipcRenderer.send('SandboxWindow', 'set-saved-paths', this.saved_paths);
+      host.send('SandboxWindow', 'set-saved-paths', this.saved_paths);
     }
   }
 
@@ -211,16 +202,17 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
    * @param {boolean} [inform_sandbox=true] Whether to inform the sandbox process of the update.
    */
   removePath(saved_path, inform_sandbox = true) {
+    const { host } = this.win.platform;
     saved_path = this.addPathSep(saved_path);
     var i = this.saved_paths.indexOf(saved_path);
     if(i >= 0) {
       this.saved_paths.splice(i, 1);
     }
     if(inform_sandbox) {
-      ipcRenderer.send('SandboxWindow', 'set-saved-paths', this.saved_paths);
+      host.send('SandboxWindow', 'set-saved-paths', this.saved_paths);
     }
   }
- 
+
   /**
    * Toggles the current path between being saved and not saved, updating the UI and stored paths accordingly.
    */
@@ -240,18 +232,21 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
    * Updates the UI to display the current path in the address line and navigation breadcrumbs.
    */
   showCurrentPath() {
+    const { path } = this.win.platform;
     var obj = this;
     $('#folder-navigation-container .address-line').val(this.current_path);
     var folders = this.current_path.split(path.sep);
-    folders = folders.filter(function(el) { return el != ''; });
+    folders = folders.filter(function(el) {
+      return el != '';
+    });
     var address = $('#folder-navigation-container .current-address')[0];
     address.innerHTML = '';
-    var full_path = folders[0];
+    var full_path = this.current_path.startsWith(path.sep) ? path.sep + folders[0] : folders[0];
     if(folders.length == 1) {
       $('#folder-navigation-container .up-folder').addClass('disabled');
     } else {
       $('#folder-navigation-container .up-folder').removeClass('disabled');
-    }      
+    }
     for(var i = 0; i < folders.length; i++) {
       if(i > 0) {
         full_path += path.sep;
@@ -269,17 +264,18 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
           obj.setPath(this.title);
         };
         address.appendChild(span);
-        if(i != (folders.length-1)) {
+        if(i != (folders.length - 1)) {
           $(address).append('<i class="i-next-folder"></i>');
         }
       }
     }
   }
-   
+
   /**
    * Updates the list of saved paths in the UI, allowing users to quickly navigate to frequently accessed directories.
    */
   updatePathsList() {
+    const { pathEqual } = this.win.platform;
     var obj = this;
     var cont = $('#paths-container .page-panel ul');
     if(this.saved_paths.length > 0) {
@@ -306,21 +302,22 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
           obj.removePath(saved_path);
           $(this).parent().remove();
           if(obj.saved_paths.length == 0) {
-            $(cont).html('<li class="no-paths">'+language.string(140)+'</li>');
+            $(cont).html('<li class="no-paths">' + language.string(140) + '</li>');
           }
         };
         row.appendChild(btn);
         $(cont).append(row);
       });
     } else {
-      $(cont).html('<li class="no-paths">'+language.string(140)+'</li>');
+      $(cont).html('<li class="no-paths">' + language.string(140) + '</li>');
     }
   }
-  
+
   /**
    * Handles UI and state updates when a script directory is unknown, prompting the user for action.
    */
   unknownScriptDir() {
+    const { path } = this.win.platform;
     if(!this.win || !this.win.eval ||
         typeof this.win.eval.last_script_path != 'string' ||
         !this.win.eval.last_script_path.length) {
@@ -334,42 +331,45 @@ class PRDC_JSLAB_FOLDER_NAVIGATION {
     this.win.gui.openDialog($('#script-path-container'));
     return true;
   }
-  
+
   /**
    * Appends a path separator to the end of a path string if it is not already present.
    * @param {string} path_str The path string to modify.
    * @return {string} The modified path string with a trailing separator.
    */
   addPathSep(path_str) {
-    if(path_str && path_str[path_str.length-1] != path.sep) {
+    const { path } = this.win.platform;
+    if(path_str && path_str[path_str.length - 1] != path.sep) {
       path_str += path.sep;
     }
     return path_str;
   }
-  
+
   /**
    * Checks if the specified directory exists and is a directory.
    * @param {string} directory The path to check.
    * @return {boolean} True if the directory exists and is a directory, false otherwise.
    */
   checkDirectory(directory) {
+    const { fs } = this.win.platform;
     var lstat = fs.lstatSync(directory, {throwIfNoEntry: false});
     if(lstat != undefined && lstat.isDirectory()) {
-      return true;        
+      return true;
     } else {
       return false;
     }
   }
-  
+
   /**
    * Checks if the specified file exists and is a file.
    * @param {string} file_path The path to the file to check.
    * @return {boolean} True if the file exists and is a file, false otherwise.
    */
   checkFile(file_path) {
+    const { fs } = this.win.platform;
     var lstat = fs.lstatSync(file_path, {throwIfNoEntry: false});
     if(lstat != undefined && lstat.isFile()) {
-      return true;        
+      return true;
     } else {
       return false;
     }

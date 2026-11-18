@@ -5,37 +5,19 @@
  * info@pr-dc.com
  */
 
-const { shell, clipboard } = require('electron');
+const { PRDC_JSLAB_COMMAND_WINDOW_MODULE } = require('./command-window-module');
+
+const { PRDC_JSLAB_CODE_LINT } = require('../code/lint');
+
+
 const { PRDC_JSLAB_CODE_DOC_HOVER } = require('../code/doc-hover');
 
-class PRDC_JSLAB_COMMAND_WINDOW_INPUT {
+/**
+ * Class for command window input.
+ */
+class PRDC_JSLAB_COMMAND_WINDOW_INPUT extends PRDC_JSLAB_COMMAND_WINDOW_MODULE {
 
-  /**
-   * Creates input submodule and binds methods to parent command window.
-   * @param {Object} command_window Parent command window instance.
-   */
-  constructor(command_window) {
-    this.command_window = command_window;
-    this._bindToCommandWindow();
-  }
 
-  /**
-   * Binds all submodule methods to command window and exposes them on parent.
-   */
-  _bindToCommandWindow() {
-    var obj = this;
-    Object.getOwnPropertyNames(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype).forEach(function(name) {
-      if(name === 'constructor' || name === '_bindToCommandWindow') {
-        return;
-      }
-      if(typeof obj[name] !== 'function') {
-        return;
-      }
-      var bound = obj[name].bind(obj.command_window);
-      obj[name] = bound;
-      obj.command_window[name] = bound;
-    });
-  }
 }
 
 Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
@@ -54,7 +36,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
       // https://keycode.info/
       function activateCommand() {
         var el_a = $('#right-panel .history-cont .history-panel li.active');
-        var el = $('#right-panel .history-cont .history-panel li[i="'+obj.i_history+'"]');
+        var el = $('#right-panel .history-cont .history-panel li[i="' + obj.i_history + '"]');
         el_a.removeClass('active');
         el.addClass('active');
         el[0].scrollIntoView({block: 'center', inline: 'center'});
@@ -85,7 +67,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         e.preventDefault();
       } else if(e.key == 'ArrowDown') {
         // Arrow down
-        if(obj.i_history < (obj.win.command_history.history.length-1)) {
+        if(obj.i_history < (obj.win.command_history.history.length - 1)) {
           obj.i_history += 1;
           activateCommand();
         }
@@ -185,40 +167,32 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
    * Initializes CodeMirror input and command-history keybindings.
    */
   initCodeInput() {
+    const { host } = this.win.platform;
     var obj = this;
     this.code_input = CodeMirror.fromTextArea(
-        document.getElementById('command-window-input'), {
-      mode: 'javascript',
-      theme: 'notepadpp',
-      indentUnit: 2,
-      tabSize: 2,
-      lineWrapping: true,
-      matchBrackets: true,
-      gutter: true,
-      gutters: ['CodeMirror-lint-markers'],
-      lint: {
-        getAnnotations: async function(text, callback) {
-          var results = await obj.eslint.lintText(text);
-          callback(results[0].messages.map(message => ({
-            from: CodeMirror.Pos(message.line - 1, message.column - 1),
-            to: CodeMirror.Pos(
-              message.endLine ? message.endLine - 1 : message.line - 1,
-              message.endColumn ? message.endColumn - 1 : message.column
-            ),
-            severity: message.severity === 2 ? "error" : "warning",
-            message: message.message,
-          })));
-        },
-        async: true
-      },
-      highlightSelectionMatches: {annotateScrollbar: true},
-      viewportMargin: Infinity,
-      extraKeys: {
-        Enter: function() { sendCommand(false); },
-        'Ctrl-Enter': function() { sendCommand(true); },
-        'Shift-Enter': 'newlineAndIndent'
-      }
-    });
+      document.getElementById('command-window-input'), {
+        mode: 'javascript',
+        jslabStorage: this.win.platform.store,
+        theme: 'notepadpp',
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true,
+        matchBrackets: true,
+        gutter: true,
+        gutters: ['CodeMirror-lint-markers'],
+        lint: PRDC_JSLAB_CODE_LINT.createCodeMirrorLintOptions(CodeMirror, obj.eslint),
+        highlightSelectionMatches: {annotateScrollbar: true},
+        viewportMargin: Infinity,
+        extraKeys: {
+          Enter: function() {
+            sendCommand(false);
+          },
+          'Ctrl-Enter': function() {
+            sendCommand(true);
+          },
+          'Shift-Enter': 'newlineAndIndent'
+        }
+      });
 
     $('#command-window-input-submit-cont').click(function() {
       sendCommand();
@@ -235,7 +209,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
           {completeSingle: false, history: obj.win.command_history.history.slice()});
       }
     });
-    this.code_input.on('change', function() { obj.scheduleConsolePreview(); });
+    this.code_input.on('change', function() {
+      obj.scheduleConsolePreview();
+    });
 
     this.console_preview = document.createElement('div');
     this.console_preview.className = 'jslab-console-eager-preview';
@@ -245,6 +221,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
 
     // Hover documentation for tokens in command input
     this.code_doc_hover = new PRDC_JSLAB_CODE_DOC_HOVER({
+      get_docs: () => this.win.platform.getDocumentation(),
       on_print_doc: function(entry) {
         var query = entry && entry.doc_query ? entry.doc_query : '';
         if(!query.length) {
@@ -258,7 +235,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     // Code input keydown callbacks
     function historyUp() {
       if(obj.i_history < (obj.win.command_history.history.length - 1)) {
-        if(obj.i_history === -1) obj.console_history_draft = obj.code_input.getValue();
+        if(obj.i_history === -1) {
+          obj.console_history_draft = obj.code_input.getValue();
+        }
         obj.i_history += 1;
         obj.code_input.setValue(obj.win.command_history.history[obj.i_history]);
         obj.code_input.setCursor(obj.code_input.lineCount(), 0);
@@ -281,7 +260,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     async function sendCommand(force) {
       var cmd = obj.code_input.getValue();
       if(!force && cmd.trim()) {
-        var complete = await ipcRenderer.invoke('is-console-expression-complete', cmd);
+        var complete = await host.invoke('is-console-expression-complete', cmd);
         if(!complete) {
           obj.code_input.replaceSelection('\n', 'end', '+input');
           obj.code_input.execCommand('indentAuto');
@@ -314,7 +293,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         // Arrow down
 
         var cursor = obj.code_input.getCursor();
-        var line = obj.code_input.lineCount()-1;
+        var line = obj.code_input.lineCount() - 1;
         if(!obj.code_input.somethingSelected() && cursor.line == line) {
           historyDown(e);
           e.stopPropagation();
@@ -322,15 +301,18 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         }
       } else if(e.ctrlKey && !e.altKey && !e.metaKey &&
           (e.key.toLowerCase() == 'p' || e.key.toLowerCase() == 'n')) {
-        if(e.key.toLowerCase() == 'p') historyUp();
-        else historyDown();
+        if(e.key.toLowerCase() == 'p') {
+          historyUp();
+        } else {
+          historyDown();
+        }
         e.stopPropagation();
         e.preventDefault();
       } else if(e.key == 'PageUp') {
         // Page up
         if(obj.win.command_history.history.length) {
-          obj.i_history = obj.win.command_history.history.length-1;
-          obj.code_input.setValue(obj.win.command_history.history[obj.win.command_history.history.length-1]);
+          obj.i_history = obj.win.command_history.history.length - 1;
+          obj.code_input.setValue(obj.win.command_history.history[obj.win.command_history.history.length - 1]);
           obj.code_input.setCursor(obj.code_input.lineCount(), 0);
           obj.scrollToBottom();
         }
@@ -386,7 +368,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
           });
         } else {
           cmds_cont
-            .append('<div class="history-empty">'+language.string(346)+'</div>');
+            .append('<div class="history-empty">' + language.string(346) + '</div>');
         }
         e.stopPropagation();
         e.preventDefault();
@@ -450,54 +432,79 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     });
   },
 
-  /** Schedules a side-effect-free eager result preview. */
+  /**
+   * Schedules a side-effect-free eager result preview.
+   */
   scheduleConsolePreview() {
+    const { host } = this.win.platform;
     clearTimeout(this.console_preview_timer);
     var obj = this;
     var request_id = this.console_preview_request_id =
       (this.console_preview_request_id || 0) + 1;
-    if(this.console_preview) this.console_preview.replaceChildren();
-    if(!this.code_input || !this.code_input.getValue().trim()) return;
+    if(this.console_preview) {
+      this.console_preview.replaceChildren();
+    }
+    if(!this.code_input || !this.code_input.getValue().trim()) {
+      return;
+    }
     this.console_preview_timer = setTimeout(async function() {
-      if(!obj.console_preview || !obj.code_input) return;
-      if(obj.win && obj.win.evaluating) return;
+      if(!obj.console_preview || !obj.code_input) {
+        return;
+      }
+      if(obj.win && obj.win.evaluating) {
+        return;
+      }
       var expression = obj.code_input.getValue().trim();
-      if(!expression) return;
-      var result = await ipcRenderer.invoke('get-console-preview', expression);
-      if(request_id !== obj.console_preview_request_id) return;
-      if(!result || !result.success) return;
+      if(!expression) {
+        return;
+      }
+      var result = await host.invoke('get-console-preview', expression);
+      if(request_id !== obj.console_preview_request_id) {
+        return;
+      }
+      if(!result || !result.success) {
+        return;
+      }
       obj.console_preview.appendChild(obj.createConsoleValueElement(result.value));
     }, 150);
   },
 
-  /** Initializes persistent, side-effect-free live expressions. */
+  /**
+   * Initializes persistent, side-effect-free live expressions.
+   */
   initLiveExpressions() {
     var obj = this;
     this.live_expressions = [];
     try {
-      var saved = JSON.parse(localStorage.getItem('jslab-live-expressions') || '[]');
-      if(Array.isArray(saved)) this.live_expressions = saved.filter(value => typeof value === 'string');
+      var saved = this.win.platform.store.get('jslab-live-expressions', []);
+      if(Array.isArray(saved)) {
+        this.live_expressions = saved.filter(value => typeof value === 'string');
+      }
     } catch(err) {}
     this.live_expressions_el = document.createElement('div');
     this.live_expressions_el.className = 'jslab-live-expressions';
-    this.live_expressions_el.setAttribute('aria-label', language.currentString(637));
+    this.live_expressions_el.setAttribute('aria-label', language.currentString(636));
     var messages_el = this.messages && this.messages.jquery ? this.messages[0] : this.messages;
     messages_el.parentNode.insertBefore(this.live_expressions_el, messages_el);
     var add = document.createElement('button');
     add.type = 'button';
     add.className = 'jslab-live-expression-add';
     add.textContent = '+';
-    add.title = language.currentString(635);
+    add.title = language.currentString(634);
     add.addEventListener('click', function() {
       obj.live_expressions.push(obj.code_input.getValue().trim());
       obj.renderLiveExpressions();
     });
     document.querySelector('#command-window-options .options-right').prepend(add);
     this.renderLiveExpressions();
-    this.live_expression_timer = setInterval(function() { obj.updateLiveExpressions(); }, 500);
+    this.live_expression_timer = setInterval(function() {
+      obj.updateLiveExpressions();
+    }, 500);
   },
 
-  /** Renders editable live-expression rows. */
+  /**
+   * Renders editable live-expression rows.
+   */
   renderLiveExpressions() {
     var obj = this;
     this.live_expressions_el.replaceChildren();
@@ -518,7 +525,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
       var remove = document.createElement('button');
       remove.type = 'button';
       remove.textContent = '\u00D7';
-      remove.title = language.currentString(636);
+      remove.title = language.currentString(635);
       remove.addEventListener('click', function() {
         obj.live_expressions.splice(index, 1);
         obj.renderLiveExpressions();
@@ -530,14 +537,23 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     this.updateLiveExpressions();
   },
 
-  /** Persists live expressions. */
+  /**
+   * Persists live expressions.
+   */
   saveLiveExpressions() {
-    try { localStorage.setItem('jslab-live-expressions', JSON.stringify(this.live_expressions)); } catch(err) {}
+    try {
+      this.win.platform.store.set('jslab-live-expressions', this.live_expressions);
+    } catch(err) {}
   },
 
-  /** Refreshes all live expressions without running side-effectful code. */
+  /**
+   * Refreshes all live expressions without running side-effectful code.
+   */
   async updateLiveExpressions() {
-    if(this.live_expression_updating || (this.win && this.win.evaluating)) return;
+    const { host } = this.win.platform;
+    if(this.live_expression_updating || (this.win && this.win.evaluating)) {
+      return;
+    }
     this.live_expression_updating = true;
     try {
       var rows = this.live_expressions_el.querySelectorAll('.jslab-live-expression');
@@ -545,17 +561,24 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         var output = rows[i].querySelector('.jslab-live-expression-value');
         var expression = this.live_expressions[i].trim();
         output.replaceChildren();
-        if(!expression) continue;
-        var result = await ipcRenderer.invoke('get-console-preview', expression);
-        if(result?.success) output.appendChild(this.createConsoleValueElement(result.value));
-        else output.textContent = result?.reason || '';
+        if(!expression) {
+          continue;
+        }
+        var result = await host.invoke('get-console-preview', expression);
+        if(result?.success) {
+          output.appendChild(this.createConsoleValueElement(result.value));
+        } else {
+          output.textContent = result?.reason || '';
+        }
       }
     } finally {
       this.live_expression_updating = false;
     }
   },
 
-  /** Adds text/severity filtering and bulk object actions. */
+  /**
+   * Adds text/severity filtering and bulk object actions.
+   */
   initConsoleTools() {
     var obj = this;
     var tools = document.createElement('div');
@@ -563,17 +586,20 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     tools.hidden = true;
     tools.setAttribute('role', 'search');
     var filter = document.createElement('input');
-    filter.type = 'text'; filter.className = 'CodeMirror-search-find';
+    filter.type = 'text';
+    filter.className = 'CodeMirror-search-find';
     filter.placeholder = language.currentString(336);
     filter.title = language.currentString(336);
-    filter.autocomplete = 'off'; filter.spellcheck = false;
+    filter.autocomplete = 'off';
+    filter.spellcheck = false;
     var previous = document.createElement('i');
     previous.className = 'CodeMirror-search-find-prev-btn';
     previous.title = language.currentString(337);
     var next = document.createElement('i');
     next.className = 'CodeMirror-search-find-next-btn';
     next.title = language.currentString(338);
-    var clear_top = document.createElement('br'); clear_top.className = 'clear';
+    var clear_top = document.createElement('br');
+    clear_top.className = 'clear';
     var match_case = document.createElement('i');
     match_case.className = 'CodeMirror-search-case-btn';
     match_case.title = language.currentString(341);
@@ -582,15 +608,18 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     regex.title = language.currentString(342);
     var counter = document.createElement('div');
     counter.className = 'CodeMirror-search-bottom-right';
-    var current = document.createElement('span'); current.className = 'CodeMirror-search-current-match';
+    var current = document.createElement('span');
+    current.className = 'CodeMirror-search-current-match';
     current.textContent = '0';
-    var total = document.createElement('span'); total.className = 'CodeMirror-search-total-matchs';
+    var total = document.createElement('span');
+    total.className = 'CodeMirror-search-total-matchs';
     total.textContent = '0';
     var close = document.createElement('i');
     close.className = 'CodeMirror-search-close-btn';
     close.title = language.currentString(344);
     counter.append(current, ' ' + language.currentString(343) + ' ', total, close);
-    var clear_bottom = document.createElement('br'); clear_bottom.className = 'clear';
+    var clear_bottom = document.createElement('br');
+    clear_bottom.className = 'clear';
     tools.append(filter, previous, next, clear_top, match_case, regex, counter, clear_bottom);
     var messages_el = this.messages && this.messages.jquery ? this.messages[0] : this.messages;
     messages_el.parentNode.insertBefore(tools, messages_el);
@@ -602,8 +631,12 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     this.console_filter_index = -1;
     this.console_tools = tools;
     document.querySelector('#command-window-options .console-filter').addEventListener('click',
-      function() { obj.toggleConsoleTools(); });
-    close.addEventListener('click', function() { obj.closeConsoleTools(); });
+      function() {
+        obj.toggleConsoleTools();
+      });
+    close.addEventListener('click', function() {
+      obj.closeConsoleTools();
+    });
     filter.addEventListener('keydown', function(e) {
       if(e.key === 'Escape') {
         obj.closeConsoleTools();
@@ -619,9 +652,15 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         obj.closeConsoleTools();
       }
     });
-    filter.addEventListener('input', function() { obj.applyConsoleFilter(true); });
-    previous.addEventListener('click', function() { obj.navigateConsoleFilter(-1); });
-    next.addEventListener('click', function() { obj.navigateConsoleFilter(1); });
+    filter.addEventListener('input', function() {
+      obj.applyConsoleFilter(true);
+    });
+    previous.addEventListener('click', function() {
+      obj.navigateConsoleFilter(-1);
+    });
+    next.addEventListener('click', function() {
+      obj.navigateConsoleFilter(1);
+    });
     match_case.addEventListener('click', function() {
       obj.console_filter_match_case = !obj.console_filter_match_case;
       match_case.classList.toggle('active', obj.console_filter_match_case);
@@ -634,30 +673,49 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     });
   },
 
-  /** Opens the console filter popup and selects its current query. */
+  /**
+   * Opens the console filter popup and selects its current query.
+   */
   openConsoleTools() {
-    if(!this.console_tools) return;
+    if(!this.console_tools) {
+      return;
+    }
     this.console_tools.hidden = false;
     this.console_filter_input.focus();
     this.console_filter_input.select();
   },
 
-  /** Closes the console filter popup and returns focus to the prompt. */
+  /**
+   * Closes the console filter popup and returns focus to the prompt.
+   */
   closeConsoleTools() {
-    if(!this.console_tools) return;
+    if(!this.console_tools) {
+      return;
+    }
     this.console_tools.hidden = true;
-    if(this.code_input) this.code_input.focus();
+    if(this.code_input) {
+      this.code_input.focus();
+    }
   },
 
-  /** Toggles the console filter popup. */
+  /**
+   * Toggles the console filter popup.
+   */
   toggleConsoleTools() {
-    if(this.console_tools && this.console_tools.hidden) this.openConsoleTools();
-    else this.closeConsoleTools();
+    if(this.console_tools && this.console_tools.hidden) {
+      this.openConsoleTools();
+    } else {
+      this.closeConsoleTools();
+    }
   },
 
-  /** Applies the editor-style text search to rendered console messages. */
+  /**
+   * Applies the editor-style text search to rendered console messages.
+   */
   applyConsoleFilter(reset_index) {
-    if(!this.console_filter_input) return;
+    if(!this.console_filter_input) {
+      return;
+    }
     var query = this.console_filter_input.value;
     var expression = null;
     var invalid = false;
@@ -679,52 +737,71 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         (obj.console_filter_match_case ? text.includes(query) :
           text.toLowerCase().includes(query.toLowerCase()))));
       node.style.display = matches_text ? '' : 'none';
-      if(query && matches_text) matches.push(node);
+      if(query && matches_text) {
+        matches.push(node);
+      }
     });
     this.console_filter_matches = matches;
-    if(reset_index) this.console_filter_index = matches.length ? 0 : -1;
-    else if(this.console_filter_index >= matches.length) this.console_filter_index = matches.length - 1;
+    if(reset_index) {
+      this.console_filter_index = matches.length ? 0 : -1;
+    } else if(this.console_filter_index >= matches.length) {
+      this.console_filter_index = matches.length - 1;
+    }
     this.focusConsoleFilterMatch();
   },
 
-  /** Moves to the previous or next filtered console message. */
+  /**
+   * Moves to the previous or next filtered console message.
+   */
   navigateConsoleFilter(direction) {
     var matches = this.console_filter_matches || [];
-    if(!matches.length) return;
+    if(!matches.length) {
+      return;
+    }
     this.console_filter_index = (this.console_filter_index + direction + matches.length) % matches.length;
     this.focusConsoleFilterMatch();
   },
 
-  /** Updates the match counter and reveals the selected console message. */
+  /**
+   * Updates the match counter and reveals the selected console message.
+   */
   focusConsoleFilterMatch() {
     var matches = this.console_filter_matches || [];
-    matches.forEach(function(node) { node.classList.remove('jslab-console-filter-current'); });
+    matches.forEach(function(node) {
+      node.classList.remove('jslab-console-filter-current');
+    });
     var selected = this.console_filter_index >= 0 ? matches[this.console_filter_index] : null;
     if(selected) {
       selected.classList.add('jslab-console-filter-current');
-      if(typeof selected.scrollIntoView === 'function') selected.scrollIntoView({ block: 'nearest' });
+      if(typeof selected.scrollIntoView === 'function') {
+        selected.scrollIntoView({ block: 'nearest' });
+      }
     }
-    if(this.console_filter_current) this.console_filter_current.textContent = selected ? this.console_filter_index + 1 : 0;
-    if(this.console_filter_total) this.console_filter_total.textContent = matches.length;
+    if(this.console_filter_current) {
+      this.console_filter_current.textContent = selected ? this.console_filter_index + 1 : 0;
+    }
+    if(this.console_filter_total) {
+      this.console_filter_total.textContent = matches.length;
+    }
   },
 
   /**
    * Binds focus behavior to panel containers.
    */
   bindFocusHandlers() {
+    function focusInput(e) {
+      if(e.target != this) {
+        return;
+      }
+      obj.code_input.focus();
+      obj.code_input.setCursor(obj.code_input.lineCount(), 0);
+    }
+
     var obj = this;
     // Focus code input
-    $('#right-panel .terminal-panel').click(function(e) {
-      if(e.target != this) return;
-      obj.code_input.focus();
-      obj.code_input.setCursor(obj.code_input.lineCount(), 0);
-    });
+    $('#right-panel .terminal-panel').click(focusInput);
 
-    $('#command-window-input-container').click(function(e) {
-      if(e.target != this) return;
-      obj.code_input.focus();
-      obj.code_input.setCursor(obj.code_input.lineCount(), 0);
-    });
+    $('#command-window-input-container').click(focusInput);
   },
 
   /**
@@ -784,6 +861,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
    * Binds message output interactions such as links and eval snippets.
    */
   bindMessageInteractionHandlers() {
+    const { shell, host } = this.win.platform;
     var obj = this;
     // Prevent all redirects
     $(document.body).on('click', '#command-window-messages a', function(e) {
@@ -802,7 +880,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
 
     // Open script in editor
     $(document.body).on('click', '#command-window-messages span.open-editor', function() {
-      ipcRenderer.send('EditorWindow', 'open-script', [$(this).attr('file_path'), $(this).attr('line_number'), $(this).attr('char_pos')]);
+      host.send('EditorWindow', 'open-script', [$(this).attr('file_path'), $(this).attr('line_number'), $(this).attr('char_pos')]);
     });
 
     // Inspector interactions
@@ -829,7 +907,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     var scroll = this.code_input.getScrollInfo();
     var had_focus = this.code_input.hasFocus();
 
-    this.win.eval.evalCommand(cmd, show_output, jsl_file_name);
+    const pending = this.win.eval.evalCommand(cmd, show_output, jsl_file_name);
 
     this.code_input.setValue(previous_value);
 
@@ -845,6 +923,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     if(had_focus) {
       this.code_input.focus();
     }
+    return pending;
   }
 });
 

@@ -5,37 +5,48 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_VIDEOCALL } = require('../networking-videocall');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for networking videocall test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_VIDEOCALL_TEST_HELPER {
 
-function createVideocallHarness() {
-  var clear_timeout_calls = [];
-  var disp_calls = [];
+  /**
+   * Creates videocall harness.
+   */
+  static createVideocallHarness() {
+    var clear_timeout_calls = [];
+    var disp_calls = [];
 
-  var jsl = {
-    inter: {
-      clearTimeoutIf: function(value) {
-        clear_timeout_calls.push(value);
-        return undefined;
-      },
-      disp: function(message) {
-        disp_calls.push(message);
+    var jsl = {
+      inter: {
+        clearTimeoutIf: function(value) {
+          clear_timeout_calls.push(value);
+          return undefined;
+        },
+        disp: function(message) {
+          disp_calls.push(message);
+        }
       }
-    }
-  };
+    };
 
-  var call = Object.create(PRDC_JSLAB_VIDEOCALL.prototype);
-  call.jsl = jsl;
-  call.incoming_buffer = '';
-  call.is_initiator = false;
-  call.connection_timeout = 42;
+    var call = Object.create(PRDC_JSLAB_VIDEOCALL.prototype);
+    call.jsl = jsl;
+    call.incoming_buffer = '';
+    call.is_initiator = false;
+    call.connection_timeout = 42;
 
-  return { call, clear_timeout_calls, disp_calls };
+    return { call, clear_timeout_calls, disp_calls };
+  }
 }
 
+
+const { PRDC_JSLAB_VIDEOCALL } = require('../networking-videocall');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('_processIncomingData parses framed JSON messages across chunks', function(assert) {
-  var harness = createVideocallHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_VIDEOCALL_TEST_HELPER.createVideocallHarness();
   var messages = [];
   harness.call._handleSignalingMessage = function(msg) {
     messages.push(msg);
@@ -53,7 +64,7 @@ tests.add('_processIncomingData parses framed JSON messages across chunks', func
 }, { tags: ['unit', 'networking', 'videocall'] });
 
 tests.add('_sendSignalingMessage routes signaling payload to server/client transport', function(assert) {
-  var harness = createVideocallHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_VIDEOCALL_TEST_HELPER.createVideocallHarness();
   var server_writes = [];
   var client_writes = [];
 
@@ -81,7 +92,7 @@ tests.add('_sendSignalingMessage routes signaling payload to server/client trans
 }, { tags: ['unit', 'networking', 'videocall'] });
 
 tests.add('_handleSignalingMessage executes expected signaling actions', async function(assert) {
-  var harness = createVideocallHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_VIDEOCALL_TEST_HELPER.createVideocallHarness();
   var started = 0;
   var answered = 0;
   var remote_set = [];
@@ -133,21 +144,33 @@ tests.add('_handleSignalingMessage executes expected signaling actions', async f
 }, { tags: ['unit', 'networking', 'videocall'] });
 
 tests.add('toggleAudio/toggleVideo and endCall manage streams and transports', function(assert) {
-  var harness = createVideocallHarness();
-  var audio_track = { enabled: true, stop_calls: 0, stop: function() { this.stop_calls += 1; } };
-  var video_track = { enabled: true, stop_calls: 0, stop: function() { this.stop_calls += 1; } };
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_VIDEOCALL_TEST_HELPER.createVideocallHarness();
+  var audio_track = { enabled: true, stop_calls: 0, stop: function() {
+    this.stop_calls += 1;
+  } };
+  var video_track = { enabled: true, stop_calls: 0, stop: function() {
+    this.stop_calls += 1;
+  } };
   var peer_closed = 0;
   var server_closed = 0;
   var client_closed = 0;
 
   harness.call.local_stream = {
-    getAudioTracks: function() { return [audio_track]; },
-    getVideoTracks: function() { return [video_track]; },
-    getTracks: function() { return [audio_track, video_track]; }
+    getAudioTracks: function() {
+      return [audio_track];
+    },
+    getVideoTracks: function() {
+      return [video_track];
+    },
+    getTracks: function() {
+      return [audio_track, video_track];
+    }
   };
   harness.call.remote_stream = {
     getTracks: function() {
-      return [{ stop_calls: 0, stop: function() { this.stop_calls += 1; } }];
+      return [{ stop_calls: 0, stop: function() {
+        this.stop_calls += 1;
+      } }];
     }
   };
   harness.call.peer_connection = {
@@ -155,8 +178,12 @@ tests.add('toggleAudio/toggleVideo and endCall manage streams and transports', f
       peer_closed += 1;
     }
   };
-  harness.call.tcp_server = { close: function() { server_closed += 1; } };
-  harness.call.tcp_client = { close: function() { client_closed += 1; } };
+  harness.call.tcp_server = { close: function() {
+    server_closed += 1;
+  } };
+  harness.call.tcp_client = { close: function() {
+    client_closed += 1;
+  } };
 
   harness.call.toggleAudio(true);
   assert.equal(audio_track.enabled, false);

@@ -1153,7 +1153,8 @@ Removes a previously saved path from the application's list of saved paths.
 
 ##### `addpath(args)`
 
-Adds one or more paths to the search path list.Alias compatible with MATLAB/Octave `addpath`.
+Adds one or more paths to the search path list.
+Alias compatible with MATLAB/Octave `addpath`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1163,7 +1164,8 @@ Adds one or more paths to the search path list.Alias compatible with MATLAB/Oct
 
 ##### `rmpath(args)`
 
-Removes one or more paths from the search path list.Alias compatible with MATLAB/Octave `rmpath`.
+Removes one or more paths from the search path list.
+Alias compatible with MATLAB/Octave `rmpath`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1173,7 +1175,8 @@ Removes one or more paths from the search path list.Alias compatible with MATLA
 
 ##### `path(args)`
 
-Retrieves or sets the active search path list.Compatible with MATLAB/Octave `path`.
+Retrieves or sets the active search path list.
+Compatible with MATLAB/Octave `path`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1183,7 +1186,8 @@ Retrieves or sets the active search path list.Compatible with MATLAB/Octave `pa
 
 ##### `ls([target])`
 
-Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave `ls`.
+Lists contents of a folder or wildcard target.
+Compatible with MATLAB/Octave `ls`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1193,7 +1197,8 @@ Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave `ls
 
 ##### `dir([target])`
 
-Lists directory entries with metadata.Compatible with MATLAB/Octave `dir`.
+Lists directory entries with metadata.
+Compatible with MATLAB/Octave `dir`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1203,7 +1208,8 @@ Lists directory entries with metadata.Compatible with MATLAB/Octave `dir`.
 
 ##### `isfile(path_in)`
 
-Returns true when the path resolves to a file.Compatible with MATLAB `isfile`.
+Returns true when the path resolves to a file.
+Compatible with MATLAB `isfile`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1213,7 +1219,8 @@ Returns true when the path resolves to a file.Compatible with MATLAB `isfile`.
 
 ##### `isfolder(path_in)`
 
-Returns true when the path resolves to a folder.Compatible with MATLAB `isfolder`.
+Returns true when the path resolves to a folder.
+Compatible with MATLAB `isfolder`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1223,7 +1230,9 @@ Returns true when the path resolves to a folder.Compatible with MATLAB `isfolde
 
 ##### `exist(name, [kind])`
 
-Checks existence with MATLAB-compatible return codes.`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.Supports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.
+Checks existence with MATLAB-compatible return codes.
+`1` variable, `2` file, `5` built-in, `7` directory, `0` missing.
+Supports typed queries: `'var'`, `'file'`, `'dir'|'folder'`, `'builtin'`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1234,7 +1243,8 @@ Checks existence with MATLAB-compatible return codes.`1` variable, `2` file, `5
 
 ##### `which(name)`
 
-Resolves a file/module using the active search path.Compatible with MATLAB/Octave `which`.
+Resolves a file/module using the active search path.
+Compatible with MATLAB/Octave `which`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1244,7 +1254,8 @@ Resolves a file/module using the active search path.Compatible with MATLAB/Octa
 
 ##### `who(names)`
 
-Lists workspace variable names.Compatible with MATLAB/Octave `who`.
+Lists workspace variable names.
+Compatible with MATLAB/Octave `who`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1254,7 +1265,8 @@ Lists workspace variable names.Compatible with MATLAB/Octave `who`.
 
 ##### `whos(names)`
 
-Lists workspace variable descriptors (name/type/class).Compatible with MATLAB/Octave `whos`.
+Lists workspace variable descriptors (name/type/class).
+Compatible with MATLAB/Octave `whos`.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1286,7 +1298,9 @@ Updates the file browser display based on the current state.
 
 ##### `diary([mode_or_file])`
 
-Controls command window transcript logging.`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,and `diary('<file>')` enables logging to the specified file (append mode).
+Controls command window transcript logging.
+`diary()` toggles logging, `diary('on')` enables, `diary('off')` disables,
+and `diary('<file>')` enables logging to the specified file (append mode).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1333,6 +1347,32 @@ Opens a specified file in an editor or opens the editor to a default or previous
 | Parameter | Type | Description |
 | --- | --- | --- |
 | `filepath` | `string` | Path to the file to be opened in the editor. Optional. |
+
+##### `assistant()`
+
+Opens the Assistant chat window.
+
+##### `simulate([filepath], [options])`
+
+Opens the Simulate window and optionally loads a .jslmo project or imports a .mo file.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `filepath` | `string` | Simulate project or Modelica source file. Optional. |
+| `options` | `Object` | Parameters, simulation settings, run and animation options. Optional. |
+
+**Returns:** `Promise.<Object>` Simulate operation result.
+
+##### `terminal([name], [options])`
+
+Opens an independently controllable PTY-backed system Terminal window.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string \| Object` | Window name or options object. Optional. |
+| `options` | `Object` | Shell, arguments, working directory and environment. Optional. |
+
+**Returns:** `PRDC_JSLAB_TERMINAL_WINDOW | false` Terminal control handle.
 
 ##### `getExamples()`
 
@@ -1410,7 +1450,8 @@ Saves specified variables to a file using workspace serializer.
 
 ##### `load(args)`
 
-Loads variables from a specified file into the specified scope or the default script context.Supports current JSLAB workspace format and legacy plain JSON object files.
+Loads variables from a specified file into the specified scope or the default script context.
+Supports current JSLAB workspace format and legacy plain JSON object files.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1585,7 +1626,8 @@ Compiles a N-API module located at the specified path.
 
 ##### `compileWasm(path, [show_output])`
 
-Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.The method automatically selects `emcc` for native sources and `wasm-pack` when a Cargo.toml is present.
+Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
+The method automatically selects `emcc` for native sources and `wasm-pack` when a Cargo.toml is present.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1672,7 +1714,8 @@ Searches the documentation for methods that match all words in the given query, 
 
 ##### `lookfor(query)`
 
-Searches documentation by keyword and prints matching symbols.MATLAB-compatible alias for documentation search.
+Searches documentation by keyword and prints matching symbols.
+MATLAB-compatible alias for documentation search.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1816,7 +1859,8 @@ Interpolates grid data using the specified method.
 
 ##### `buildGridFromFlat(xFlat, yFlat, zFlat, [tolIn], [tolIn.tolX], [tolIn.tolY])`
 
-Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Ordering can be arbitrary. Values that are NaN/Inf are ignored.
+Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.
+Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1831,7 +1875,9 @@ Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Or
 
 ##### `gridSolveYforXZ(x, y, z, x0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])`
 
-Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
+Finds y values where z(x0, y) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -1852,7 +1898,9 @@ Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array,
 
 ##### `gridSolveXforYZ(x, y, z, y0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])`
 
-Finds x values where z(x, y0) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
+Finds x values where z(x, y0) == z0 on a rectilinear grid.
+If z is a flat array, the function tries to rebuild a grid automatically.
+Returns an array of solutions (can be empty or multiple).
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2040,7 +2088,7 @@ Computes the characteristic polynomial of a matrix or the polynomial from roots.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `A` | `Array` | If `A` is a matrix (2D array), computes its characteristic polynomial.                   If `A` is an array of roots, computes the polynomial with those roots. |
+| `A` | `Array` | If `A` is a matrix (2D array), computes its characteristic polynomial. If `A` is an array of roots, computes the polynomial with those roots. |
 
 **Returns:** `Array` - Coefficients of the resulting polynomial.
 
@@ -2149,7 +2197,12 @@ Compares two numbers (real or complex) according to Octave's rules.
 
 ##### `min(arr)`
 
-Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
+Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.
+Complex numbers are represented as objects with 'real' and 'imag' properties.
+The comparison follows Octave's rules:
+1. Compare magnitudes (absolute values) of the numbers.
+2. If magnitudes are equal, compare real parts.
+3. If real parts are equal, compare imaginary parts.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2159,7 +2212,12 @@ Finds the minimum value in an array of numbers, which can include both real numb
 
 ##### `max(arr)`
 
-Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
+Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.
+Complex numbers are represented as objects with 'real' and 'imag' properties.
+The comparison follows Octave's rules:
+1. Compare magnitudes (absolute values) of the numbers.
+2. If magnitudes are equal, compare real parts.
+3. If real parts are equal, compare imaginary parts.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2169,7 +2227,8 @@ Finds the maximum value in an array of numbers, which can include both real numb
 
 ##### `clamp(v, a, b)`
 
-Clamps a value to the inclusive range [a, b].Assumes a <= b.
+Clamps a value to the inclusive range [a, b].
+Assumes a <= b.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2181,7 +2240,8 @@ Clamps a value to the inclusive range [a, b].Assumes a <= b.
 
 ##### `real(input)`
 
-Extracts the real part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
+Extracts the real part of a number or an array of numbers.
+Handles mixed inputs containing both real numbers and complex numbers.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2191,7 +2251,8 @@ Extracts the real part of a number or an array of numbers.Handles mixed inputs 
 
 ##### `imag(input)`
 
-Extracts the imaginary part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
+Extracts the imaginary part of a number or an array of numbers.
+Handles mixed inputs containing both real numbers and complex numbers.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2244,7 +2305,8 @@ Calculates the coefficients of the characteristic polynomial of a square matrix.
 
 ##### `runInterruptible(work_function, [args], [options])`
 
-Runs scientific/native work outside the persistent workspace so it can be stopped safely.The function receives copied arguments and must not depend on caller closures.
+Runs scientific/native work outside the persistent workspace so it can be stopped safely.
+The function receives copied arguments and must not depend on caller closures.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -2261,6 +2323,52 @@ Executes a given function in a non-blocking while loop.
 | Parameter | Type | Description |
 | --- | --- | --- |
 | `fn` | `function` | A function that returns a boolean value; when false, the loop exits. |
+
+##### `nbrun(fn)`
+
+Handles nbrun.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `fn` | `function` | Function to schedule once. |
+
+##### `nbnext(fn)`
+
+Handles nbnext.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `fn` | `function` | Next callback. |
+
+##### `waitMSeconds(ms)`
+
+Handles wait mseconds.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `ms` | `number` | Delay in milliseconds. |
+
+**Returns:** `Promise.<void>` Delay.
+
+##### `waitSeconds(seconds)`
+
+Handles wait seconds.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `seconds` | `number` | Delay. |
+
+**Returns:** `Promise.<void>` Delay.
+
+##### `waitMinutes(minutes)`
+
+Handles wait minutes.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `minutes` | `number` | Delay. |
+
+**Returns:** `Promise.<void>` Delay.
 
 ##### `clearIntervalIf(timeout)`
 
@@ -3873,7 +3981,8 @@ Moves the first `n` elements of the array to the end.
 
 ##### `plus(args)`
 
-Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Adds multiple operands, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -3883,7 +3992,8 @@ Adds multiple operands, which can be either scalars or arrays.If multiple opera
 
 ##### `add(args)`
 
-Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Adds multiple operands, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -3893,7 +4003,8 @@ Adds multiple operands, which can be either scalars or arrays.If multiple opera
 
 ##### `minus(args)`
 
-Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Subtracts multiple operands from the first one, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -3903,7 +4014,8 @@ Subtracts multiple operands from the first one, which can be either scalars or a
 
 ##### `subtract(args)`
 
-Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
+Subtracts multiple operands from the first one, which can be either scalars or arrays.
+If multiple operands are arrays, they must be of the same length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -4805,7 +4917,8 @@ Converts top, right, bottom, and left margins into x and y coordinates.
 
 ##### `simpleObj2Csv(data, [delimiter])`
 
-Generates a CSV string from an simple object containing arrays of values.Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
+Generates a CSV string from an simple object containing arrays of values.
+Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5283,7 +5396,8 @@ Opens the specified folder in the system's file manager.
 
 ##### `makeDirectory(directory)`
 
-Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
+Creates a directory at the specified path if it does not already exist.
+This method delegates the directory creation task to the environment's makeDirectory function.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5293,7 +5407,8 @@ Creates a directory at the specified path if it does not already exist.This met
 
 ##### `mkdir(directory)`
 
-Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
+Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.
+This method delegates the directory creation task to the environment's makeDirectory function.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5482,7 +5597,8 @@ Checks if a specific program is running and retrieves its process IDs.
 | --- | --- | --- |
 | `program_name` | `string` | The name of the program to check. |
 
-**Returns:** `Array` An array where the first element is a boolean indicating if the program is running,                 and the second element is an array of process IDs if the program is running.
+**Returns:** `Array` An array where the first element is a boolean indicating if the program is running,
+and the second element is an array of process IDs if the program is running.
 
 ##### `killProcess(pid)`
 
@@ -5632,7 +5748,8 @@ Transforms a local offset (dx, dy, dz) relative to a specified East, North, Up p
 
 ##### `computeHeadingPitchFromTo(from_cartesian, to_cartesian)`
 
-Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
+Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.
+The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5643,7 +5760,8 @@ Calculates the heading (yaw) and pitch angles from a starting Cartesian point to
 
 ##### `mslToEllipsoidAlt(lat_deg, lon_deg, h_msl_meters)`
 
-Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.
+The conversion can handle single values or arrays of values.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5655,7 +5773,8 @@ Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the
 
 ##### `ellipsoidToMslAlt(lat_deg, lon_deg, h_ellipsoid_meters)`
 
-Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
+Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.
+The conversion can handle single values or arrays of values.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5667,7 +5786,8 @@ Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the
 
 ##### `positionToEllipsoid(lat_deg, lon_deg, h_msl_meters)`
 
-Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
+Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.
+The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -5875,7 +5995,8 @@ Formats a number to a specified number of decimal places.
 
 ##### `formatFloatDigits(number, [digits])`
 
-Formats a floating-point number to a fixed number of significant digits,automatically adjusting decimal places depending on the integer part length.
+Formats a floating-point number to a fixed number of significant digits,
+automatically adjusting decimal places depending on the integer part length.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6007,7 +6128,8 @@ Determines if the provided value is array-like for column-style input.
 
 ##### `ensureUniqueNames(names, [error_factory])`
 
-Ensures that name list contains unique values.Throws when a duplicate name is found.
+Ensures that name list contains unique values.
+Throws when a duplicate name is found.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6340,7 +6462,8 @@ Converts an object to a JSON string if it is an object, otherwise returns the ob
 
 ##### `safeStringify(data, [depth_limit], [escape_html])`
 
-Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.It also escapes strings to prevent HTML injection.
+Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.
+It also escapes strings to prevent HTML injection.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6382,7 +6505,8 @@ Escapes special LaTeX characters in a string to prevent LaTeX injection.
 
 ##### `getUniqueKey(object, key)`
 
-Produces a unique key name inside an object. If `key` already exists,numerical suffixes are appended until uniqueness is achieved.
+Produces a unique key name inside an object. If `key` already exists,
+numerical suffixes are appended until uniqueness is achieved.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6433,7 +6557,8 @@ Checks that an input contains a finite number
 
 ##### `limitedNumberValidator(n, [min], [max])`
 
-Checks that an input contains a finite numberand—if supplied—is within the inclusive range [min, max].
+Checks that an input contains a finite number
+and—if supplied—is within the inclusive range [min, max].
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6505,7 +6630,13 @@ Wraps a string in an HTML <sup> element (superscript).
 
 ##### `tableprint(args)`
 
-Prints a formatted plain-text table and optionally exports a LaTeX table.Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/valuepairs or as a final options object.Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,align, float, caption, label, escapeTeX.
+Prints a formatted plain-text table and optionally exports a LaTeX table.
+
+Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
+pairs or as a final options object.
+
+Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
+align, float, caption, label, escapeTeX.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6517,7 +6648,11 @@ Prints a formatted plain-text table and optionally exports a LaTeX table.Colum
 
 ##### `table(args)`
 
-Creates a table from columns.Usage examples:table(colA, colB, { VariableNames: ['A', 'B'] })table({ A: colA, B: colB })table(colA, colB, 'VariableNames', ['A', 'B'])
+Creates a table from columns.
+Usage examples:
+table(colA, colB, { VariableNames: ['A', 'B'] })
+table({ A: colA, B: colB })
+table(colA, colB, 'VariableNames', ['A', 'B'])
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6527,7 +6662,10 @@ Creates a table from columns.Usage examples:table(colA, colB, { VariableNames:
 
 ##### `timetable(row_times, args)`
 
-Creates a timetable from row times and columns.Usage examples:timetable(times, colA, colB, { VariableNames: ['A', 'B'] })timetable(times, { A: colA, B: colB })
+Creates a timetable from row times and columns.
+Usage examples:
+timetable(times, colA, colB, { VariableNames: ['A', 'B'] })
+timetable(times, { A: colA, B: colB })
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6791,7 +6929,9 @@ Finds the nearest points in points2 for each point in points1.
 
 ##### `minDisksDistance3D(O1, n1, r1, O2, n2, r2)`
 
-Finds the minimum Euclidean distance between two filled disks in 3D.Overlapping disks have zero distance. Normals need not have unit length.Throws for invalid inputs or if the error bound cannot be met.
+Finds the minimum Euclidean distance between two filled disks in 3D.
+Overlapping disks have zero distance. Normals need not have unit length.
+Throws for invalid inputs or if the error bound cannot be met.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6806,7 +6946,8 @@ Finds the minimum Euclidean distance between two filled disks in 3D.Overlapping
 
 ##### `pointLineDistance(P, A, i)`
 
-Returns the shortest distance from point P to the line defined by (A, i)and the closest point (P1) on that line.
+Returns the shortest distance from point P to the line defined by (A, i)
+and the closest point (P1) on that line.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6814,11 +6955,16 @@ Returns the shortest distance from point P to the line defined by (A, i)and the
 | `A` | `Array.<number>` | a point on the line |
 | `i` | `Array.<number>` | a unit direction vector of the line |
 
-**Returns:** `Object` d   - shortest distance  P1  - point on the line with the smallest distance to P
+**Returns:** `Object` d   - shortest distance
+P1  - point on the line with the smallest distance to P
 
 ##### `pointSegmentDistance(p, a, b)`
 
-Computes the shortest distance from a point to a line segment in 2D.The point and segment endpoints are expected as objects with numericproperties {x, y}. The result is the Euclidean distance to the closestpoint on the segment.
+Computes the shortest distance from a point to a line segment in 2D.
+
+The point and segment endpoints are expected as objects with numeric
+properties {x, y}. The result is the Euclidean distance to the closest
+point on the segment.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6830,7 +6976,8 @@ Computes the shortest distance from a point to a line segment in 2D.The point 
 
 ##### `lineCircleIntersection(P, i, O, r)`
 
-Returns the intersection points of a circle (center O, radius r)in a plane with a line passing through point P with direction i.
+Returns the intersection points of a circle (center O, radius r)
+in a plane with a line passing through point P with direction i.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6839,11 +6986,14 @@ Returns the intersection points of a circle (center O, radius r)in a plane with
 | `O` | `Array.<number>` | center of the circle |
 | `r` | `number` | circle radius |
 
-**Returns:** `Object` flag = 0 -> intersection (two points)  flag = 1 -> tangent (one point)  flag = 2 -> no intersection
+**Returns:** `Object` flag = 0 -> intersection (two points)
+flag = 1 -> tangent (one point)
+flag = 2 -> no intersection
 
 ##### `planesIntersection(P1, n1, P2, n2)`
 
-Returns the line (point P, direction i) that is the intersectionof two planes, or indicates if they are the same or parallel.
+Returns the line (point P, direction i) that is the intersection
+of two planes, or indicates if they are the same or parallel.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6852,11 +7002,14 @@ Returns the line (point P, direction i) that is the intersectionof two planes, 
 | `P2` | `Array.<number>` | a point in plane 2 |
 | `n2` | `Array.<number>` | normal to plane 2 |
 
-**Returns:** `Object` flag = 0 -> planes intersect  flag = 1 -> planes are the same  flag = 2 -> planes are parallel (no intersection)
+**Returns:** `Object` flag = 0 -> planes intersect
+flag = 1 -> planes are the same
+flag = 2 -> planes are parallel (no intersection)
 
 ##### `isPointOnLine(P, A, B)`
 
-Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 otherwise.
+Checks if point P lies on the line segment A-B.
+Returns 1 if on segment, 0 otherwise.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6868,7 +7021,8 @@ Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 other
 
 ##### `linesOverlap(P1, P2, P3, P4)`
 
-Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,or indicates no overlap.
+Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,
+or indicates no overlap.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -6888,7 +7042,9 @@ Finds the minimal 3D distance between all pairs of points in two arrays.
 | `P1i` | `Array.<Array.<number>>` | Array of 3D points (e.g. [[x1, y1, z1], [x2, y2, z2], ...]). |
 | `P2i` | `Array.<Array.<number>>` | Another array of 3D points. |
 
-**Returns:** `Object` L  - The minimal distance found.  P1 - The point in P1i corresponding to the minimal distance.  P2 - The point in P2i corresponding to the minimal distance.
+**Returns:** `Object` L  - The minimal distance found.
+P1 - The point in P1i corresponding to the minimal distance.
+P2 - The point in P2i corresponding to the minimal distance.
 
 ##### `triangle(p1, p2, p3)`
 
@@ -7165,7 +7321,9 @@ Simulate the time response of a discrete-time linear system.
 | `u` | `Array.<number>` | Input signal array. |
 | `t` | `Array.<number>` | Time vector array. |
 
-**Returns:** `object` An object containing the response:                  - y: Output signal array.                  - t: Time vector array (same as input).
+**Returns:** `object` An object containing the response:
+- y: Output signal array.
+- t: Time vector array (same as input).
 
 ##### `step(sys, Tfinal)`
 
@@ -7203,9 +7361,11 @@ Minimizes an unconstrained function using a coordinate descent-like Powell algor
 | --- | --- | --- |
 | `fnc` | `function` | Function to be minimized. Accepts an array of size N and returns a scalar. |
 | `x0` | `Array` | Initial guess for the parameters as an array of size N. |
-| `options` | `Object` | Optional parameters:  - eps: Convergence threshold (default: 1e-6)  - alpha: Initial step size scaling factor (default: 0.001)  - stepSize: Finite difference step size for gradient estimation (default: 1e-6)  - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000) Optional. |
+| `options` | `Object` | Optional parameters: - eps: Convergence threshold (default: 1e-6) - alpha: Initial step size scaling factor (default: 0.001) - stepSize: Finite difference step size for gradient estimation (default: 1e-6) - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000) Optional. |
 
-**Returns:** `Object` An object with two fields:  - argument: The parameter array that minimizes the function.  - fncvalue: The function value at the minimized parameters.
+**Returns:** `Object` An object with two fields:
+- argument: The parameter array that minimizes the function.
+- fncvalue: The function value at the minimized parameters.
 
 ##### `optimNelderMead(f, x0, [parameters], [parameters.maxIterations], [parameters.nonZeroDelta], [parameters.zeroDelta], [parameters.minErrorDelta], [parameters.minTolerance], [parameters.rho], [parameters.chi], [parameters.psi], [parameters.sigma], [parameters.history])`
 
@@ -7227,7 +7387,9 @@ Performs optimization using the Nelder-Mead algorithm.
 | `parameters.sigma` | `number` | Reduction coefficient. Optional. Default: `0.5`. |
 | `parameters.history` | `Array.<Object>` | Optional array to store the history of simplex states for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.
+**Returns:** `Object` An object containing:
+- `fx`: The minimum function value found.
+- `x`: The parameters corresponding to the minimum function value.
 
 ##### `optimConjugateGradient(f, initial, [params], [params.maxIterations], [params.history])`
 
@@ -7241,7 +7403,10 @@ Performs optimization using the Conjugate Gradient method.
 | `params.maxIterations` | `number` | Maximum number of iterations to perform. Optional. Default: `initial.length * 20`. |
 | `params.history` | `Array.<Object>` | Optional array to store the history of optimization steps for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.  - `fxprime`: The gradient of the function at the minimum.
+**Returns:** `Object` An object containing:
+- `fx`: The minimum function value found.
+- `x`: The parameters corresponding to the minimum function value.
+- `fxprime`: The gradient of the function at the minimum.
 
 ##### `optimGradientDescent(f, initial, [params], [params.maxIterations], [params.learnRate], [params.history])`
 
@@ -7256,7 +7421,10 @@ Performs optimization using the Gradient Descent method.
 | `params.learnRate` | `number` | Learning rate or step size for each iteration. Optional. Default: `0.001`. |
 | `params.history` | `Array.<Object>` | Optional array to store the history of optimization steps for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.  - `fxprime`: The gradient of the function at the minimum.
+**Returns:** `Object` An object containing:
+- `fx`: The minimum function value found.
+- `x`: The parameters corresponding to the minimum function value.
+- `fxprime`: The gradient of the function at the minimum.
 
 ##### `optimGradientDescentLineSearch(f, initial, [params], [params.maxIterations], [params.learnRate], [params.c1], [params.c2], [params.history])`
 
@@ -7273,7 +7441,10 @@ Performs optimization using the Gradient Descent method with Wolfe Line Search.
 | `params.c2` | `number` | Parameter for the curvature condition in Wolfe Line Search. Optional. Default: `0.1`. |
 | `params.history` | `Array.<Object>` | Optional array to store the history of optimization steps for analysis, including line search details. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.  - `fxprime`: The gradient of the function at the minimum.
+**Returns:** `Object` An object containing:
+- `fx`: The minimum function value found.
+- `x`: The parameters corresponding to the minimum function value.
+- `fxprime`: The gradient of the function at the minimum.
 
 ##### `optimBisect(f, a, b, [parameters], [parameters.maxIterations], [parameters.tolerance])`
 
@@ -7310,7 +7481,9 @@ Performs search using the Nelder-Mead algorithm.
 | `parameters.sigma` | `number` | Reduction coefficient. Optional. Default: `0.5`. |
 | `parameters.history` | `Array.<Object>` | Optional array to store the history of simplex states for analysis. Optional. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The parameters corresponding to the minimum function value.
+**Returns:** `Object` An object containing:
+- `fx`: The minimum function value found.
+- `x`: The parameters corresponding to the minimum function value.
 
 ##### `fminbnd(func, a, b, [tol])`
 
@@ -7323,7 +7496,9 @@ Finds the minimum of a univariate function within a specified interval using a b
 | `b` | `number` | The upper bound of the interval. |
 | `tol` | `number` | The tolerance for convergence (optional). Optional. Default: `1e-5`. |
 
-**Returns:** `Object` An object containing:  - `fx`: The minimum function value found.  - `x`: The x-value where the function attains its minimum within [a, b].
+**Returns:** `Object` An object containing:
+- `fx`: The minimum function value found.
+- `x`: The x-value where the function attains its minimum within [a, b].
 
 ##### `rcmiga(problem, opts)`
 
@@ -7338,7 +7513,11 @@ Creates an instance of PRDC_JSLAB_LIB_OPTIM_RCMIGA.
 
 ##### `openPresentation(file_path, type)`
 
-Opens an existing presentation in a new window and returns its context.In the opened presentation, press Ctrl+S to toggle the slide controls.Press F9 to toggle the stopwatch overlay.When the stopwatch is visible, right-click it for Start, Stop, and Reset,drag it to move it, and drag any corner to resize it.
+Opens an existing presentation in a new window and returns its context.
+In the opened presentation, press Ctrl+S to toggle the slide controls.
+Press F9 to toggle the stopwatch overlay.
+When the stopwatch is visible, right-click it for Start, Stop, and Reset,
+drag it to move it, and drag any corner to resize it.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -7349,7 +7528,9 @@ Opens an existing presentation in a new window and returns its context.In the o
 
 ##### `editPresentation(file_path, type)`
 
-Opens the presentation editor for the specified project and returns its context.The preview uses the same runtime controls as openPresentation,including Ctrl+S for slide controls and F9 for the stopwatch.
+Opens the presentation editor for the specified project and returns its context.
+The preview uses the same runtime controls as openPresentation,
+including Ctrl+S for slide controls and F9 for the stopwatch.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -7423,6 +7604,31 @@ Plots beam diagrams.
 **Returns:** `Promise.<{extrems: Array.<String>, context: Object}>`
 
 #### gui
+
+##### `animationControls(fid, options, options.time, options.onFrame, [options.play], [options.loop], [options.speed], [options.speeds], [options.index], [options.interval_ms], [options.position], [options.formatTime], [options.parent], [options.width], [options.unit], [options.onError])`
+
+Adds reusable animation controls to an existing figure and renders its first sample.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `fid` | `number` | Figure identifier returned by plot().fid or figure(). |
+| `options` | `Object` | Playback configuration. |
+| `options.time` | `Array.<number>` | Ordered sample timestamps in seconds. |
+| `options.onFrame` | `function` | Callback receiving index, timestamp and controller; may return a Promise. |
+| `options.play` | `boolean` | Start playing immediately. Optional. Default: `false`. |
+| `options.loop` | `boolean` | Repeat after the final timestamp. Optional. Default: `false`. |
+| `options.speed` | `number` | Positive playback speed multiplier. Optional. Default: `1`. |
+| `options.speeds` | `Array.<number>` | Speed choices displayed by the control. Optional. |
+| `options.index` | `number` | Initial zero-based sample index. Optional. Default: `0`. |
+| `options.interval_ms` | `number` | Minimum interval between frame requests. Optional. Default: `16`. |
+| `options.position` | `string` | Control placement: bottom, top or inline. Optional. Default: `'bottom'`. |
+| `options.formatTime` | `function` | Callback formatting the displayed timestamp. Optional. |
+| `options.parent` | `string \| HTMLElement` | Container selector or element in the figure document. Optional. |
+| `options.width` | `number \| string` | Control width in pixels or CSS units. Optional. |
+| `options.unit` | `string` | Unit shown by the default timestamp formatter. Optional. Default: `'s'`. |
+| `options.onError` | `function` | Callback for frame rendering errors. Optional. |
+
+**Returns:** `Promise.<Object>` Controller with play(), pause(), seek(index), setSpeed(speed), setLoop(loop) and dispose().
 
 ##### `isVisible(el)`
 
@@ -8599,6 +8805,258 @@ JSON representation.
 
 **Returns:** `Object`
 
+##### `width()`
+
+Gets table width (number of variables).
+
+**Returns:** `number`
+
+##### `size([dim])`
+
+Gets size tuple [height, width] or one dimension.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `dim` | `number` | Dimension index (0 or 1). Optional. |
+
+**Returns:** `Array.<number> | number`
+
+##### `hasVariable(name)`
+
+Checks whether variable name exists.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Variable name. |
+
+**Returns:** `boolean`
+
+##### `getVariable(name)`
+
+Gets variable column.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Variable name. |
+
+**Returns:** `Array`
+
+##### `setVariable(name, values)`
+
+Sets or creates a variable column.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Variable name. |
+| `values` | `*` | Column values. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `selectvars(names)`
+
+Returns selected variables as a new table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `names` | `Array \| string` | Variable names. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `removevars(names)`
+
+Removes variables and returns a new table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `names` | `Array \| string` | Variable names to remove. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `renamevars(old_names, new_names)`
+
+Renames variables and returns a new table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `old_names` | `Array \| string` | Existing variable names. |
+| `new_names` | `Array \| string` | New variable names. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `addvars(args)`
+
+Appends variables and returns a new table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `args` | `*` | Variables and optional { NewVariableNames: [] }. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `rows(row_selector)`
+
+Alias for subsetRows.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `row_selector` | `number \| Array \| TypedArray \| function` | Row selector. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `head([n])`
+
+Returns first N rows.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `n` | `number` | Rows count. Optional. Default: `8`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `tail([n])`
+
+Returns last N rows.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `n` | `number` | Rows count. Optional. Default: `8`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `filter(predicate)`
+
+Filters rows using predicate.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `predicate` | `function` | Row predicate. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `innerjoin(right, [options])`
+
+Inner join with another table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `right` | `PRDC_JSLAB_TABLE` | Right table. |
+| `options` | `Object` | Join options. Optional. Default: `{}`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `outerjoin(right, [options])`
+
+Outer join with another table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `right` | `PRDC_JSLAB_TABLE` | Right table. |
+| `options` | `Object` | Join options. Optional. Default: `{}`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `join(right, [options])`
+
+Alias for inner join.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `right` | `PRDC_JSLAB_TABLE` | Right table. |
+| `options` | `Object` | Join options. Optional. Default: `{}`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `groupsummary(groupvars, [method], [datavars])`
+
+Group summary for this table.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `groupvars` | `Array \| string` | Grouping variables. |
+| `method` | `Array \| string` | Aggregation method(s). Optional. Default: `'mean'`. |
+| `datavars` | `Array \| string` | Data variable names. Optional. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `varfun(fun, [options])`
+
+Applies a function to table variables.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `fun` | `function \| string` | Function or aggregate name. |
+| `options` | `Object` | varfun options. Optional. Default: `{}`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `ismissing()`
+
+Missing-value mask table.
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `fillmissing([method], [fill_value])`
+
+Filled table copy.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `method` | `string` | Fill method. Optional. Default: `'constant'`. |
+| `fill_value` | `*` | Fill value. Optional. Default: `null`. |
+
+**Returns:** `PRDC_JSLAB_TABLE`
+
+##### `variableTypes([max_scan_rows])`
+
+Returns inferred variable types.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `max_scan_rows` | `number` | Max rows to inspect per variable. Optional. Default: `200`. |
+
+**Returns:** `Object.<string, string>`
+
+##### `toArray()`
+
+Converts table to 2D array.
+
+**Returns:** `Array.<Array>`
+
+##### `toColumns()`
+
+Returns plain object with cloned columns.
+
+**Returns:** `Object.<string, Array>`
+
+##### `summary()`
+
+Returns summary object.
+
+**Returns:** `Object`
+
+##### `getCell(row_index, column_name)`
+
+Gets cell value.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `row_index` | `number` | Row index. |
+| `column_name` | `string \| number` | Column name or index. |
+
+**Returns:** `*`
+
+##### `toSafeJSON()`
+
+Safe JSON representation.
+
+**Returns:** `Object`
+
+##### `toPrettyString()`
+
+Pretty string representation.
+
+**Returns:** `string`
+
 #### Window
 
 ##### `open(file)`
@@ -9016,7 +9474,8 @@ Removes the plot from the figure, cleaning up any resources associated with it.
 
 ##### `start(exe, options)`
 
-Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.Attempts to start FreeCAD if it's not running and connects to its TCP server.
+Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.
+Attempts to start FreeCAD if it's not running and connects to its TCP server.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9025,11 +9484,13 @@ Starts the FreeCAD application and establishes a TCP connection for remote proce
 
 ##### `findServer()`
 
-Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.Checks if the TCP server is reachable by sending a 'PING' command.
+Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.
+Checks if the TCP server is reachable by sending a 'PING' command.
 
 ##### `send(message, timeout)`
 
-Sends a message to the FreeCAD TCP server and waits for a response.Manages the TCP communication by ensuring message integrity and handling timeouts.
+Sends a message to the FreeCAD TCP server and waits for a response.
+Manages the TCP communication by ensuring message integrity and handling timeouts.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9040,7 +9501,8 @@ Sends a message to the FreeCAD TCP server and waits for a response.Manages the 
 
 ##### `inputParser(message)`
 
-Parses the input from FreeCAD responses to identify errors and data.Splits the message by '|' and checks for error or data messages.
+Parses the input from FreeCAD responses to identify errors and data.
+Splits the message by '|' and checks for error or data messages.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9050,7 +9512,8 @@ Parses the input from FreeCAD responses to identify errors and data.Splits the 
 
 ##### `showMessage(message)`
 
-Displays a message from FreeCAD in the JSLAB interface.Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
+Displays a message from FreeCAD in the JSLAB interface.
+Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9058,11 +9521,13 @@ Displays a message from FreeCAD in the JSLAB interface.Parses and displays mess
 
 ##### `quit()`
 
-Closes the FreeCAD application gracefully.Sends a quit command and handles the termination of the TCP connection.
+Closes the FreeCAD application gracefully.
+Sends a quit command and handles the termination of the TCP connection.
 
 ##### `open(filePath, timeout)`
 
-Opens a specified file in FreeCAD.Sends a command to open a file and handles responses to confirm file access.
+Opens a specified file in FreeCAD.
+Sends a command to open a file and handles responses to confirm file access.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9071,7 +9536,8 @@ Opens a specified file in FreeCAD.Sends a command to open a file and handles re
 
 ##### `importFile(filePath, timeout)`
 
-Imports a file into the current FreeCAD document.Sends an import command and handles responses to confirm the import operation.
+Imports a file into the current FreeCAD document.
+Sends an import command and handles responses to confirm the import operation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9080,7 +9546,8 @@ Imports a file into the current FreeCAD document.Sends an import command and ha
 
 ##### `newDocument(filename, timeout)`
 
-Creates a new document in FreeCAD, optionally specifying a filename.Sends a command to create a new document and handles the document creation response.
+Creates a new document in FreeCAD, optionally specifying a filename.
+Sends a command to create a new document and handles the document creation response.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9089,7 +9556,8 @@ Creates a new document in FreeCAD, optionally specifying a filename.Sends a com
 
 ##### `save(timeout)`
 
-Saves the current document in FreeCAD.Sends a save command and handles responses to confirm the save operation.
+Saves the current document in FreeCAD.
+Sends a save command and handles responses to confirm the save operation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9097,7 +9565,8 @@ Saves the current document in FreeCAD.Sends a save command and handles response
 
 ##### `saveAs(filePath, timeout)`
 
-Saves the current document in FreeCAD under a new filename.Sends a save as command and handles responses to confirm the operation.
+Saves the current document in FreeCAD under a new filename.
+Sends a save as command and handles responses to confirm the operation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9106,7 +9575,8 @@ Saves the current document in FreeCAD under a new filename.Sends a save as comm
 
 ##### `close(timeout)`
 
-Closes the current document in FreeCAD.Sends a close command and handles responses to confirm the document closure.
+Closes the current document in FreeCAD.
+Sends a close command and handles responses to confirm the document closure.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9114,7 +9584,8 @@ Closes the current document in FreeCAD.Sends a close command and handles respon
 
 ##### `evaluate(command, timeout)`
 
-Executes a command in FreeCAD and returns the evaluation result.Sends an evaluate command with the specified command string.
+Executes a command in FreeCAD and returns the evaluation result.
+Sends an evaluate command with the specified command string.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9123,7 +9594,8 @@ Executes a command in FreeCAD and returns the evaluation result.Sends an evalua
 
 ##### `callScript(script, param, timeout)`
 
-Runs a script in FreeCAD with optional parameters.Sends a script command along with parameters and handles the script execution response.
+Runs a script in FreeCAD with optional parameters.
+Sends a script command along with parameters and handles the script execution response.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9133,7 +9605,8 @@ Runs a script in FreeCAD with optional parameters.Sends a script command along 
 
 ##### `getArea(timeout)`
 
-Retrieves the area of the selected object in FreeCAD.Sends a measure area command and parses the response to extract the area value.
+Retrieves the area of the selected object in FreeCAD.
+Sends a measure area command and parses the response to extract the area value.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9141,7 +9614,8 @@ Retrieves the area of the selected object in FreeCAD.Sends a measure area comma
 
 ##### `getVolume(timeout)`
 
-Retrieves the volume of the selected object in FreeCAD.Sends a measure volume command and parses the response to extract the volume value.
+Retrieves the volume of the selected object in FreeCAD.
+Sends a measure volume command and parses the response to extract the volume value.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9151,7 +9625,9 @@ Retrieves the volume of the selected object in FreeCAD.Sends a measure volume c
 
 ##### `start(exe)`
 
-Starts the interaction with an external executable by initializing the necessary environment and parameters.Launches the executable with the appropriate command-line arguments for interaction via ZMQ.Waits for a port file to be created to establish the ZMQ communication.
+Starts the interaction with an external executable by initializing the necessary environment and parameters.
+Launches the executable with the appropriate command-line arguments for interaction via ZMQ.
+Waits for a port file to be created to establish the ZMQ communication.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9159,7 +9635,8 @@ Starts the interaction with an external executable by initializing the necessary
 
 ##### `sendExpression(expr)`
 
-Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.Parses the response using a dedicated expression parser.
+Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.
+Parses the response using a dedicated expression parser.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9169,7 +9646,8 @@ Sends an expression to be evaluated by the external executable through the ZMQ c
 
 ##### `ModelicaSystem(filename, modelname, [libraries], [command_line_options])`
 
-Initializes and configures a Modelica system with the specified parameters and libraries.Loads necessary files and prepares the environment for simulation.
+Initializes and configures a Modelica system with the specified parameters and libraries.
+Loads necessary files and prepares the environment for simulation.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9388,7 +9866,8 @@ Creates valid variable names by replacing invalid characters and categorizes the
 
 ##### `parseExpression(args)`
 
-Parses a given expression string into structured data based on predefined formats.Handles various formats including single and nested lists, records, and single elements.
+Parses a given expression string into structured data based on predefined formats.
+Handles various formats including single and nested lists, records, and single elements.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9398,158 +9877,27 @@ Parses a given expression string into structured data based on predefined format
 
 ##### `close()`
 
-Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
+Closes the current session safely by cleaning up resources such as temporary files and network connections.
+Terminates any active processes and removes temporary port files.
 
 #### excel_link
 
-##### `start(visible)`
+##### `format(sheet, column, row, [options])`
 
-Starts Microsoft Excel.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `visible` | `boolean` | Whether the application window is visible. Default: `true`. |
-
-**Returns:** `Promise.<boolean>` True after Excel starts.
-
-##### `visible(visible)`
-
-Changes Microsoft Excel visibility.
+Formats worksheet cells through the selected spreadsheet transport.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `visible` | `boolean` | Whether the application window is visible. |
+| `sheet` | `number` | Worksheet index. |
+| `column` | `number \| Array.<number>` | Column selection. |
+| `row` | `number \| Array.<number>` | Row selection. |
+| `options` | `Object` | Host-specific formatting options. Optional. Default: `{}`. |
 
-##### `close([save])`
-
-Closes the current workbook.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `save` | `boolean` | Whether to save changes before closing. Optional. Default: `true`. |
-
-##### `quit([save])`
-
-Quits Microsoft Excel and closes the link.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `save` | `boolean` | Whether to save changes before quitting. Optional. Default: `true`. |
-
-##### `open(file_path)`
-
-Opens an existing workbook.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `file_path` | `string` | Absolute or workspace-relative workbook path. |
-
-**Returns:** `Promise.<number>` Number of worksheets in the workbook.
-
-##### `new()`
-
-Creates a new workbook.
-
-**Returns:** `Promise.<number>` Number of worksheets in the new workbook.
-
-##### `addSheet(name)`
-
-Adds a worksheet and returns its one-based index.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `name` | `string` | Worksheet name. |
-
-**Returns:** `Promise.<number>` One-based index of the new worksheet.
-
-##### `removeSheet(sheet)`
-
-Removes a worksheet selected by its one-based index.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-
-##### `setSheetName(sheet, name)`
-
-Changes a worksheet name.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-| `name` | `string` | New worksheet name. |
-
-##### `write(sheet, column, row, data)`
-
-Writes data to one or more worksheet cells.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-| `column` | `number \| Array.<number>` | One-based column index or indexes. |
-| `row` | `number \| Array.<number>` | One-based row index or indexes. |
-| `data` | `* \| Array.<*>` | One value, a broadcast value, or one value per cell. |
-
-##### `read(sheet, column, row)`
-
-Reads one or more worksheet cells.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-| `column` | `number \| Array.<number>` | One-based column index or indexes. |
-| `row` | `number \| Array.<number>` | One-based row index or indexes. |
-
-**Returns:** `Promise.<(Object|Array.<Object>)>` Cell value and formula records.
-
-##### `setColumnWidth(sheet, column, width)`
-
-Changes one or more worksheet column widths.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-| `column` | `number \| Array.<number>` | One-based column index or indexes. |
-| `width` | `number \| Array.<number>` | Width value or values. |
-
-##### `setRowHeight(sheet, row, height)`
-
-Changes one or more worksheet row heights.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-| `row` | `number \| Array.<number>` | One-based row index or indexes. |
-| `height` | `number \| Array.<number>` | Height value or values. |
-
-##### `format(sheet, column, row, options)`
-
-Formats one or more worksheet cells.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `sheet` | `number` | One-based worksheet index. |
-| `column` | `number \| Array.<number>` | One-based column index or indexes. |
-| `row` | `number \| Array.<number>` | One-based row index or indexes. |
-| `options` | `Object` | Excel formatting properties. |
-
-##### `save()`
-
-Saves the current workbook.
-
-##### `saveAs(file_path)`
-
-Saves the current workbook to a new file.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `file_path` | `string` | Absolute or workspace-relative workbook path. |
-
-#### calc_link
+**Returns:** `Promise.<boolean>` Whether formatting completed.
 
 ##### `start([visible])`
 
-Starts LibreOffice Calc.
+Starts the spreadsheet application.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9557,7 +9905,7 @@ Starts LibreOffice Calc.
 
 ##### `visible(visible)`
 
-Changes LibreOffice Calc visibility.
+Changes the spreadsheet application visibility.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9573,7 +9921,7 @@ Closes the current spreadsheet.
 
 ##### `quit([save])`
 
-Quits LibreOffice Calc and closes the link.
+Quits the spreadsheet application and closes the link.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -9665,16 +10013,150 @@ Changes one or more row heights in millimetres.
 | `row` | `number \| Array.<number>` | One-based row index or indexes. |
 | `height` | `number \| Array.<number>` | Height value or values in millimetres. |
 
-##### `format(sheet, column, row, options)`
+##### `save()`
 
-Formats one or more spreadsheet cells.
+Saves the current spreadsheet.
+
+##### `saveAs(file_path)`
+
+Saves the current spreadsheet to a new file.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | `string` | Absolute or workspace-relative spreadsheet path. |
+
+#### calc_link
+
+##### `format(sheet, column, row, [options])`
+
+Formats worksheet cells through the selected spreadsheet transport.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | Worksheet index. |
+| `column` | `number \| Array.<number>` | Column selection. |
+| `row` | `number \| Array.<number>` | Row selection. |
+| `options` | `Object` | Host-specific formatting options. Optional. Default: `{}`. |
+
+**Returns:** `Promise.<boolean>` Whether formatting completed.
+
+##### `start([visible])`
+
+Starts the spreadsheet application.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `visible` | `boolean` | Whether the application window is visible. Optional. Default: `true`. |
+
+##### `visible(visible)`
+
+Changes the spreadsheet application visibility.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `visible` | `boolean` | Whether the application window is visible. |
+
+##### `close([save])`
+
+Closes the current spreadsheet.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `save` | `boolean` | Whether to save changes before closing. Optional. Default: `true`. |
+
+##### `quit([save])`
+
+Quits the spreadsheet application and closes the link.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `save` | `boolean` | Whether to save changes before quitting. Optional. Default: `true`. |
+
+##### `open(file_path)`
+
+Opens an existing spreadsheet.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file_path` | `string` | Absolute or workspace-relative spreadsheet path. |
+
+**Returns:** `Promise.<number>` Number of sheets in the spreadsheet.
+
+##### `new()`
+
+Creates a new spreadsheet.
+
+**Returns:** `Promise.<number>` Number of sheets in the new spreadsheet.
+
+##### `addSheet(name)`
+
+Adds a sheet and returns its one-based index.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Sheet name. |
+
+**Returns:** `Promise.<number>` One-based index of the new sheet.
+
+##### `removeSheet(sheet)`
+
+Removes a sheet selected by its one-based index.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+
+##### `setSheetName(sheet, name)`
+
+Changes a sheet name.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `name` | `string` | New sheet name. |
+
+##### `write(sheet, column, row, data)`
+
+Writes data to one or more spreadsheet cells.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
 | `sheet` | `number` | One-based sheet index. |
 | `column` | `number \| Array.<number>` | One-based column index or indexes. |
 | `row` | `number \| Array.<number>` | One-based row index or indexes. |
-| `options` | `Object` | LibreOffice formatting properties. |
+| `data` | `* \| Array.<*>` | One value, a broadcast value, or one value per cell. |
+
+##### `read(sheet, column, row)`
+
+Reads one or more spreadsheet cells.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+
+**Returns:** `Promise.<(Object|Array.<Object>)>` Cell value, string and formula records.
+
+##### `setColumnWidth(sheet, column, width)`
+
+Changes one or more column widths in millimetres.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `column` | `number \| Array.<number>` | One-based column index or indexes. |
+| `width` | `number \| Array.<number>` | Width value or values in millimetres. |
+
+##### `setRowHeight(sheet, row, height)`
+
+Changes one or more row heights in millimetres.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sheet` | `number` | One-based sheet index. |
+| `row` | `number \| Array.<number>` | One-based row index or indexes. |
+| `height` | `number \| Array.<number>` | Height value or values in millimetres. |
 
 ##### `save()`
 
@@ -9689,14 +10171,6 @@ Saves the current spreadsheet to a new file.
 | `file_path` | `string` | Absolute or workspace-relative spreadsheet path. |
 
 #### tcp_client
-
-##### `setOnData(callback)`
-
-Sets the callback function to handle incoming data events.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `callback` | `function` | The function to be called when data is received. |
 
 ##### `setOnError(callback)`
 
@@ -9760,6 +10234,14 @@ Returns the number of bytes available in the buffer.
 
 Closes the TCP connection and cleans up resources.
 
+##### `setOnData(callback)`
+
+Changes incoming delivery from buffering to callback mode.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `callback` | `function` | Incoming data handler. |
+
 #### tcp_server
 
 ##### `setOnData(callback)`
@@ -9815,14 +10297,6 @@ Closes the UDP connection and cleans up resources.
 
 #### udp_server
 
-##### `setOnData(callback)`
-
-Sets the callback function to handle incoming data events.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `callback` | `function` | The function to be called when data is received. |
-
 ##### `read([N])`
 
 Reads a specified number of bytes from the buffer.
@@ -9842,6 +10316,14 @@ Returns the number of bytes available in the buffer.
 ##### `close()`
 
 Closes the UDP server and releases any resources.
+
+##### `setOnData(callback)`
+
+Changes incoming delivery from buffering to callback mode.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `callback` | `function` | Incoming data handler. |
 
 #### video_call
 
@@ -13093,14 +13575,6 @@ Normalizes constraint values to maintain consistent scaling.
 
 #### boundary_follow_2d
 
-##### `resetLogs([keepCache])`
-
-Resets logging and optionally clears the feasibility cache.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `keepCache` | `boolean` |  Optional. Default: `false`. |
-
 ##### `trace(dx, dy, [ambiguous])`
 
 Main entry (2D).
@@ -13113,17 +13587,15 @@ Main entry (2D).
 
 **Returns:** `Object` - Result object (diagnostics + closed flag).
 
-#### boundary_follow_3d
-
 ##### `resetLogs([keepCache])`
 
-Resets logging and optionally clears the feasibility cache.
+Clears evaluation logs and optionally their feasibility cache.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `keepCache` | `boolean` | If true, keeps the feasibility cache; otherwise cache is cleared. Optional. Default: `false`. |
+| `keepCache` | `boolean` | Whether cached evaluations are retained. Optional. Default: `false`. |
 
-**Returns:** `void` No return value.
+#### boundary_follow_3d
 
 ##### `trace(dx, dy, dz)`
 
@@ -13135,7 +13607,25 @@ Main entry (3D).
 | `dy` | `number` | Fine grid spacing in Y (must be >0). |
 | `dz` | `number` | Fine grid spacing in Z (must be >0). |
 
-**Returns:** `Object` Result object:  - dim: 3  - closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise  - touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise  - surfaceCells: number of mixed voxels visited (surface voxel count)  - evalCount: total feasibility evaluations performed  - N: [feasible_points,infeasible_points], each is an array of [x,y,z]  - grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics  - seed: coarse seed edge diagnostics (used steps + endpoints + orientation)  - fineBracket: refined fine flip bracket used to start flood-fill  - startVoxel: voxel indices used as flood-fill start
+**Returns:** `Object` Result object:
+- dim: 3
+- closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
+- touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
+- surfaceCells: number of mixed voxels visited (surface voxel count)
+- evalCount: total feasibility evaluations performed
+- N: [feasible_points,infeasible_points], each is an array of [x,y,z]
+- grid: {dx,dy,dz,nx,ny,nz} fine grid diagnostics
+- seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
+- fineBracket: refined fine flip bracket used to start flood-fill
+- startVoxel: voxel indices used as flood-fill start
+
+##### `resetLogs([keepCache])`
+
+Clears evaluation logs and optionally their feasibility cache.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `keepCache` | `boolean` | Whether cached evaluations are retained. Optional. Default: `false`. |
 
 #### map
 
@@ -13147,7 +13637,8 @@ Opens a window with Leaflet and initializes the map.
 
 ##### `setCenter(lat, lon)`
 
-Sets the center of the map to the specified latitude and longitude.This will update the internal state and move the Leaflet map if it is ready.
+Sets the center of the map to the specified latitude and longitude.
+This will update the internal state and move the Leaflet map if it is ready.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -13156,7 +13647,8 @@ Sets the center of the map to the specified latitude and longitude.This will up
 
 ##### `setZoom(zoom)`
 
-Sets the zoom level of the map.This will update the internal state and adjust the Leaflet map if it is ready.
+Sets the zoom level of the map.
+This will update the internal state and adjust the Leaflet map if it is ready.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -13464,7 +13956,8 @@ Creates a vector from spherical coordinates.
 
 ##### `load()`
 
-Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.Initializes the Python environment for symbolic computations.
+Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
+Initializes the Python environment for symbolic computations.
 
 **Returns:** `Promise.<void>` A promise that resolves when the libraries are loaded.
 

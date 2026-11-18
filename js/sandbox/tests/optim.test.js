@@ -5,55 +5,68 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_OPTIM } = require('../optim');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for optim test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_OPTIM_TEST_HELPER {
 
-function createOptimHarness() {
-  var calls = [];
-  var fmin = {
-    nelderMead: function() {
-      calls.push(['nelderMead', Array.from(arguments)]);
-      return { method: 'nelderMead', args: Array.from(arguments) };
-    },
-    conjugateGradient: function() {
-      calls.push(['conjugateGradient', Array.from(arguments)]);
-      return { method: 'conjugateGradient', args: Array.from(arguments) };
-    },
-    gradientDescent: function() {
-      calls.push(['gradientDescent', Array.from(arguments)]);
-      return { method: 'gradientDescent', args: Array.from(arguments) };
-    },
-    gradientDescentLineSearch: function() {
-      calls.push(['gradientDescentLineSearch', Array.from(arguments)]);
-      return { method: 'gradientDescentLineSearch', args: Array.from(arguments) };
-    },
-    bisect: function() {
-      calls.push(['bisect', Array.from(arguments)]);
-      return { method: 'bisect', args: Array.from(arguments) };
-    }
-  };
-
-  var jsl = {
-    inter: {
-      array: {
-        shuffleIndices: function(arr) {
-          return arr.map(function(_value, i) { return i; });
-        }
+  /**
+   * Creates optim harness.
+   */
+  static createOptimHarness() {
+    var calls = [];
+    var fmin = {
+      nelderMead: function() {
+        calls.push(['nelderMead', Array.from(arguments)]);
+        return { method: 'nelderMead', args: Array.from(arguments) };
       },
-      env: {
-        fmin: fmin,
-        disp: function() {}
+      conjugateGradient: function() {
+        calls.push(['conjugateGradient', Array.from(arguments)]);
+        return { method: 'conjugateGradient', args: Array.from(arguments) };
+      },
+      gradientDescent: function() {
+        calls.push(['gradientDescent', Array.from(arguments)]);
+        return { method: 'gradientDescent', args: Array.from(arguments) };
+      },
+      gradientDescentLineSearch: function() {
+        calls.push(['gradientDescentLineSearch', Array.from(arguments)]);
+        return { method: 'gradientDescentLineSearch', args: Array.from(arguments) };
+      },
+      bisect: function() {
+        calls.push(['bisect', Array.from(arguments)]);
+        return { method: 'bisect', args: Array.from(arguments) };
       }
-    }
-  };
+    };
 
-  var optim = new PRDC_JSLAB_LIB_OPTIM(jsl);
-  return { optim, calls };
+    var jsl = {
+      inter: {
+        array: {
+          shuffleIndices: function(arr) {
+            return arr.map(function(_value, i) {
+              return i;
+            });
+          }
+        },
+        env: {
+          fmin: fmin,
+          disp: function() {}
+        }
+      }
+    };
+
+    var optim = new PRDC_JSLAB_LIB_OPTIM(jsl);
+    return { optim, calls };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_OPTIM } = require('../optim');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('optimPowell reduces value of a smooth convex objective', function(assert) {
-  var harness = createOptimHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_OPTIM_TEST_HELPER.createOptimHarness();
   var objective = function(x) {
     return Math.pow(x[0] - 3, 2) + Math.pow(x[1] + 2, 2);
   };
@@ -74,7 +87,7 @@ tests.add('optimPowell reduces value of a smooth convex objective', function(ass
 }, { tags: ['unit', 'optim'] });
 
 tests.add('fminbnd locates minimum in 1D interval', function(assert) {
-  var harness = createOptimHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_OPTIM_TEST_HELPER.createOptimHarness();
   var result = harness.optim.fminbnd(function(x) {
     return Math.pow(x - 2, 2) + 1;
   }, -4, 6, 1e-6);
@@ -84,8 +97,10 @@ tests.add('fminbnd locates minimum in 1D interval', function(assert) {
 }, { tags: ['unit', 'optim'] });
 
 tests.add('fmin wrappers forward to underlying fmin implementations', function(assert) {
-  var harness = createOptimHarness();
-  var sample_fn = function() { return 0; };
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_OPTIM_TEST_HELPER.createOptimHarness();
+  var sample_fn = function() {
+    return 0;
+  };
   var sample_x = [1, 2];
 
   assert.equal(harness.optim.optimNelderMead(sample_fn, sample_x).method, 'nelderMead');

@@ -5,93 +5,111 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_OVERRIDE } = require('../jslab-override');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for jslab override test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER {
 
-function removeElementByValue(arr, value) {
-  var index = arr.indexOf(value);
-  if(index >= 0) {
-    arr.splice(index, 1);
+  /**
+   * Removes element by value.
+   * @param {*} arr Arr.
+   * @param {*} value Value.
+   */
+  static removeElementByValue(arr, value) {
+    var index = arr.indexOf(value);
+    if(index >= 0) {
+      arr.splice(index, 1);
+    }
+  }
+
+  /**
+   * Creates override harness.
+   */
+  static createOverrideHarness() {
+    var captured = {
+      raf_callback: null,
+      idle_callback: null,
+      interval_clear_id: null,
+      timeout_clear_id: null,
+      immediate_clear_id: null,
+      cancel_raf_id: null,
+      cancel_idle_id: null
+    };
+    var stats_change_count = 0;
+
+    var jsl = {
+      started_animation_frames: [],
+      started_idle_callbacks: [],
+      started_intervals: [],
+      started_timeouts: [],
+      started_immediates: [],
+      inter: {
+        array: {
+          removeElementByValue: PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.removeElementByValue
+        }
+      },
+      onStatsChange: function() {
+        stats_change_count += 1;
+      },
+      _requestAnimationFrame: function(callback) {
+        captured.raf_callback = callback;
+        return 11;
+      },
+      _cancelAnimationFrame: function(request_id) {
+        captured.cancel_raf_id = request_id;
+      },
+      _requestIdleCallback: function(callback, options) {
+        captured.idle_options = options;
+        captured.idle_callback = callback;
+        return 12;
+      },
+      _cancelIdleCallback: function(request_id) {
+        captured.cancel_idle_id = request_id;
+      },
+      _setInterval: function() {
+        return 13;
+      },
+      _clearInterval: function(request_id) {
+        captured.interval_clear_id = request_id;
+      },
+      _setTimeout: function(callback) {
+        captured.timeout_callback = callback;
+        return 14;
+      },
+      _clearTimeout: function(request_id) {
+        captured.timeout_clear_id = request_id;
+      },
+      _setImmediate: function(callback) {
+        captured.immediate_callback = callback;
+        return 15;
+      },
+      _clearImmediate: function(request_id) {
+        captured.immediate_clear_id = request_id;
+      }
+    };
+
+    var override = Object.create(PRDC_JSLAB_OVERRIDE.prototype);
+    override.jsl = jsl;
+
+    return {
+      override,
+      jsl,
+      captured,
+      stats_change_count_ref: function() {
+        return stats_change_count;
+      }
+    };
   }
 }
 
-function createOverrideHarness() {
-  var captured = {
-    raf_callback: null,
-    idle_callback: null,
-    interval_clear_id: null,
-    timeout_clear_id: null,
-    immediate_clear_id: null,
-    cancel_raf_id: null,
-    cancel_idle_id: null
-  };
-  var stats_change_count = 0;
 
-  var jsl = {
-    started_animation_frames: [],
-    started_idle_callbacks: [],
-    started_intervals: [],
-    started_timeouts: [],
-    started_immediates: [],
-    inter: {
-      array: {
-        removeElementByValue: removeElementByValue
-      }
-    },
-    onStatsChange: function() {
-      stats_change_count += 1;
-    },
-    _requestAnimationFrame: function(callback) {
-      captured.raf_callback = callback;
-      return 11;
-    },
-    _cancelAnimationFrame: function(request_id) {
-      captured.cancel_raf_id = request_id;
-    },
-    _requestIdleCallback: function(callback, options) {
-      captured.idle_options = options;
-      captured.idle_callback = callback;
-      return 12;
-    },
-    _cancelIdleCallback: function(request_id) {
-      captured.cancel_idle_id = request_id;
-    },
-    _setInterval: function() {
-      return 13;
-    },
-    _clearInterval: function(request_id) {
-      captured.interval_clear_id = request_id;
-    },
-    _setTimeout: function(callback) {
-      captured.timeout_callback = callback;
-      return 14;
-    },
-    _clearTimeout: function(request_id) {
-      captured.timeout_clear_id = request_id;
-    },
-    _setImmediate: function(callback) {
-      captured.immediate_callback = callback;
-      return 15;
-    },
-    _clearImmediate: function(request_id) {
-      captured.immediate_clear_id = request_id;
-    }
-  };
+const { PRDC_JSLAB_OVERRIDE } = require('../jslab-override');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
 
-  var override = Object.create(PRDC_JSLAB_OVERRIDE.prototype);
-  override.jsl = jsl;
-
-  return {
-    override,
-    jsl,
-    captured,
-    stats_change_count_ref: function() { return stats_change_count; }
-  };
-}
 
 tests.add('requestAnimationFrame registers, executes and clears request id', function(assert) {
-  var harness = createOverrideHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.createOverrideHarness();
   var called = false;
   var request_id = harness.override.requestAnimationFrame(function() {
     called = true;
@@ -105,7 +123,7 @@ tests.add('requestAnimationFrame registers, executes and clears request id', fun
 }, { tags: ['unit', 'override'] });
 
 tests.add('cancelAnimationFrame delegates cancellation and removes tracking', function(assert) {
-  var harness = createOverrideHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.createOverrideHarness();
   harness.jsl.started_animation_frames = [11, 99];
   harness.override.cancelAnimationFrame(11);
 
@@ -114,7 +132,7 @@ tests.add('cancelAnimationFrame delegates cancellation and removes tracking', fu
 }, { tags: ['unit', 'override'] });
 
 tests.add('requestIdleCallback and cancelIdleCallback manage idle queue', function(assert) {
-  var harness = createOverrideHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.createOverrideHarness();
   var seen = null;
   var request_id = harness.override.requestIdleCallback(function(options) {
     seen = options;
@@ -122,7 +140,9 @@ tests.add('requestIdleCallback and cancelIdleCallback manage idle queue', functi
 
   assert.equal(request_id, 12);
   assert.deepEqual(harness.jsl.started_idle_callbacks, [12]);
-  const deadline = { timeRemaining: function() { return 5; } };
+  const deadline = { timeRemaining: function() {
+    return 5;
+  } };
   harness.captured.idle_callback(deadline);
   assert.equal(seen, deadline);
   assert.deepEqual(harness.captured.idle_options, { timeout: 5 });
@@ -135,7 +155,7 @@ tests.add('requestIdleCallback and cancelIdleCallback manage idle queue', functi
 }, { tags: ['unit', 'override'] });
 
 tests.add('setInterval and clearInterval track interval ids', function(assert) {
-  var harness = createOverrideHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.createOverrideHarness();
   var request_id = harness.override.setInterval(function() {}, 100);
   assert.equal(request_id, 13);
   assert.deepEqual(harness.jsl.started_intervals, [13]);
@@ -146,7 +166,7 @@ tests.add('setInterval and clearInterval track interval ids', function(assert) {
 }, { tags: ['unit', 'override'] });
 
 tests.add('setTimeout executes callback with args and clears tracking', function(assert) {
-  var harness = createOverrideHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.createOverrideHarness();
   var observed = null;
   var request_id = harness.override.setTimeout(function(a, b) {
     observed = [a, b];
@@ -165,7 +185,7 @@ tests.add('setTimeout executes callback with args and clears tracking', function
 }, { tags: ['unit', 'override'] });
 
 tests.add('setImmediate executes callback and clearImmediate removes tracking', function(assert) {
-  var harness = createOverrideHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_OVERRIDE_TEST_HELPER.createOverrideHarness();
   var calls = 0;
   var request_id = harness.override.setImmediate(function() {
     calls += 1;

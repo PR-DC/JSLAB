@@ -5,12 +5,15 @@
  * info@pr-dc.com
  */
 const path = require('path');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-const { guiTest, sent } = require('../../dev/gui-test-utils');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+const { guiTest, sent } = require('../../dev/component-test-utils');
 const { root } = require('../../dev/gui-test-fixture');
 var tests = new PRDC_JSLAB_TESTS();
 // These scenarios require their isolated GUI runner; ordinary module tests stay headless.
-if(!globalThis.__JSLAB_GUI_COMPONENT__) { exports.MODULE_TESTS = tests; return; }
+if(!globalThis.__JSLAB_GUI_COMPONENT__) {
+  exports.MODULE_TESTS = tests;
+  return;
+}
 
 guiTest(tests, 'main', 'workspace search filters names, types and values and Escape restores rows', ['#workspace-search'], function(assert, f, c) {
   c.workspace.setWorkspace([['alpha', 'number', '42'], ['beta', 'string', 'sample']]);
@@ -19,7 +22,8 @@ guiTest(tests, 'main', 'workspace search filters names, types and values and Esc
   assert.equal(f.query('#workspace .row').getAttribute('variable'), 'alpha');
   f.input('#workspace-search', 'sample');
   assert.equal(f.query('#workspace .row').getAttribute('variable'), 'beta');
-  f.input('#workspace-search', 'missing'); assert.equal(f.document.querySelectorAll('#workspace .row').length, 0);
+  f.input('#workspace-search', 'missing');
+  assert.equal(f.document.querySelectorAll('#workspace .row').length, 0);
   f.key('#workspace-search', 'Escape');
   assert.equal(f.document.querySelectorAll('#workspace .row').length, 2);
   assert.equal(f.query('#workspace-search').value, '');
@@ -27,13 +31,15 @@ guiTest(tests, 'main', 'workspace search filters names, types and values and Esc
 
 guiTest(tests, 'main', 'workspace single click fills input and double click evaluates the variable', [], function(assert, f, c) {
   c.workspace.setWorkspace([['alpha', 'number', '42']]);
-  var row = f.query('#workspace .row'); row.click();
+  var row = f.query('#workspace .row');
+  row.click();
   assert.equal(c.command_window.code_input.getValue(), 'alpha');
   f.mouse(row, 'dblclick', 10, 10);
   assert.equal(sent(assert, f, 'SandboxWindow', 'eval-code')[0], 'alpha');
 });
 guiTest(tests, 'main', 'workspace clear requests workspace clearing', ['#workspace-options .clear'], function(assert, f) {
-  f.click('#workspace-options .clear'); assert.equal(sent(assert, f, 'SandboxWindow', 'eval-code')[0], 'clear');
+  f.click('#workspace-options .clear');
+  assert.equal(sent(assert, f, 'SandboxWindow', 'eval-code')[0], 'clear');
 });
 guiTest(tests, 'main', 'workspace inspect preserves command input and dismisses the context menu', ['#workspace-context-inspect'], function(assert, f, c) {
   c.workspace.setWorkspace([['alpha', 'number', '42']]);
@@ -112,13 +118,17 @@ guiTest(tests, 'main', 'console preview clears immediately and ignores a late re
   var release;
   f.window.ipcRenderer.invoke = function(channel) {
     if(channel === 'get-console-preview') {
-      return new Promise(function(resolve) { release = resolve; });
+      return new Promise(function(resolve) {
+        release = resolve;
+      });
     }
     return original.apply(this, arguments);
   };
   try {
     c.command_window.code_input.setValue('1 + 2');
-    await new Promise(function(resolve) { setTimeout(resolve, 180); });
+    await new Promise(function(resolve) {
+      setTimeout(resolve, 180);
+    });
     assert.equal(typeof release, 'function');
     c.command_window.code_input.setValue('');
     assert.equal(c.command_window.console_preview.childElementCount, 0);
@@ -141,7 +151,9 @@ guiTest(tests, 'main', 'welcome quick links match the README destinations and or
     'https://github.com/PR-DC/JSLAB/releases',
     'https://github.com/PR-DC/JSLAB/tree/master/examples'
   ];
-  assert.deepEqual(links.map(function(link) { return link.href; }), expected);
+  assert.deepEqual(links.map(function(link) {
+    return link.href;
+  }), expected);
 });
 guiTest(tests, 'main', 'remote console values lazily expand page and evaluate accessors', [], async function(assert, f, c) {
   var property_page = 0;
@@ -165,8 +177,12 @@ guiTest(tests, 'main', 'remote console values lazily expand page and evaluate ac
     if(channel === 'get-console-accessor') {
       return { success: true, value: { type: 'number', description: '7' } };
     }
-    if(channel === 'get-console-preview') return { success: false, reason: '' };
-    if(channel === 'is-console-expression-complete') return true;
+    if(channel === 'get-console-preview') {
+      return { success: false, reason: '' };
+    }
+    if(channel === 'is-console-expression-complete') {
+      return true;
+    }
     return { canceled: true, filePaths: [] };
   };
   c.command_window.highlightAnsMessage([{
@@ -208,23 +224,31 @@ guiTest(tests, 'main', 'Alt-click recursively expands remote console values with
     description: 'Object', preview: { properties: [], overflow: false }
   }, true]);
   f.mouse(f.query('#command-window-messages .jslab-console-toggle'), 'click', 1, 1, { altKey: true });
-  await f.tick(); await f.tick();
+  await f.tick();
+  await f.tick();
   assert.equal(f.document.querySelectorAll('#command-window-messages .jslab-console-value.open').length, 2);
   assert.ok(f.query('#command-window-messages').textContent.includes('42'));
 });
 for(const method of ['escape', 'outside', 'scroll']) {
   guiTest(tests, 'main', 'workspace context menu dismisses on ' + method, [], function(assert, f, c) {
     c.workspace.openContextMenu('alpha', 10, 10);
-    if(method === 'escape') f.key(null, 'Escape');
-    if(method === 'outside') f.document.body.click();
-    if(method === 'scroll') f.query('#workspace').dispatchEvent(new f.window.Event('scroll'));
+    if(method === 'escape') {
+      f.key(null, 'Escape');
+    }
+    if(method === 'outside') {
+      f.document.body.click();
+    }
+    if(method === 'scroll') {
+      f.query('#workspace').dispatchEvent(new f.window.Event('scroll'));
+    }
     assert.equal(f.visible('#workspace-context-menu'), false);
   });
 }
 
 guiTest(tests, 'main', 'history select, execute and clear affect input and persistence', ['#command-history-options .clear'], function(assert, f, c) {
   c.command_history.updateHistory('history_command');
-  var item = f.query('#command-history > div:last-child'); item.click();
+  var item = f.query('#command-history > div:last-child');
+  item.click();
   assert.equal(c.command_window.code_input.getValue(), 'history_command');
   f.mouse(item, 'dblclick', 10, 10);
   assert.equal(sent(assert, f, 'SandboxWindow', 'eval-code')[0], 'history_command');
@@ -236,37 +260,50 @@ guiTest(tests, 'main', 'history select, execute and clear affect input and persi
 
 guiTest(tests, 'main', 'address Enter and blur navigate and select the full address on focus', ['#folder-navigation-container .address-line'], async function(assert, f, c) {
   var selector = '#folder-navigation-container .address-line', input = f.query(selector);
-  f.input(selector, path.join(root, 'js')); f.key(selector, 'Enter');
+  f.input(selector, path.join(root, 'js'));
+  f.key(selector, 'Enter');
   assert.equal(c.folder_navigation.current_path, path.join(root, 'js') + path.sep);
   assert.equal(sent(assert, f, 'SandboxWindow', 'set-current-path'), c.folder_navigation.current_path);
-  f.input(selector, root); f.window.$(input).trigger('blur');
+  f.input(selector, root);
+  f.window.$(input).trigger('blur');
   assert.equal(c.folder_navigation.current_path, root + path.sep);
-  c.command_window.code_input.focus(); input.focus();
+  c.command_window.code_input.focus();
+  input.focus();
   // Hidden Electron windows update activeElement without native OS focus events.
   input.dispatchEvent(new f.window.FocusEvent('focus'));
-  assert.equal(input.selectionStart, 0, 'Address focus: ' + f.document.activeElement.outerHTML.slice(0, 100)); assert.equal(input.selectionEnd, input.value.length);
+  assert.equal(input.selectionStart, 0, 'Address focus: ' + f.document.activeElement.outerHTML.slice(0, 100));
+  assert.equal(input.selectionEnd, input.value.length);
 });
 guiTest(tests, 'main', 'previous, next and parent folder controls navigate history',
   ['#folder-navigation-container .previous-folder', '#folder-navigation-container .next-folder', '#folder-navigation-container .up-folder'], function(assert, f, c) {
     var nav = c.folder_navigation;
-    nav.setPath(path.join(root, 'js')); nav.setPath(path.join(root, 'js', 'main'));
-    f.click('#folder-navigation-container .previous-folder'); assert.equal(nav.current_path, path.join(root, 'js') + path.sep);
-    f.click('#folder-navigation-container .next-folder'); assert.equal(nav.current_path, path.join(root, 'js', 'main') + path.sep);
-    f.click('#folder-navigation-container .up-folder'); assert.equal(nav.current_path, path.join(root, 'js') + path.sep);
+    nav.setPath(path.join(root, 'js'));
+    nav.setPath(path.join(root, 'js', 'main'));
+    f.click('#folder-navigation-container .previous-folder');
+    assert.equal(nav.current_path, path.join(root, 'js') + path.sep);
+    f.click('#folder-navigation-container .next-folder');
+    assert.equal(nav.current_path, path.join(root, 'js', 'main') + path.sep);
+    f.click('#folder-navigation-container .up-folder');
+    assert.equal(nav.current_path, path.join(root, 'js') + path.sep);
   });
 for(const canceled of [false, true]) {
   guiTest(tests, 'main', 'folder picker ' + (canceled ? 'cancel retains location' : 'selection navigates'), ['#folder-navigation-container .open-folder'], async function(assert, f, c) {
     var before = c.folder_navigation.current_path;
     f.setDialogResult({ canceled, filePaths: [path.join(root, 'js')] });
-    f.click('#folder-navigation-container .open-folder'); await f.tick();
+    f.click('#folder-navigation-container .open-folder');
+    await f.tick();
     assert.equal(c.folder_navigation.current_path, canceled ? before : path.join(root, 'js') + path.sep);
   });
 }
 guiTest(tests, 'main', 'save path toggles bookmark and saved list removal persists', ['#save-path'], function(assert, f, c) {
-  f.click('#save-path'); assert.equal(c.folder_navigation.saved_paths.length, 1);
+  f.click('#save-path');
+  assert.equal(c.folder_navigation.saved_paths.length, 1);
   assert.equal(f.query('#save-path').classList.contains('saved'), true);
-  f.click('#save-path'); assert.equal(c.folder_navigation.saved_paths.length, 0);
-  f.click('#save-path'); f.click('#paths-menu'); f.click('#paths-container .remove-path');
+  f.click('#save-path');
+  assert.equal(c.folder_navigation.saved_paths.length, 0);
+  f.click('#save-path');
+  f.click('#paths-menu');
+  f.click('#paths-container .remove-path');
   assert.equal(c.folder_navigation.saved_paths.length, 0);
   c.close();
   assert.equal(f.data.get('saved_paths').length, 0);
@@ -274,31 +311,92 @@ guiTest(tests, 'main', 'save path toggles bookmark and saved list removal persis
 });
 guiTest(tests, 'main', 'saved path row and address breadcrumb navigate to their directory', [], function(assert, f, c) {
   var nav = c.folder_navigation;
-  nav.setPath(path.join(root, 'js')); nav.savePath(nav.current_path);
-  nav.setPath(root); f.click('#paths-menu'); f.click('#paths-container li');
+  nav.setPath(path.join(root, 'js'));
+  nav.savePath(nav.current_path);
+  nav.setPath(root);
+  f.click('#paths-menu');
+  f.click('#paths-container li');
   assert.equal(nav.current_path, path.join(root, 'js') + path.sep);
   assert.equal(f.visible('#paths-container'), false);
   var breadcrumb = f.document.querySelectorAll('.current-address .folder');
-  var parent = breadcrumb[breadcrumb.length - 2]; parent.click();
+  var parent = breadcrumb[breadcrumb.length - 2];
+  parent.click();
   assert.equal(nav.current_path, root + path.sep);
 });
 guiTest(tests, 'main', 'file browser refresh requests the current directory', ['#file-browser-options .refresh'], function(assert, f, c) {
-  f.calls.length = 0; f.click('#file-browser-options .refresh');
+  f.calls.length = 0;
+  f.click('#file-browser-options .refresh');
   assert.equal(sent(assert, f, 'SandboxWindow', 'set-current-path'), c.folder_navigation.current_path);
 });
 guiTest(tests, 'main', 'file and folder rows open, expand, collapse and navigate', [], function(assert, f, c) {
-  var ul = f.document.createElement('ul'); f.query('#file-browser-cont').appendChild(ul);
+  var ul = f.document.createElement('ul');
+  f.query('#file-browser-cont').appendChild(ul);
   var browser = c.file_browser;
   browser.addFileBrowserItem(path.join(root, 'sample.jsl'), { isDirectory: () => false, isSymbolicLink: () => false }, ul);
   f.mouse(ul.firstChild, 'dblclick', 10, 10);
   assert.equal(sent(assert, f, 'EditorWindow', 'open-script')[0], path.join(root, 'sample.jsl'));
   browser.addFileBrowserItem(path.join(root, 'js'), { isDirectory: () => true }, ul);
-  var folder = ul.lastChild, expand = folder.querySelector('.expend'); expand.click();
+  var folder = ul.lastChild, expand = folder.querySelector('.expend');
+  expand.click();
   assert.equal(expand.classList.contains('expended'), true);
-  assert.ok(folder.querySelector('ul')); expand.click();
+  assert.ok(folder.querySelector('ul'));
+  expand.click();
   assert.equal(folder.querySelector('ul'), null);
   f.mouse(folder, 'dblclick', 10, 10);
   assert.equal(c.folder_navigation.current_path, path.join(root, 'js') + path.sep);
 });
+
+guiTest(tests, 'main', 'repeated console output keeps one badge and an aligned timestamp', [], function(assert, f, c) {
+  var command = c.command_window;
+  command.clear();
+  command.messages[0].classList.remove('no-timestamp');
+  for(var i = 0; i < 8; i++) {
+    command.message('Telemetry: 0.00 Hz');
+  }
+  var row = f.query('#command-window-messages [data-log-index]');
+  var timestamp = row.querySelector('.timestamp');
+  var badge = row.querySelector('.jslab-console-repeat');
+  assert.equal(command.log.length, 1);
+  assert.equal(badge.textContent, '8');
+  assert.equal(row.firstChild, timestamp);
+  assert.ok(Math.abs(timestamp.getBoundingClientRect().top - row.getBoundingClientRect().top - 5) < 1);
+  command.syncLogEntryHtmlFromElement(row);
+  command.renderMessageWindow();
+  command.message('Telemetry: 0.00 Hz');
+  row = f.query('#command-window-messages [data-log-index]');
+  assert.equal(row.querySelectorAll('.timestamp').length, 1);
+  assert.equal(row.querySelectorAll('.jslab-console-repeat').length, 1);
+  assert.equal(row.querySelector('.jslab-console-repeat').textContent, '9');
+  assert.equal(command.log[0].html, 'Telemetry: 0.00 Hz');
+});
+
+guiTest(tests, 'main', 'file entry actions dismiss safely and remove only the selected path through the host',
+  ['#file-browser-context-remove'], async function(assert, f, c) {
+    const removed = [];
+    c.platform.removePath = async filename => removed.push(filename);
+    const ul = f.document.createElement('ul');
+    f.query('#file-browser-cont').appendChild(ul);
+    const filename = path.join(root, 'temp', 'selected-file.jsl');
+    c.file_browser.addFileBrowserItem(filename, { isDirectory: () => false, isSymbolicLink: () => false }, ul);
+    const label = ul.querySelector('span');
+    for(const dismissal of ['outside', 'escape', 'scroll']) {
+      label.dispatchEvent(new f.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 20 }));
+      assert.equal(f.visible('#file-browser-context-menu'), true);
+      if(dismissal == 'outside') {
+        f.document.body.click();
+      } else if(dismissal == 'escape') {
+        f.key(null, 'Escape');
+      } else {
+        f.query('#file-browser').dispatchEvent(new f.window.Event('scroll'));
+      }
+      assert.equal(f.visible('#file-browser-context-menu'), false);
+      assert.equal(c.file_browser.context_path, undefined);
+    }
+    label.dispatchEvent(new f.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+    f.click('#file-browser-context-remove');
+    await f.tick();
+    assert.deepEqual(removed, [filename]);
+    assert.equal(f.visible('#file-browser-context-menu'), false);
+  });
 
 exports.MODULE_TESTS = tests;

@@ -6,119 +6,126 @@
  */
 
 /**
- * Clones column data into a plain array.
- * @param {*} value Column-like value.
- * @param {string} [label='column'] Error label.
- * @returns {Array}
+ * Class for sandbox table operations.
  */
-function normalizeColumnData(jsl, value, label = 'column') {
-  var out = value;
-  if(out && typeof out.toArray === 'function') {
-    out = out.toArray();
-  }
+class PRDC_JSLAB_SANDBOX_TABLE_HELPER {
 
-  if(jsl.inter.format.isTypedArray(out)) {
-    out = Array.from(out);
-  }
-
-  if(!Array.isArray(out)) {
-    throw new Error(jsl.formatLang(448, { label: label }));
-  }
-
-  out = out.slice();
-  var is_single_column_matrix = out.length > 0 && out.every(function(entry) {
-    return Array.isArray(entry) && entry.length === 1;
-  });
-
-  if(is_single_column_matrix) {
-    out = out.map(function(entry) {
-      return entry[0];
-    });
-  }
-  return out;
-}
-
-/**
- * Normalizes a name list (array or CSV string).
- * @param {(Array|string)} names Name list input.
- * @param {string} error_label Error label.
- * @returns {Array<string>}
- */
-function normalizeNameList(jsl, names, error_label) {
-  var out = names;
-  if(typeof out === 'string') {
-    out = out.split(',').map(function(name) {
-      return name.trim();
-    }).filter(function(name) {
-      return name.length > 0;
-    });
-  }
-
-  if(!Array.isArray(out)) {
-    throw new Error(jsl.formatLang(449, { error_label: error_label }));
-  }
-
-  out = out.map(function(name, i) {
-    var normalized = String(name).trim();
-    if(!normalized.length) {
-      throw new Error(jsl.formatLang(450, { index: i }));
+  /**
+   * Clones column data into a plain array.
+   * @param {*} value Column-like value.
+   * @param {string} [label='column'] Error label.
+   * @returns {Array}
+   */
+  static normalizeColumnData(jsl, value, label = 'column') {
+    var out = value;
+    if(out && typeof out.toArray === 'function') {
+      out = out.toArray();
     }
-    return normalized;
-  });
 
-  return out;
-}
+    if(jsl.inter.format.isTypedArray(out)) {
+      out = Array.from(out);
+    }
 
-/**
- * Ensures name list contains unique values.
- * @param {Array<string>} names Name list.
- */
-function ensureUniqueNames(jsl, names) {
-  jsl.inter.format.ensureUniqueNames(names, function(name) {
-    return new Error(jsl.formatLang(451, { name: name }));
-  });
-}
+    if(!Array.isArray(out)) {
+      throw new Error(jsl.formatLang(447, { label: label }));
+    }
 
-/**
- * Parses step expression into milliseconds.
- * @param {(number|string)} step Step value.
- * @returns {number}
- */
-function parseStepToMs(jsl, step) {
-  if(typeof step === 'number' && isFinite(step) && step > 0) {
-    return step;
+    out = out.slice();
+    var is_single_column_matrix = out.length > 0 && out.every(function(entry) {
+      return Array.isArray(entry) && entry.length === 1;
+    });
+
+    if(is_single_column_matrix) {
+      out = out.map(function(entry) {
+        return entry[0];
+      });
+    }
+    return out;
   }
 
-  var s = String(step || '').trim().toLowerCase();
-  var known = {
-    ms: 1,
-    s: 1000,
-    sec: 1000,
-    second: 1000,
-    seconds: 1000,
-    m: 60000,
-    min: 60000,
-    minute: 60000,
-    minutes: 60000,
-    h: 3600000,
-    hour: 3600000,
-    hours: 3600000,
-    d: 86400000,
-    day: 86400000,
-    days: 86400000
-  };
+  /**
+   * Normalizes a name list (array or CSV string).
+   * @param {(Array|string)} names Name list input.
+   * @param {string} error_label Error label.
+   * @returns {Array<string>}
+   */
+  static normalizeNameList(jsl, names, error_label) {
+    var out = names;
+    if(typeof out === 'string') {
+      out = out.split(',').map(function(name) {
+        return name.trim();
+      }).filter(function(name) {
+        return name.length > 0;
+      });
+    }
 
-  if(known.hasOwnProperty(s)) {
-    return known[s];
+    if(!Array.isArray(out)) {
+      throw new Error(jsl.formatLang(448, { error_label: error_label }));
+    }
+
+    out = out.map(function(name, i) {
+      var normalized = String(name).trim();
+      if(!normalized.length) {
+        throw new Error(jsl.formatLang(449, { index: i }));
+      }
+      return normalized;
+    });
+
+    return out;
   }
 
-  var match = s.match(/^(\d+(?:\.\d+)?)\s*(ms|s|sec|second|seconds|m|min|minute|minutes|h|hour|hours|d|day|days)$/);
-  if(match) {
-    return Number(match[1]) * known[match[2]];
+  /**
+   * Ensures name list contains unique values.
+   * @param {Array<string>} names Name list.
+   */
+  static ensureUniqueNames(jsl, names) {
+    jsl.inter.format.ensureUniqueNames(names, function(name) {
+      return new Error(jsl.formatLang(450, { name: name }));
+    });
   }
 
-  throw new Error(jsl.formatLang(452, { step: String(step) }));
+  /**
+   * Parses step expression into milliseconds.
+   * @param {(number|string)} step Step value.
+   * @returns {number}
+   */
+  static parseStepToMs(jsl, step) {
+    if(typeof step === 'number' && isFinite(step) && step > 0) {
+      return step;
+    }
+
+    var s = String(step || '').trim().toLowerCase();
+    var known = {
+      ms: 1,
+      s: 1000,
+      sec: 1000,
+      second: 1000,
+      seconds: 1000,
+      m: 60000,
+      min: 60000,
+      minute: 60000,
+      minutes: 60000,
+      h: 3600000,
+      hour: 3600000,
+      hours: 3600000,
+      d: 86400000,
+      day: 86400000,
+      days: 86400000
+    };
+
+    if(known.hasOwnProperty(s)) {
+      return known[s];
+    }
+
+    var match = s.match(/^(\d+(?:\.\d+)?)\s*(ms|s|sec|second|seconds|m|min|minute|minutes|h|hour|hours|d|day|days)$/);
+    if(match) {
+      return Number(match[1]) * known[match[2]];
+    }
+
+    throw new Error(jsl.formatLang(451, { step: String(step) }));
+  }
 }
+
 
 /**
  * Class for JSLAB table/timetable submodule.
@@ -182,7 +189,7 @@ class PRDC_JSLAB_LIB_TABLE {
       matrix = matrix.toArray();
     }
     if(!Array.isArray(matrix)) {
-      throw new Error(this.jsl.currentString(453));
+      throw new Error(this.jsl.currentString(452));
     }
 
     var jsl = this.jsl;
@@ -193,7 +200,7 @@ class PRDC_JSLAB_LIB_TABLE {
       if(Array.isArray(row)) {
         return row.slice();
       }
-      throw new Error(jsl.currentString(454));
+      throw new Error(jsl.currentString(453));
     });
 
     var width = rows.length ? rows.reduce(function(max_width, row) {
@@ -202,9 +209,9 @@ class PRDC_JSLAB_LIB_TABLE {
 
     var variable_names;
     if(Object.prototype.hasOwnProperty.call(options, 'VariableNames')) {
-      variable_names = normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
+      variable_names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
       if(variable_names.length !== width) {
-        throw new Error(this.jsl.currentString(455));
+        throw new Error(this.jsl.currentString(454));
       }
     } else {
       variable_names = Array.from({ length: width }, function(_, i) {
@@ -233,14 +240,14 @@ class PRDC_JSLAB_LIB_TABLE {
    */
   struct2table(rows, options = {}) {
     if(!Array.isArray(rows)) {
-      throw new Error(this.jsl.currentString(456));
+      throw new Error(this.jsl.currentString(455));
     }
 
     var key_set = new Set();
     var jsl = this.jsl;
     rows.forEach(function(row, i) {
       if(row === null || typeof row !== 'object' || Array.isArray(row)) {
-        throw new Error(jsl.formatLang(457, { index: i }));
+        throw new Error(jsl.formatLang(456, { index: i }));
       }
       Object.keys(row).forEach(function(key) {
         key_set.add(key);
@@ -249,11 +256,11 @@ class PRDC_JSLAB_LIB_TABLE {
 
     var variable_names;
     if(Object.prototype.hasOwnProperty.call(options, 'VariableNames')) {
-      variable_names = normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
+      variable_names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
     } else {
       variable_names = Array.from(key_set);
     }
-    ensureUniqueNames(this.jsl, variable_names);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, variable_names);
 
     var columns = {};
     variable_names.forEach(function(name) {
@@ -277,7 +284,7 @@ class PRDC_JSLAB_LIB_TABLE {
     if(T && typeof T.toArray === 'function') {
       return T.toArray();
     }
-    throw new Error(this.jsl.currentString(458));
+    throw new Error(this.jsl.currentString(457));
   }
 
   /**
@@ -306,10 +313,10 @@ class PRDC_JSLAB_LIB_TABLE {
    */
   readtable(file_path, options = {}) {
     if(typeof file_path !== 'string' || !file_path.length) {
-      throw new Error(this.jsl.currentString(459));
+      throw new Error(this.jsl.currentString(458));
     }
     if(!this.jsl.inter.env.checkFile(file_path)) {
-      throw new Error(this.jsl.formatLang(460, { file_path: file_path }));
+      throw new Error(this.jsl.formatLang(459, { file_path: file_path }));
     }
 
     var text = this.jsl.inter.env.readFileSync(file_path, 'utf8');
@@ -333,7 +340,7 @@ class PRDC_JSLAB_LIB_TABLE {
       });
       first_data_row_index = 1;
     } else if(options.VariableNames) {
-      header = normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
+      header = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
     } else {
       var width = rows.reduce(function(max_width, row) {
         return Math.max(max_width, row.length);
@@ -342,7 +349,7 @@ class PRDC_JSLAB_LIB_TABLE {
         return 'Var' + (i + 1);
       });
     }
-    ensureUniqueNames(this.jsl, header);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, header);
 
     var width_all = Math.max(header.length, rows.reduce(function(max_width, row) {
       return Math.max(max_width, row.length);
@@ -352,7 +359,7 @@ class PRDC_JSLAB_LIB_TABLE {
         header.push('Var' + (add_i + 1));
       }
     }
-    ensureUniqueNames(this.jsl, header);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, header);
 
     var columns = {};
     header.forEach(function(name) {
@@ -405,7 +412,7 @@ class PRDC_JSLAB_LIB_TABLE {
     }
 
     if(!table_value.hasVariable(row_time_name)) {
-      throw new Error(this.jsl.formatLang(461, { name: row_time_name }));
+      throw new Error(this.jsl.formatLang(460, { name: row_time_name }));
     }
 
     var row_times_raw = table_value.getVariable(row_time_name);
@@ -449,8 +456,8 @@ class PRDC_JSLAB_LIB_TABLE {
       options.Delimiter : ',';
     var include_variable_names = options.WriteVariableNames !== false;
     var include_row_names = options.WriteRowNames === true;
-    var row_name_label = this.jsl.currentString(503);
-    var time_label = this.jsl.currentString(504);
+    var row_name_label = this.jsl.currentString(502);
+    var time_label = this.jsl.currentString(503);
 
     var header = [];
     if(value instanceof PRDC_JSLAB_TIMETABLE) {
@@ -498,7 +505,7 @@ class PRDC_JSLAB_LIB_TABLE {
    */
   writetable(T, file_path, options = {}) {
     if(typeof file_path !== 'string' || !file_path.length) {
-      throw new Error(this.jsl.currentString(462));
+      throw new Error(this.jsl.currentString(461));
     }
     var write_options = Object.assign({}, options);
     if(typeof write_options.Delimiter !== 'string' || !write_options.Delimiter.length) {
@@ -526,7 +533,7 @@ class PRDC_JSLAB_LIB_TABLE {
 
     var jsl = this.jsl;
     var format = this.jsl.inter.format;
-    var step_ms = parseStepToMs(this.jsl, step);
+    var step_ms = PRDC_JSLAB_SANDBOX_TABLE_HELPER.parseStepToMs(this.jsl, step);
     var time_values = timetable_value.RowTimes.map(function(value) {
       if(value instanceof Date) {
         return value.getTime();
@@ -536,7 +543,7 @@ class PRDC_JSLAB_LIB_TABLE {
       }
       var parsed = new Date(value);
       if(Number.isNaN(parsed.getTime())) {
-        throw new Error(jsl.currentString(463));
+        throw new Error(jsl.currentString(462));
       }
       return parsed.getTime();
     });
@@ -630,10 +637,10 @@ class PRDC_JSLAB_LIB_TABLE {
   groupsummary(T, groupvars, method = 'mean', datavars) {
     var table_value = this._ensureTableInput(T);
     var format = this.jsl.inter.format;
-    var group_names = normalizeNameList(this.jsl, groupvars, 'groupvars');
+    var group_names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, groupvars, 'groupvars');
     group_names.forEach((name) => {
       if(!table_value.hasVariable(name)) {
-        throw new Error(this.jsl.formatLang(464, { name: name }));
+        throw new Error(this.jsl.formatLang(463, { name: name }));
       }
     });
 
@@ -649,10 +656,10 @@ class PRDC_JSLAB_LIB_TABLE {
         });
       });
     } else {
-      data_names = normalizeNameList(this.jsl, datavars, 'datavars');
+      data_names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, datavars, 'datavars');
       data_names.forEach((name) => {
         if(!table_value.hasVariable(name)) {
-          throw new Error(this.jsl.formatLang(465, { name: name }));
+          throw new Error(this.jsl.formatLang(464, { name: name }));
         }
       });
     }
@@ -707,10 +714,10 @@ class PRDC_JSLAB_LIB_TABLE {
     var table_value = this._ensureTableInput(T);
     var input_variables;
     if(Object.prototype.hasOwnProperty.call(options, 'InputVariables')) {
-      input_variables = normalizeNameList(this.jsl, options.InputVariables, 'InputVariables');
+      input_variables = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.InputVariables, 'InputVariables');
       input_variables.forEach((name) => {
         if(!table_value.hasVariable(name)) {
-          throw new Error(this.jsl.formatLang(466, { name: name }));
+          throw new Error(this.jsl.formatLang(465, { name: name }));
         }
       });
     } else {
@@ -730,7 +737,7 @@ class PRDC_JSLAB_LIB_TABLE {
       } else if(typeof fun === 'string') {
         result = this.jsl.inter.format.aggregateValues(values, fun);
       } else {
-        throw new Error(this.jsl.currentString(467));
+        throw new Error(this.jsl.currentString(466));
       }
       var out_name = prefix + name;
       output_names.push(out_name);
@@ -859,9 +866,9 @@ class PRDC_JSLAB_LIB_TABLE {
 
     var variable_names;
     if(Object.prototype.hasOwnProperty.call(options, 'VariableNames')) {
-      variable_names = normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
+      variable_names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.VariableNames, 'VariableNames');
       if(variable_names.length !== columns_args.length) {
-        throw new Error(this.jsl.currentString(468));
+        throw new Error(this.jsl.currentString(467));
       }
     } else {
       variable_names = Array.from({ length: columns_args.length }, function(_, i) {
@@ -871,7 +878,7 @@ class PRDC_JSLAB_LIB_TABLE {
 
     var columns = {};
     for(var i = 0; i < columns_args.length; i++) {
-      columns[variable_names[i]] = normalizeColumnData(this.jsl, columns_args[i], 'column ' + (i + 1));
+      columns[variable_names[i]] = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, columns_args[i], 'column ' + (i + 1));
     }
 
     options = Object.assign({}, options, {
@@ -917,14 +924,14 @@ class PRDC_JSLAB_LIB_TABLE {
       columns_args = columns_args.slice(0, options_start);
 
       if(option_args.length % 2 !== 0) {
-        throw new Error(this.jsl.currentString(469));
+        throw new Error(this.jsl.currentString(468));
       }
 
       for(var j = 0; j < option_args.length; j += 2) {
         var key = option_args[j];
         var value = option_args[j + 1];
         if(typeof key !== 'string' || !allowed_keys.has(key)) {
-          throw new Error(this.jsl.formatLang(470, { key: key }));
+          throw new Error(this.jsl.formatLang(469, { key: key }));
         }
         options[key] = value;
       }
@@ -969,7 +976,7 @@ class PRDC_JSLAB_LIB_TABLE {
     if(this.istable(value) || this.istimetable(value)) {
       return value;
     }
-    throw new Error(this.jsl.currentString(471));
+    throw new Error(this.jsl.currentString(470));
   }
 
   /**
@@ -981,7 +988,7 @@ class PRDC_JSLAB_LIB_TABLE {
     if(this.istimetable(value)) {
       return value;
     }
-    throw new Error(this.jsl.currentString(472));
+    throw new Error(this.jsl.currentString(471));
   }
 
   /**
@@ -1031,7 +1038,7 @@ class PRDC_JSLAB_LIB_TABLE {
       return out;
     }
 
-    throw new Error(this.jsl.formatLang(473, { method: method }));
+    throw new Error(this.jsl.formatLang(472, { method: method }));
   }
 
   /**
@@ -1047,14 +1054,14 @@ class PRDC_JSLAB_LIB_TABLE {
     var right_keys;
 
     if(Object.prototype.hasOwnProperty.call(options, 'Keys')) {
-      left_keys = normalizeNameList(this.jsl, options.Keys, 'Keys');
+      left_keys = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.Keys, 'Keys');
       right_keys = left_keys.slice();
     } else if(Object.prototype.hasOwnProperty.call(options, 'LeftKeys') &&
       Object.prototype.hasOwnProperty.call(options, 'RightKeys')) {
-      left_keys = normalizeNameList(this.jsl, options.LeftKeys, 'LeftKeys');
-      right_keys = normalizeNameList(this.jsl, options.RightKeys, 'RightKeys');
+      left_keys = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.LeftKeys, 'LeftKeys');
+      right_keys = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.RightKeys, 'RightKeys');
       if(left_keys.length !== right_keys.length) {
-        throw new Error(this.jsl.currentString(474));
+        throw new Error(this.jsl.currentString(473));
       }
     } else {
       left_keys = left.VariableNames.filter(function(name) {
@@ -1064,16 +1071,16 @@ class PRDC_JSLAB_LIB_TABLE {
     }
 
     if(!left_keys.length) {
-      throw new Error(this.jsl.currentString(475));
+      throw new Error(this.jsl.currentString(474));
     }
     left_keys.forEach(function(name) {
       if(!left.hasVariable(name)) {
-        throw new Error(jsl.formatLang(476, { name: name }));
+        throw new Error(jsl.formatLang(475, { name: name }));
       }
     });
     right_keys.forEach(function(name) {
       if(!right.hasVariable(name)) {
-        throw new Error(jsl.formatLang(477, { name: name }));
+        throw new Error(jsl.formatLang(476, { name: name }));
       }
     });
 
@@ -1216,7 +1223,7 @@ class PRDC_JSLAB_TABLE {
         configurable: false,
         enumerable: false
       });
-    } catch {
+    } catch{
       this.jsl = jsl;
     }
     this._columns = {};
@@ -1282,7 +1289,7 @@ class PRDC_JSLAB_TABLE {
   getVariable(name) {
     var key = String(name);
     if(!this.hasVariable(key)) {
-      throw new Error(this.jsl.formatLang(478, { key: key }));
+      throw new Error(this.jsl.formatLang(477, { key: key }));
     }
     return this._columns[key];
   }
@@ -1296,24 +1303,24 @@ class PRDC_JSLAB_TABLE {
   setVariable(name, values) {
     var key = String(name).trim();
     if(!key.length) {
-      throw new Error(this.jsl.currentString(479));
+      throw new Error(this.jsl.currentString(478));
     }
 
-    var column = normalizeColumnData(this.jsl, values, 'variable "' + key + '"');
+    var column = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, values, 'variable "' + key + '"');
     var current_height = this.height();
     if(this.width() === 0 && current_height === 0) {
       current_height = column.length;
       this._height = current_height;
     }
     if(current_height !== column.length) {
-      throw new Error(this.jsl.formatLang(480, { key: key }));
+      throw new Error(this.jsl.formatLang(479, { key: key }));
     }
 
     var old_names = this.VariableNames.slice();
     var existed = this.hasVariable(key);
     if(!existed) {
       this.VariableNames.push(key);
-      ensureUniqueNames(this.jsl, this.VariableNames);
+      PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, this.VariableNames);
     }
     this._columns[key] = column;
     this._syncVariableProperties(old_names);
@@ -1326,10 +1333,10 @@ class PRDC_JSLAB_TABLE {
    * @returns {PRDC_JSLAB_TABLE}
    */
   selectvars(names) {
-    var selected = normalizeNameList(this.jsl, names, 'selectvars names');
+    var selected = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, names, 'selectvars names');
     selected.forEach((name) => {
       if(!this.hasVariable(name)) {
-        throw new Error(this.jsl.formatLang(481, { name: name }));
+        throw new Error(this.jsl.formatLang(480, { name: name }));
       }
     });
 
@@ -1350,7 +1357,7 @@ class PRDC_JSLAB_TABLE {
    * @returns {PRDC_JSLAB_TABLE}
    */
   removevars(names) {
-    var remove_list = normalizeNameList(this.jsl, names, 'removevars names');
+    var remove_list = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, names, 'removevars names');
     var remove_set = new Set(remove_list);
     var kept = this.VariableNames.filter(function(name) {
       return !remove_set.has(name);
@@ -1374,10 +1381,10 @@ class PRDC_JSLAB_TABLE {
    * @returns {PRDC_JSLAB_TABLE}
    */
   renamevars(old_names, new_names) {
-    var old_list = normalizeNameList(this.jsl, old_names, 'old_names');
-    var new_list = normalizeNameList(this.jsl, new_names, 'new_names');
+    var old_list = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, old_names, 'old_names');
+    var new_list = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, new_names, 'new_names');
     if(old_list.length !== new_list.length) {
-      throw new Error(this.jsl.currentString(482));
+      throw new Error(this.jsl.currentString(481));
     }
 
     var renamed = this.VariableNames.slice();
@@ -1386,11 +1393,11 @@ class PRDC_JSLAB_TABLE {
       var new_name = new_list[i];
       var idx = renamed.indexOf(old_name);
       if(idx < 0) {
-        throw new Error(this.jsl.formatLang(483, { name: old_name }));
+        throw new Error(this.jsl.formatLang(482, { name: old_name }));
       }
       renamed[idx] = String(new_name).trim();
     }
-    ensureUniqueNames(this.jsl, renamed);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, renamed);
 
     var columns = {};
     for(var j = 0; j < this.VariableNames.length; j++) {
@@ -1424,13 +1431,13 @@ class PRDC_JSLAB_TABLE {
       var object_columns = inputs[0];
       added_names = Object.keys(object_columns);
       added_names.forEach((name) => {
-        added_columns[name] = normalizeColumnData(this.jsl, object_columns[name], 'variable "' + name + '"');
+        added_columns[name] = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, object_columns[name], 'variable "' + name + '"');
       });
     } else {
       if(Object.prototype.hasOwnProperty.call(options, 'NewVariableNames')) {
-        added_names = normalizeNameList(this.jsl, options.NewVariableNames, 'NewVariableNames');
+        added_names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, options.NewVariableNames, 'NewVariableNames');
         if(added_names.length !== inputs.length) {
-          throw new Error(this.jsl.currentString(484));
+          throw new Error(this.jsl.currentString(483));
         }
       } else {
         added_names = [];
@@ -1445,18 +1452,18 @@ class PRDC_JSLAB_TABLE {
         }
       }
       for(var i = 0; i < inputs.length; i++) {
-        added_columns[added_names[i]] = normalizeColumnData(this.jsl, inputs[i], 'variable "' + added_names[i] + '"');
+        added_columns[added_names[i]] = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, inputs[i], 'variable "' + added_names[i] + '"');
       }
     }
 
     var all_names = this.VariableNames.concat(added_names);
-    ensureUniqueNames(this.jsl, all_names);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, all_names);
 
     var columns = this.toColumns();
     var height = this.height();
     added_names.forEach((name) => {
       if(height !== 0 && added_columns[name].length !== height) {
-        throw new Error(this.jsl.formatLang(485, { name: name }));
+        throw new Error(this.jsl.formatLang(484, { name: name }));
       }
       columns[name] = added_columns[name].slice();
     });
@@ -1533,7 +1540,7 @@ class PRDC_JSLAB_TABLE {
    */
   filter(predicate) {
     if(typeof predicate !== 'function') {
-      throw new Error(this.jsl.currentString(486));
+      throw new Error(this.jsl.currentString(485));
     }
     return this.subsetRows(predicate);
   }
@@ -1559,7 +1566,7 @@ class PRDC_JSLAB_TABLE {
     }
 
     if(!key_name || !this.hasVariable(key_name)) {
-      throw new Error(this.jsl.currentString(487));
+      throw new Error(this.jsl.currentString(486));
     }
 
     var indices = this.jsl.inter.format.buildSortedIndices(this.height(), (row_index) => {
@@ -1727,25 +1734,7 @@ class PRDC_JSLAB_TABLE {
       sortable: true,
       editable: false
     }];
-    if(this.RowNames.length === this.height() && this.height() > 0) {
-      columns.push({
-        key: '__rowname',
-        header_kind: 'row-name',
-        sortable: true,
-        editable: false
-      });
-    }
-    this.VariableNames.forEach((name) => {
-      var type_label = variable_types[name] || 'mixed';
-      columns.push({
-        key: name,
-        header_kind: 'variable',
-        name: name,
-        sortable: true,
-        editable: true,
-        type: type_label
-      });
-    });
+    this._appendInspectorColumns(columns, variable_types);
     return columns;
   }
 
@@ -1760,17 +1749,7 @@ class PRDC_JSLAB_TABLE {
       var values = [i];
       var paths = [null];
       var record = {};
-      if(has_row_names) {
-        values.push(this.RowNames[i]);
-        paths.push(null);
-      }
-      for(var j = 0; j < this.VariableNames.length; j++) {
-        var name = this.VariableNames[j];
-        var cell = this._columns[name][i];
-        values.push(cell);
-        paths.push([i, name]);
-        record[name] = cell;
-      }
+      this._appendInspectorCells(i, values, paths, record, has_row_names);
       rows.push({ values: values, paths: paths, record: record });
     }
     return rows;
@@ -1786,7 +1765,7 @@ class PRDC_JSLAB_TABLE {
   setCell(row_index, column_name, value) {
     var row = Number(row_index);
     if(!Number.isInteger(row) || row < 0 || row >= this.height()) {
-      throw new Error(this.jsl.currentString(488));
+      throw new Error(this.jsl.currentString(487));
     }
 
     var col_name = column_name;
@@ -1795,7 +1774,7 @@ class PRDC_JSLAB_TABLE {
     }
     col_name = String(col_name);
     if(!this.hasVariable(col_name)) {
-      throw new Error(this.jsl.formatLang(489, { col: col_name }));
+      throw new Error(this.jsl.formatLang(488, { col: col_name }));
     }
 
     this._columns[col_name][row] = value;
@@ -1811,7 +1790,7 @@ class PRDC_JSLAB_TABLE {
   getCell(row_index, column_name) {
     var row = Number(row_index);
     if(!Number.isInteger(row) || row < 0 || row >= this.height()) {
-      throw new Error(this.jsl.currentString(490));
+      throw new Error(this.jsl.currentString(489));
     }
 
     var col_name = column_name;
@@ -1820,7 +1799,7 @@ class PRDC_JSLAB_TABLE {
     }
     col_name = String(col_name);
     if(!this.hasVariable(col_name)) {
-      throw new Error(this.jsl.formatLang(491, { col: col_name }));
+      throw new Error(this.jsl.formatLang(490, { col: col_name }));
     }
     return this._columns[col_name][row];
   }
@@ -1942,11 +1921,11 @@ class PRDC_JSLAB_TABLE {
       out_names = this._resolveVariableNames(variable_names, source.length);
       for(var i = 0; i < source.length; i++) {
         var name = out_names[i];
-        var col = normalizeColumnData(this.jsl, source[i], 'column ' + (i + 1));
+        var col = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, source[i], 'column ' + (i + 1));
         if(typeof height === 'undefined') {
           height = col.length;
         } else if(col.length !== height) {
-          throw new Error(this.jsl.currentString(492));
+          throw new Error(this.jsl.currentString(491));
         }
         out_columns[name] = col;
       }
@@ -1961,19 +1940,19 @@ class PRDC_JSLAB_TABLE {
       for(var j = 0; j < source_names.length; j++) {
         var source_name = source_names[j];
         var target_name = out_names[j];
-        var target_col = normalizeColumnData(this.jsl, source[source_name], 'variable "' + target_name + '"');
+        var target_col = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, source[source_name], 'variable "' + target_name + '"');
         if(typeof height === 'undefined') {
           height = target_col.length;
         } else if(target_col.length !== height) {
-          throw new Error(this.jsl.currentString(492));
+          throw new Error(this.jsl.currentString(491));
         }
         out_columns[target_name] = target_col;
       }
     } else {
-      throw new Error(this.jsl.currentString(493));
+      throw new Error(this.jsl.currentString(492));
     }
 
-    ensureUniqueNames(this.jsl, out_names);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, out_names);
     if(typeof height === 'undefined') {
       height = 0;
     }
@@ -1998,12 +1977,12 @@ class PRDC_JSLAB_TABLE {
         return 'Var' + (i + 1);
       });
     } else {
-      out = normalizeNameList(this.jsl, variable_names, 'VariableNames');
+      out = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, variable_names, 'VariableNames');
       if(out.length !== count) {
-        throw new Error(this.jsl.currentString(468));
+        throw new Error(this.jsl.currentString(467));
       }
     }
-    ensureUniqueNames(this.jsl, out);
+    PRDC_JSLAB_SANDBOX_TABLE_HELPER.ensureUniqueNames(this.jsl, out);
     return out;
   }
 
@@ -2016,9 +1995,9 @@ class PRDC_JSLAB_TABLE {
       this.RowNames = [];
       return;
     }
-    var names = normalizeNameList(this.jsl, row_names, 'RowNames');
+    var names = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeNameList(this.jsl, row_names, 'RowNames');
     if(names.length !== this.height()) {
-      throw new Error(this.jsl.currentString(494));
+      throw new Error(this.jsl.currentString(493));
     }
     this.RowNames = names;
   }
@@ -2050,7 +2029,7 @@ class PRDC_JSLAB_TABLE {
 
     if(typeof row_selector === 'number') {
       if(!Number.isInteger(row_selector) || row_selector < 0 || row_selector >= height) {
-        throw new Error(this.jsl.currentString(495));
+        throw new Error(this.jsl.currentString(494));
       }
       return [row_selector];
     }
@@ -2084,13 +2063,13 @@ class PRDC_JSLAB_TABLE {
       return row_selector.map(function(value) {
         var index = Number(value);
         if(!Number.isInteger(index) || index < 0 || index >= height) {
-          throw new Error(jsl.currentString(495));
+          throw new Error(jsl.currentString(494));
         }
         return index;
       });
     }
 
-    throw new Error(this.jsl.currentString(496));
+    throw new Error(this.jsl.currentString(495));
   }
 
   /**
@@ -2164,12 +2143,65 @@ class PRDC_JSLAB_TABLE {
     }
     return true;
   }
+
+  /**
+   * Adds common variable columns to an inspector schema.
+   * @param {Array<Object>} columns Inspector columns.
+   * @param {Object} variable_types Variable types keyed by name.
+   */
+  _appendInspectorVariables(columns, variable_types) {
+    for(const name of this.VariableNames) {
+      columns.push({ key: name, header_kind: 'variable', name, sortable: true,
+        editable: true, type: variable_types[name] || 'mixed' });
+    }
+  }
+
+  /**
+   * Adds the common row-name and variable inspector columns.
+   * @param {Array} columns Inspector columns.
+   * @param {Object} variable_types Inferred variable types.
+   */
+  _appendInspectorColumns(columns, variable_types) {
+    if(this.RowNames.length === this.height() && this.height() > 0) {
+      columns.push({
+        key: '__rowname',
+        header_kind: 'row-name',
+        sortable: true,
+        editable: false
+      });
+    }
+    this._appendInspectorVariables(columns, variable_types);
+  }
+
+  /**
+   * Adds variable cells and their editable paths to an inspector row.
+   * @param {number} i Row index.
+   * @param {Array} values Cell values.
+   * @param {Array} paths Editable paths.
+   * @param {Object} record Named values.
+   * @param {boolean} has_row_names Whether row names are present.
+   */
+  _appendInspectorCells(i, values, paths, record, has_row_names) {
+    if(has_row_names) {
+      values.push(this.RowNames[i]);
+      paths.push(null);
+    }
+    for(var j = 0; j < this.VariableNames.length; j++) {
+      var name = this.VariableNames[j];
+      var cell = this._columns[name][i];
+      values.push(cell);
+      paths.push([i, name]);
+      record[name] = cell;
+    }
+  }
+
 }
 
 exports.PRDC_JSLAB_TABLE = PRDC_JSLAB_TABLE;
 
 /**
  * Class for JSLAB timetable.
+ * @extends PRDC_JSLAB_TABLE
  */
 class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
 
@@ -2210,10 +2242,10 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
    * @returns {PRDC_JSLAB_TIMETABLE}
    */
   setRowTimes(row_times) {
-    var times = normalizeColumnData(this.jsl, row_times, 'row_times');
+    var times = PRDC_JSLAB_SANDBOX_TABLE_HELPER.normalizeColumnData(this.jsl, row_times, 'row_times');
     var base_height = super.height();
     if(base_height !== 0 && times.length !== base_height) {
-      throw new Error(this.jsl.currentString(497));
+      throw new Error(this.jsl.currentString(496));
     }
     if(base_height === 0) {
       this._height = times.length;
@@ -2221,7 +2253,7 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
     this.RowTimes = times.slice();
 
     if(this.RowNames.length > 0 && this.RowNames.length !== this.RowTimes.length) {
-      throw new Error(this.jsl.currentString(498));
+      throw new Error(this.jsl.currentString(497));
     }
     return this;
   }
@@ -2279,7 +2311,7 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
       key_name = String(by);
     }
     if(!key_name || !this.hasVariable(key_name)) {
-      throw new Error(this.jsl.currentString(499));
+      throw new Error(this.jsl.currentString(498));
     }
 
     var indices = this.jsl.inter.format.buildSortedIndices(this.height(), (row_index) => {
@@ -2358,25 +2390,7 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
       editable: true,
       type: row_time_type
     });
-    if(this.RowNames.length === this.height() && this.height() > 0) {
-      columns.push({
-        key: '__rowname',
-        header_kind: 'row-name',
-        sortable: true,
-        editable: false
-      });
-    }
-    this.VariableNames.forEach((name) => {
-      var type_label = variable_types[name] || 'mixed';
-      columns.push({
-        key: name,
-        header_kind: 'variable',
-        name: name,
-        sortable: true,
-        editable: true,
-        type: type_label
-      });
-    });
+    this._appendInspectorColumns(columns, variable_types);
     return columns;
   }
 
@@ -2393,17 +2407,7 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
       var record = {};
       record.__rowtime__ = this.RowTimes[i];
       record[this.RowTimesName || 'Time'] = this.RowTimes[i];
-      if(has_row_names) {
-        values.push(this.RowNames[i]);
-        paths.push(null);
-      }
-      for(var j = 0; j < this.VariableNames.length; j++) {
-        var name = this.VariableNames[j];
-        var cell = this._columns[name][i];
-        values.push(cell);
-        paths.push([i, name]);
-        record[name] = cell;
-      }
+      this._appendInspectorCells(i, values, paths, record, has_row_names);
       rows.push({ values: values, paths: paths, record: record });
     }
     return rows;
@@ -2419,7 +2423,7 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
   setCell(row_index, column_name, value) {
     var row = Number(row_index);
     if(!Number.isInteger(row) || row < 0 || row >= this.height()) {
-      throw new Error(this.jsl.currentString(500));
+      throw new Error(this.jsl.currentString(499));
     }
 
     var col_name = String(column_name);
@@ -2469,11 +2473,3 @@ class PRDC_JSLAB_TIMETABLE extends PRDC_JSLAB_TABLE {
 }
 
 exports.PRDC_JSLAB_TIMETABLE = PRDC_JSLAB_TIMETABLE;
-
-
-
-
-
-
-
-

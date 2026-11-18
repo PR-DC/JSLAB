@@ -5,77 +5,88 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for inspector test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_INSPECTOR_TEST_HELPER {
+
+  /**
+   * Creates inspector harness.
+   */
+  static createInspectorHarness() {
+    var errors = [];
+    var warns = [];
+    var monospace = [];
+    var workspace_sets = 0;
+
+    var jsl = {
+      context: {},
+      no_ans: false,
+      ignore_output: false,
+      _eval: function(expression) {
+        return Function('"use strict"; return (' + expression + ');')();
+      },
+      formatLang: function(_id, data) {
+        return JSON.stringify(data || {});
+      },
+      inter: {
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          }
+        },
+        format: {
+          isTypedArray: function(value) {
+            return ArrayBuffer.isView(value) && !(value instanceof DataView);
+          }
+        },
+        env: {
+          error: function(message) {
+            errors.push(message);
+          },
+          warn: function(message) {
+            warns.push(message);
+          },
+          dispMonospaced: function(message) {
+            monospace.push(message);
+          },
+          setWorkspace: function() {
+            workspace_sets += 1;
+          },
+          showInspector: function() {}
+        },
+        table: {
+          table2csv: function() {
+            return 'a,b\n1,2';
+          }
+        }
+      }
+    };
+
+    var inspector = new PRDC_JSLAB_LIB_INSPECTOR(jsl);
+
+    return {
+      inspector,
+      jsl,
+      errors,
+      warns,
+      monospace,
+      workspace_sets_ref: function() {
+        return workspace_sets;
+      }
+    };
+  }
+}
+
+
 const { PRDC_JSLAB_LIB_INSPECTOR } = require('../inspector');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 
 var tests = new PRDC_JSLAB_TESTS();
 
-function createInspectorHarness() {
-  var errors = [];
-  var warns = [];
-  var monospace = [];
-  var workspace_sets = 0;
-
-  var jsl = {
-    context: {},
-    no_ans: false,
-    ignore_output: false,
-    _eval: function(expression) {
-      return Function('"use strict"; return (' + expression + ');')();
-    },
-    formatLang: function(_id, data) {
-      return JSON.stringify(data || {});
-    },
-    inter: {
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
-        }
-      },
-      format: {
-        isTypedArray: function(value) {
-          return ArrayBuffer.isView(value) && !(value instanceof DataView);
-        }
-      },
-      env: {
-        error: function(message) {
-          errors.push(message);
-        },
-        warn: function(message) {
-          warns.push(message);
-        },
-        dispMonospaced: function(message) {
-          monospace.push(message);
-        },
-        setWorkspace: function() {
-          workspace_sets += 1;
-        },
-        showInspector: function() {}
-      },
-      table: {
-        table2csv: function() {
-          return 'a,b\n1,2';
-        }
-      }
-    }
-  };
-
-  var inspector = new PRDC_JSLAB_LIB_INSPECTOR(jsl);
-
-  return {
-    inspector,
-    jsl,
-    errors,
-    warns,
-    monospace,
-    workspace_sets_ref: function() {
-      return workspace_sets;
-    }
-  };
-}
 
 tests.add('inspectSetVariable updates root and nested values', function(assert) {
-  var harness = createInspectorHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_INSPECTOR_TEST_HELPER.createInspectorHarness();
   harness.jsl.context.value = 1;
   harness.jsl.context.obj = { child: { x: 2 }, map: new Map([['k', 3]]) };
 
@@ -91,7 +102,7 @@ tests.add('inspectSetVariable updates root and nested values', function(assert) 
 }, { tags: ['unit', 'inspector'] });
 
 tests.add('inspectSetVariable supports custom setCell branch', function(assert) {
-  var harness = createInspectorHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_INSPECTOR_TEST_HELPER.createInspectorHarness();
   var calls = [];
   harness.jsl.context.tbl = {
     setCell: function(row, col, value) {
@@ -105,7 +116,7 @@ tests.add('inspectSetVariable supports custom setCell branch', function(assert) 
 }, { tags: ['unit', 'inspector'] });
 
 tests.add('inspectTableAction handles add/rename/remove/copy actions', function(assert) {
-  var harness = createInspectorHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_INSPECTOR_TEST_HELPER.createInspectorHarness();
   var added = null;
   var renamed_table = { marker: 'renamed' };
   var removed_table = { marker: 'removed' };
@@ -143,9 +154,13 @@ tests.add('inspectTableAction handles add/rename/remove/copy actions', function(
 
   harness.jsl.context.T = {
     VariableNames: ['a'],
-    getVariable: function() { return [1]; },
+    getVariable: function() {
+      return [1];
+    },
     setVariable: function() {},
-    removevars: function() { return removed_table; }
+    removevars: function() {
+      return removed_table;
+    }
   };
   assert.equal(harness.inspector.inspectTableAction('T', 'removevar', {
     names: 'a'
@@ -154,7 +169,9 @@ tests.add('inspectTableAction handles add/rename/remove/copy actions', function(
 
   harness.jsl.context.T = {
     VariableNames: ['a'],
-    getVariable: function() { return [1]; },
+    getVariable: function() {
+      return [1];
+    },
     setVariable: function() {}
   };
   assert.equal(harness.inspector.inspectTableAction('T', 'copycsv'), true);
@@ -162,10 +179,12 @@ tests.add('inspectTableAction handles add/rename/remove/copy actions', function(
 }, { tags: ['unit', 'inspector'] });
 
 tests.add('inspectTableAction returns false on unsupported action', function(assert) {
-  var harness = createInspectorHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_INSPECTOR_TEST_HELPER.createInspectorHarness();
   harness.jsl.context.T = {
     VariableNames: ['a'],
-    getVariable: function() { return [1]; },
+    getVariable: function() {
+      return [1];
+    },
     setVariable: function() {}
   };
 

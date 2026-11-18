@@ -5,64 +5,97 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for windows scripts test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER {
+
+  /**
+   * Reads window script.
+   * @param {string} name Name.
+   */
+  static readWindowScript(name) {
+    return fs.readFileSync(path.join(__dirname, '..', '..', 'windows', name), 'utf8');
+  }
+
+  /**
+   * Reads html file.
+   * @param {string} name Name.
+   */
+  static readHtmlFile(name) {
+    return fs.readFileSync(path.join(__dirname, '..', '..', '..', 'html', name), 'utf8');
+  }
+
+  /**
+   * Creates class list.
+   */
+  static createClassList() {
+    var classes = new Set();
+    return {
+      add: function(cls) {
+        classes.add(cls);
+      },
+      remove: function(cls) {
+        classes.delete(cls);
+      },
+      contains: function(cls) {
+        return classes.has(cls);
+      },
+      toggle: function(cls, on) {
+        if(on) {
+          classes.add(cls);
+        } else {
+          classes.delete(cls);
+        }
+      }
+    };
+  }
+
+  /**
+   * Creates simple element.
+   * @param {*} id Id.
+   */
+  static createSimpleElement(id) {
+    return {
+      id: id,
+      style: { display: 'none', height: '' },
+      value: '',
+      checked: false,
+      scrollHeight: 20,
+      classList: PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.createClassList(),
+      addEventListener: function() {},
+      setAttribute: function(key, value) {
+        this[key] = value;
+      },
+      focus: function() {
+        this.focused = true;
+      },
+      setSelectionRange: function() {}
+    };
+  }
+}
+
+
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function readWindowScript(name) {
-  return fs.readFileSync(path.join(__dirname, '..', '..', 'windows', name), 'utf8');
-}
-
-function readHtmlFile(name) {
-  return fs.readFileSync(path.join(__dirname, '..', '..', '..', 'html', name), 'utf8');
-}
-
-function createClassList() {
-  var classes = new Set();
-  return {
-    add: function(cls) { classes.add(cls); },
-    remove: function(cls) { classes.delete(cls); },
-    contains: function(cls) { return classes.has(cls); },
-    toggle: function(cls, on) {
-      if(on) {
-        classes.add(cls);
-      } else {
-        classes.delete(cls);
-      }
-    }
-  };
-}
-
-function createSimpleElement(id) {
-  return {
-    id: id,
-    style: { display: 'none', height: '' },
-    value: '',
-    checked: false,
-    scrollHeight: 20,
-    classList: createClassList(),
-    addEventListener: function() {},
-    setAttribute: function(key, value) { this[key] = value; },
-    focus: function() { this.focused = true; },
-    setSelectionRange: function() {}
-  };
-}
 
 tests.add('all js/windows scripts parse (presentation template after config substitution)', function(assert) {
   var files = [
     'mathjax-config.js',
     'plot.js',
     'presentation-editor.js',
-    'presentation.js',
-    'terminal.js',
+    'presentation-viewer.js',
+    'serial-terminal.js',
     'ui.js'
   ];
 
   files.forEach(function(file_name) {
-    var source = readWindowScript(file_name);
-    if(file_name === 'presentation.js') {
+    var source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript(file_name);
+    if(file_name === 'presentation-viewer.js') {
       assert.ok(source.includes('%presentation_config%'));
       source = source.replace('%presentation_config%', '{}');
     }
@@ -75,7 +108,7 @@ tests.add('all js/windows scripts parse (presentation template after config subs
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
 tests.add('mathjax-config registers expected macros on window.MathJax', function(assert) {
-  var source = readWindowScript('mathjax-config.js');
+  var source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('mathjax-config.js');
   var context = { window: {} };
   context.globalThis = context;
   vm.runInNewContext(source, context, { filename: 'mathjax-config.js' });
@@ -87,11 +120,13 @@ tests.add('mathjax-config registers expected macros on window.MathJax', function
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
 tests.add('ui script initializes global ui instance without tabs container', function(assert) {
-  var source = readWindowScript('ui.js');
+  var source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('ui.js');
   var context = {
     window: {},
     document: {
-      querySelector: function() { return null; }
+      querySelector: function() {
+        return null;
+      }
     }
   };
   context.globalThis = context;
@@ -100,8 +135,8 @@ tests.add('ui script initializes global ui instance without tabs container', fun
   assert.equal(typeof context.ui, 'object');
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
-tests.add('plot script creates global plot and batches restyle updates', function(assert) {
-  var source = readWindowScript('plot.js');
+tests.add('plot script creates global plot and batches restyle updates', async function(assert) {
+  var source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('plot.js');
   var records = {
     restyle: [],
     relayout: [],
@@ -142,7 +177,9 @@ tests.add('plot script creates global plot and batches restyle updates', functio
       relayout: function(plot_cont, layout) {
         records.relayout.push({ plot_cont, layout });
       },
-      toImage: async function() { return 'data:image/png;base64,AA=='; },
+      toImage: async function() {
+        return 'data:image/png;base64,AA==';
+      },
       Plots: {
         resize: function() {
           records.resized += 1;
@@ -160,6 +197,7 @@ tests.add('plot script creates global plot and batches restyle updates', functio
   context.plot.plot_cont.data = [{ id: 'a' }, { id: 'b' }];
   context.plot.updateData({ y: [1] }, 0);
   context.plot.updateDataById({ id: 'b', marker: { color: 'red' } });
+  await new Promise(resolve => setTimeout(resolve, 0));
 
   assert.equal(records.restyle.length >= 2, true);
   assert.equal(records.restyle[0].idxs[0], 0);
@@ -168,7 +206,7 @@ tests.add('plot script creates global plot and batches restyle updates', functio
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
 tests.add('plot script loads layout fonts before Plotly measures legends', async function(assert) {
-  var source = readWindowScript('plot.js');
+  var source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('plot.js');
   var events = [];
   var release_font;
   var first_font = new Promise(function(resolve) {
@@ -185,12 +223,20 @@ tests.add('plot script loads layout fonts before Plotly measures legends', async
           return font_calls == 1 ? first_font : Promise.resolve();
         }
       },
-      getElementById: function() { return figure_content; },
-      createElement: function() { return { data: [] }; }
+      getElementById: function() {
+        return figure_content;
+      },
+      createElement: function() {
+        return { data: [] };
+      }
     },
     Plotly: {
-      newPlot: async function() { events.push('newPlot'); },
-      relayout: async function() { events.push('relayout'); },
+      newPlot: async function() {
+        events.push('newPlot');
+      },
+      relayout: async function() {
+        events.push('relayout');
+      },
       restyle: function() {},
       Plots: { resize: function() {}, graphJson: function() {} }
     }
@@ -223,7 +269,7 @@ tests.add('plot script loads layout fonts before Plotly measures legends', async
 }, { tags: ['unit', 'windows', 'sandbox', 'plotter'] });
 
 tests.add('terminal script initializes terminal and updates UI state toggles', function(assert) {
-  var source = readWindowScript('terminal.js');
+  var source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('serial-terminal.js');
   var els = {};
   var ids = [
     'messages-container',
@@ -240,32 +286,52 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
     'write-timestamps'
   ];
   ids.forEach(function(id) {
-    els[id] = createSimpleElement(id);
+    els[id] = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.createSimpleElement(id);
   });
 
   els['message-input'].value = 'abc';
   els['log-dialog'].style.display = 'none';
   els['settings-dialog'].style.display = 'none';
 
-  var q_settings_close = createSimpleElement('q-settings-close');
-  var q_settings_change = createSimpleElement('q-settings-change');
-  var q_log_close = createSimpleElement('q-log-close');
+  var q_settings_close = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.createSimpleElement('q-settings-close');
+  var q_settings_change = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.createSimpleElement('q-settings-change');
+  var q_log_close = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.createSimpleElement('q-log-close');
 
+  /**
+   * Class for fake terminal buffer.
+   */
   class FakeTerminalBuffer {
+    /**
+     * Initializes fake terminal buffer.
+     */
     constructor() {
       this.log = [];
       this.last_class = undefined;
       this.last_tic = undefined;
       this.N_messages = 0;
     }
+    /**
+     * Clears.
+     */
     clear() {
       this.log = [];
       this.last_class = undefined;
       this.last_tic = undefined;
       this.N_messages = 0;
     }
+    /**
+     * Handles scroll to bottom.
+     */
     scrollToBottom() {}
+    /**
+     * Handles enforce rendered messages limit.
+     */
     enforceRenderedMessagesLimit() {}
+    /**
+     * Adds message.
+     * @param {*} msg_class Msg class.
+     * @param {*} data Data.
+     */
     addMessage(msg_class, data) {
       this.N_messages += 1;
       this.last_class = msg_class;
@@ -276,7 +342,7 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
 
   var context = {
     window: {
-      PRDC_TERMINAL_BUFFER: FakeTerminalBuffer,
+      PRDC_JSLAB_TERMINAL_BUFFER: FakeTerminalBuffer,
       getComputedStyle: function(el) {
         return { display: el.style.display || 'none' };
       }
@@ -286,10 +352,16 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
         return els[id];
       },
       querySelector: function(selector) {
-        if(selector === '#settings-dialog .options-close') return q_settings_close;
-        if(selector === '#settings-dialog .change-settings') return q_settings_change;
-        if(selector === '#log-dialog .options-close') return q_log_close;
-        return createSimpleElement('query-miss');
+        if(selector === '#settings-dialog .options-close') {
+          return q_settings_close;
+        }
+        if(selector === '#settings-dialog .change-settings') {
+          return q_settings_change;
+        }
+        if(selector === '#log-dialog .options-close') {
+          return q_log_close;
+        }
+        return PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.createSimpleElement('query-miss');
       },
       querySelectorAll: function(selector) {
         if(selector === '.terminal-dialog') {
@@ -300,11 +372,13 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
     },
     config: {},
     language: {
-      currentString: function() { return 'missing buffer'; }
+      currentString: function() {
+        return 'missing buffer';
+      }
     }
   };
   context.globalThis = context;
-  vm.runInNewContext(source, context, { filename: 'terminal.js' });
+  vm.runInNewContext(source, context, { filename: 'serial-terminal.js' });
 
   assert.equal(typeof context.terminal, 'object');
   context.terminal.addMessage('info', 'hello');
@@ -320,8 +394,9 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
 tests.add('presentation and editor window scripts retain expected runtime markers', function(assert) {
-  var presentation_source = readWindowScript('presentation.js');
-  var editor_source = readWindowScript('presentation-editor.js');
+  var presentation_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-viewer.js');
+  var editor_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-editor.js') +
+    PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-editor-notes.js');
   var presentation_css = fs.readFileSync(
     path.join(__dirname, '..', '..', '..', 'css', 'presentation.css'),
     'utf8'
@@ -330,10 +405,10 @@ tests.add('presentation and editor window scripts retain expected runtime marker
     path.join(__dirname, '..', '..', '..', 'css', 'presentation-editor.css'),
     'utf8'
   );
-  var presentation_html = readHtmlFile('presentation.html');
-  var presentation_editor_html = readHtmlFile('presentation-editor.html');
+  var presentation_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('presentation.html');
+  var presentation_editor_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('presentation-editor.html');
 
-  assert.ok(presentation_source.includes('class PRDC_JSLAB_PRESENTATION'));
+  assert.ok(presentation_source.includes('class PRDC_JSLAB_PRESENTATION_VIEWER'));
   assert.ok(presentation_source.includes("customElements.define('img-pdf'"));
   assert.ok(presentation_source.includes("customElements.define('plot-json'"));
   assert.ok(presentation_source.includes("customElements.define('scene-3d-json'"));
@@ -359,7 +434,7 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_source.includes('allow_lazy_preload'));
   assert.ok(presentation_source.includes('_withTimeout(promise'));
   assert.ok(presentation_source.includes('_shouldRenderElementNow(el)'));
-  assert.ok(presentation_source.includes('if(!is_lazy) return true;'));
+  assert.ok((/if\(!is_lazy\)\s*\{\s*return true;\s*\}/).test(presentation_source));
   assert.ok(presentation_source.includes('prepareSlideForCapture'));
   assert.ok(presentation_source.includes('_ensureSlideMath(slide)'));
   assert.ok(presentation_source.includes('_typesetMath(root)'));
@@ -420,7 +495,7 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(editor_source.includes('capturePage()'));
   assert.ok(editor_source.includes('captureThumbnailFallback'));
   assert.ok(editor_source.includes('__JSLAB_PRESENTATION_THUMBNAIL_MODE__'));
-  assert.ok(editor_source.includes("document.getElementById('thumbnail-preview')"));
+  assert.ok(editor_source.includes("this.platform.getPresentationView('thumbnail-preview')"));
   assert.ok(editor_source.includes('removeThumbnail'));
   assert.ok(editor_source.includes('thumb_worker_count = 2'));
   assert.ok(editor_source.includes('initThumbnailWorkers()'));
@@ -443,32 +518,32 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_editor_html.includes('id="tab-save" src="../img/tab-save.svg" title-str="50" alt-str="50"'));
   assert.ok(presentation_editor_html.includes('id="slide-notes"'));
   assert.ok(presentation_editor_html.includes('<textarea id="slide-notes-body"'));
-  assert.ok(presentation_editor_html.includes('<str sid="554"></str>'));
-  assert.ok(editor_source.includes('var presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR();'));
+  assert.ok(presentation_editor_html.includes("<str sid=\"553\"></str>"));
+  assert.ok(fs.readFileSync(path.join(__dirname, '../../backend-electron/init-presentation-editor.js'), 'utf8').includes('new PRDC_JSLAB_PRESENTATION_EDITOR(new PRDC_JSLAB_ELECTRON_RENDERER_ADAPTER())'));
 }, { tags: ['unit', 'windows', 'sandbox'] });
 
 tests.add('language workflow is explicit for editor and presentation-editor windows', function(assert) {
   var editor_init_source = fs.readFileSync(
-    path.join(__dirname, '..', '..', 'editor', 'init-editor.js'),
+    path.join(__dirname, '..', '..', 'backend-electron', 'init-editor.js'),
     'utf8'
   );
-  var presentation_editor_source = readWindowScript('presentation-editor.js');
-  var editor_html = readHtmlFile('editor.html');
-  var presentation_editor_html = readHtmlFile('presentation-editor.html');
-  var presentation_html = readHtmlFile('presentation.html');
+  var presentation_editor_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-editor.js');
+  var editor_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('editor.html');
+  var presentation_editor_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('presentation-editor.html');
+  var presentation_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('presentation.html');
 
-  assert.ok(editor_init_source.includes('var language = new PRDC_JSLAB_LANGUAGE();'));
-  assert.ok(presentation_editor_source.includes('var language = window.opener.jsl.inter.lang;'));
-  assert.ok(presentation_editor_source.includes("require('../js/editor/search-all')"));
+  assert.ok(editor_init_source.includes('var language = platform.createLanguage(app_logger);'));
+  assert.ok(fs.readFileSync(path.join(__dirname, '../../backend-electron/init-presentation-editor.js'), 'utf8').includes('var language = window.opener.jsl.inter.lang;'));
+  assert.ok(presentation_editor_source.includes("require('../editor/search-all')"));
 
   var editor_dialog_idx = editor_html.indexOf('../js/code/dialog-search.js');
-  var editor_init_idx = editor_html.indexOf('../js/editor/init-editor.js');
+  var editor_init_idx = editor_html.indexOf('../js/backend-electron/init-editor.js');
   assert.ok(editor_dialog_idx > -1);
   assert.ok(editor_init_idx > -1);
   assert.ok(editor_dialog_idx < editor_init_idx);
 
   var pe_dialog_idx = presentation_editor_html.indexOf('../js/code/dialog-search.js');
-  var pe_window_idx = presentation_editor_html.indexOf('../js/windows/presentation-editor.js');
+  var pe_window_idx = presentation_editor_html.indexOf('../js/backend-electron/init-presentation-editor.js');
   assert.ok(pe_dialog_idx > -1);
   assert.ok(pe_window_idx > -1);
   assert.ok(pe_dialog_idx < pe_window_idx);

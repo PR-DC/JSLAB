@@ -1,25 +1,26 @@
 /**
- * @file JSLAB library plot script
+ * @file JSLAB plot viewer controller
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
 
 /**
- * Class for JSLAB plot.
+ * Controls the plot viewer inside a figure window.
  */
-class PRDC_JSLAB_PLOT {
-  
+class PRDC_JSLAB_PLOT_VIEWER {
+
   /**
-   * Initializes an instance of the PRDC_JSLAB_PLOT class.
+   * Initializes an instance of the PRDC_JSLAB_PLOT_VIEWER class.
    */
   constructor() {
     var obj = this;
     this.figure_content = document.getElementById('figure-content');
     this.plot_cont;
-    
+
     this.update_queue = new Map();
     this.frame_requested = false;
+    this.drawing = false;
   }
 
   /**
@@ -88,7 +89,7 @@ class PRDC_JSLAB_PLOT {
       });
     }));
   }
-  
+
   /**
    * Set a new plot container to the figure content.
    */
@@ -97,7 +98,7 @@ class PRDC_JSLAB_PLOT {
     this.plot_cont.className = 'plot-cont';
     this.figure_content.appendChild(this.plot_cont);
   }
-  
+
   /**
    * Creates a new plot using Plotly in the plot container.
    * @param {Object} plot_in - An object containing plot initial settings.
@@ -106,8 +107,35 @@ class PRDC_JSLAB_PLOT {
    * @param {Object} config - Additional configuration settings for the plot.
    */
   async newPlot(plot_in, traces, layout, config) {
+    if(this.mesh_animation) {
+      this.mesh_animation.dispose();
+      this.mesh_animation = null;
+    }
     await this._loadLayoutFonts(layout);
     await Plotly.newPlot(this.plot_cont, traces, layout, config);
+  }
+
+  /**
+   * Enables retained rigid meshes when the pinned renderer supports them.
+   * @param {Function} snapshot Current world meshes for image and data exports.
+   * @returns {boolean} Whether shader-based rigid playback is available.
+   */
+  initMeshAnimation(snapshot) {
+    try {
+      this.mesh_animation = new PRDC_JSLAB_PLOT_MESH_ANIMATION(this, snapshot);
+      window.addEventListener('beforeunload', () => this.mesh_animation?.dispose(), { once: true });
+      return true;
+    } catch(error) {
+      return false;
+    }
+  }
+
+  /**
+   * Applies native rigid transforms without recalculating Plotly traces.
+   * @param {Float32Array[]} matrices World transforms in initial mesh order.
+   */
+  updateMeshTransforms(matrices) {
+    this.mesh_animation.update(matrices);
   }
 
   /**
@@ -123,19 +151,16 @@ class PRDC_JSLAB_PLOT {
       : (Array.isArray(N) ? N : [N]);
 
     idxs.forEach(function(idx, k) {
-      if(idx == null || Number.isNaN(idx)) return;
+      if(idx == null || Number.isNaN(idx)) {
+        return;
+      }
       var update = (traces.length === idxs.length) ? traces[k] : traces[0];
       obj.update_queue.set(idx, { ...obj.update_queue.get(idx), ...update });
     });
-    
-    if(!this.frame_requested) {
-      this.frame_requested = true;
-      requestAnimationFrame(function() {
-        obj._flushUpdates();
-      });
-    }
+
+    this._scheduleUpdate();
   }
-  
+
   /**
    * Queues trace-update objects for the next animation-frame batch flush.
    * @param {Object|Object[]} data - Single trace or array of traces, each with an `id` and properties to restyle.
@@ -143,7 +168,7 @@ class PRDC_JSLAB_PLOT {
   updateDataById(data) {
     var obj = this;
     var list = Array.isArray(data) ? data : [data];
-    
+
     list.forEach(function(item) {
       if(!item || !item.id) {
         return;
@@ -151,35 +176,48 @@ class PRDC_JSLAB_PLOT {
       obj.update_queue.set(item.id, { ...obj.update_queue.get(item.id), ...item });
     });
 
-    if(!this.frame_requested) {
-      this.frame_requested = true;
-      requestAnimationFrame(function() {
-        obj._flushUpdates();
-      });
-    }
+    this._scheduleUpdate();
   }
-  
+
+  /**
+   * Schedules the latest queued data after the current Plotly draw completes.
+   */
+  _scheduleUpdate() {
+    if(this.frame_requested || this.drawing || !this.update_queue.size) {
+      return;
+    }
+    this.frame_requested = true;
+    requestAnimationFrame(() => this._flushUpdates());
+  }
+
   /**
    * Flushes all queued updates (internal).
    */
-  _flushUpdates() {
+  async _flushUpdates() {
     var obj = this;
     this.frame_requested = false;
+    if(this.drawing || !this.update_queue.size) {
+      return;
+    }
+    var updates = this.update_queue;
+    this.update_queue = new Map();
 
     var restyle_indices = [];
     var restyle_props = {};
 
-    this.update_queue.forEach((update, key) => {
+    updates.forEach((update, key) => {
       var idx = (typeof key === 'number')
         ? key
         : obj.plot_cont.data.findIndex(t => t.id === key);
 
       var flat = {};
       for(var prop in update) {
-        if(prop === 'id') continue;
+        if(prop === 'id') {
+          continue;
+        }
         var val = update[prop];
 
-        if(val && typeof val === 'object' && !Array.isArray(val)) {
+        if(val && typeof val === 'object' && !Array.isArray(val) && !ArrayBuffer.isView(val)) {
           for(var sub in val) {
             flat[`${prop}.${sub}`] = val[sub];
           }
@@ -191,20 +229,27 @@ class PRDC_JSLAB_PLOT {
       if(idx !== -1 && obj.plot_cont.data[idx]) {
         var slot = restyle_indices.push(idx) - 1;
         for(var prop in flat) {
-          if(!restyle_props[prop]) restyle_props[prop] = [];
+          if(!restyle_props[prop]) {
+            restyle_props[prop] = [];
+          }
           var v = flat[prop];
           restyle_props[prop][slot] =
             Array.isArray(v) && v.length === 1 && Array.isArray(v[0]) ? v[0] : v;
         }
       }
-     });
-    
+    });
+
     if(restyle_indices.length) {
-      Plotly.restyle(this.plot_cont, restyle_props, restyle_indices);
+      this.drawing = true;
+      try {
+        await Plotly.restyle(this.plot_cont, restyle_props, restyle_indices);
+      } finally {
+        this.drawing = false;
+        this._scheduleUpdate();
+      }
     }
-    this.update_queue.clear();
   }
-  
+
   /**
    * Updates the layout of the existing plot.
    * @param {Object} layout - Layout configuration to apply to the plot.
@@ -222,7 +267,7 @@ class PRDC_JSLAB_PLOT {
   restyle(traces, N) {
     Plotly.restyle(this.plot_cont, traces, N);
   }
-  
+
   /**
    * Resizes the plot to fit its container.
    */
@@ -243,30 +288,43 @@ class PRDC_JSLAB_PLOT {
       width = size[0];
       height = size[1];
     }
-    return await Plotly.toImage(this.plot_cont, {format: ext,
+    var source = this.mesh_animation ? { data: this.mesh_animation.exportData(),
+      layout: this.plot_cont.layout, config: this.plot_cont._context } : this.plot_cont;
+    return await Plotly.toImage(source, {format: ext,
       width: width,
       height: height
     });
   }
-  
+
   /**
    * Converts the plot to an json object.
    * @param {Function} callback - Callback function that handles the image URL.
    * @returns {Object} JSON of the plot.
    */
   toJSON() {
-    return Plotly.Plots.graphJson(this.plot_cont, 
+    var json = Plotly.Plots.graphJson(this.plot_cont,
       undefined, undefined, undefined, true);
+    if(!this.mesh_animation) {
+      return json;
+    }
+    var data = typeof json == 'string' ? JSON.parse(json) : json;
+    data.data = this.mesh_animation.exportData().map(trace => Object.fromEntries(
+      Object.entries(trace).map(([key, value]) => [key, ArrayBuffer.isView(value) ? Array.from(value) : value])));
+    return typeof json == 'string' ? JSON.stringify(data) : data;
   }
-  
+
   /**
    * Sets the plot data from JSON.
    * @param {Array} data Data for the plot.
    */
   async fromJSON(data) {
+    if(this.mesh_animation) {
+      this.mesh_animation.dispose();
+      this.mesh_animation = null;
+    }
     await this._loadLayoutFonts(data && data.layout ? data.layout : {});
     await Plotly.newPlot(this.plot_cont, data);
   }
 }
 
-var plot = new PRDC_JSLAB_PLOT();
+var plot = new PRDC_JSLAB_PLOT_VIEWER();

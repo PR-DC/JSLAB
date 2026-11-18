@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB render submodule.
  */
 class PRDC_JSLAB_LIB_RENDER {
-  
+
   /**
    * Initializes a new instance of the render submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -18,7 +18,7 @@ class PRDC_JSLAB_LIB_RENDER {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Debounces a function, ensuring it's only invoked once at the beginning of consecutive calls during the wait period.
    * @param {Function} func - The function to debounce.
@@ -28,7 +28,7 @@ class PRDC_JSLAB_LIB_RENDER {
   debounceIn(func, wait) {
     var timeout;
     let last_args;
-    
+
     return function(...args) {
       var context = this;
       last_args = args;
@@ -52,7 +52,7 @@ class PRDC_JSLAB_LIB_RENDER {
     var timeout;
     var hit = false;
     let last_args;
-    
+
     return function(...args) {
       var context = this;
       last_args = args;
@@ -83,7 +83,7 @@ class PRDC_JSLAB_LIB_RENDER {
   debounceOut(func, wait) {
     var timeout;
     let last_args;
-    
+
     return function(...args) {
       var context = this;
       last_args = args;

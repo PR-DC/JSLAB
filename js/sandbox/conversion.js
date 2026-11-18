@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB conversion submodule.
  */
 class PRDC_JSLAB_LIB_CONVERSION {
-  
+
   /**
    * Constructs a conversion submodule object with access to JSLAB's conversion functions.
    * @constructor
@@ -18,13 +18,15 @@ class PRDC_JSLAB_LIB_CONVERSION {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    
+
     this.speech = this.jsl.inter.env.speech;
-    
+
     /**
      * Serializes BigInt values to JSON by converting them to strings.
      */
-    BigInt.prototype.toJSON = function() { return this.toString(); };
+    BigInt.prototype.toJSON = function() {
+      return this.toString();
+    };
   }
 
   /**
@@ -37,7 +39,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
       speechSynthesis.speak(this.speech);
     }
   }
-  
+
   /**
    * Converts a number to a string with specified precision.
    * @param {number} num - The number to convert.
@@ -72,7 +74,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     var pos = path.lastIndexOf('.');
     return path.substr(0, pos < 0 ? path.length : pos);
   }
-  
+
   /**
    * Transforms coordinates from NED (North, East, Down) frame to RPY (Roll, Pitch, Yaw) frame.
    * @param {number} roll - The roll angle in radians.
@@ -83,15 +85,15 @@ class PRDC_JSLAB_LIB_CONVERSION {
    */
   ned2rpy(roll, pitch, yaw, A) {
     const T = [
-      [Math.cos(yaw)*Math.cos(pitch), 
-        Math.sin(yaw)*Math.cos(pitch), 
-        -Math.sin(pitch)], 
-      [Math.cos(yaw)*Math.sin(pitch)*Math.sin(roll)-Math.sin(yaw)*Math.cos(roll), 
-        Math.sin(yaw)*Math.sin(pitch)*Math.sin(roll)+Math.cos(yaw)*Math.cos(roll), 
-        Math.cos(pitch)*Math.sin(roll)],
-      [Math.cos(yaw)*Math.sin(pitch)*Math.cos(roll)+Math.sin(yaw)*Math.sin(roll), 
-        Math.sin(yaw)*Math.sin(pitch)*Math.cos(roll)-Math.cos(yaw)*Math.sin(roll), 
-        Math.cos(pitch)*Math.cos(roll)]
+      [Math.cos(yaw) * Math.cos(pitch),
+        Math.sin(yaw) * Math.cos(pitch),
+        -Math.sin(pitch)],
+      [Math.cos(yaw) * Math.sin(pitch) * Math.sin(roll) - Math.sin(yaw) * Math.cos(roll),
+        Math.sin(yaw) * Math.sin(pitch) * Math.sin(roll) + Math.cos(yaw) * Math.cos(roll),
+        Math.cos(pitch) * Math.sin(roll)],
+      [Math.cos(yaw) * Math.sin(pitch) * Math.cos(roll) + Math.sin(yaw) * Math.sin(roll),
+        Math.sin(yaw) * Math.sin(pitch) * Math.cos(roll) - Math.cos(yaw) * Math.sin(roll),
+        Math.cos(pitch) * Math.cos(roll)]
     ];
 
     if(A != undefined) {
@@ -116,9 +118,9 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {Array<number>} The array of decimal numbers.
    */
   hex2dec(hex) {
-    return hex.map(function(e) { 
-      return parseInt(e, 16); 
-    });  
+    return hex.map(function(e) {
+      return parseInt(e, 16);
+    });
   }
 
   /**
@@ -127,7 +129,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {string} The ASCII character.
    */
   numToASCII(num) {
-    return (''+num).charCodeAt(0);
+    return ('' + num).charCodeAt(0);
   }
 
   /**
@@ -140,8 +142,8 @@ class PRDC_JSLAB_LIB_CONVERSION {
   numToHexStr(num, dig = 4, prefix = false) {
     var str = ('0000'.repeat(dig) + num.toString(16).toUpperCase()).slice(-dig);
     if(prefix) {
-      return '0x'+str;
-    } 
+      return '0x' + str;
+    }
     return str;
   }
 
@@ -172,11 +174,11 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {number} The combined int16 value.
    */
   uint8sToInt16(part1, part2) {
-      part1 &= 0xFF;
-      part2 &= 0xFF;
-      
-      let result = (part1 << 8) | part2;
-      return (result & 0x8000) ? -((result ^ 0xFFFF) + 1) : result;
+    part1 &= 0xFF;
+    part2 &= 0xFF;
+
+    let result = (part1 << 8) | part2;
+    return (result & 0x8000) ? -((result ^ 0xFFFF) + 1) : result;
   }
 
   /**
@@ -188,13 +190,13 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {number} The combined int32 value.
    */
   uint8sToInt32(part1, part2, part3, part4) {
-      part1 &= 0xFF;
-      part2 &= 0xFF;
-      part3 &= 0xFF;
-      part4 &= 0xFF;
-      
-      let result = (part1 << 24) | (part2 << 16) | (part3 << 8) | part4;
-      return (result & 0x80000000) ? -((result ^ 0xFFFFFFFF) + 1) : result;
+    part1 &= 0xFF;
+    part2 &= 0xFF;
+    part3 &= 0xFF;
+    part4 &= 0xFF;
+
+    let result = (part1 << 24) | (part2 << 16) | (part3 << 8) | part4;
+    return (result & 0x80000000) ? -((result ^ 0xFFFFFFFF) + 1) : result;
   }
 
   /**
@@ -212,7 +214,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     // Interpret the integer as a float without using Math.pow
     let sign = (combinedValue & 0x80000000) ? -1 : 1;
     let exponent = ((combinedValue >> 23) & 0xFF) - 127;
-    let mantissa = (combinedValue & 0x7FFFFF | 0x800000) / (1 << 23); 
+    let mantissa = (combinedValue & 0x7FFFFF | 0x800000) / (1 << 23);
 
     return sign * mantissa * (2 ** exponent);
   }
@@ -223,7 +225,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {number} The converted int16 value.
    */
   uint16ToInt16(num) {
-      return (num & 0x8000) ? -((num ^ 0xFFFF) + 1) : num;
+    return (num & 0x8000) ? -((num ^ 0xFFFF) + 1) : num;
   }
 
   /**
@@ -241,12 +243,12 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @param {number} ms - The time in milliseconds.
    * @returns {string} The time string.
    */
-  ms2time(ms){
-    const min = Math.floor((ms/1000/60) << 0);
-    const sec = Math.floor((ms/1000) % 60);
+  ms2time(ms) {
+    const min = Math.floor((ms / 1000 / 60) << 0);
+    const sec = Math.floor((ms / 1000) % 60);
     return ('0' + min).slice(-2) + ':' + ('0' + sec).slice(-2);
   }
-  
+
   /**
    * Converts a decimal number to a binary string.
    * @param {number} x - The decimal number.
@@ -255,7 +257,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
   dec2bin(x) {
     return this.jsl.inter.env.math.bin(x);
   }
-  
+
   /**
    * Converts a decimal number to a hexadecimal string.
    * @param {number} x - The decimal number.
@@ -264,7 +266,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
   dec2hex(x) {
     return this.jsl.inter.env.math.hex(x);
   }
-  
+
   /**
    * Converts a decimal number to an octal string.
    * @param {number} x - The decimal number.
@@ -273,7 +275,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
   dec2oct(x) {
     return this.jsl.inter.env.math.oct(x);
   }
-  
+
   /**
    * Rounds a number to a specified number of decimal places.
    * @param {number} number - The number to round.
@@ -290,7 +292,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     }
     if(result == 0) {
       result = '0'; // removes -0
-    }   
+    }
     if(string) {
       return result;
     } else {
@@ -311,7 +313,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
       return value;
     }
   }
-  
+
   /**
    * Rounds a number to a fixed number of decimal places if it is a number.
    * @param {number} value - The value to round.
@@ -364,7 +366,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
   getEnumVal(enum_object, prop, val) {
     var enteries = Object.entries(enum_object);
     var idx = enteries.findIndex(function(f) {
-        return f[1][prop] == val;
+      return f[1][prop] == val;
     });
     if(idx > 0) {
       return Number(enteries[idx][0]);
@@ -394,7 +396,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     });
     return enum_object_inv;
   }
-  
+
   /**
    * Converts an array of numbers to a string of hexadecimal values, optionally prefixed with "0x".
    * @param {Array<number>} A - The array to convert.
@@ -435,7 +437,9 @@ class PRDC_JSLAB_LIB_CONVERSION {
     for(var i = 1, len = objects.length; i < len; i++) {
       o = objects[i];
 
-      if(!this.isObject(o)) continue;
+      if(!this.isObject(o)) {
+        continue;
+      }
 
       for(p in o) {
         target[p] = o[p];
@@ -444,7 +448,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
 
     return target;
   }
-  
+
   /**
    * Normalizes the value of a radio control (RC) input.
    * @param {number} rc - The RC input value.
@@ -452,11 +456,11 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @returns {number} The normalized value.
    */
   normalizeRC(rc, deadzone = 0) {
-    var val = rc-1500;
+    var val = rc - 1500;
     if(Math.abs(val) < deadzone) {
       return 0;
     }
-    return (val-Math.sign(val)*deadzone)/(500-deadzone);
+    return (val - Math.sign(val) * deadzone) / (500 - deadzone);
   }
 
   /**
@@ -469,9 +473,9 @@ class PRDC_JSLAB_LIB_CONVERSION {
     if(Math.abs(val) < deadzone) {
       return 1500;
     }
-    return Number((1500+val*500).toFixed(0));
+    return Number((1500 + val * 500).toFixed(0));
   }
-  
+
   /**
    * Checks if a value has been updated and updates the last value if it has.
    * @param {Object} data - An object containing the current value and the last value.
@@ -505,9 +509,9 @@ class PRDC_JSLAB_LIB_CONVERSION {
    * @param {boolean} [adc_bipolar=true] - Indicates if the ADC is bipolar.
    * @returns {number} The calculated force in Newtons.
    */
-  adcToNewtons(adc_count, load_cell_capacity, 
-      adc_resolution = 24, adc_gain = 128,  
-      adc_sensitivity = 2, adc_bipolar = true) {
+  adcToNewtons(adc_count, load_cell_capacity,
+    adc_resolution = 24, adc_gain = 128,
+    adc_sensitivity = 2, adc_bipolar = true) {
     if(adc_bipolar) {
       adc_resolution = adc_resolution - 1;
     }
@@ -517,7 +521,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     const force = (measured_adc / adc_sensitivity) * load_cell_capacity;
     return force;
   }
-  
+
   /**
    * Converts file data from a given path to a blob URL.
    * @param {string} file_path_in - Relative path from the application's base path to the file.
@@ -530,7 +534,7 @@ class PRDC_JSLAB_LIB_CONVERSION {
     }
     return URL.createObjectURL(new Blob([this.jsl.inter.fs.readFileSync(file_path)]));
   }
-  
+
   /**
    * Converts top, right, bottom, and left margins into x and y coordinates.
    * @param {number} cont_width - Container width.
@@ -571,15 +575,19 @@ class PRDC_JSLAB_LIB_CONVERSION {
     const keys = Object.keys(data);
     let csv_content = keys.join(delimiter) + '\n';
 
-    const maxEntries = Math.max(...keys.map(function(key) {return data[key].length;} ));
+    const maxEntries = Math.max(...keys.map(function(key) {
+      return data[key].length;
+    }));
     for(let i = 0; i < maxEntries; i++) {
-      let row = keys.map(function(key) { return (i < data[key].length) ? data[key][i] : ''; }).join(delimiter);
+      let row = keys.map(function(key) {
+        return (i < data[key].length) ? data[key][i] : '';
+      }).join(delimiter);
       csv_content += row + '\n';
     }
 
     return csv_content;
   }
-  
+
   /**
    * Converts a 2D array into a CSV string format.
    * @param {Array} data - An array of arrays to be converted into CSV format.
@@ -597,14 +605,16 @@ class PRDC_JSLAB_LIB_CONVERSION {
     });
     return csv_content;
   }
-  
+
   /**
    * Converts a subset of LaTeX/TeX math syntax into HTML/Unicode.
    * @param {string} latex - LaTeX/TeX input string.
    * @returns {string} HTML/Unicode string.
    */
   latexToHtml(latex) {
-    if(latex == null) return "";
+    if(latex == null) {
+      return "";
+    }
     const latexToHtml = (input) => this.latexToHtml(input);
     let s = String(latex);
 
@@ -629,8 +639,11 @@ class PRDC_JSLAB_LIB_CONVERSION {
           const start = i + cmd.length + 2; // after "\cmd{"
           let j = start, depth = 1;
           while(j < str.length && depth > 0) {
-            if(str[j] === "{") depth++;
-            else if(str[j] === "}") depth--;
+            if(str[j] === "{") {
+              depth++;
+            } else if(str[j] === "}") {
+              depth--;
+            }
             j++;
           }
           if(depth === 0) {
@@ -653,18 +666,28 @@ class PRDC_JSLAB_LIB_CONVERSION {
           const aStart = i + 6;
           let j = aStart, depth = 1;
           while(j < str.length && depth > 0) {
-            if(str[j] === "{") depth++;
-            else if(str[j] === "}") depth--;
+            if(str[j] === "{") {
+              depth++;
+            } else if(str[j] === "}") {
+              depth--;
+            }
             j++;
           }
-          if(depth !== 0 || str[j] !== "{") { out += str[i]; continue; }
+          if(depth !== 0 || str[j] !== "{") {
+            out += str[i];
+            continue;
+          }
           const a = str.slice(aStart, j - 1);
 
           const bStart = j + 1;
-          let k = bStart; depth = 1;
+          let k = bStart;
+          depth = 1;
           while(k < str.length && depth > 0) {
-            if(str[k] === "{") depth++;
-            else if(str[k] === "}") depth--;
+            if(str[k] === "{") {
+              depth++;
+            } else if(str[k] === "}") {
+              depth--;
+            }
             k++;
           }
           if(depth === 0) {
@@ -693,38 +716,40 @@ class PRDC_JSLAB_LIB_CONVERSION {
     // Symbol mapping (\alpha -> α, \leq -> ≤, etc.)
     const map = {
       // Greek
-      "\\alpha":"α","\\beta":"β","\\gamma":"γ","\\delta":"δ","\\epsilon":"ε","\\varepsilon":"ε",
-      "\\zeta":"ζ","\\eta":"η","\\theta":"θ","\\vartheta":"ϑ","\\iota":"ι","\\kappa":"κ",
-      "\\lambda":"λ","\\mu":"µ","\\nu":"ν","\\xi":"ξ","\\pi":"π","\\varpi":"ϖ","\\rho":"ρ",
-      "\\varrho":"ϱ","\\sigma":"σ","\\varsigma":"ς","\\tau":"τ","\\upsilon":"υ","\\phi":"φ",
-      "\\varphi":"ϕ","\\chi":"χ","\\psi":"ψ","\\omega":"ω",
-      "\\Gamma":"Γ","\\Delta":"Δ","\\Theta":"Θ","\\Lambda":"Λ","\\Xi":"Ξ","\\Pi":"Π",
-      "\\Sigma":"Σ","\\Upsilon":"Υ","\\Phi":"Φ","\\Psi":"Ψ","\\Omega":"Ω",
+      "\\alpha": "α", "\\beta": "β", "\\gamma": "γ", "\\delta": "δ", "\\epsilon": "ε", "\\varepsilon": "ε",
+      "\\zeta": "ζ", "\\eta": "η", "\\theta": "θ", "\\vartheta": "ϑ", "\\iota": "ι", "\\kappa": "κ",
+      "\\lambda": "λ", "\\mu": "µ", "\\nu": "ν", "\\xi": "ξ", "\\pi": "π", "\\varpi": "ϖ", "\\rho": "ρ",
+      "\\varrho": "ϱ", "\\sigma": "σ", "\\varsigma": "ς", "\\tau": "τ", "\\upsilon": "υ", "\\phi": "φ",
+      "\\varphi": "ϕ", "\\chi": "χ", "\\psi": "ψ", "\\omega": "ω",
+      "\\Gamma": "Γ", "\\Delta": "Δ", "\\Theta": "Θ", "\\Lambda": "Λ", "\\Xi": "Ξ", "\\Pi": "Π",
+      "\\Sigma": "Σ", "\\Upsilon": "Υ", "\\Phi": "Φ", "\\Psi": "Ψ", "\\Omega": "Ω",
 
       // Relations / operators
-      "\\leq":"≤","\\geq":"≥","\\neq":"≠","\\ne":"≠","\\approx":"≈","\\sim":"∼",
-      "\\equiv":"≡","\\propto":"∝","\\infty":"∞","\\pm":"±","\\mp":"∓",
-      "\\times":"×","\\div":"÷","\\cdot":"·","\\circ":"∘","\\bullet":"•",
-      "\\sum":"∑","\\prod":"∏","\\int":"∫","\\partial":"∂","\\nabla":"∇",
+      "\\leq": "≤", "\\geq": "≥", "\\neq": "≠", "\\ne": "≠", "\\approx": "≈", "\\sim": "∼",
+      "\\equiv": "≡", "\\propto": "∝", "\\infty": "∞", "\\pm": "±", "\\mp": "∓",
+      "\\times": "×", "\\div": "÷", "\\cdot": "·", "\\circ": "∘", "\\bullet": "•",
+      "\\sum": "∑", "\\prod": "∏", "\\int": "∫", "\\partial": "∂", "\\nabla": "∇",
 
       // Sets / logic
-      "\\in":"∈","\\notin":"∉","\\subset":"⊂","\\subseteq":"⊆","\\supset":"⊃","\\supseteq":"⊇",
-      "\\cup":"∪","\\cap":"∩","\\emptyset":"∅","\\varnothing":"∅",
-      "\\forall":"∀","\\exists":"∃","\\neg":"¬","\\wedge":"∧","\\vee":"∨",
+      "\\in": "∈", "\\notin": "∉", "\\subset": "⊂", "\\subseteq": "⊆", "\\supset": "⊃", "\\supseteq": "⊇",
+      "\\cup": "∪", "\\cap": "∩", "\\emptyset": "∅", "\\varnothing": "∅",
+      "\\forall": "∀", "\\exists": "∃", "\\neg": "¬", "\\wedge": "∧", "\\vee": "∨",
 
       // Arrows
-      "\\to":"→","\\rightarrow":"→","\\leftarrow":"←","\\leftrightarrow":"↔",
-      "\\Rightarrow":"⇒","\\Leftarrow":"⇐","\\Leftrightarrow":"⇔","\\mapsto":"↦",
+      "\\to": "→", "\\rightarrow": "→", "\\leftarrow": "←", "\\leftrightarrow": "↔",
+      "\\Rightarrow": "⇒", "\\Leftarrow": "⇐", "\\Leftrightarrow": "⇔", "\\mapsto": "↦",
 
       // Misc
-      "\\degree":"°","\\circC":"°C","\\circF":"°F",
-      "\\%":"%","\\_":"_","\\#":"#","\\$":"$","\\{":"{","\\}":"}",
-      "\\,":" ","\\;":" ","\\:":" ","\\!":""
+      "\\degree": "°", "\\circC": "°C", "\\circF": "°F",
+      "\\%": "%", "\\_": "_", "\\#": "#", "\\$": "$", "\\{": "{", "\\}": "}",
+      "\\,": " ", "\\;": " ", "\\:": " ", "\\!": ""
     };
 
     // Replace longest keys first (so \Rightarrow doesn't get hit by \to, etc.)
-    const keys = Object.keys(map).sort((a,b)=>b.length-a.length);
-    for(const k of keys) s = s.split(k).join(map[k]);
+    const keys = Object.keys(map).sort((a, b)=>b.length - a.length);
+    for(const k of keys) {
+      s = s.split(k).join(map[k]);
+    }
 
     // Sup/sub parsing with balanced braces
     function applySubSup(str) {
@@ -740,8 +765,11 @@ class PRDC_JSLAB_LIB_CONVERSION {
             j++;
             let start = j, depth = 1;
             while(j < str.length && depth > 0) {
-              if(str[j] === "{") depth++;
-              else if(str[j] === "}") depth--;
+              if(str[j] === "{") {
+                depth++;
+              } else if(str[j] === "}") {
+                depth--;
+              }
               j++;
             }
             if(depth === 0) {
@@ -762,7 +790,9 @@ class PRDC_JSLAB_LIB_CONVERSION {
       }
       return out;
     }
-    for(let pass = 0; pass < 3; pass++) s = applySubSup(s);
+    for(let pass = 0; pass < 3; pass++) {
+      s = applySubSup(s);
+    }
 
     // Remove leftover braces used only for grouping
     s = s.replace(/[{}]/g, "");

@@ -9,7 +9,7 @@
  * Class for JSLAB system submodule.
  */
 class PRDC_JSLAB_LIB_SYSTEM {
-  
+
   /**
    * Initializes a new instance of the system submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -17,7 +17,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    
+
     /**
      * Array of open terminals.
      * @type {Array}
@@ -34,7 +34,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
     try {
       return this.jsl.inter.env.execSync(...args).toString();
     } catch(err) {
-      this.jsl.inter.env.error('@system: '+err);
+      this.jsl.inter.env.error('@system: ' + err);
       return false;
     }
   }
@@ -47,7 +47,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
     try {
       return this.jsl.inter.env.exec(...args);
     } catch(err) {
-      this.jsl.inter.env.error('@exec: '+err);
+      this.jsl.inter.env.error('@exec: ' + err);
       return false;
     }
   }
@@ -60,7 +60,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
     try {
       return this.jsl.inter.env.spawn(...args);
     } catch(err) {
-      this.jsl.inter.env.error('@spawn: '+err);
+      this.jsl.inter.env.error('@spawn: ' + err);
       return false;
     }
   }
@@ -76,9 +76,9 @@ class PRDC_JSLAB_LIB_SYSTEM {
     var id = this.jsl.inter.env.sendPty('create', args);
     var terminal = new PRDC_JSLAB_SYSTEM_TERMINAL(this.jsl, id, onData, onExit);
     this.open_terminals[id] = terminal;
-    return terminal; 
+    return terminal;
   }
-  
+
   /**
    * Retrieves a list of all running tasks on the system.
    * @returns {Array} An array containing the tasklist output or [false, []] if an error occurred.
@@ -87,7 +87,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
     try {
       return this.jsl.inter.env.execSync('tasklist').toString();
     } catch(err) {
-      this.jsl.inter.env.error('@getTaskList: '+err);
+      this.jsl.inter.env.error('@getTaskList: ' + err);
       return false;
     }
   }
@@ -95,14 +95,14 @@ class PRDC_JSLAB_LIB_SYSTEM {
   /**
    * Checks if a specific program is running and retrieves its process IDs.
    * @param {string} program_name - The name of the program to check.
-   * @returns {Array} An array where the first element is a boolean indicating if the program is running, 
-   *                  and the second element is an array of process IDs if the program is running.
+   * @returns {Array} An array where the first element is a boolean indicating if the program is running,
+   * and the second element is an array of process IDs if the program is running.
    */
   isProgramRunning(program_name) {
     try {
       // Execute the tasklist command and get the output
       const output = this.jsl.inter.env.execSync('tasklist').toString();
-      
+
       // Convert the output to lowercase for case-insensitive comparison
       const output_lower = output.toLowerCase();
       const program_nameLower = program_name.toLowerCase();
@@ -118,18 +118,18 @@ class PRDC_JSLAB_LIB_SYSTEM {
         // Split the line by spaces and filter out empty elements
         const columns = line.trim().split(/\s+/);
         return parseInt(columns[1], 10); // PID is the second column
-      }).filter(function(pid) { 
+      }).filter(function(pid) {
         return !isNaN(pid);
       }); // Filter out NaN values (if any)
 
       const is_running = pids.length > 0;
       return [is_running, pids];
     } catch(err) {
-      this.jsl.inter.env.error('@isProgramRunning: '+err);
+      this.jsl.inter.env.error('@isProgramRunning: ' + err);
       return [false, []];
     }
   }
-  
+
   /**
    * Attempts to kill a process by its process ID.
    * @param {number} pid - The process ID of the process to kill.
@@ -138,13 +138,13 @@ class PRDC_JSLAB_LIB_SYSTEM {
   killProcess(pid) {
     try {
       // Execute the tasklist command and get the output
-      return this.jsl.inter.env.execSync('taskkill /pid '+pid+' /T /F').toString();
+      return this.jsl.inter.env.execSync('taskkill /pid ' + pid + ' /T /F').toString();
     } catch(err) {
-      this.jsl.inter.env.error('@killProcess: '+err);
+      this.jsl.inter.env.error('@killProcess: ' + err);
       return false;
     }
   }
-  
+
   /**
    * Callback called on new pty data
    * @param {Object} data - Data from pty.
@@ -157,7 +157,7 @@ class PRDC_JSLAB_LIB_SYSTEM {
       this.open_terminals[data.id].onData(data.buffer);
     }
   }
-  
+
   /**
    * Closes all terminals
    */
@@ -173,7 +173,7 @@ exports.PRDC_JSLAB_LIB_SYSTEM = PRDC_JSLAB_LIB_SYSTEM;
  * Class for JSLAB system terminal.
  */
 class PRDC_JSLAB_SYSTEM_TERMINAL {
-  
+
   /**
    * Creates a terminal wrapper instance.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -187,7 +187,7 @@ class PRDC_JSLAB_SYSTEM_TERMINAL {
     this._onData = onData;
     this._onExit = onExit;
   }
-  
+
   /**
    * Writes text to the terminal (encoded as base64 for transport).
    * @param {string} str - Text to write to the PTY stdin.
@@ -197,7 +197,7 @@ class PRDC_JSLAB_SYSTEM_TERMINAL {
     var buf = Buffer.from(str, "utf8").toString("base64");
     return this.jsl.inter.env.sendPty('write', {id: this.id, buffer: buf});
   }
-  
+
   /**
    * Handles a PTY output chunk received from the main process.
    * @param {string} buffer - Base64-encoded output data.
@@ -209,7 +209,7 @@ class PRDC_JSLAB_SYSTEM_TERMINAL {
       this._onData(str);
     }
   }
-  
+
   /**
    * Handles PTY exit notification received from the main process.
    * @returns {void}

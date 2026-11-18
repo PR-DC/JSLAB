@@ -5,105 +5,124 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_UDP, PRDC_JSLAB_UDP_SERVER } = require('../networking-udp');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for networking udp test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER {
 
-function createMockUdpSocket(auto_connect_error = null) {
-  var handlers = {};
-  return {
-    handlers: handlers,
-    write_calls: [],
-    bind_calls: [],
-    connect_args: null,
-    closed: false,
+  /**
+   * Creates mock udp socket.
+   * @param {*} [auto_connect_error] Auto connect error.
+   */
+  static createMockUdpSocket(auto_connect_error = null) {
+    var handlers = {};
+    return {
+      handlers: handlers,
+      write_calls: [],
+      bind_calls: [],
+      connect_args: null,
+      closed: false,
 
-    on: function(name, handler) {
-      handlers[name] = handler;
-      return this;
-    },
-    connect: function(port, host, callback) {
-      this.connect_args = [port, host];
-      if(typeof callback === 'function') {
-        callback(auto_connect_error);
-      }
-    },
-    bind: function(port) {
-      this.bind_calls.push(port);
-    },
-    write: function(data) {
-      this.write_calls.push(data);
-    },
-    close: function(callback) {
-      this.closed = true;
-      if(typeof callback === 'function') {
-        callback();
-      }
-    },
-    emitMessage: function(data) {
-      if(typeof handlers.message === 'function') {
-        handlers.message(data);
-      }
-    }
-  };
-}
-
-function createUdpClientHarness(connect_error = null) {
-  var socket = createMockUdpSocket(connect_error);
-  var jsl = {
-    inter: {
-      env: {
-        udp: {
-          createSocket: function() {
-            return socket;
-          }
-        }
-      }
-    }
-  };
-
-  var client = new PRDC_JSLAB_UDP(jsl, '127.0.0.1', 9200);
-  return { client, socket };
-}
-
-function createUdpServerHarness() {
-  var cleanup_callbacks = [];
-  var socket = createMockUdpSocket(null);
-  var jsl = {
-    inter: {
-      format: {
-        isFunction: function(value) {
-          return typeof value === 'function';
+      on: function(name, handler) {
+        handlers[name] = handler;
+        return this;
+      },
+      connect: function(port, host, callback) {
+        this.connect_args = [port, host];
+        if(typeof callback === 'function') {
+          callback(auto_connect_error);
         }
       },
-      env: {
-        udp: {
-          createSocket: function() {
-            return socket;
+      bind: function(port) {
+        this.bind_calls.push(port);
+      },
+      write: function(data) {
+        this.write_calls.push(data);
+      },
+      close: function(callback) {
+        this.closed = true;
+        if(typeof callback === 'function') {
+          callback();
+        }
+      },
+      emitMessage: function(data) {
+        if(typeof handlers.message === 'function') {
+          handlers.message(data);
+        }
+      }
+    };
+  }
+
+  /**
+   * Creates udp client harness.
+   * @param {*} [connect_error] Connect error.
+   */
+  static createUdpClientHarness(connect_error = null) {
+    var socket = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createMockUdpSocket(connect_error);
+    var jsl = {
+      inter: {
+        env: {
+          udp: {
+            createSocket: function() {
+              return socket;
+            }
           }
         }
       }
-    },
-    addForCleanup: function(_target, callback) {
-      cleanup_callbacks.push(callback);
-    }
-  };
+    };
 
-  var server = new PRDC_JSLAB_UDP_SERVER(jsl, 9300);
-  return { server, socket, cleanup_callbacks };
+    var client = new PRDC_JSLAB_UDP(jsl, '127.0.0.1', 9200);
+    return { client, socket };
+  }
+
+  /**
+   * Creates udp server harness.
+   */
+  static createUdpServerHarness() {
+    var cleanup_callbacks = [];
+    var socket = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createMockUdpSocket(null);
+    var jsl = {
+      inter: {
+        format: {
+          isFunction: function(value) {
+            return typeof value === 'function';
+          }
+        },
+        env: {
+          udp: {
+            createSocket: function() {
+              return socket;
+            }
+          }
+        }
+      },
+      addForCleanup: function(_target, callback) {
+        cleanup_callbacks.push(callback);
+      }
+    };
+
+    var server = new PRDC_JSLAB_UDP_SERVER(jsl, 9300);
+    return { server, socket, cleanup_callbacks };
+  }
 }
 
+
+const { PRDC_JSLAB_UDP, PRDC_JSLAB_UDP_SERVER } = require('../networking-udp');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('UDP client toggles active state based on connect result', function(assert) {
-  var ok_harness = createUdpClientHarness(null);
+  var ok_harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createUdpClientHarness(null);
   assert.equal(ok_harness.client.active, true);
   assert.deepEqual(ok_harness.socket.connect_args, [9200, '127.0.0.1']);
 
-  var err_harness = createUdpClientHarness(new Error('connect failed'));
+  var err_harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createUdpClientHarness(new Error('connect failed'));
   assert.equal(err_harness.client.active, false);
 }, { tags: ['unit', 'networking', 'udp'] });
 
 tests.add('UDP client writes only when active and deletes socket on close', function(assert) {
-  var harness = createUdpClientHarness(null);
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createUdpClientHarness(null);
 
   harness.client.write('abc');
   assert.deepEqual(harness.socket.write_calls, ['abc']);
@@ -118,7 +137,7 @@ tests.add('UDP client writes only when active and deletes socket on close', func
 }, { tags: ['unit', 'networking', 'udp'] });
 
 tests.add('UDP server buffers messages and supports callback mode', function(assert) {
-  var harness = createUdpServerHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createUdpServerHarness();
   var server = harness.server;
   var socket = harness.socket;
 
@@ -139,7 +158,7 @@ tests.add('UDP server buffers messages and supports callback mode', function(ass
 }, { tags: ['unit', 'networking', 'udp'] });
 
 tests.add('UDP server close releases socket and cleanup callback is registered', function(assert) {
-  var harness = createUdpServerHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_NETWORKING_UDP_TEST_HELPER.createUdpServerHarness();
   var server = harness.server;
   var socket = harness.socket;
 

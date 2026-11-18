@@ -5,111 +5,162 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for jslab eval test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER {
+
+  /**
+   * Creates eval harness.
+   * @param {Object} [options] Options.
+   */
+  static createEvalHarness(options = {}) {
+    var event_handlers = {};
+    var env_errors = [];
+    var internal_errors = [];
+    var logs = [];
+
+    var jsl = {
+      ready: options.ready !== false,
+      context: {
+        addEventListener: function(name, handler) {
+          event_handlers[name] = handler;
+        }
+      },
+      inter: {
+        config: {
+          DEBUG_PRE_TRANSFORMED_CODE: false,
+          DEBUG_TRANSFORMED_CODE: false
+        },
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          }
+        },
+        env: {
+          recast: recast,
+          babel_parser: babel_parser,
+          error: function(message) {
+            env_errors.push(message);
+          },
+          errorInternal: function(message) {
+            internal_errors.push(message);
+          },
+          showAns: function() {},
+          pathBaseName: function(p) {
+            return p.split(/[\\/]/).pop();
+          },
+          readFileSync: function() {
+            return false;
+          },
+          SourceMapConsumer: /**
+ * Class for anonymous fixture.
+ */
+class {
+  /**
+   * Initializes the instance.
+   * @param {*} map Map.
+   */
+  constructor(map) {
+    this.map = map;
+  }
+
+  /**
+   * Maps a generated source location to the original source.
+   * @param {*} position Position.
+   */
+  originalPositionFor(position) {
+    return {
+      line: position.line - 1,
+      column: position.column - 1,
+    };
+  }
+
+  /**
+   * Releases resources owned by the instance.
+   */
+  destroy() {}
+}
+        },
+        prettyPrint: function(value) {
+          return String(value);
+        }
+      },
+      _console: {
+        log: function() {
+          logs.push(Array.from(arguments));
+        }
+      },
+      onEvaluating: function() {},
+      onEvaluated: function() {},
+      savePreviousWorkspace: function() {},
+      loadPreviousWorkspace: function() {},
+      pathResolve: function(p) {
+        return p;
+      },
+      _eval: async function(code) {
+        return code;
+      },
+      current_script: 'script.jsl',
+      jsl_file_name: 'script.jsl'
+    };
+
+    if(options.runtime_identifier) {
+      jsl.internal_jsl_identifier = options.runtime_identifier;
+    }
+
+    var eval_module = new PRDC_JSLAB_EVAL(jsl);
+    return { eval_module, jsl, event_handlers, env_errors, internal_errors, logs };
+  }
+}
+
+
 const recast = require('recast');
 const babel_parser = require('@babel/parser');
 const { PRDC_JSLAB_EVAL } = require('../jslab-eval');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function createEvalHarness(options = {}) {
-  var event_handlers = {};
-  var env_errors = [];
-  var internal_errors = [];
-  var logs = [];
-
-  var jsl = {
-    ready: options.ready !== false,
-    context: {
-      addEventListener: function(name, handler) {
-        event_handlers[name] = handler;
-      }
-    },
-    inter: {
-      config: {
-        DEBUG_PRE_TRANSFORMED_CODE: false,
-        DEBUG_TRANSFORMED_CODE: false
-      },
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
-        }
-      },
-      env: {
-        recast: recast,
-        babel_parser: babel_parser,
-        error: function(message) {
-          env_errors.push(message);
-        },
-        errorInternal: function(message) {
-          internal_errors.push(message);
-        },
-        showAns: function() {},
-        pathBaseName: function(p) {
-          return p.split(/[\\/]/).pop();
-        },
-        readFileSync: function() {
-          return false;
-        },
-        SourceMapConsumer: class {
-          constructor(map) {
-            this.map = map;
-          }
-
-          originalPositionFor(position) {
-            return {
-              line: position.line - 1,
-              column: position.column - 1,
-            };
-          }
-
-          destroy() {}
-        }
-      },
-      prettyPrint: function(value) {
-        return String(value);
-      }
-    },
-    _console: {
-      log: function() {
-        logs.push(Array.from(arguments));
-      }
-    },
-    onEvaluating: function() {},
-    onEvaluated: function() {},
-    savePreviousWorkspace: function() {},
-    loadPreviousWorkspace: function() {},
-    pathResolve: function(p) {
-      return p;
-    },
-    _eval: async function(code) {
-      return code;
-    },
-    current_script: 'script.jsl',
-    jsl_file_name: 'script.jsl'
-  };
-
-  if(options.runtime_identifier) {
-    jsl.internal_jsl_identifier = options.runtime_identifier;
-  }
-
-  var eval_module = new PRDC_JSLAB_EVAL(jsl);
-  return { eval_module, jsl, event_handlers, env_errors, internal_errors, logs };
-}
 
 tests.add('constructor registers sandbox error event handlers', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   assert.ok(typeof harness.event_handlers.unhandledrejection === 'function');
   assert.ok(typeof harness.event_handlers.error === 'function');
 }, { tags: ['unit', 'eval'] });
 
+tests.add('workspace expressions resolve before the first command without starting a command lifecycle', async function(assert) {
+  const harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
+  let started = 0;
+  let completed = 0;
+  harness.jsl.context.ans = 17;
+  harness.jsl.onEvaluating = () => {
+    started++;
+  };
+  harness.jsl.onEvaluated = () => {
+    completed++;
+  };
+  harness.jsl._eval = async function() {
+    return 7;
+  };
+  assert.equal(await harness.eval_module.evalString('(3 + 4)'), 7);
+  assert.equal(harness.jsl.context.ans, 17);
+  assert.equal(started, 0);
+  assert.equal(completed, 0);
+  assert.deepEqual(harness.eval_module.source_codes, ['(3 + 4)']);
+}, { tags: ['unit', 'eval'] });
+
 tests.add('detached rejection reporting includes falsy reasons without finishing another evaluation', async function(assert) {
-  const harness = createEvalHarness();
+  const harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   let completions = 0;
-  harness.jsl.onEvaluated = () => { completions++; };
+  harness.jsl.onEvaluated = () => {
+    completions++;
+  };
   for(const reason of [undefined, null, 0, false, 'detached failure']) {
     let prevented = false;
     const details = await harness.event_handlers.unhandledrejection({ reason,
-      preventDefault() { prevented = true; } });
+      preventDefault() {
+        prevented = true;
+      } });
     assert.equal(prevented, true);
     assert.equal(details.message, String(reason));
   }
@@ -117,7 +168,7 @@ tests.add('detached rejection reporting includes falsy reasons without finishing
 }, { tags: ['unit', 'eval', 'errors'] });
 
 tests.add('checkForbiddenPattern rejects forbidden identifiers in nested patterns', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var pattern = {
     type: 'ObjectPattern',
     properties: [
@@ -147,7 +198,7 @@ tests.add('checkForbiddenPattern rejects forbidden identifiers in nested pattern
 }, { tags: ['unit', 'eval'] });
 
 tests.add('transformPatternToContext maps identifiers to jsl.context members', function(assert) {
-  var harness = createEvalHarness({ runtime_identifier: '__runtime' });
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness({ runtime_identifier: '__runtime' });
   var b = recast.types.builders;
   var out = harness.eval_module.transformPatternToContext(
     { type: 'Identifier', name: 'alpha' },
@@ -163,7 +214,7 @@ tests.add('transformPatternToContext maps identifiers to jsl.context members', f
 }, { tags: ['unit', 'eval'] });
 
 tests.add('rewriteMemberExpressionRoot rewrites only the root identifier', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var ast = recast.parse('obj.deep.value = 1;');
   var left = ast.program.body[0].expression.left;
 
@@ -176,7 +227,7 @@ tests.add('rewriteMemberExpressionRoot rewrites only the root identifier', funct
 }, { tags: ['unit', 'eval'] });
 
 tests.add('getFunctionBody extracts function body text', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
 
   function sampleFunction() {
     const x = 4;
@@ -189,7 +240,7 @@ tests.add('getFunctionBody extracts function body text', function(assert) {
 }, { tags: ['unit', 'eval'] });
 
 tests.add('rewriteCode rewrites top-level declarations into runtime context', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var out = harness.eval_module.rewriteCode('var alpha = 5; alpha;');
 
   assert.ok(out && typeof out.code === 'string');
@@ -199,7 +250,7 @@ tests.add('rewriteCode rewrites top-level declarations into runtime context', fu
 }, { tags: ['unit', 'eval'] });
 
 tests.add('rewriteCode keeps block-scoped let updates local', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var out = harness.eval_module.rewriteCode(
     'if(true){ let processed = 0, positives = 0; processed++; processed; }'
   );
@@ -211,7 +262,7 @@ tests.add('rewriteCode keeps block-scoped let updates local', function(assert) {
 }, { tags: ['unit', 'eval'] });
 
 tests.add('rewriteCode rewrites top-level import into require assignments', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var out = harness.eval_module.rewriteCode('import { join } from "path"; join("a", "b");');
 
   assert.ok(out && typeof out.code === 'string');
@@ -220,7 +271,7 @@ tests.add('rewriteCode rewrites top-level import into require assignments', func
 }, { tags: ['unit', 'eval'] });
 
 tests.add('rewriteCode rejects declarations of the runtime identifier', function(assert) {
-  var harness = createEvalHarness({ runtime_identifier: '__runtime' });
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness({ runtime_identifier: '__runtime' });
   assert.throws(function() {
     harness.eval_module.rewriteCode('let __runtime = 1;');
   }, function(err) {
@@ -229,7 +280,7 @@ tests.add('rewriteCode rejects declarations of the runtime identifier', function
 }, { tags: ['unit', 'eval'] });
 
 tests.add('onEvalError formats JslabError messages before completion', async function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   await harness.eval_module.onEvalError({ name: 'JslabError', message: 'custom error text' });
   assert.ok(harness.env_errors.some(function(message) {
     return String(message).includes('custom error text');
@@ -237,7 +288,7 @@ tests.add('onEvalError formats JslabError messages before completion', async fun
 }, { tags: ['unit', 'eval'] });
 
 tests.add('getOriginalPosition uses source-map consumer without execution polling', async function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var result = await harness.eval_module.getOriginalPosition({}, 12, 8);
 
   assert.equal(result.line, 11);
@@ -245,7 +296,7 @@ tests.add('getOriginalPosition uses source-map consumer without execution pollin
 }, { tags: ['unit', 'eval'] });
 
 tests.add('runScript executes selected line and restores previous script context', async function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   harness.jsl.current_script = 'prev-script.jsl';
   harness.jsl.jsl_file_name = 'prev-script.jsl';
   harness.jsl.inter.env.readFileSync = function() {
@@ -265,7 +316,7 @@ tests.add('runScript executes selected line and restores previous script context
 }, { tags: ['unit', 'eval'] });
 
 tests.add('runScript reports invalid line ranges and returns false', async function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   harness.jsl.inter.env.readFileSync = function() {
     return 'line1\nline2';
   };
@@ -276,21 +327,25 @@ tests.add('runScript reports invalid line ranges and returns false', async funct
 }, { tags: ['unit', 'eval'] });
 
 tests.add('evalCodeFromMain returns structured values and failures for automation', async function(assert) {
-  var harness = createEvalHarness();
-  harness.eval_module.evalString = async function() { return 42; };
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
+  harness.eval_module.evalString = async function() {
+    return 42;
+  };
   harness.jsl.no_ans = false;
   var result = await harness.eval_module.evalCodeFromMain('42', false);
   assert.equal(result.success, true);
   assert.equal(result.value, 42);
   assert.equal(harness.jsl.context.ans, 42);
-  harness.eval_module.evalString = async function() { throw new Error('agent test failure'); };
+  harness.eval_module.evalString = async function() {
+    throw new Error('agent test failure');
+  };
   result = await harness.eval_module.evalCodeFromMain('throw Error()', false);
   assert.equal(result.success, false);
   assert.ok(result.error.includes('agent test failure'));
 }, { tags: ['unit', 'eval', 'automation'] });
 
 tests.add('evalCodeFromMain reports syntax errors before returning a failed result', async function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_EVAL_TEST_HELPER.createEvalHarness();
   var result = await harness.eval_module.evalCodeFromMain('var = ;', false, 'agent-test.jsl');
   assert.equal(result.success, false);
   assert.ok(result.error.includes('Unexpected token'));

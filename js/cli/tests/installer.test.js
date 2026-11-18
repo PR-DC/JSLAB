@@ -10,17 +10,23 @@ const path = require('path');
 const os = require('os');
 const cp = require('child_process');
 const crypto = require('crypto');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('NSIS PATH handling preserves entries, separates scopes and refuses truncation', function(assert) {
-  if(process.platform !== 'win32') assert.skip('Windows installer integration test.');
+  if(process.platform !== 'win32') {
+    assert.skip('Windows installer integration test.');
+  }
   var cache = path.join(process.env.ELECTRON_BUILDER_CACHE ||
     path.join(process.env.LOCALAPPDATA, 'electron-builder', 'Cache'), 'nsis');
   var compiler = fs.existsSync(cache) && fs.readdirSync(cache).map(function(name) {
     return path.join(cache, name, 'makensis.exe');
-  }).find(function(filename) { return fs.existsSync(filename); });
-  if(!compiler) assert.skip('Build the Windows installer to install its NSIS compiler.');
+  }).find(function(filename) {
+    return fs.existsSync(filename);
+  });
+  if(!compiler) {
+    assert.skip('Build the Windows installer to install its NSIS compiler.');
+  }
   var folder = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-installer-test-'));
   var key = 'Software\\JSLAB\\InstallerTest-' + crypto.randomUUID();
   var executable = path.join(folder, 'installer-test.exe');

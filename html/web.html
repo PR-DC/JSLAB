@@ -26,18 +26,22 @@
         <img id="company-logo" src="./img/PR-DC_icon.svg">
         <ul id="main-menu">
           <li id="editor-menu"><img src="./img/editor.svg"><str sid="1"></str></li>
+          <li id="simulate-menu"><img src="./img/simulate.svg" alt=""><str sid="672"></str></li>
+          <li id="assistant-menu"><img src="./img/assistant.svg" alt=""><str sid="650"></str></li>
           <li id="help-menu"><img src="./img/help.svg"><str sid="2"></str></li>
           <li id="info-menu"><img src="./img/info.svg"><str sid="3"></str></li>
           <li id="settings-menu"><img src="./img/settings-menu.svg"><str sid="9"></str></li>
         </ul>
         <ul id="web-main-actions">
           <li id="github-button" lang-fixed>GitHub</li>
-          <li id="download-button"><str sid="597"></str></li>
+          <li id="download-button"><str sid="596"></str></li>
         </ul>
         <div id="app-title" lang-fixed>JSLAB / WEB</div>
         <div class="clear"></div>
       </div>
     </div>
+
+    %WEB_FOLDER_NAVIGATION%
 
     <div id="panels-container">
       <div id="left-panel">
@@ -47,8 +51,8 @@
               <div class="panel-title"><str sid="4"></str></div>
               <div id="file-browser-options" class="options">
                 <div class="options-right">
-                  <i id="file-browser-import-button" class="import" title-str="598"></i>
-                  <i id="file-browser-import-url-button" class="import-url" title-str="543"></i>
+                  <i id="file-browser-import-button" class="import" title-str="597"></i>
+                  <i id="file-browser-import-url-button" class="import-url" title-str="542"></i>
                 </div>
               </div>
               <div id="file-browser" class="panel">
@@ -104,7 +108,7 @@
 
             <div id="command-window-options" class="options">
               <div class="options-right">
-                <i id="command-window-filter-button" class="console-filter" title-str="638"></i>
+                <i id="command-window-filter-button" class="console-filter" title-str="637"></i>
                 <i id="command-window-settings-button" class="settings" title-str="40"></i>
                 <i id="command-window-timestamp-button" class="timestamp" title-str="41"></i>
                 <i id="command-window-autoscroll-button" class="autoscroll active" title-str="42"></i>
@@ -133,13 +137,11 @@
 
     %WEB_WORKSPACE_CONTEXT_MENU%
 
-    <div id="file-browser-context-menu" class="app-context-menu">
-      <button id="file-browser-context-remove" type="button"><str sid="387"></str></button>
-    </div>
+    %WEB_FILE_BROWSER_CONTEXT_MENU%
 
     <div id="file-browser-import-menu" class="app-context-menu">
-      <button id="file-browser-import-files-action" type="button"><str sid="599"></str></button>
-      <button id="file-browser-import-folder-action" type="button"><str sid="600"></str></button>
+      <button id="file-browser-import-files-action" type="button"><str sid="598"></str></button>
+      <button id="file-browser-import-folder-action" type="button"><str sid="599"></str></button>
     </div>
 
     %WEB_HELP_CONTAINER%
@@ -149,6 +151,8 @@
     %WEB_INSPECTOR_INPUT_CONTAINER%
 
     %WEB_SETTINGS_CONTAINER%
+
+    %WEB_PATHS_DIALOGS%
 
     %WEB_SANDBOX_STATS_POPUP%
 
@@ -183,7 +187,7 @@
     <script type="text/javascript" src="./lib/codemirror-5.49.2/addon/search/match-highlighter.js"></script>
     <script type="text/javascript" src="./lib/codemirror-5.49.2/mode/javascript/javascript.js"></script>
     <script type="text/javascript" src="./js/code/custom-javascript-hint.js"></script>
-    <script src="./js/init-web.js"></script>
+    <script src="./js/init-main.js"></script>
   </body>
 </html>
 

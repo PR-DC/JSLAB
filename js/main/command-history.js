@@ -5,20 +5,18 @@
  * info@pr-dc.com
  */
 
-const Store = require('electron-store');
-
-const store = new Store();
 
 /**
  * Class for JSLAB command history.
  */
 class PRDC_JSLAB_COMMAND_HISTORY {
-  
+
   /**
    * Initializes the command history.
-   * @param {object} win The window object representing the current Electron window.
+   * @param {object} win The window object representing the owning window controller.
    */
   constructor(win) {
+    const { store } = win.platform;
     var obj = this;
     this.win = win;
     this.history_cont = document.getElementById('command-history');
@@ -26,7 +24,7 @@ class PRDC_JSLAB_COMMAND_HISTORY {
     this.history = this.full_history.filter(function(cmd) {
       return !cmd.startsWith('//');
     }).slice().reverse();
-    
+
     this.N_history_max = Number(store.get('N_history_max'));
     if(!isFinite(this.N_history_max)) {
       this.setMaxSize(20);
@@ -42,7 +40,7 @@ class PRDC_JSLAB_COMMAND_HISTORY {
     const clear_button = document.querySelector('#command-history-options .clear');
     if(clear_button) {
       clear_button.addEventListener('click', function() {
-        obj.clearHistory()
+        obj.clearHistory();
       });
     }
 
@@ -64,6 +62,7 @@ class PRDC_JSLAB_COMMAND_HISTORY {
    * Renders the entire history efficiently using DocumentFragment.
    */
   renderHistory() {
+    this.history_cont.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
     this.full_history.forEach((cmd) => {
@@ -95,7 +94,7 @@ class PRDC_JSLAB_COMMAND_HISTORY {
     if(cmd.startsWith('//')) {
       div.classList.add('comment');
     } else {
-      this.history.unshift(cmd)
+      this.history.unshift(cmd);
     }
     div.textContent = cmd;
     this.history_cont.appendChild(div);
@@ -145,6 +144,7 @@ class PRDC_JSLAB_COMMAND_HISTORY {
    * Saves the current history to storage asynchronously.
    */
   saveHistory() {
+    const { store } = this.win.platform;
     store.set('full_history', this.full_history);
   }
 
@@ -153,6 +153,11 @@ class PRDC_JSLAB_COMMAND_HISTORY {
    * @param {number} N - The desired maximum number of history entries
    */
   setMaxSize(N) {
+    const { store } = this.win.platform;
+    N = Number(N);
+    if(!Number.isFinite(N)) {
+      N = 20;
+    }
     if(N < 5) {
       N = 5;
     }

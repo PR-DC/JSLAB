@@ -4,24 +4,28 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
-const { ipcRenderer } = require('electron');
- 
-const fs = require('fs');
-const path = require('path');
-const { ESLint } = require("eslint");
-require("../js/shared/init-config.js");
-var language = window.opener.jsl.inter.lang;
-const { PRDC_JSLAB_EDITOR_SEARCH_ALL } = require('../js/editor/search-all');
 
-const { PRDC_POPUP } = require('../lib/PRDC_POPUP/PRDC_POPUP');
-const { PRDC_PANEL } = require('../lib/PRDC_PANEL/PRDC_PANEL');
+const { PRDC_JSLAB_CODE_EDITOR } = require('../code/editor');
+
+const { PRDC_PANEL } = require('../../lib/PRDC_PANEL/PRDC_PANEL');
+
+const { PRDC_JSLAB_CODE_LINT } = require('../code/lint');
+
+const { PRDC_JSLAB_PRESENTATION_EDITOR_NOTES } = require('./presentation-editor-notes');
+
+const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
+
+
+const { PRDC_JSLAB_EDITOR_SEARCH_ALL } = require('../editor/search-all');
+
+const { PRDC_POPUP } = require('../../lib/PRDC_POPUP/PRDC_POPUP');
+
 
 /**
  * Class for JSLAB presentation editor code tab.
  */
 class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
-  
+
   /**
    * Initializes an instance of the PRDC_JSLAB_PRESENTATION_EDITOR class.
    */
@@ -29,58 +33,22 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
     var obj = this;
     this.editor = editor;
     this.name = name;
-    
+
     this.tab = this.editor.tabs.addTab({
       title: name,
       favicon: false
     });
     this.tab.tab_obj = this;
 
-    this.code_editor = CodeMirror(document.getElementById("code"), {
-      theme: "notepadpp",
-      rulers: [{ color: "#aff", column: 75, lineStyle: "solid" }],
-      indentUnit: 2,
-      tabSize: 2,
-      lineNumbers: true,
-      lineWrapping: true,
-      styleActiveLine: true,
-      matchBrackets: true,
-      gutter: true,
-      gutters: [
-        "CodeMirror-linenumbers",
-        "CodeMirror-foldgutter",
-        "CodeMirror-lint-markers",
-      ],
-      foldGutter: true,
-      searchDialog: true,
-      highlightSelectionMatches: { annotateScrollbar: true },
-    });
-    
-    CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-    CodeMirror.keyMap.default["Tab"] = "indentMore";
-    CodeMirror.keyMap.default["Ctrl-F"] = "showSearchDialog";
-    CodeMirror.keyMap.default['Ctrl-G'] = 'findNext';
-    CodeMirror.keyMap.default['Shift-Ctrl-G'] = 'findPrev';
-    CodeMirror.keyMap.default['Shift-Ctrl-F'] = 'replace';
-    CodeMirror.keyMap.default['Shift-Ctrl-R'] = 'replaceAll';
-    CodeMirror.keyMap.default['Ctrl-/'] = 'toggleComment';
-    
+    this.code_editor = CodeMirror(document.getElementById("code"), PRDC_JSLAB_CODE_EDITOR.options());
+
+    PRDC_JSLAB_CODE_EDITOR.bindShortcuts(CodeMirror);
+
     // Keypress events
-    this.code_editor.on("keypress", function (cm, event) {
-      if(
-        !cm.state.completionActive &&
-        !event.ctrlKey &&
-        event.key != "Enter" &&
-        event.key != ";" &&
-        event.key != " " &&
-        (event.key != "{") & (event.key != "}")
-      ) {
-        CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
-      }
-    });
-    
+    PRDC_JSLAB_CODE_EDITOR.bindCompletion(CodeMirror, this.code_editor);
+
     this.code_editor.getInputField().setAttribute('title', name);
-    
+
     if(name == 'html') {
       this.code_editor.setOption("mode", "htmlmixed");
       this.code_editor.setOption("lint", {});
@@ -89,13 +57,18 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
         const ranges = [];
         const re = /<\s*slide\b[^>]*>([\s\S]*?)<\/\s*slide\s*>/gi;
         let m;
-        while ((m = re.exec(source))) ranges.push({ start: m.index, end: re.lastIndex });
+        while((m = re.exec(source))) {
+          ranges.push({ start: m.index, end: re.lastIndex });
+        }
         return ranges;
       }
 
       function cursorSlideIndex(pos, ranges) {
-        for(let i = 0; i < ranges.length; i++)
-          if(pos >= ranges[i].start && pos <= ranges[i].end) return i;
+        for(let i = 0; i < ranges.length; i++) {
+          if(pos >= ranges[i].start && pos <= ranges[i].end) {
+            return i;
+          }
+        }
         return -1;
       }
 
@@ -108,7 +81,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
         });
         obj.slide_highlight_lines = [];
         obj.slide_highlight_key = '';
-      }
+      };
 
       this.updateSlideHighlight = function() {
         var txt = obj.code_editor.getValue();
@@ -124,7 +97,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
         var start = obj.code_editor.posFromIndex(r.start);
         var end = obj.code_editor.posFromIndex(r.end);
         var key = index + ':' + r.start + ':' + r.end + ':' + start.line + ':' + end.line;
-        if(obj.slide_highlight_key == key) return;
+        if(obj.slide_highlight_key == key) {
+          return;
+        }
 
         obj.code_editor.operation(function() {
           obj.clearSlideHighlight();
@@ -137,13 +112,13 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
           }
         });
         obj.slide_highlight_key = key;
-      }
-      
+      };
+
       this.getSlide = function() {
         var pos = obj.code_editor.indexFromPos(obj.code_editor.getCursor());
         var txt = obj.code_editor.getValue();
         return cursorSlideIndex(pos, collectSlideRanges(txt));
-      }
+      };
       this.setSlide = function(index) {
         var txt = obj.code_editor.getValue();
         var rngs = collectSlideRanges(txt);
@@ -153,10 +128,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
           var offset = gt !== -1 && gt < r.end ? gt + 1 : r.start;
           var pos = obj.code_editor.posFromIndex(offset);
           obj.code_editor.setCursor(pos);
-          obj.code_editor.scrollIntoView({ line: pos.line, ch: pos.ch }, 80)
+          obj.code_editor.scrollIntoView({ line: pos.line, ch: pos.ch }, 80);
           obj.updateSlideHighlight();
         }
-      }
+      };
       this.code_editor.on("cursorActivity", function() {
         obj.updateSlideHighlight();
       });
@@ -171,7 +146,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
             obj.code_editor.foldCode(pos, null, 'fold');
           }
         });
-      }
+      };
       this.unfoldSlides = function() {
         var cursor = obj.code_editor.getSearchCursor(/<\s*slide\b[^>]*>/ig, CodeMirror.Pos(0, 0));
         obj.code_editor.operation(() => {
@@ -180,33 +155,19 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
             obj.code_editor.foldCode(pos, null, 'unfold');
           }
         });
-      }
+      };
     } else if(name == 'css') {
       this.code_editor.setOption("mode", "css");
       this.code_editor.setOption("lint", {});
     } else if(name == 'js') {
       this.code_editor.setOption("mode", "javascript");
-      this.code_editor.setOption("lint", {
-        getAnnotations: async function(text, callback) {
-          var results = await obj.editor.eslint.lintText(text);
-          callback(results[0].messages.map(message => ({
-            from: CodeMirror.Pos(message.line - 1, message.column - 1),
-            to: CodeMirror.Pos(
-              message.endLine ? message.endLine - 1 : message.line - 1,
-              message.endColumn ? message.endColumn - 1 : message.column
-            ),
-            severity: message.severity === 2 ? "error" : "warning",
-            message: message.message,
-          })));
-        },
-        async: true
-      });
+      this.code_editor.setOption("lint", PRDC_JSLAB_CODE_LINT.createCodeMirrorLintOptions(CodeMirror, obj.editor.eslint));
     }
   }
-  
+
   /**
    * On code changed
-   */ 
+   */
   codeChanged() {
     this.tab.classList.add("changed");
     if(this.name == 'html' &&
@@ -216,7 +177,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
       this.editor.updateSlideNotes();
     }
   }
-  
+
   /**
    * Activates this tab and shows code
    */
@@ -226,9 +187,11 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
     $(this.code_editor.display.wrapper).show();
     this.code_editor.focus();
     this.code_editor.refresh();
-    if(typeof this.updateSlideHighlight == 'function') this.updateSlideHighlight();
+    if(typeof this.updateSlideHighlight == 'function') {
+      this.updateSlideHighlight();
+    }
   }
-  
+
   /**
    * Save code
    * @param {Number} timeout_ms
@@ -250,21 +213,28 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
    * @returns {Promise<void>}
    */
   writeFileWithTimeout(file_path, code, timeout_ms) {
+    const { fs } = this.editor.platform;
     return new Promise(function(resolve, reject) {
       var settled = false;
       var timer = setTimeout(function() {
-        if(settled) return;
+        if(settled) {
+          return;
+        }
         settled = true;
         reject(new Error('Save timed out: ' + file_path));
       }, timeout_ms);
 
       fs.promises.writeFile(file_path, code).then(function() {
-        if(settled) return;
+        if(settled) {
+          return;
+        }
         settled = true;
         clearTimeout(timer);
         resolve();
       }).catch(function(err) {
-        if(settled) return;
+        if(settled) {
+          return;
+        }
         settled = true;
         clearTimeout(timer);
         reject(err);
@@ -278,20 +248,21 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
   openSearchDialog() {
     this.code_editor.execCommand('showSearchDialog');
   }
-  
+
   /**
    * Sets file path for code
    * @param {String} file_path - Absolute path to the code file
    */
   setPath(file_path) {
+    const { fs } = this.editor.platform;
     var obj = this;
     this.file_path = file_path;
     this.code = fs.readFileSync(file_path).toString();
     this.code_editor.setValue(this.code);
     this.code_editor.clearHistory();
-    
+
     this.code_editor.on("change", function() {
-      obj.codeChanged();   
+      obj.codeChanged();
     });
   }
 }
@@ -299,17 +270,20 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
 /**
  * Class for JSLAB presentation editor.
  */
-class PRDC_JSLAB_PRESENTATION_EDITOR {
-  
+class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTES {
+
   /**
    * Initializes an instance of the PRDC_JSLAB_PRESENTATION_EDITOR class.
    */
-  constructor() {
+  constructor(platform) {
+    super();
+    this.platform = platform;
+    const { host: ipcRenderer } = this.platform;
     var obj = this;
-    
-    this.webview = document.getElementById('preview');
+
+    this.webview = this.platform.getPresentationView('preview');
     this.thumbnail_preview_host = document.getElementById('thumbnail-preview-host');
-    this.thumbview = document.getElementById('thumbnail-preview');
+    this.thumbview = this.platform.getPresentationView('thumbnail-preview');
     this.webview_wrap = document.getElementById('webview-wrap');
     this.preview_panel = document.getElementById('preview-panel');
     this.preview_stage = document.getElementById('preview-stage');
@@ -321,16 +295,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.close_dialog_cont = document.getElementById('close-dialog-cont');
     this.close_file = document.getElementById('close-file');
     this.left = document.getElementById('left-panel-cont');
-    
-    // Use a plain object copy so ESLint does not probe optional keys on the config proxy.
-    var lint_options = {
-      overrideConfigFile: config.LINT_OPTIONS.overrideConfigFile,
-      overrideConfig: {
-        languageOptions: config.LINT_OPTIONS.overrideConfig.languageOptions,
-        rules: config.LINT_OPTIONS.overrideConfig.rules,
-      },
-    };
-    this.eslint = new ESLint(lint_options);
+
+    this.eslint = new PRDC_JSLAB_CODE_LINT();
     this.editor_more_popup = new PRDC_POPUP(document.getElementById('editor-more-icon'),
       document.getElementById('editor-more-popup'));
     this.current_slide = 0;
@@ -363,18 +329,20 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
 
     this.columns = new PRDC_PANEL('presentation-editor-columns', 'vertical', document.body, [document.getElementById('left-panel'), document.getElementById('right-panel')], [60, 40], function() {
       obj.scaleSlide();
-    });    
-    
+    }, this.platform.panel_store);
+
     // Initialize panels
     window.addEventListener('resize', function() {
       obj.columns.onResize();
     });
-    
+
     // Tabs
     this.tabs_cont = document.querySelector(".tabs");
     this.tabs = new PRDC_TABS();
     this.tabs.init(this.tabs_cont);
-    this.tabs_cont.addEventListener('tabNew', function(event) { event.preventDefault(); });
+    this.tabs_cont.addEventListener('tabNew', function(event) {
+      event.preventDefault();
+    });
 
     // On tab change
     this.tabs_cont.addEventListener("activeTabChange", function({ detail }) {
@@ -386,11 +354,11 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
         obj.active_tab.tab_obj.show();
       }
     });
-    
+
     this.html_editor = new PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB(this, 'html');
     this.js_editor = new PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB(this, 'js');
     this.css_editor = new PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB(this, 'css');
-    
+
     this.html_editor.show();
     this.script_manager = this.createSearchAllScriptManager();
     this.editor_search_all = new PRDC_JSLAB_EDITOR_SEARCH_ALL(this);
@@ -455,10 +423,16 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
         console.error(err);
       });
     });
-    $("#close-dialog-save").click(function() { obj.closeDialogButton(2); });
-    $("#close-dialog-discard").click(function() { obj.closeDialogButton(1); });
-    $("#close-dialog-cancel").click(function() { obj.closeDialogButton(0); });
-    $("#search-dialog-menu").click(function() { 
+    $("#close-dialog-save").click(function() {
+      obj.closeDialogButton(2);
+    });
+    $("#close-dialog-discard").click(function() {
+      obj.closeDialogButton(1);
+    });
+    $("#close-dialog-cancel").click(function() {
+      obj.closeDialogButton(0);
+    });
+    $("#search-dialog-menu").click(function() {
       obj.active_tab.tab_obj.openSearchDialog();
       obj.editor_more_popup.close();
     });
@@ -474,40 +448,44 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       }
       obj.editor_more_popup.close();
     });
-    $("#fold-slides").click(function() { 
+    $("#fold-slides").click(function() {
       obj.html_editor.show();
-      obj.html_editor.foldSlides() 
+      obj.html_editor.foldSlides();
       obj.editor_more_popup.close();
     });
-    $("#unfold-slides").click(function() { 
+    $("#unfold-slides").click(function() {
       obj.html_editor.show();
-      obj.html_editor.unfoldSlides() 
+      obj.html_editor.unfoldSlides();
       obj.editor_more_popup.close();
     });
-    
+
     $("#first-slide").click(function() {
-      obj.webview.send('data',{ show: 0 });
-    }); 
+      obj.webview.send('data', { show: 0 });
+    });
     $("#prev-slide").click(function() {
-      obj.webview.send('data',{ show: obj.current_slide - 1 });
+      obj.webview.send('data', { show: obj.current_slide - 1 });
     });
     $("#next-slide").click(function() {
-      obj.webview.send('data',{ show: obj.current_slide + 1 });
+      obj.webview.send('data', { show: obj.current_slide + 1 });
     });
     $("#last-slide").click(function() {
-      obj.webview.send('data',{ show: obj.total_slides - 1 });
+      obj.webview.send('data', { show: obj.total_slides - 1 });
     });
-    $("#set-slide").on( "change", function() {
-      obj.webview.send('data',{ show: $(this).val() - 1 });
+    $("#set-slide").on("change", function() {
+      obj.webview.send('data', { show: $(this).val() - 1 });
     });
     this.slide_thumbnails.addEventListener('click', function(e) {
       var item = e.target.closest('.slide-thumb');
-      if(!item) return;
+      if(!item) {
+        return;
+      }
       obj.webview.send('data', { show: Number(item.dataset.index) });
     });
     this.slide_thumbnails.addEventListener('contextmenu', function(e) {
       var item = e.target.closest('.slide-thumb');
-      if(!item) return;
+      if(!item) {
+        return;
+      }
       e.preventDefault();
       ipcRenderer.send('MainProcess', 'show-presentation-editor-slide-context-menu', {
         index: Number(item.dataset.index),
@@ -517,14 +495,18 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     });
     this.slide_thumbnails.addEventListener('dragstart', function(e) {
       var item = e.target.closest('.slide-thumb');
-      if(!item) return;
+      if(!item) {
+        return;
+      }
       obj.drag_slide_index = Number(item.dataset.index);
       item.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', String(obj.drag_slide_index));
     });
     this.slide_thumbnails.addEventListener('dragover', function(e) {
-      if(typeof obj.drag_slide_index != 'number') return;
+      if(typeof obj.drag_slide_index != 'number') {
+        return;
+      }
       e.preventDefault();
       var drop_data = obj.getThumbnailDropData(e.clientY);
       if(!drop_data) {
@@ -534,7 +516,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       obj.setThumbnailDropState(drop_data);
     });
     this.slide_thumbnails.addEventListener('drop', function(e) {
-      if(typeof obj.drag_slide_index != 'number') return;
+      if(typeof obj.drag_slide_index != 'number') {
+        return;
+      }
       e.preventDefault();
       var item = e.target.closest('.slide-thumb');
       var has_drop_target = typeof obj.drop_slide_index == 'number';
@@ -590,13 +574,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     }];
     this.thumbview.classList.add('thumbnail-preview-worker');
     for(var i = 1; i < this.thumb_worker_count; i++) {
-      var view = document.createElement('webview');
-      view.id = 'thumbnail-preview-' + i;
+      var view = this.platform.createPresentationView('thumbnail-preview-' + i);
       view.className = 'thumbnail-preview-worker';
-      view.setAttribute('useragent', 'presentation-editor-thumbnail');
-      view.setAttribute('nodeintegration', '');
-      view.setAttribute('webpreferences',
-        'backgroundThrottling=no, contextIsolation=no');
       this.thumbnail_preview_host.appendChild(view);
       this.thumb_workers.push({
         id: i,
@@ -669,7 +648,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       return worker.view;
     });
   }
-  
+
   /**
    * Returns whether the editor contains unsaved changes.
    * @returns {Boolean}
@@ -712,6 +691,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
    * Completes close request in the main process.
    */
   confirmCloseWindow() {
+    const { host: ipcRenderer } = this.platform;
     this.hideCloseDialog();
     ipcRenderer.send("MainProcess", "close-presentation-editor");
   }
@@ -735,22 +715,24 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       this.hideCloseDialog();
     }
   }
-  
+
   /**
    * Sets file path for presentation editor
    * @param {String} file_path - Absolute path to the presentation directory.
    */
   setPath(file_path, url) {
+    const { fs, path } = this.platform;
     this.file_path = file_path;
     this.url = url;
-    var name = path.basename(file_path);;
-    
+    var name = path.basename(file_path);
+    ;
+
     this.exe_file = name;
     this.html_editor.setPath(path.join(file_path, 'index.html'));
     this.js_editor.setPath(path.join(file_path, 'main.js'));
     this.css_editor.setPath(path.join(file_path, 'main.css'));
     this.updateSearchAllScriptPaths();
-    
+
     document.getElementById('presentation-title').innerText = name;
     this.presentation_config = JSON.parse(fs.readFileSync(path.join(file_path, 'res/internal/config.json')).toString());
     this.slide_thumbnails.style.setProperty('--slide-thumbnail-aspect-ratio',
@@ -769,7 +751,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       view.src = thumbnail_url;
     });
     this.updateSlideNotes(this.current_slide);
-    
+
     // Slide scale
     this.scaleSlide();
   }
@@ -793,7 +775,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       return encodeURIComponent(param);
     }).join('&') + hash;
   }
-  
+
   /**
    * Saves code and triggers frame update
    */
@@ -867,7 +849,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       this.requestThumbnailRender(render_indexes);
     }
   }
-  
+
   /**
    * Resets thumbnail rendering state.
    */
@@ -1310,7 +1292,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       return;
     }
     var next_index = 0;
-    await Promise.all(workers.map(async(worker) => {
+    await Promise.all(workers.map(async (worker) => {
       while(next_index < indexes.length) {
         if(token != this.thumb_render_token) {
           return;
@@ -1412,7 +1394,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       }
       await new Promise(resolve => setTimeout(resolve, 120));
     }
-    if(last_image) return last_image;
+    if(last_image) {
+      return last_image;
+    }
     throw new Error('Thumbnail capture failed.');
   }
 
@@ -1942,16 +1926,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     return match ? match[1] : '';
   }
 
-  /**
-   * Decodes notes HTML to plain editable text.
-   * @param {String} notes_html
-   * @returns {String}
-   */
-  decodeSlideNotesHtml(notes_html) {
-    var template = document.createElement('template');
-    template.innerHTML = String(notes_html || '');
-    return template.content.textContent || '';
-  }
 
   /**
    * Returns speaker notes text for a slide block.
@@ -1977,70 +1951,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
       /<\s*notes\b[^>]*>[\s\S]*?<\/\s*notes\s*>/i.test(data.blocks[index]);
   }
 
-  /**
-   * Removes executable content from notes before showing them in the editor UI.
-   * @param {String} notes_html
-   * @returns {String}
-   */
-  sanitizeSlideNotesHtml(notes_html) {
-    var doc = document.implementation.createHTMLDocument('');
-    var template = doc.createElement('template');
-    var container = doc.createElement('div');
-    template.innerHTML = String(notes_html || '');
-    container.appendChild(template.content.cloneNode(true));
-    doc.body.appendChild(container);
-    doc.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach(function(node) {
-      node.remove();
-    });
-    doc.querySelectorAll('*').forEach(function(node) {
-      Array.from(node.attributes).forEach(function(attr) {
-        var name = attr.name.toLowerCase();
-        var value = String(attr.value || '').trim();
-        if(name.indexOf('on') == 0 || name == 'srcdoc' || /^javascript:/i.test(value)) {
-          node.removeAttribute(attr.name);
-        }
-      });
-    });
-    return container.innerHTML;
-  }
-
-  /**
-   * Escapes textarea text before storing it inside <notes>.
-   * @param {String} notes_text
-   * @returns {String}
-   */
-  escapeSlideNotesText(notes_text) {
-    return String(notes_text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  /**
-   * Updates or creates the <notes> element inside one slide block.
-   * @param {String} block
-   * @param {String} notes_text
-   * @param {String} eol
-   * @returns {String}
-   */
-  setSlideBlockNotesText(block, notes_text, eol) {
-    var notes_html = this.escapeSlideNotesText(notes_text)
-      .replace(/\r\n|\r|\n/g, eol);
-    var notes_re = /(<\s*notes\b[^>]*>)([\s\S]*?)(<\/\s*notes\s*>)/i;
-    if(notes_re.test(block)) {
-      return block.replace(notes_re, '$1' + notes_html + '$3');
-    }
-    var close_match = /<\/\s*slide\s*>/i.exec(block);
-    if(!close_match) {
-      return block;
-    }
-    var before = block.slice(0, close_match.index);
-    if(!/(\r\n|\r|\n)$/.test(before)) {
-      before += eol;
-    }
-    return before + '  <notes>' + notes_html + '</notes>' + eol +
-      block.slice(close_match.index);
-  }
 
   /**
    * Stores notes text in the HTML editor for a slide.
@@ -2071,15 +1981,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     return true;
   }
 
-  /**
-   * Handles notes textarea input for the active slide.
-   */
-  updateSlideNotesFromInput() {
-    if(!this.slide_notes_body) {
-      return;
-    }
-    this.setSlideNotesText(this.current_slide, this.slide_notes_body.value);
-  }
 
   /**
    * Updates the editor notes panel for the active slide.
@@ -2470,7 +2371,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
     this.setActiveThumbnail(this.current_slide);
     await this.syncAllSlidesToViews(this.current_slide);
   }
-  
+
   /**
    * Scale slide
    */
@@ -2562,4 +2463,5 @@ class PRDC_JSLAB_PRESENTATION_EDITOR {
   }
 }
 
-var presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR();
+exports.PRDC_JSLAB_PRESENTATION_EDITOR = PRDC_JSLAB_PRESENTATION_EDITOR;
+exports.PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB = PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB;

@@ -11,11 +11,13 @@
 class PRDC_JSLAB_CODE_DOC_HOVER {
 
   /**
+   * Initializes the code doc hover instance.
    * @param {object} [options] - Hover options.
    * @param {number} [options.show_delay=220] - Delay before showing tooltip.
    * @param {number} [options.max_entries=4] - Maximum matched docs to show.
    */
   constructor(options = {}) {
+    this.get_docs = options.get_docs;
     this.show_delay = isFinite(options.show_delay) ? options.show_delay : 220;
     this.hide_delay = isFinite(options.hide_delay) ? options.hide_delay : 320;
     this.max_entries = isFinite(options.max_entries) ? options.max_entries : 4;
@@ -103,7 +105,9 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
    * @param {MouseEvent} event - Mouse event.
    */
   _onMouseMove(event) {
-    if(!this.cm) return;
+    if(!this.cm) {
+      return;
+    }
 
     this.last_mouse.x = event.clientX;
     this.last_mouse.y = event.clientY;
@@ -229,7 +233,9 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
    * @returns {(object|false)} Hover info.
    */
   _getHoverIdentifier(event) {
-    if(!this.cm) return false;
+    if(!this.cm) {
+      return false;
+    }
     var pos = this.cm.coordsChar({ left: event.clientX, top: event.clientY }, 'window');
     if(!pos || !isFinite(pos.line)) {
       return false;
@@ -348,12 +354,22 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
       var a_score = 0;
       var b_score = 0;
       if(parent_lower.length) {
-        if(a.category.toLowerCase() === parent_lower) a_score += 2;
-        if(b.category.toLowerCase() === parent_lower) b_score += 2;
+        if(a.category.toLowerCase() === parent_lower) {
+          a_score += 2;
+        }
+        if(b.category.toLowerCase() === parent_lower) {
+          b_score += 2;
+        }
       }
-      if(a.kind === 'function') a_score += 1;
-      if(b.kind === 'function') b_score += 1;
-      if(a_score !== b_score) return b_score - a_score;
+      if(a.kind === 'function') {
+        a_score += 1;
+      }
+      if(b.kind === 'function') {
+        b_score += 1;
+      }
+      if(a_score !== b_score) {
+        return b_score - a_score;
+      }
       return a.category.localeCompare(b.category);
     });
 
@@ -417,8 +433,8 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
       print_button.className = 'jslab-doc-hover-btn';
       print_button.type = 'button';
       print_button.tabIndex = -1;
-      print_button.textContent = document.defaultView.language.currentString(601);
-      print_button.setAttribute('lang-str', '601');
+      print_button.textContent = document.defaultView.language.currentString(600);
+      print_button.setAttribute('lang-str', 600);
       var obj = this;
       var on_print = function(item_ref) {
         return function(e) {
@@ -476,7 +492,9 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
    * @param {number} y - Mouse y.
    */
   _positionTooltip(x, y) {
-    if(!this.tooltip) return;
+    if(!this.tooltip) {
+      return;
+    }
     var pad = 14;
     var left = x + pad;
     var top = y + pad;
@@ -522,8 +540,8 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
 
     var title = document.createElement('div');
     title.className = 'jslab-doc-hover-section-title';
-    title.textContent = document.defaultView.language.currentString(602);
-    title.setAttribute('lang-str', '602');
+    title.textContent = document.defaultView.language.currentString(601);
+    title.setAttribute('lang-str', 601);
     section.appendChild(title);
 
     entry.params.forEach(function(param) {
@@ -571,8 +589,8 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
 
     var title = document.createElement('div');
     title.className = 'jslab-doc-hover-section-title';
-    title.textContent = document.defaultView.language.currentString(603);
-    title.setAttribute('lang-str', '603');
+    title.textContent = document.defaultView.language.currentString(602);
+    title.setAttribute('lang-str', 602);
     section.appendChild(title);
 
     entry.returns.forEach(function(ret) {
@@ -637,41 +655,9 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
     PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name = Object.create(null);
     PRDC_JSLAB_CODE_DOC_HOVER.docs_by_name_lower = Object.create(null);
 
-    var docs = this._getPreloadedDocs();
-    if(!docs || typeof docs !== 'object') {
-      var fs = false;
-      var path = false;
-      var node_require = false;
-      try {
-        node_require = eval('require');
-      } catch {}
-      if(typeof node_require == 'function') {
-        try {
-          fs = node_require('fs');
-          path = node_require('path');
-        } catch {}
-      }
-
-      if(!fs || !path) {
-        return;
-      }
-
-      var docs_path;
-      if(typeof app_path !== 'undefined') {
-        docs_path = path.join(app_path, 'docs', 'documentation.json');
-      } else {
-        docs_path = path.join(process.cwd(), 'docs', 'documentation.json');
-      }
-
-      if(!fs.existsSync(docs_path)) {
-        return;
-      }
-
-      try {
-        docs = JSON.parse(fs.readFileSync(docs_path, 'utf8'));
-      } catch(err) {
-        return;
-      }
+    var docs = typeof this.get_docs == 'function' ? this.get_docs() : false;
+    if(!docs || typeof docs != 'object') {
+      return;
     }
 
     Object.keys(docs).forEach(function(scope) {
@@ -717,24 +703,6 @@ class PRDC_JSLAB_CODE_DOC_HOVER {
     });
   }
 
-  /**
-   * Returns docs preloaded into the browser runtime when available.
-   * @returns {(Object|false)}
-   */
-  _getPreloadedDocs() {
-    if(typeof globalThis != 'undefined' && globalThis.__JSLAB_WEB_DOCS__) {
-      return globalThis.__JSLAB_WEB_DOCS__;
-    }
-    try {
-      if(typeof globalThis != 'undefined' &&
-          globalThis.parent &&
-          globalThis.parent !== globalThis &&
-          globalThis.parent.__JSLAB_WEB_DOCS__) {
-        return globalThis.parent.__JSLAB_WEB_DOCS__;
-      }
-    } catch {}
-    return false;
-  }
 
   /**
    * Ensures tooltip styles are injected once.

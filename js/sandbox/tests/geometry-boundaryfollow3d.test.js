@@ -5,40 +5,57 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D } = require('../geometry-boundaryfollow3d');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for geometry boundaryfollow3d test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW3D_TEST_HELPER {
 
-function createLanguageHarness() {
-  return {
-    inter: {
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
+  /**
+   * Creates language harness.
+   */
+  static createLanguageHarness() {
+    return {
+      inter: {
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          }
         }
       }
-    }
-  };
+    };
+  }
 }
 
+
+const { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D } = require('../geometry-boundaryfollow3d');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('constructor validates bbox and normalizes 3D bounds', function(assert) {
-  var jsl = createLanguageHarness();
+  var jsl = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW3D_TEST_HELPER.createLanguageHarness();
 
   assert.throws(function() {
-    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(jsl, function() { return true; }, null);
+    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(jsl, function() {
+      return true;
+    }, null);
   }, function(err) {
     return String(err.message).includes('LANG_274');
   });
 
   assert.throws(function() {
-    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(jsl, function() { return true; }, {
+    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(jsl, function() {
+      return true;
+    }, {
       bbox: { xmin: 0, xmax: 1, ymin: 0, ymax: 1, zmin: 0, zmax: Infinity }
     });
   }, function(err) {
     return String(err.message).includes('LANG_275');
   });
 
-  var follower = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(jsl, function() { return true; }, {
+  var follower = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(jsl, function() {
+    return true;
+  }, {
     bbox: { xmin: 2, xmax: -2, ymin: 4, ymax: -4, zmin: 6, zmax: -6 }
   });
   assert.deepEqual(follower._bbox, {
@@ -51,7 +68,7 @@ tests.add('constructor validates bbox and normalizes 3D bounds', function(assert
 tests.add('feasible cache avoids duplicate evaluations and honors maxEval', function(assert) {
   var calls = 0;
   var follower = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(
-    createLanguageHarness(),
+    PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW3D_TEST_HELPER.createLanguageHarness(),
     function(x, y, z) {
       calls += 1;
       return x + y + z > 0;
@@ -74,8 +91,10 @@ tests.add('feasible cache avoids duplicate evaluations and honors maxEval', func
   assert.equal(follower.N[0].length, 2);
 
   var limited = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_3D(
-    createLanguageHarness(),
-    function() { return true; },
+    PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW3D_TEST_HELPER.createLanguageHarness(),
+    function() {
+      return true;
+    },
     {
       bbox: { xmin: 0, xmax: 1, ymin: 0, ymax: 1, zmin: 0, zmax: 1 },
       maxEval: 0

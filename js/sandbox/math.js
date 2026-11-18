@@ -1,4 +1,3 @@
-
 /**
  * @file JSLAB library math submodule
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
@@ -10,7 +9,7 @@
  * Class for JSLAB math submodule.
  */
 class PRDC_JSLAB_LIB_MATH {
-  
+
   /**
    * Constructs the math submodule, initializing mathematical constants and functions.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -18,41 +17,41 @@ class PRDC_JSLAB_LIB_MATH {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    
+
     // Additional math constants
     if(this.jsl.inter.env.math) {
       /**
        * Pi number.
        * @type {number}
        */
-      this.Pi = this.jsl.inter.env.math.pi; 
-      
+      this.Pi = this.jsl.inter.env.math.pi;
+
       /**
        * Coefficient for converting degrees to radians.
        * @type {number}
        */
-      this.d2r = this.jsl.inter.env.math.pi/180; 
-      
+      this.d2r = this.jsl.inter.env.math.pi / 180;
+
       /**
        * Coefficient for converting radians to degrees.
        * @type {number}
        */
-      this.r2d = 1/this.d2r; 
+      this.r2d = 1 / this.d2r;
     }
-    
+
     /**
      * Floating-point relative accuracy
      * @type {number}
      */
-    this.eps = 1E-7; 
-    
+    this.eps = 1E-7;
+
     /**
      * Floating-point relative accuracy
      * @type {number}
      */
-    this.EPS = this.eps; 
+    this.EPS = this.eps;
   }
-  
+
   /**
    * Seeds the random number generator with the provided arguments.
    * @param {...any} args - Arguments used to seed the random generator.
@@ -61,7 +60,7 @@ class PRDC_JSLAB_LIB_MATH {
   seedRandom(...args) {
     return this.jsl.inter.env.seedRandom(...args);
   }
-    
+
   /**
    * Performs linear interpolation on a set of data points.
    * @param {Array} x The x-values of the data points.
@@ -130,13 +129,13 @@ class PRDC_JSLAB_LIB_MATH {
    */
   gridGradient(x, y, z, N_a = 11) {
     var obj = this;
-    var hx = x[1]-x[0]; 
-    var hy = y[1]-y[0];
-    var N_a_c = Math.floor(N_a / 2); 
-    
+    var hx = x[1] - x[0];
+    var hy = y[1] - y[0];
+    var N_a_c = Math.floor(N_a / 2);
+
     var n = z.length;
     var m = z[0].length;
-        
+
     var dz_x = this.jsl.inter.array.zeros(n, m);
     var dz_y = this.jsl.inter.array.zeros(n, m);
     var dz_x_m = this.jsl.inter.array.zeros(n, m);
@@ -145,9 +144,13 @@ class PRDC_JSLAB_LIB_MATH {
     // Compute the gradient at a single point (x,y)
     // In our function, x is the horizontal index and y is the vertical index.
     function pointGradient(x, y) {
-      if(x < 0 || x >= m || y < 0 || y >= n) return;
+      if(x < 0 || x >= m || y < 0 || y >= n) {
+        return;
+      }
       // Check if gradients are already calculated
-      if(dz_x[y][x] !== 0 || dz_y[y][x] !== 0) return;
+      if(dz_x[y][x] !== 0 || dz_y[y][x] !== 0) {
+        return;
+      }
 
       if(obj.jsl._isNaN(z[y][x])) {
         // If the current value is NaN or Inf, try using central differences if available
@@ -214,12 +217,14 @@ class PRDC_JSLAB_LIB_MATH {
       dz_x[y][x] /= hx;
       dz_y[y][x] /= hy;
     }
-    
+
 
     // Compute the mean gradient at a point using its neighborhood
     function meanGradient(x, y) {
       // Check if already calculated
-      if(dz_x_m[y][x] !== 0 || dz_y_m[y][x] !== 0) return;
+      if(dz_x_m[y][x] !== 0 || dz_y_m[y][x] !== 0) {
+        return;
+      }
       var sum_x = 0, sum_y = 0, count_x = 0, count_y = 0;
       for(var p = 0; p < N_a; p++) {
         for(var q = 0; q < N_a; q++) {
@@ -252,10 +257,10 @@ class PRDC_JSLAB_LIB_MATH {
         meanGradient(x, y);
       }
     }
-    
+
     return [dz_x_m, dz_y_m];
   }
-  
+
   /**
    * Interpolates grid data using the specified method.
    * @param {Array} x - X coordinates.
@@ -276,12 +281,14 @@ class PRDC_JSLAB_LIB_MATH {
       extrap: true,
       ...opts_in
     };
-    
-    function isBetween(A, a, b){
+
+    function isBetween(A, a, b) {
       var B = [];
-      for(var i = 0; i < A.length; i += 1){
-        if(A[i] >= (a - (b - a) * opts.k_e) && 
-           A[i] <= (b + (b - a) * opts.k_e)) B.push(i);
+      for(var i = 0; i < A.length; i += 1) {
+        if(A[i] >= (a - (b - a) * opts.k_e) &&
+           A[i] <= (b + (b - a) * opts.k_e)) {
+          B.push(i);
+        }
       }
       return B;
     }
@@ -291,29 +298,29 @@ class PRDC_JSLAB_LIB_MATH {
 
     var limits_x = this.jsl.inter.array.linspace(xq[0], this.jsl.inter.array.end(xq), opts.Ngx + 1);
     var limits_y = this.jsl.inter.array.linspace(yq[0], this.jsl.inter.array.end(yq), opts.Ngy + 1);
-    
-    for(var i = 0; i < opts.Ngx; i++){
+
+    for(var i = 0; i < opts.Ngx; i++) {
       var i_idx = isBetween(x, limits_x[i], limits_x[i + 1]);
-      for(var j = 0; j < opts.Ngy; j++){
+      for(var j = 0; j < opts.Ngy; j++) {
         var i_idy = isBetween(y, limits_y[j], limits_y[j + 1]);
         var i_id = this.jsl.inter.array.arrayIntersect(i_idx, i_idy);
         i_ids.push(structuredClone(i_id));
-        
+
         var q_ids_ij = [];
-        for(var k = 0; k < xq.length; k++){
-          for(var m = 0; m < yq.length; m++){
-            if(limits_x[i] <= xq[k] && 
+        for(var k = 0; k < xq.length; k++) {
+          for(var m = 0; m < yq.length; m++) {
+            if(limits_x[i] <= xq[k] &&
                  xq[k] <= limits_x[i + 1] &&
-                 limits_y[j] <= yq[m] && 
-                 yq[m] <= limits_y[j + 1]){
+                 limits_y[j] <= yq[m] &&
+                 yq[m] <= limits_y[j + 1]) {
               q_ids_ij.push([k, m]);
-            } 
+            }
           }
         }
         q_ids.push([...q_ids_ij]);
       }
     }
-    
+
     // Interpolation
     var zq = this.jsl.inter.array.NaNs(yq.length, xq.length);
     if(method == 'nearest') {
@@ -323,9 +330,9 @@ class PRDC_JSLAB_LIB_MATH {
         for(var j = 0; j < gc_q_ids.length; j++) {
           var L_min;
           for(var k = 0; k < gc_i_ids.length; k++) {
-            var L = Math.sqrt(Math.pow(x[gc_i_ids[k]] - xq[gc_q_ids[j][0]], 2) + 
+            var L = Math.sqrt(Math.pow(x[gc_i_ids[k]] - xq[gc_q_ids[j][0]], 2) +
                               Math.pow(y[gc_i_ids[k]] - yq[gc_q_ids[j][1]], 2));
-            if(k == 0 || L < L_min){
+            if(k == 0 || L < L_min) {
               L_min = L;
               zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = z[gc_i_ids[k]];
             }
@@ -336,51 +343,51 @@ class PRDC_JSLAB_LIB_MATH {
       for(var i = 0; i < q_ids.length; i++) {
         var gc_q_ids = q_ids[i];
         var gc_i_ids = i_ids[i];
-        
+
         // Delaunay triangulation
         var points = [];
         for(var j = 0; j < gc_i_ids.length; j++) {
           points.push([x[gc_i_ids[j]], y[gc_i_ids[j]], z[gc_i_ids[j]]]);
         }
         var triangles = this.jsl.inter.geometry.delaunayTriangulation(points);
-        
+
         // Locate point (xq, yq) in triangle and calculate zq
         for(var j = 0; j < gc_q_ids.length; j++) {
           var point = [xq[gc_q_ids[j][0]], yq[gc_q_ids[j][1]], 0];
           for(var k = 0; k < triangles.length; k++) {
-           if(triangles[k].contains(point)) {
-             zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = triangles[k].valueAt(point);
-             break; 
-           }
+            if(triangles[k].contains(point)) {
+              zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = triangles[k].valueAt(point);
+              break;
+            }
           }
-        }        
+        }
       }
 
       if(opts.extrap) {
         // Extrapolation
         var zq0 = structuredClone(zq);
-        
+
         // Calculate dz/dx and dz/dy for grid
         var [dz_x, dz_y] = this.gridGradient(xq, yq, zq, opts.N_a);
-        
+
         for(var i = 0; i < q_ids.length; i++) {
           var gc_q_ids = q_ids[i];
-          
+
           // Find nearest point with dz/dx and dz/dy
           for(var j = 0; j < gc_q_ids.length; j++) {
             var point = [
-              xq[gc_q_ids[j][0]], 
-              yq[gc_q_ids[j][1]], 
+              xq[gc_q_ids[j][0]],
+              yq[gc_q_ids[j][1]],
               zq[gc_q_ids[j][1]][gc_q_ids[j][0]]
-             ];
+            ];
             if(this.jsl._isNaN(point[2])) {
               var L_min;
               var k_min = -1;
               for(var k = 0; k < gc_q_ids.length; k++) {
                 if(!this.jsl._isNaN(zq0[gc_q_ids[k][1]][gc_q_ids[k][0]])) {
-                  var L = Math.sqrt(Math.pow(point[0] - xq[gc_q_ids[k][0]], 2) + 
+                  var L = Math.sqrt(Math.pow(point[0] - xq[gc_q_ids[k][0]], 2) +
                                    Math.pow(point[1] - yq[gc_q_ids[k][1]], 2));
-                  if(k_min == -1 || L < L_min){
+                  if(k_min == -1 || L < L_min) {
                     L_min = L;
                     k_min = k;
                   }
@@ -390,11 +397,11 @@ class PRDC_JSLAB_LIB_MATH {
                 // Calculate dz and z
                 var dz_x_i = dz_x[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]];
                 var dz_y_i = dz_y[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]];
-                
+
                 var dx = xq[gc_q_ids[k_min][0]] - point[0];
                 var dy = yq[gc_q_ids[k_min][1]] - point[1];
-                zq[gc_q_ids[j][1]][gc_q_ids[j][0]] = 
-                  zq[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]] - 
+                zq[gc_q_ids[j][1]][gc_q_ids[j][0]] =
+                  zq[gc_q_ids[k_min][1]][gc_q_ids[k_min][0]] -
                   dx * dz_x_i - dy * dz_y_i;
               }
             }
@@ -402,7 +409,7 @@ class PRDC_JSLAB_LIB_MATH {
         }
       }
     } else {
-      this.jsl.inter.env.error('@gridData: '+this.jsl.inter.lang.string(235));
+      this.jsl.inter.env.error('@gridData: ' + this.jsl.inter.lang.string(235));
     }
     return [xq, yq, zq];
   }
@@ -433,9 +440,13 @@ class PRDC_JSLAB_LIB_MATH {
       let minPos = Infinity;
       for(let i = 1; i < s.length; i++) {
         const d = s[i] - s[i - 1];
-        if(d > 0 && d < minPos) minPos = d;
+        if(d > 0 && d < minPos) {
+          minPos = d;
+        }
       }
-      if(!isFinite(minPos)) return 1e-9;
+      if(!isFinite(minPos)) {
+        return 1e-9;
+      }
       return Math.max(minPos * 1e-6, 1e-12);
     }
 
@@ -448,9 +459,13 @@ class PRDC_JSLAB_LIB_MATH {
     function uniqueSortedByKey(arr, keyFn) {
       const map = new Map();
       for(const v of arr) {
-        if(isBad(v)) continue;
+        if(isBad(v)) {
+          continue;
+        }
         const k = keyFn(v);
-        if(!map.has(k)) map.set(k, v);
+        if(!map.has(k)) {
+          map.set(k, v);
+        }
       }
       return [...map.values()].sort((a, b) => a - b);
     }
@@ -472,10 +487,14 @@ class PRDC_JSLAB_LIB_MATH {
 
     for(let i = 0; i < N; i++) {
       const xv = xFlat[i], yv = yFlat[i], zv = zFlat[i];
-      if(isBad(xv) || isBad(yv) || isBad(zv)) continue;
+      if(isBad(xv) || isBad(yv) || isBad(zv)) {
+        continue;
+      }
       const xi = xIndex.get(kx(xv));
       const yi = yIndex.get(ky(yv));
-      if(xi == null || yi == null) continue;
+      if(xi == null || yi == null) {
+        continue;
+      }
       Z[yi][xi] = zv;
       filled[yi][xi] = true;
     }
@@ -486,8 +505,8 @@ class PRDC_JSLAB_LIB_MATH {
   /**
    * Internal shared solver for 1D roots on a rectilinear grid.
    * Supports solving either:
-   *  - knownAxis = 0: known x0, solve y where z(x0, y) == z0
-   *  - knownAxis = 1: known y0, solve x where z(x, y0) == z0
+   * - knownAxis = 0: known x0, solve y where z(x0, y) == z0
+   * - knownAxis = 1: known y0, solve x where z(x, y0) == z0
    *
    * If z is a flat array, the function tries to rebuild a grid automatically.
    * Returns an array of solutions (can be empty or multiple).
@@ -538,7 +557,9 @@ class PRDC_JSLAB_LIB_MATH {
       for(let iy = 0; iy < g.n; iy++) {
         for(let ix = 0; ix < g.m; ix++) {
           const v = Z[iy][ix];
-          if(!obj.jsl._isNaN(v) && Number.isFinite(v)) filledCount++;
+          if(!obj.jsl._isNaN(v) && Number.isFinite(v)) {
+            filledCount++;
+          }
         }
       }
       const fillRatio = filledCount / (g.m * g.n);
@@ -550,7 +571,9 @@ class PRDC_JSLAB_LIB_MATH {
 
     const n = Z.length;
     const m = Z[0].length;
-    if(m < 2 || n < 2) return [];
+    if(m < 2 || n < 2) {
+      return [];
+    }
 
     const knownAxisArr = (knownAxis === 0) ? xAxis : yAxis;
     const solveAxisArr = (knownAxis === 0) ? yAxis : xAxis;
@@ -561,29 +584,45 @@ class PRDC_JSLAB_LIB_MATH {
     // Find bracketing indices k0, k1=k0+1 along known axis
     let k0 = -1;
     if(known0 <= knownAxisArr[0]) {
-      if(!extrap) return [];
+      if(!extrap) {
+        return [];
+      }
       k0 = 0;
     } else if(known0 >= knownAxisArr[knownLen - 1]) {
-      if(!extrap) return [];
+      if(!extrap) {
+        return [];
+      }
       k0 = knownLen - 2;
     } else {
       // binary search
       let lo = 0, hi = knownLen - 2;
       while(lo <= hi) {
         const mid = (lo + hi) >> 1;
-        if(knownAxisArr[mid] <= known0 && known0 <= knownAxisArr[mid + 1]) { k0 = mid; break; }
-        if(known0 < knownAxisArr[mid]) hi = mid - 1;
-        else lo = mid + 1;
+        if(knownAxisArr[mid] <= known0 && known0 <= knownAxisArr[mid + 1]) {
+          k0 = mid;
+          break;
+        }
+        if(known0 < knownAxisArr[mid]) {
+          hi = mid - 1;
+        } else {
+          lo = mid + 1;
+        }
       }
-      if(k0 < 0) return [];
+      if(k0 < 0) {
+        return [];
+      }
     }
 
     const k1 = k0 + 1;
     const d = knownAxisArr[k1] - knownAxisArr[k0];
     const t = (d !== 0) ? ((known0 - knownAxisArr[k0]) / d) : 0;
 
-    function isBad(v) { return obj.jsl._isNaN(v) || !Number.isFinite(v); }
-    function isFiniteNumber(v) { return (typeof v === "number") && isFinite(v) && !Number.isNaN(v); }
+    function isBad(v) {
+      return obj.jsl._isNaN(v) || !Number.isFinite(v);
+    }
+    function isFiniteNumber(v) {
+      return (typeof v === "number") && isFinite(v) && !Number.isNaN(v);
+    }
 
     // Build zslice(solveAxis) at known0
     const zslice = new Array(solveLen);
@@ -597,10 +636,15 @@ class PRDC_JSLAB_LIB_MATH {
         const Abad = isBad(zA);
         const Bbad = isBad(zB);
 
-        if(!Abad && !Bbad) zslice[j] = zA + t * (zB - zA);
-        else if(!Abad)     zslice[j] = zA;
-        else if(!Bbad)     zslice[j] = zB;
-        else               zslice[j] = NaN;
+        if(!Abad && !Bbad) {
+          zslice[j] = zA + t * (zB - zA);
+        } else if(!Abad)     {
+          zslice[j] = zA;
+        } else if(!Bbad)     {
+          zslice[j] = zB;
+        } else               {
+          zslice[j] = NaN;
+        }
       }
     } else {
       // known y -> slice over x: zslice[i] from Z[k0..k1][i]
@@ -611,10 +655,15 @@ class PRDC_JSLAB_LIB_MATH {
         const Abad = isBad(zA);
         const Bbad = isBad(zB);
 
-        if(!Abad && !Bbad) zslice[i] = zA + t * (zB - zA);
-        else if(!Abad)     zslice[i] = zA;
-        else if(!Bbad)     zslice[i] = zB;
-        else               zslice[i] = NaN;
+        if(!Abad && !Bbad) {
+          zslice[i] = zA + t * (zB - zA);
+        } else if(!Abad)     {
+          zslice[i] = zA;
+        } else if(!Bbad)     {
+          zslice[i] = zB;
+        } else               {
+          zslice[i] = NaN;
+        }
       }
     }
 
@@ -623,13 +672,19 @@ class PRDC_JSLAB_LIB_MATH {
     for(let k = 0; k < solveLen - 1; k++) {
       const a = zslice[k];
       const b = zslice[k + 1];
-      if(!isFiniteNumber(a) || !isFiniteNumber(b)) continue;
+      if(!isFiniteNumber(a) || !isFiniteNumber(b)) {
+        continue;
+      }
 
       const fa = a - z0;
       const fb = b - z0;
 
-      if(Math.abs(fa) <= eps) sols.push(solveAxisArr[k]);
-      if(Math.abs(fb) <= eps) sols.push(solveAxisArr[k + 1]);
+      if(Math.abs(fa) <= eps) {
+        sols.push(solveAxisArr[k]);
+      }
+      if(Math.abs(fb) <= eps) {
+        sols.push(solveAxisArr[k + 1]);
+      }
 
       if(fa * fb < 0) {
         const denom = (b - a);
@@ -644,7 +699,9 @@ class PRDC_JSLAB_LIB_MATH {
     sols.sort((p, q) => p - q);
     const out = [];
     for(let k = 0; k < sols.length; k++) {
-      if(k === 0 || Math.abs(sols[k] - sols[k - 1]) > 1e-9) out.push(sols[k]);
+      if(k === 0 || Math.abs(sols[k] - sols[k - 1]) > 1e-9) {
+        out.push(sols[k]);
+      }
     }
     return out;
   }
@@ -691,7 +748,7 @@ class PRDC_JSLAB_LIB_MATH {
   gridSolveXforYZ(x, y, z, y0, z0, opts = {}) {
     return this._gridSolve1D(x, y, z, 1, y0, z0, opts);
   }
-  
+
   /**
    * Calculates the output of a bilinear function based on input value, midpoint, and mid-value.
    * @param {number} x - The input value for the function.
@@ -706,9 +763,9 @@ class PRDC_JSLAB_LIB_MATH {
     }
     x = Math.abs(x);
     if(x <= midPoint) {
-      return sign*(midValue / midPoint) * x;
+      return sign * (midValue / midPoint) * x;
     } else {
-      return sign*(((1 - midValue) / (1 - midPoint)) * (x - midPoint) + midValue);
+      return sign * (((1 - midValue) / (1 - midPoint)) * (x - midPoint) + midValue);
     }
   }
 
@@ -719,8 +776,12 @@ class PRDC_JSLAB_LIB_MATH {
    * @returns {Number} A random number within the specified range.
    */
   random(min, max) {
-    if(isNaN(Number(max))) return Math.random();
-    if(isNaN(Number(min))) min = 0;
+    if(isNaN(Number(max))) {
+      return Math.random();
+    }
+    if(isNaN(Number(min))) {
+      min = 0;
+    }
     return Math.random() * (max - min) + min;
   }
 
@@ -731,8 +792,12 @@ class PRDC_JSLAB_LIB_MATH {
    * @returns {Number} A random integer within the specified range.
    */
   randInt(min, max) {
-    if(isNaN(Number(max))) return NaN;
-    if(isNaN(Number(min))) min = 0;
+    if(isNaN(Number(max))) {
+      return NaN;
+    }
+    if(isNaN(Number(min))) {
+      min = 0;
+    }
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
@@ -853,20 +918,20 @@ class PRDC_JSLAB_LIB_MATH {
   tand(x) {
     return this.jsl.inter.env.math.tan(this.jsl.inter.env.math.dotMultiply(x, this.d2r));
   }
-  
+
   /**
    * Computes the characteristic polynomial of a matrix or the polynomial from roots.
    * @param {Array} A - If `A` is a matrix (2D array), computes its characteristic polynomial.
-   *                    If `A` is an array of roots, computes the polynomial with those roots.
+   * If `A` is an array of roots, computes the polynomial with those roots.
    * @returns {Array} - Coefficients of the resulting polynomial.
    */
   poly(A) {
     if(A[0].length) {
       return this.charpoly(A);
     }
-    
+
     let p = [1];
-    
+
     for(const root of A) {
       var next = new Array(p.length + 1).fill(0);
       for(var i = 0; i < p.length; i++) {
@@ -875,7 +940,7 @@ class PRDC_JSLAB_LIB_MATH {
       }
       p = next;
     }
-    
+
     return p;
   }
 
@@ -949,7 +1014,7 @@ class PRDC_JSLAB_LIB_MATH {
         lang = opts.lang;
       }
     }
-    let str = y_symbol+' = ';
+    let str = y_symbol + ' = ';
 
     for(let i = 0; i < p.length; i++) {
       let current_power = degree - i;
@@ -985,7 +1050,7 @@ class PRDC_JSLAB_LIB_MATH {
         } else {
           term_str = `${sign_str}${coef.toExponential(precision)}*${x_symbol}`;
         }
-        
+
       } else {
         if(lang == 'tex') {
           term_str = `${sign_str}\\num\{${coef.toExponential(precision)}\}`;
@@ -1000,7 +1065,7 @@ class PRDC_JSLAB_LIB_MATH {
 
     return str;
   }
-  
+
   /**
    * Generates a C language formatted string representation of a polynomial.
    * @param {number[]} p - An array of polynomial coefficients, ordered from highest degree to constant term.
@@ -1042,9 +1107,9 @@ class PRDC_JSLAB_LIB_MATH {
     var c = 0;
     if(x.length > 1) {
       for(var i = 1; i < x.length; i++) {
-        if(Math.abs(x[i]-x[i-1]) > dx_max && c < n){
-          c = c+1;
-          x[i] = x[i-1];
+        if(Math.abs(x[i] - x[i - 1]) > dx_max && c < n) {
+          c = c + 1;
+          x[i] = x[i - 1];
         } else {
           c = 0;
         }
@@ -1078,27 +1143,39 @@ class PRDC_JSLAB_LIB_MATH {
     const mag_A = this.magnitude(a);
     const mag_B = this.magnitude(b);
 
-    if(mag_A < mag_B) return -1;
-    if(mag_A > mag_B) return 1;
+    if(mag_A < mag_B) {
+      return -1;
+    }
+    if(mag_A > mag_B) {
+      return 1;
+    }
 
     // Magnitudes are equal; compare real parts
     const real_A = (typeof a === 'object') ? a.real : a;
     const real_B = (typeof b === 'object') ? b.real : b;
 
-    if(real_A < real_B) return -1;
-    if(real_A > real_B) return 1;
+    if(real_A < real_B) {
+      return -1;
+    }
+    if(real_A > real_B) {
+      return 1;
+    }
 
     // Real parts are equal; compare imaginary parts
     const imag_A = (typeof a === 'object') ? a.imag : 0;
     const imag_B = (typeof b === 'object') ? b.imag : 0;
 
-    if(imag_A < imag_B) return -1;
-    if(imag_A > imag_B) return 1;
+    if(imag_A < imag_B) {
+      return -1;
+    }
+    if(imag_A > imag_B) {
+      return 1;
+    }
 
     // Numbers are equal
     return 0;
   }
-  
+
   /**
    * Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.
    * Complex numbers are represented as objects with 'real' and 'imag' properties.
@@ -1112,44 +1189,9 @@ class PRDC_JSLAB_LIB_MATH {
    * @throws {TypeError} If the input is not an array.
    */
   min(arr) {
-    if(!Array.isArray(arr)) {
-      this.jsl.inter.env.error('@min: '+this.jsl.inter.lang.string(190));
-      return;
-    }
-    arr = arr.filter(num => !isNaN(num));
-    
-    // Separate real numbers and complex numbers
-    const real_numbers = [];
-    const complex_numbers = [];
-    for(const num of arr) {
-      if(typeof num === 'object' && num.real !== undefined && num.imag !== undefined) {
-        complex_numbers.push(num);
-      } else {
-        real_numbers.push(num);
-      }
-    }
-
-    // Find min among real numbers using existing function
-    let min_real = real_numbers.length > 0 ? this.jsl.inter.env.math.min(real_numbers) : null;
-
-    // Find min among complex numbers
-    let min_complex = complex_numbers.length > 0 ? complex_numbers[0] : null;
-    for(let i = 1; i < complex_numbers.length; i++) {
-      if(this.compareComplex(complex_numbers[i], min_complex) < 0) {
-        min_complex = complex_numbers[i];
-      }
-    }
-
-    // Compare min_real and min_complex
-    if(min_real !== null && min_complex !== null) {
-      return this.compareComplex(min_real, min_complex) < 0 ? min_real : min_complex;
-    } else if(min_real !== null) {
-      return min_real;
-    } else {
-      return min_complex;
-    }
+    return this._extreme(arr, 'min', -1);
   }
-    
+
   /**
    * Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.
    * Complex numbers are represented as objects with 'real' and 'imag' properties.
@@ -1163,44 +1205,9 @@ class PRDC_JSLAB_LIB_MATH {
    * @throws {TypeError} If the input is not an array.
    */
   max(arr) {
-    if(!Array.isArray(arr)) {
-      this.jsl.inter.env.error('@max: '+this.jsl.inter.lang.string(190));
-      return;
-    }
-    arr = arr.filter(num => !isNaN(num));
-    
-    // Separate real numbers and complex numbers
-    const real_numbers = [];
-    const complex_numbers = [];
-    for(const num of arr) {
-      if(typeof num === 'object' && num.real !== undefined && num.imag !== undefined) {
-        complex_numbers.push(num);
-      } else {
-        real_numbers.push(num);
-      }
-    }
-
-    // Find max among real numbers using existing function
-    let max_real = real_numbers.length > 0 ? this.jsl.inter.env.math.max(real_numbers) : null;
-
-    // Find max among complex numbers
-    let max_complex = complex_numbers.length > 0 ? complex_numbers[0] : null;
-    for(let i = 1; i < complex_numbers.length; i++) {
-      if(this.compareComplex(complex_numbers[i], max_complex) > 0) {
-        max_complex = complex_numbers[i];
-      }
-    }
-
-    // Compare max_real and max_complex
-    if(max_real !== null && max_complex !== null) {
-      return this.compareComplex(max_real, max_complex) > 0 ? max_real : max_complex;
-    } else if(max_real !== null) {
-      return max_real;
-    } else {
-      return max_complex;
-    }
+    return this._extreme(arr, 'max', 1);
   }
-  
+
   /**
    * Clamps a value to the inclusive range [a, b].
    * Assumes a <= b.
@@ -1234,7 +1241,7 @@ class PRDC_JSLAB_LIB_MATH {
     } else if(typeof input === 'number') {
       return input;
     } else {
-      this.jsl.inter.env.error('@real: '+this.jsl.inter.lang.string(192));
+      this.jsl.inter.env.error('@real: ' + this.jsl.inter.lang.string(192));
     }
   }
 
@@ -1258,11 +1265,11 @@ class PRDC_JSLAB_LIB_MATH {
     } else if(typeof input === 'number') {
       return 0;
     } else {
-      this.jsl.inter.env.error('@imag: '+this.jsl.inter.lang.string(192));
+      this.jsl.inter.env.error('@imag: ' + this.jsl.inter.lang.string(192));
     }
     return false;
   }
-  
+
   /**
    * Performs cumulative trapezoidal integration on the provided data.
    * @param {...any} args - Arguments required for cumulative trapezoidal integration.
@@ -1271,7 +1278,7 @@ class PRDC_JSLAB_LIB_MATH {
   cumtrapz(...args) {
     return this.jsl.inter.env.native_module.cumtrapz(...args);
   }
-  
+
   /**
    * Performs trapezoidal integration on the provided data.
    * @param {...any} args - Arguments required for trapezoidal integration.
@@ -1280,7 +1287,7 @@ class PRDC_JSLAB_LIB_MATH {
   trapz(...args) {
     return this.jsl.inter.env.native_module.trapz(...args);
   }
-  
+
   /**
    * Compute the mean squared error (MSE) between two arrays.
    * @param {Array<number>} A - The first array.
@@ -1305,7 +1312,7 @@ class PRDC_JSLAB_LIB_MATH {
 
     return mse;
   }
-  
+
   /**
    * Calculates the coefficients of the characteristic polynomial of a square matrix.
    * @param {number[][]} matrix - A square matrix (2D array) for which the characteristic polynomial is computed.
@@ -1319,24 +1326,70 @@ class PRDC_JSLAB_LIB_MATH {
     if(n !== m || n < 1) {
       throw new Error(this.jsl.inter.lang.string(271));
     }
-    
+
     if(n == 1) {
       return [1, -matrix[0][0]];
     }
-    
-    let p = this.jsl.inter.array.ones(n+1);
+
+    let p = this.jsl.inter.array.ones(n + 1);
     let a1 = [...matrix];
     for(let k = 2; k <= n; k++) {
-      p[k-1] = -1 * this.jsl.inter.env.math.sum(this.jsl.inter.env.math.diag(a1)) / (k - 1);
-      a1 = this.jsl.inter.env.math.multiply(matrix, this.jsl.inter.array.plus(a1, 
-        this.jsl.inter.env.math.multiply(p[k-1], 
-        this.jsl.inter.env.math.diag(this.jsl.inter.array.ones(n)))));
+      p[k - 1] = -1 * this.jsl.inter.env.math.sum(this.jsl.inter.env.math.diag(a1)) / (k - 1);
+      a1 = this.jsl.inter.env.math.multiply(matrix, this.jsl.inter.array.plus(a1,
+        this.jsl.inter.env.math.multiply(p[k - 1],
+          this.jsl.inter.env.math.diag(this.jsl.inter.array.ones(n)))));
     }
 
     p[n] = -1 * this.jsl.inter.env.math.sum(this.jsl.inter.env.math.diag(a1)) / n;
 
     return p;
   }
+  /**
+   * Reduces mixed real and complex values using the selected ordering direction.
+   * @param {Array} arr Input values.
+   * @param {string} operation Numerical backend operation.
+   * @param {number} direction Comparison direction.
+   * @returns {*} Selected extreme value.
+   */
+  _extreme(arr, operation, direction) {
+    if(!Array.isArray(arr)) {
+      this.jsl.inter.env.error('@' + operation + ': ' + this.jsl.inter.lang.string(190));
+      return;
+    }
+    arr = arr.filter(num => !isNaN(num));
+
+    // Separate real numbers and complex numbers
+    const real_numbers = [];
+    const complex_numbers = [];
+    for(const num of arr) {
+      if(typeof num === 'object' && num.real !== undefined && num.imag !== undefined) {
+        complex_numbers.push(num);
+      } else {
+        real_numbers.push(num);
+      }
+    }
+
+    // Reduce real values through the numerical backend.
+    let real_extreme = real_numbers.length > 0 ? this.jsl.inter.env.math[operation](real_numbers) : null;
+
+    // Apply the existing complex ordering to complex values.
+    let complex_extreme = complex_numbers.length > 0 ? complex_numbers[0] : null;
+    for(let i = 1; i < complex_numbers.length; i++) {
+      if(this.compareComplex(complex_numbers[i], complex_extreme) * direction > 0) {
+        complex_extreme = complex_numbers[i];
+      }
+    }
+
+    // Compare the real and complex candidates.
+    if(real_extreme !== null && complex_extreme !== null) {
+      return this.compareComplex(real_extreme, complex_extreme) * direction > 0 ? real_extreme : complex_extreme;
+    } else if(real_extreme !== null) {
+      return real_extreme;
+    } else {
+      return complex_extreme;
+    }
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_MATH = PRDC_JSLAB_LIB_MATH;

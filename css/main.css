@@ -1530,17 +1530,15 @@ label.float-label, .float-input input, .float-input textarea {
   cursor: pointer;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 1250px) {
   .page-cont.wide {
     width: 460px;
   }
-  
-  #main-menu li img {
-    display: none;
-  }
+
+  #app-title { display: none; }
 }
 
-@media only screen and (max-width: 780px) {
+@media only screen and (max-width: 1050px) {
   #main-menu li img {
     display: block;
     margin-right: 0;
@@ -1549,4 +1547,6 @@ label.float-label, .float-input input, .float-input textarea {
   #main-menu li str {
     display: none;
   }
+
+  #main-menu li { padding-left: 8px; padding-right: 8px; }
 }

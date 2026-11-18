@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('vector constructor and toArray work', function(assert) {

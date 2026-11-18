@@ -2,9 +2,9 @@
   "name": "JSLAB",
   "version": "1.0.4",
   "description": "JavaScript LABoratory environment",
-  "main": "js/init.js",
+  "main": "js/backend-electron/main-process.js",
   "bin": {
-    "jslab": "js/cli/main.js"
+    "jslab": "js/cli/cli.js"
   },
   "repository": "https://github.com/PR-DC/JSLAB",
   "license": "LGPL-3.0-or-later",
@@ -13,7 +13,7 @@
   "scripts": {
     "postinstall": "node js/dev/prepare-libs.js && node js/dev/build-configure.js && node js/dev/build-native-wasm.js && node js/dev/make-doc.js && electron .",
     "start": "electron .",
-    "cli": "node js/cli/main.js",
+    "cli": "node js/cli/cli.js",
     "test:cli": "node js/dev/run-cli-tests.js",
     "mcp": "node js/mcp/server.js",
     "inspect": "electron . --inspect=9229 --remote-debugging-port=9222",
@@ -24,6 +24,8 @@
     "test:gui:electron": "node js/dev/run-gui-tests.js",
     "test:gui:web": "node js/dev/run-web-gui-tests.js",
     "test:gui:desktop": "node js/dev/run-desktop-gui-tests.js",
+    "test:simulate-runtime": "node js/dev/run-simulate-runtime-test.js",
+    "audit:simulate": "node js/dev/run-test-suite.js --folder=simulate --test-module=library-audit",
     "auto-test": "electron . --auto-test-app",
     "build": "node js/dev/build-configure.js && node js/dev/build-native-wasm.js && electron .",
     "pack": "node js/dev/build-configure.js --action pack && node js/dev/build-native-wasm.js && electron-builder --dir",
@@ -46,6 +48,7 @@
     "productName": "PR-DC JSLAB",
     "copyright": "Copyright 2026 @ PR-DC",
     "nodeGypRebuild": false,
+    "beforePack": "js/dev/prepare-simulate.js",
     "afterPack": "js/dev/prepare-cli.js",
     "directories": {
       "buildResources": "build",
@@ -62,11 +65,11 @@
       "!config/installer.nsh",
       "!temp",
       "!js/dev",
-      "!js/web/**",
+      "!js/backend-web/**",
       "!html/web.html",
       "!css/web.css",
       "!js/sandbox/jslab-env-web.js",
-      "!js/sandbox/jslab-web-submodules.js",
+      "!js/backend-web/sandbox-modules.js",
       "!**/tests/**",
       "!**/*.test.js",
       "!lib/boost-1.86.0",
@@ -78,6 +81,13 @@
         "ext": "jsl",
         "name": "JSL",
         "description": "JavaScript LABoratory script",
+        "role": "Editor",
+        "icon": "icons/icon.ico"
+      },
+      {
+        "ext": "jslmo",
+        "name": "JSLAB Simulate",
+        "description": "JSLAB Simulate project",
         "role": "Editor",
         "icon": "icons/icon.ico"
       }

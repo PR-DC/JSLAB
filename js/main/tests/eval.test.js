@@ -5,50 +5,62 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_EVAL } = require('../eval');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for eval test fixtures.
+ */
+class PRDC_JSLAB_MAIN_TESTS_EVAL_TEST_HELPER {
 
-function createEvalHarness() {
-  var sent = [];
-  global.ipcRenderer = {
-    send: function(channel, action, payload) {
-      sent.push({ channel, action, payload });
-    }
-  };
-  global.language = {
-    string: function(id) {
-      return 'LANG_' + id;
-    }
-  };
-
-  var messages = [];
-  var win = {
-    evaluating: false,
-    command_window: {
-      addMessageCmd: function() {},
-      scrollToBottom: function() {},
-      resetHistoryIndex: function() {},
-      code_input: { setValue: function() {} },
-      message: function(message) {
-        messages.push(message);
+  /**
+   * Creates eval harness.
+   */
+  static createEvalHarness() {
+    var sent = [];
+    global.ipcRenderer = {
+      send: function(channel, action, payload) {
+        sent.push({ channel, action, payload });
       }
-    },
-    command_history: {
-      updateHistory: function() {}
-    }
-  };
+    };
+    global.language = {
+      string: function(id) {
+        return 'LANG_' + id;
+      }
+    };
 
-  return {
-    eval_obj: new PRDC_JSLAB_EVAL(win),
-    sent: sent,
-    messages: messages,
-    win: win
-  };
+    var messages = [];
+    var win = {
+      platform: { host: global.ipcRenderer, path: require('path') },
+      evaluating: false,
+      command_window: {
+        addMessageCmd: function() {},
+        scrollToBottom: function() {},
+        resetHistoryIndex: function() {},
+        code_input: { setValue: function() {} },
+        message: function(message) {
+          messages.push(message);
+        }
+      },
+      command_history: {
+        updateHistory: function() {}
+      }
+    };
+
+    return {
+      eval_obj: new PRDC_JSLAB_MAIN_EVAL(win),
+      sent: sent,
+      messages: messages,
+      win: win
+    };
+  }
 }
 
+
+const { PRDC_JSLAB_MAIN_EVAL } = require('../eval');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('evalScript builds run command and stores last script path', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_MAIN_TESTS_EVAL_TEST_HELPER.createEvalHarness();
   harness.eval_obj.evalScript('C:\\temp\\a.jsl', [1, 3]);
 
   assert.equal(harness.eval_obj.last_script_path, 'C:\\temp\\a.jsl');
@@ -59,7 +71,7 @@ tests.add('evalScript builds run command and stores last script path', function(
 }, { tags: ['unit', 'main', 'eval'] });
 
 tests.add('evalCommand updates UI and ignores empty command text', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_MAIN_TESTS_EVAL_TEST_HELPER.createEvalHarness();
   var cmd_log = [];
   harness.win.command_window.addMessageCmd = function(cmd) {
     cmd_log.push(cmd);
@@ -76,7 +88,7 @@ tests.add('evalCommand updates UI and ignores empty command text', function(asse
 }, { tags: ['unit', 'main', 'eval'] });
 
 tests.add('evalScript reports busy state when evaluation is already running', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_MAIN_TESTS_EVAL_TEST_HELPER.createEvalHarness();
   harness.win.evaluating = true;
   harness.eval_obj.evalScript('x.jsl');
   assert.equal(harness.sent.length, 0);
@@ -84,7 +96,7 @@ tests.add('evalScript reports busy state when evaluation is already running', fu
 }, { tags: ['unit', 'main', 'eval'] });
 
 tests.add('scriptDirDialogButton returns false when last script path is missing', function(assert) {
-  var harness = createEvalHarness();
+  var harness = PRDC_JSLAB_MAIN_TESTS_EVAL_TEST_HELPER.createEvalHarness();
   harness.eval_obj.last_script_path = undefined;
   var out = harness.eval_obj.scriptDirDialogButton(0);
   assert.equal(out, false);

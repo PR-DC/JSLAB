@@ -5,86 +5,97 @@
  * info@pr-dc.com
  */
 
+/**
+ * Class for docs test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER {
+
+  /**
+   * Creates docs harness.
+   */
+  static createDocsHarness() {
+    var errors = [];
+    var editor_calls = [];
+    var disp_calls = [];
+    var disp_monospaced_calls = [];
+    var docs_payload = {
+      global: {
+        basic: {
+          disp: {
+            kind: 'function',
+            source_filename: 'basic.js',
+            source_lineno: 10,
+            description: 'display'
+          }
+        }
+      },
+      lib: {
+        path: {
+          pathJoin: {
+            kind: 'function',
+            source_filename: 'path.js',
+            source_lineno: 20,
+            description: 'join path'
+          }
+        }
+      }
+    };
+
+    var jsl = {
+      app_path: path.join('C:', 'Electron', 'JSLAB'),
+      no_ans: false,
+      ignore_output: false,
+      setDepthSafeStringify: function(value) {
+        return JSON.stringify(value);
+      },
+      inter: {
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id + ': ';
+          }
+        },
+        env: {
+          readFileSync: function() {
+            return JSON.stringify(docs_payload);
+          },
+          error: function(msg) {
+            errors.push(msg);
+          },
+          disp: function(msg) {
+            disp_calls.push(msg);
+          },
+          dispMonospaced: function(msg) {
+            disp_monospaced_calls.push(msg);
+          },
+          editor: function(file_path, line_no) {
+            editor_calls.push([file_path, line_no]);
+          }
+        }
+      }
+    };
+
+    var docs = new PRDC_JSLAB_LIB_DOCS(jsl);
+    return {
+      docs,
+      errors,
+      editor_calls,
+      disp_calls,
+      disp_monospaced_calls,
+      jsl
+    };
+  }
+}
+
+
 const path = require('path');
 const { PRDC_JSLAB_LIB_DOCS } = require('../docs');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 
 var tests = new PRDC_JSLAB_TESTS();
 
-function createDocsHarness() {
-  var errors = [];
-  var editor_calls = [];
-  var disp_calls = [];
-  var disp_monospaced_calls = [];
-  var docs_payload = {
-    global: {
-      basic: {
-        disp: {
-          kind: 'function',
-          source_filename: 'basic.js',
-          source_lineno: 10,
-          description: 'display'
-        }
-      }
-    },
-    lib: {
-      path: {
-        pathJoin: {
-          kind: 'function',
-          source_filename: 'path.js',
-          source_lineno: 20,
-          description: 'join path'
-        }
-      }
-    }
-  };
-
-  var jsl = {
-    app_path: path.join('C:', 'Electron', 'JSLAB'),
-    no_ans: false,
-    ignore_output: false,
-    setDepthSafeStringify: function(value) {
-      return JSON.stringify(value);
-    },
-    inter: {
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id + ': ';
-        }
-      },
-      env: {
-        readFileSync: function() {
-          return JSON.stringify(docs_payload);
-        },
-        error: function(msg) {
-          errors.push(msg);
-        },
-        disp: function(msg) {
-          disp_calls.push(msg);
-        },
-        dispMonospaced: function(msg) {
-          disp_monospaced_calls.push(msg);
-        },
-        editor: function(file_path, line_no) {
-          editor_calls.push([file_path, line_no]);
-        }
-      }
-    }
-  };
-
-  var docs = new PRDC_JSLAB_LIB_DOCS(jsl);
-  return {
-    docs,
-    errors,
-    editor_calls,
-    disp_calls,
-    disp_monospaced_calls,
-    jsl
-  };
-}
 
 tests.add('helpToJSON returns full docs payload for empty name', function(assert) {
-  var harness = createDocsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER.createDocsHarness();
   var out = harness.docs.helpToJSON();
   var parsed = JSON.parse(out);
   assert.ok(parsed.global.basic.disp);
@@ -92,7 +103,7 @@ tests.add('helpToJSON returns full docs payload for empty name', function(assert
 }, { tags: ['unit', 'docs'] });
 
 tests.add('help/doc aliases resolve global and library members', function(assert) {
-  var harness = createDocsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER.createDocsHarness();
 
   var global_out = JSON.parse(harness.docs.help('disp'));
   assert.equal(global_out.type, 'global');
@@ -104,13 +115,13 @@ tests.add('help/doc aliases resolve global and library members', function(assert
 }, { tags: ['unit', 'docs'] });
 
 tests.add('documentationSearch filters by query text', function(assert) {
-  var harness = createDocsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER.createDocsHarness();
   var out = harness.docs.documentationSearch('join path');
   assert.ok(out.hasOwnProperty('pathJoin'));
 }, { tags: ['unit', 'docs'] });
 
 tests.add('source opens editor for known symbol and errors on missing symbol', function(assert) {
-  var harness = createDocsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER.createDocsHarness();
 
   harness.docs.source('disp');
   assert.equal(harness.editor_calls.length, 1);
@@ -126,7 +137,7 @@ tests.add('source opens editor for known symbol and errors on missing symbol', f
 }, { tags: ['unit', 'docs'] });
 
 tests.add('lookfor returns sorted display lines and updates output flags', function(assert) {
-  var harness = createDocsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER.createDocsHarness();
 
   var out = harness.docs.lookfor('join');
 
@@ -138,7 +149,7 @@ tests.add('lookfor returns sorted display lines and updates output flags', funct
 }, { tags: ['unit', 'docs'] });
 
 tests.add('lookfor validates empty query', function(assert) {
-  var harness = createDocsHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DOCS_TEST_HELPER.createDocsHarness();
 
   var out = harness.docs.lookfor('');
 

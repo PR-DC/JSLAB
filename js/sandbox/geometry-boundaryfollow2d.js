@@ -6,6 +6,8 @@
  * @version 0.0.2
  */
 
+const { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW } = require('./geometry-boundaryfollow');
+
 const OPPOSITE_EDGE = [2, 3, 0, 1];
 
 // Marching-squares segment tables (edges: 0=L,1=T,2=R,3=B)
@@ -47,8 +49,12 @@ const SEG_TABLE_B = [
   []                  // 15
 ];
 
-class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
-  
+/**
+ * Class for geometry boundary follow 2 d.
+ * @extends PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW
+ */
+class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D extends PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW {
+
   /**
    * Boundary follower (2D).
    *
@@ -74,9 +80,11 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
    * @param {number} [opts.maxEval=5000000]
    */
   constructor(jsl, feasibleFn, opts) {
-    this.jsl = jsl;
+    super(jsl);
 
-    if(!opts || !opts.bbox) throw new Error(this.jsl.inter.lang.string(274));
+    if(!opts || !opts.bbox) {
+      throw new Error(this.jsl.inter.lang.string(274));
+    }
     this._fUser = feasibleFn;
 
     this.opts = {
@@ -102,7 +110,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const b = opts.bbox;
     const has_x = Number.isFinite(b.xmin) && Number.isFinite(b.xmax);
     const has_y = Number.isFinite(b.ymin) && Number.isFinite(b.ymax);
-    if(!(has_x && has_y)) throw new Error(this.jsl.inter.lang.string(284));
+    if(!(has_x && has_y)) {
+      throw new Error(this.jsl.inter.lang.string(284));
+    }
 
     this._bbox = {
       xmin: Math.min(b.xmin, b.xmax),
@@ -120,17 +130,6 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     this.N = [[], []];
   }
 
-  /**
-   * Resets logging and optionally clears the feasibility cache.
-   * @param {boolean} [keepCache=false]
-   */
-  resetLogs(keepCache = false) {
-    this.evalCount = 0;
-    if(!keepCache) this._cache.clear();
-    this._loggedKeys.clear();
-    this.N[0].length = 0;
-    this.N[1].length = 0;
-  }
 
   /**
    * Logs an evaluated point (depending on opts.logMode).
@@ -140,12 +139,16 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
    */
   _logPoint(x, y, ok) {
     const log_mode = this.opts.logMode;
-    if(log_mode === "off") return;
+    if(log_mode === "off") {
+      return;
+    }
 
     if(log_mode === "unique") {
       const d = this.opts.logKeyDecimals;
       const key = x.toFixed(d) + "," + y.toFixed(d);
-      if(this._loggedKeys.has(key)) return;
+      if(this._loggedKeys.has(key)) {
+        return;
+      }
       this._loggedKeys.add(key);
     }
 
@@ -163,7 +166,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     if(y_map) {
       if(y_map.has(y)) {
         const cached = y_map.get(y);
-        if(this.opts.logMode === "all") this._logPoint(x, y, cached);
+        if(this.opts.logMode === "all") {
+          this._logPoint(x, y, cached);
+        }
         return cached;
       }
     } else {
@@ -181,7 +186,7 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     this._logPoint(x, y, ok);
     return ok;
   }
-  
+
   /**
    * Builds axis array min..max inclusive; last item is exactly max.
    * @param {number} min
@@ -191,7 +196,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
    */
   _buildAxis(min, max, d) {
     const span = max - min;
-    if(span <= 0) return [min];
+    if(span <= 0) {
+      return [min];
+    }
     const n = Math.ceil(span / d);
     const out = new Array(n + 1);
     for(let i = 0; i <= n; i++) {
@@ -201,19 +208,6 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     return out;
   }
 
-  /**
-   * Nearest node index to v on a uniform axis described by (min, step, n).
-   * @param {number} min
-   * @param {number} step
-   * @param {number} n
-   * @param {number} v
-   * @returns {number}
-   */
-  _closestNodeIndex(min, step, n, v) {
-    if(n <= 0) return 0;
-    const i = Math.round((v - min) / step);
-    return this.jsl.inter.math.clamp(i, 0, n);
-  }
 
   /**
    * Coarse search from origin to find the first feasibility flip edge.
@@ -248,20 +242,28 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const eval_node = (i, j) => {
       const k = idx(i, j);
       const s = node_state[k];
-      if(s !== -1) return s;
+      if(s !== -1) {
+        return s;
+      }
       const ok = this._feasibleXY(X[i], Y[j]) ? 1 : 0;
       node_state[k] = ok;
       return ok;
     };
 
     const flip_if_known = (i, j, ii, jj) => {
-      if(ii < 0 || ii > nx || jj < 0 || jj > ny) return null;
+      if(ii < 0 || ii > nx || jj < 0 || jj > ny) {
+        return null;
+      }
       const k1 = idx(i, j);
       const k2 = idx(ii, jj);
       const s1 = node_state[k1];
       const s2 = node_state[k2];
-      if(s1 === -1 || s2 === -1) return null;
-      if(s1 === s2) return null;
+      if(s1 === -1 || s2 === -1) {
+        return null;
+      }
+      if(s1 === s2) {
+        return null;
+      }
 
       const a = { x: X[i], y: Y[j] };
       const b = { x: X[ii], y: Y[jj] };
@@ -278,24 +280,34 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       if(di !== 0) {
         const ii = i - (di > 0 ? 1 : -1);
         const hit = flip_if_known(i, j, ii, j);
-        if(hit) return hit;
+        if(hit) {
+          return hit;
+        }
       }
       if(dj !== 0) {
         const jj = j - (dj > 0 ? 1 : -1);
         const hit = flip_if_known(i, j, i, jj);
-        if(hit) return hit;
+        if(hit) {
+          return hit;
+        }
       }
 
       let hit = flip_if_known(i, j, i - 1, j);
-      if(hit) return hit;
+      if(hit) {
+        return hit;
+      }
       hit = flip_if_known(i, j, i, j - 1);
-      if(hit) return hit;
+      if(hit) {
+        return hit;
+      }
 
       return null;
     };
 
     let hit = visit(i0, j0);
-    if(hit) return hit;
+    if(hit) {
+      return hit;
+    }
 
     const max_r = Math.max(i0, nx - i0, j0, ny - j0);
 
@@ -305,13 +317,33 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       const j_min = Math.max(0, j0 - r);
       const j_max = Math.min(ny, j0 + r);
 
-      for(let i = i_min; i <= i_max; i++) { hit = visit(i, j_max); if(hit) return hit; }
-      if(j_min !== j_max) {
-        for(let i = i_min; i <= i_max; i++) { hit = visit(i, j_min); if(hit) return hit; }
+      for(let i = i_min; i <= i_max; i++) {
+        hit = visit(i, j_max);
+        if(hit) {
+          return hit;
+        }
       }
-      for(let j = j_min; j <= j_max; j++) { hit = visit(i_max, j); if(hit) return hit; }
+      if(j_min !== j_max) {
+        for(let i = i_min; i <= i_max; i++) {
+          hit = visit(i, j_min);
+          if(hit) {
+            return hit;
+          }
+        }
+      }
+      for(let j = j_min; j <= j_max; j++) {
+        hit = visit(i_max, j);
+        if(hit) {
+          return hit;
+        }
+      }
       if(i_min !== i_max) {
-        for(let j = j_min; j <= j_max; j++) { hit = visit(i_min, j); if(hit) return hit; }
+        for(let j = j_min; j <= j_max; j++) {
+          hit = visit(i_min, j);
+          if(hit) {
+            return hit;
+          }
+        }
       }
     }
 
@@ -332,16 +364,22 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const seed_nx = Math.max(1, this.opts.seedNx | 0);
     const seed_ny = Math.max(1, this.opts.seedNy | 0);
     const refine = this.opts.seedRefine;
-    if(!(refine > 0 && refine < 1)) throw new Error(this.jsl.inter.lang.string(277));
+    if(!(refine > 0 && refine < 1)) {
+      throw new Error(this.jsl.inter.lang.string(277));
+    }
 
     let step_x = Math.max(dx_target, w > 0 ? (w / seed_nx) : dx_target);
     let step_y = Math.max(dy_target, h > 0 ? (h / seed_ny) : dy_target);
 
     for(let iter = 0; iter < 64; iter++) {
       const edge = this._findFirstFlipFromOrigin2D(step_x, step_y);
-      if(edge) return { edge, usedStepX: step_x, usedStepY: step_y };
+      if(edge) {
+        return { edge, usedStepX: step_x, usedStepY: step_y };
+      }
 
-      if(step_x <= dx_target + 1e-15 && step_y <= dy_target + 1e-15) break;
+      if(step_x <= dx_target + 1e-15 && step_y <= dy_target + 1e-15) {
+        break;
+      }
       step_x = Math.max(dx_target, step_x * refine);
       step_y = Math.max(dy_target, step_y * refine);
     }
@@ -376,7 +414,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const getS = (i, j) => {
       const k = j * nx1 + i;
       const s = node_state[k];
-      if(s !== -1) return s === 1;
+      if(s !== -1) {
+        return s === 1;
+      }
       const ok = this._feasibleXY(X[i], Y[j]);
       node_state[k] = ok ? 1 : 0;
       return ok;
@@ -385,7 +425,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const cellCode = (i, j) => {
       const k = j * nx + i;
       const cached = cell_state[k];
-      if(cached !== -1) return cached;
+      if(cached !== -1) {
+        return cached;
+      }
 
       const bl = getS(i, j) ? 1 : 0;
       const br = getS(i + 1, j) ? 2 : 0;
@@ -417,15 +459,13 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const snap_band = Math.max(0, Math.floor(this.opts.snapBand));
 
     const push_uniq = (arr, seen, v) => {
-      if(!seen.has(v)) { seen.add(v); arr.push(v); }
+      if(!seen.has(v)) {
+        seen.add(v);
+        arr.push(v);
+      }
     };
 
-    const nearest_index = (A, v, max_i) => {
-      if(max_i <= 0) return 0;
-      const d = (A[max_i] - A[0]) / max_i;
-      const i = Math.round((v - A[0]) / d);
-      return this.jsl.inter.math.clamp(i, 0, max_i);
-    };
+    const nearest_index = this._nearestAxisIndex.bind(this);
 
     if(coarse_edge.orient === "H") {
       const y_edge = coarse_edge.a.y;
@@ -436,7 +476,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       push_uniq(j_candidates, j_seen, this.jsl.inter.math.clamp(j0, 0, ny));
       push_uniq(j_candidates, j_seen, this.jsl.inter.math.clamp(Math.floor(j0), 0, ny));
       push_uniq(j_candidates, j_seen, this.jsl.inter.math.clamp(Math.ceil(j0), 0, ny));
-      for(let k = -snap_band; k <= snap_band; k++) push_uniq(j_candidates, j_seen, this.jsl.inter.math.clamp(j0 + k, 0, ny));
+      for(let k = -snap_band; k <= snap_band; k++) {
+        push_uniq(j_candidates, j_seen, this.jsl.inter.math.clamp(j0 + k, 0, ny));
+      }
 
       const dx0 = (X[nx] - X[0]) / nx;
       const i_a0 = this.jsl.inter.math.clamp(Math.round((coarse_edge.a.x - box.xmin) / dx0), 0, nx);
@@ -449,7 +491,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
 
         let lo = i_min0;
         let hi = i_max0;
-        if(hi - lo < 1) continue;
+        if(hi - lo < 1) {
+          continue;
+        }
 
         let s_lo = getS(lo, jn);
         let s_hi = getS(hi, jn);
@@ -459,16 +503,31 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
           let found = false;
           for(let ii = lo + 1; ii <= hi; ii++) {
             const s_i = getS(ii, jn);
-            if(s_i !== prev) { lo = ii - 1; hi = ii; s_lo = prev; s_hi = s_i; found = true; break; }
+            if(s_i !== prev) {
+              lo = ii - 1;
+              hi = ii;
+              s_lo = prev;
+              s_hi = s_i;
+              found = true;
+              break;
+            }
             prev = s_i;
           }
-          if(!found) continue;
+          if(!found) {
+            continue;
+          }
         }
 
         while(hi - lo > 1) {
           const mid = (lo + hi) >> 1;
           const s_mid = getS(mid, jn);
-          if(s_mid === s_lo) { lo = mid; s_lo = s_mid; } else { hi = mid; s_hi = s_mid; }
+          if(s_mid === s_lo) {
+            lo = mid;
+            s_lo = s_mid;
+          } else {
+            hi = mid;
+            s_hi = s_mid;
+          }
         }
 
         return { orient: "H", i: lo, jNode: jn, s0: s_lo, s1: s_hi };
@@ -487,7 +546,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       push_uniq(i_candidates, i_seen, this.jsl.inter.math.clamp(i0, 0, nx));
       push_uniq(i_candidates, i_seen, this.jsl.inter.math.clamp(Math.floor(i0), 0, nx));
       push_uniq(i_candidates, i_seen, this.jsl.inter.math.clamp(Math.ceil(i0), 0, nx));
-      for(let k = -snap_band; k <= snap_band; k++) push_uniq(i_candidates, i_seen, this.jsl.inter.math.clamp(i0 + k, 0, nx));
+      for(let k = -snap_band; k <= snap_band; k++) {
+        push_uniq(i_candidates, i_seen, this.jsl.inter.math.clamp(i0 + k, 0, nx));
+      }
 
       const dy0 = (Y[ny] - Y[0]) / ny;
       const j_a0 = this.jsl.inter.math.clamp(Math.round((coarse_edge.a.y - box.ymin) / dy0), 0, ny);
@@ -500,7 +561,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
 
         let lo = j_min0;
         let hi = j_max0;
-        if(hi - lo < 1) continue;
+        if(hi - lo < 1) {
+          continue;
+        }
 
         let s_lo = getS(in0, lo);
         let s_hi = getS(in0, hi);
@@ -510,16 +573,31 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
           let found = false;
           for(let jj = lo + 1; jj <= hi; jj++) {
             const s_j = getS(in0, jj);
-            if(s_j !== prev) { lo = jj - 1; hi = jj; s_lo = prev; s_hi = s_j; found = true; break; }
+            if(s_j !== prev) {
+              lo = jj - 1;
+              hi = jj;
+              s_lo = prev;
+              s_hi = s_j;
+              found = true;
+              break;
+            }
             prev = s_j;
           }
-          if(!found) continue;
+          if(!found) {
+            continue;
+          }
         }
 
         while(hi - lo > 1) {
           const mid = (lo + hi) >> 1;
           const s_mid = getS(in0, mid);
-          if(s_mid === s_lo) { lo = mid; s_lo = s_mid; } else { hi = mid; s_hi = s_mid; }
+          if(s_mid === s_lo) {
+            lo = mid;
+            s_lo = s_mid;
+          } else {
+            hi = mid;
+            s_hi = s_mid;
+          }
         }
 
         return { orient: "V", iNode: in0, j: lo, s0: s_lo, s1: s_hi };
@@ -550,7 +628,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const segs = this._cellSegmentsFromCode(code, ambiguous);
     for(let i = 0; i < segs.length; i++) {
       const s = segs[i];
-      if(s[0] === edge || s[1] === edge) return true;
+      if(s[0] === edge || s[1] === edge) {
+        return true;
+      }
     }
     return false;
   }
@@ -563,9 +643,6 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
    * @returns {Object} - {i, j, entryEdge}
    */
   _startFromFineBracket(ctx, br, ambiguous) {
-    const nx = ctx.nx;
-    const ny = ctx.ny;
-    const cellCode = ctx.cellCode;
 
     if(br.orient === "H") {
       const i = br.i;
@@ -575,17 +652,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       const c0 = { iCell: i, jCell: jn, entryEdge: 3 };
       const c1 = { iCell: i, jCell: jn - 1, entryEdge: 1 };
 
-      for(const c of [c0, c1]) {
-        if(c.iCell < 0 || c.iCell >= nx || c.jCell < 0 || c.jCell >= ny) continue;
-        const code = cellCode(c.iCell, c.jCell);
-        if(code === 0 || code === 15) continue;
-        if(this._cellHasEdge(code, c.entryEdge, ambiguous)) return { i: c.iCell, j: c.jCell, entryEdge: c.entryEdge };
-      }
-
-      for(const c of [c0, c1]) {
-        if(c.iCell < 0 || c.iCell >= nx || c.jCell < 0 || c.jCell >= ny) continue;
-        const code = cellCode(c.iCell, c.jCell);
-        if(code !== 0 && code !== 15) return { i: c.iCell, j: c.jCell, entryEdge: c.entryEdge };
+      const candidate = this._selectStartingCell(ctx, [c0, c1], ambiguous);
+      if(candidate) {
+        return candidate;
       }
 
       throw new Error(this.jsl.inter.lang.string(298));
@@ -600,17 +669,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       const c0 = { iCell: in0, jCell: j, entryEdge: 0 };
       const c1 = { iCell: in0 - 1, jCell: j, entryEdge: 2 };
 
-      for(const c of [c0, c1]) {
-        if(c.iCell < 0 || c.iCell >= nx || c.jCell < 0 || c.jCell >= ny) continue;
-        const code = cellCode(c.iCell, c.jCell);
-        if(code === 0 || code === 15) continue;
-        if(this._cellHasEdge(code, c.entryEdge, ambiguous)) return { i: c.iCell, j: c.jCell, entryEdge: c.entryEdge };
-      }
-
-      for(const c of [c0, c1]) {
-        if(c.iCell < 0 || c.iCell >= nx || c.jCell < 0 || c.jCell >= ny) continue;
-        const code = cellCode(c.iCell, c.jCell);
-        if(code !== 0 && code !== 15) return { i: c.iCell, j: c.jCell, entryEdge: c.entryEdge };
+      const candidate = this._selectStartingCell(ctx, [c0, c1], ambiguous);
+      if(candidate) {
+        return candidate;
       }
 
       throw new Error(this.jsl.inter.lang.string(299));
@@ -644,31 +705,52 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
     const max_steps = this.opts.maxTraceSteps | 0;
 
     for(let step = 0; step < max_steps; step++) {
-      if(i < 0 || i >= nx || j < 0 || j >= ny) return { closed: false };
+      if(i < 0 || i >= nx || j < 0 || j >= ny) {
+        return { closed: false };
+      }
 
       const code = cellCode(i, j);
-      if(code === 0 || code === 15) return { closed: false };
+      if(code === 0 || code === 15) {
+        return { closed: false };
+      }
 
       const segs = this._cellSegmentsFromCode(code, ambiguous);
 
       let e_out = -1;
       for(let s = 0; s < segs.length; s++) {
         const seg = segs[s];
-        if(seg[0] === e_in) { e_out = seg[1]; break; }
-        if(seg[1] === e_in) { e_out = seg[0]; break; }
+        if(seg[0] === e_in) {
+          e_out = seg[1];
+          break;
+        }
+        if(seg[1] === e_in) {
+          e_out = seg[0];
+          break;
+        }
       }
-      if(e_out < 0) return { closed: false };
+      if(e_out < 0) {
+        return { closed: false };
+      }
 
-      if(e_out === 0) i--;
-      else if(e_out === 2) i++;
-      else if(e_out === 3) j--;
-      else j++;
+      if(e_out === 0) {
+        i--;
+      } else if(e_out === 2) {
+        i++;
+      } else if(e_out === 3) {
+        j--;
+      } else {
+        j++;
+      }
 
       e_in = OPPOSITE_EDGE[e_out];
 
       const key = pack_key(i, j, e_in);
-      if(key === start_key) return { closed: true };
-      if(visited.has(key)) return { closed: false };
+      if(key === start_key) {
+        return { closed: true };
+      }
+      if(visited.has(key)) {
+        return { closed: false };
+      }
       visited.add(key);
     }
 
@@ -685,7 +767,9 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
    */
   trace(dx, dy, ambiguous = this.opts.ambiguous) {
     this.resetLogs();
-    if(!(dx > 0) || !(dy > 0)) throw new Error(this.jsl.inter.lang.string(283));
+    if(!(dx > 0) || !(dy > 0)) {
+      throw new Error(this.jsl.inter.lang.string(283));
+    }
 
     const seed = this._findSeedEdgeAdaptive(dx, dy);
     const coarse_edge = seed.edge;
@@ -712,7 +796,40 @@ class PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D {
       fineBracket: fine_br,
     };
   }
+  /**
+   * Chooses an incident boundary cell, then falls back to a nonempty candidate.
+   * @param {Object} ctx Grid context.
+   * @param {Array<Object>} candidates Adjacent cells in preferred order.
+   * @param {string} ambiguous Ambiguity resolver.
+   * @returns {Object|undefined} Starting cell and entry edge.
+   */
+  _selectStartingCell(ctx, candidates, ambiguous) {
+    const { nx, ny, cellCode } = ctx;
+    for(const c of candidates) {
+      if(c.iCell < 0 || c.iCell >= nx || c.jCell < 0 || c.jCell >= ny) {
+        continue;
+      }
+      const code = cellCode(c.iCell, c.jCell);
+      if(code === 0 || code === 15) {
+        continue;
+      }
+      if(this._cellHasEdge(code, c.entryEdge, ambiguous)) {
+        return { i: c.iCell, j: c.jCell, entryEdge: c.entryEdge };
+      }
+    }
+
+    for(const c of candidates) {
+      if(c.iCell < 0 || c.iCell >= nx || c.jCell < 0 || c.jCell >= ny) {
+        continue;
+      }
+      const code = cellCode(c.iCell, c.jCell);
+      if(code !== 0 && code !== 15) {
+        return { i: c.iCell, j: c.jCell, entryEdge: c.entryEdge };
+      }
+    }
+
+  }
+
 }
 
 exports.PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D = PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D;
-

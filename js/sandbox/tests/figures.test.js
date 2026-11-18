@@ -5,32 +5,43 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_LIB_FIGURES } = require('../figures');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for figures test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_FIGURES_TEST_HELPER {
 
-function createFiguresHarness() {
-  var file_reads = [];
-  var jsl = {
-    app_path: '/app',
-    no_ans: false,
-    ignore_output: false,
-    inter: {
-      env: {
-        readFileSync: function(file_path) {
-          file_reads.push(file_path);
-          return Buffer.from('<html></html>');
-        },
-        error: function() {}
+  /**
+   * Creates figures harness.
+   */
+  static createFiguresHarness() {
+    var file_reads = [];
+    var jsl = {
+      app_path: '/app',
+      no_ans: false,
+      ignore_output: false,
+      inter: {
+        env: {
+          readFileSync: function(file_path) {
+            file_reads.push(file_path);
+            return Buffer.from('<html></html>');
+          },
+          error: function() {}
+        }
       }
-    }
-  };
-  var figures = new PRDC_JSLAB_LIB_FIGURES(jsl);
-  return { figures, jsl, file_reads };
+    };
+    var figures = new PRDC_JSLAB_LIB_FIGURES(jsl);
+    return { figures, jsl, file_reads };
+  }
 }
 
+
+const { PRDC_JSLAB_LIB_FIGURES } = require('../figures');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('constructor records lazy figure template paths and initializes default state', function(assert) {
-  var harness = createFiguresHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FIGURES_TEST_HELPER.createFiguresHarness();
   assert.equal(harness.file_reads.length, 0);
   assert.ok(harness.figures._html_figure_path.endsWith('/html/html_figure.html'));
   assert.ok(harness.figures._i_html_figure_path.endsWith('/html/i_html_figure.html'));
@@ -40,7 +51,7 @@ tests.add('constructor records lazy figure template paths and initializes defaul
 }, { tags: ['unit', 'figures'] });
 
 tests.add('figure getters and active/close bookkeeping operate on stored entries', function(assert) {
-  var harness = createFiguresHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FIGURES_TEST_HELPER.createFiguresHarness();
   harness.figures.open_figures = {
     '1': { win: 'window-1', plot: { id: 'plot-1' } },
     '2': { win: 'window-2' }
@@ -64,11 +75,15 @@ tests.add('figure getters and active/close bookkeeping operate on stored entries
 }, { tags: ['unit', 'figures'] });
 
 tests.add('closing all figures returns a promise for every pending close', async function(assert) {
-  const { figures } = createFiguresHarness();
+  const { figures } = PRDC_JSLAB_SANDBOX_TESTS_FIGURES_TEST_HELPER.createFiguresHarness();
   let release;
   let closed = false;
-  figures.open_figures = { 1: { close: () => new Promise(resolve => { release = resolve; }) } };
-  const pending = figures.close('all').then(() => { closed = true; });
+  figures.open_figures = { 1: { close: () => new Promise(resolve => {
+    release = resolve;
+  }) } };
+  const pending = figures.close('all').then(() => {
+    closed = true;
+  });
   await Promise.resolve();
   assert.equal(closed, false);
   release(true);
@@ -77,4 +92,3 @@ tests.add('closing all figures returns a promise for every pending close', async
 }, { tags: ['unit', 'figures'] });
 
 exports.MODULE_TESTS = tests;
-

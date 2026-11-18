@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const prepareCLI = require('../../dev/prepare-cli');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('Windows console packaging preserves the GUI host and records its runtime name', async function(assert) {
@@ -41,10 +41,12 @@ tests.add('Windows console packaging preserves the GUI host and records its runt
       assert.equal(JSON.parse(fs.readFileSync(path.join(folder, 'jslab-cli.json'), 'utf8')).runtime, 'Test Desktop.exe');
       var launcher = fs.readFileSync(path.join(folder, 'jslab.cmd'), 'utf8');
       assert.ok(launcher.includes('set ELECTRON_RUN_AS_NODE=1\r\n'));
-      assert.ok(launcher.includes('"%~dp0jslab-console.exe" "%~dp0resources\\app\\js\\cli\\main.js" %*'));
+      assert.ok(launcher.includes('"%~dp0jslab-console.exe" "%~dp0resources\\app\\js\\cli\\cli.js" %*'));
     }
     await prepareCLI({ electronPlatformName: 'linux' });
-  } finally { fs.rmSync(folder, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(folder, { recursive: true, force: true });
+  }
 }, { tags: ['unit', 'cli', 'packaging'] });
 
 exports.MODULE_TESTS = tests;

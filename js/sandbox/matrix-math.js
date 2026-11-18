@@ -4,7 +4,7 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB matrix math submodule.
  */
@@ -18,7 +18,7 @@ class PRDC_JSLAB_MATRIX_MATH {
   constructor(jsl) {
     this.jsl = jsl;
   }
-  
+
   /**
    * Creates a new matrix.
    * @param {Array} A - The matrix data.
@@ -41,10 +41,10 @@ class PRDC_JSLAB_MATRIX_MATH {
     if(!cols) {
       cols = rows;
     }
-    return new PRDC_JSLAB_MATRIX(this.jsl, 
+    return new PRDC_JSLAB_MATRIX(this.jsl,
       this.jsl.inter.array.createFilledArray(rows * cols, v), rows, cols);
   }
-  
+
   /**
    * Creates a matrix filled with NaN values.
    * @param {number} rows - Number of rows.
@@ -57,7 +57,7 @@ class PRDC_JSLAB_MATRIX_MATH {
     }
     return this.fill(NaN, rows, cols);
   }
-  
+
   /**
    * Creates a matrix filled with ones.
    * @param {number} rows - Number of rows.
@@ -70,7 +70,7 @@ class PRDC_JSLAB_MATRIX_MATH {
     }
     return this.fill(1, rows, cols);
   }
-  
+
   /**
    * Creates a matrix filled with zeros.
    * @param {number} rows - Number of rows.
@@ -83,27 +83,27 @@ class PRDC_JSLAB_MATRIX_MATH {
     }
     return this.fill(0, rows, cols);
   }
-  
+
   /**
    * Creates a diagonal matrix from an array.
    * @param {Array} A - The array to create the diagonal matrix from.
    * @returns {PRDC_JSLAB_MATRIX} The diagonal matrix.
    */
   diag(A) {
-    return new PRDC_JSLAB_MATRIX(this.jsl, 
+    return new PRDC_JSLAB_MATRIX(this.jsl,
       this.jsl.inter.array.diag(A, A.length), A.length, A.length);
   }
-  
+
   /**
    * Creates an identity matrix of a given size.
    * @param {number} size - The size of the identity matrix.
    * @returns {PRDC_JSLAB_MATRIX} The identity matrix.
    */
   eye(size) {
-    return new PRDC_JSLAB_MATRIX(this.jsl, 
+    return new PRDC_JSLAB_MATRIX(this.jsl,
       this.jsl.inter.array.diag(this.jsl.inter.array.ones(size), size), size, size);
   }
-  
+
   /**
    * Concatenates multiple matrices vertically (row-wise).
    * @param {...PRDC_JSLAB_MATRIX} args - Matrices to concatenate.
@@ -114,13 +114,13 @@ class PRDC_JSLAB_MATRIX_MATH {
     var cols = args[0].cols;
     var rows = args.reduce((a, e) => a += e.rows, 0);
     var A = new Array(cols * rows).fill(0);
-    
+
     var p = 0;
     for(var j = 0; j < cols; j++) {
-      for(var k = 0; k < N; k++) {  
+      for(var k = 0; k < N; k++) {
         var P = args[k].data.length / cols;
         for(var i = 0; i < P; i++) {
-          A[p++] = args[k].data[j*P+i];
+          A[p++] = args[k].data[j * P + i];
         }
       }
     }
@@ -154,11 +154,11 @@ exports.PRDC_JSLAB_MATRIX_MATH = PRDC_JSLAB_MATRIX_MATH;
  * Class for JSLAB matrix.
  */
 class PRDC_JSLAB_MATRIX {
-  
+
   #jsl;
   #rows;
   #cols;
-  
+
   /**
    * Constructs a JSLAB matrix.
    * @constructor
@@ -171,7 +171,7 @@ class PRDC_JSLAB_MATRIX {
     this.#jsl = jsl;
     this._set(A, rows, cols);
   }
-  
+
   /**
    * Sets the matrix data and dimensions.
    * @param {Array} A - The matrix data.
@@ -211,7 +211,7 @@ class PRDC_JSLAB_MATRIX {
   row(index) {
     return this.#jsl.inter.array.row(this.toArray(), index);
   }
-  
+
   /**
    * Gets the length of the matrix along a specified dimension.
    * @param {number} dim - The dimension (0 for rows, 1 for columns).
@@ -220,7 +220,7 @@ class PRDC_JSLAB_MATRIX {
   length(dim) {
     return this.size(dim);
   }
-  
+
   /**
    * Gets the number of elements in the matrix.
    * @returns {number} The number of elements.
@@ -228,7 +228,7 @@ class PRDC_JSLAB_MATRIX {
   numel() {
     return this.rows * this.cols;
   }
-  
+
   /**
    * Gets the size of the matrix along a specified dimension.
    * @param {number} dim - The dimension (0 for rows, 1 for columns).
@@ -241,7 +241,7 @@ class PRDC_JSLAB_MATRIX {
     }
     return s[dim];
   }
-  
+
   /**
    * Reshapes the matrix to the specified dimensions.
    * @param {number} rows - New number of rows.
@@ -249,10 +249,10 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The reshaped matrix.
    */
   reshape(rows, cols) {
-    return this.#jsl.inter.mat.new(this.#jsl.inter.array.reshape(this.data, 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.reshape(this.data,
       rows, cols), rows, cols);
   }
-  
+
   /**
    * Replicates the matrix a specified number of times.
    * @param {number} rowReps - Number of row repetitions.
@@ -267,7 +267,7 @@ class PRDC_JSLAB_MATRIX {
     } else {
       cols = this;
     }
-    
+
     var A;
     if(rowReps > 1) {
       var rows = this.#jsl.inter.array.createFilledArray(rowReps, cols);
@@ -300,7 +300,7 @@ class PRDC_JSLAB_MATRIX {
   inv() {
     return this.#jsl.inter.mat.new(this.#jsl.inter.env.math.inv(this.toArray()));
   }
-  
+
   /**
    * Computes the determinant of the matrix.
    * @returns {number} The determinant.
@@ -341,14 +341,14 @@ class PRDC_JSLAB_MATRIX {
   expm() {
     return this.#jsl.inter.mat.new(this.#jsl.inter.env.math.expm(this.toArray())._data);
   }
-  
+
   /**
    * Adds two matrices.
    * @param {PRDC_JSLAB_MATRIX} A - The matrix to add.
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   add(A) {
-    return this.#jsl.inter.mat.new(this.#jsl.inter.array.plus(this.data, A.data), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.plus(this.data, A.data),
       this.rows, this.cols);
   }
 
@@ -367,7 +367,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   subtract(A) {
-    return this.#jsl.inter.mat.new(this.#jsl.inter.array.minus(this.data, A.data), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.minus(this.data, A.data),
       this.rows, this.cols);
   }
 
@@ -388,7 +388,7 @@ class PRDC_JSLAB_MATRIX {
   multiply(A) {
     return this.#jsl.inter.mat.new(this.#jsl.inter.array.multiply(this.data, A.data, this.rows, this.cols, A.cols), this.rows, A.cols);
   }
-  
+
   /**
    * Solves a linear system.
    * @param {PRDC_JSLAB_MATRIX} B - The right-hand side matrix.
@@ -397,7 +397,7 @@ class PRDC_JSLAB_MATRIX {
   linsolve(B) {
     return this.#jsl.inter.mat.new(this.#jsl.inter.array.linsolve(this.data, B.data, this.cols), this.rows, 1);
   }
-  
+
   /**
    * Divides each element by another matrix or scalar.
    * @param {PRDC_JSLAB_MATRIX|number} A - The matrix or scalar to divide by.
@@ -405,10 +405,10 @@ class PRDC_JSLAB_MATRIX {
    */
   divideEl(A) {
     if(this.#jsl.inter.mat.isMatrix(A)) {
-      return this.#jsl.inter.mat.new(this.#jsl.inter.array.divideEl(this.data, A.data), 
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.divideEl(this.data, A.data),
         this.rows, this.cols);
     } else {
-      return this.#jsl.inter.mat.new(this.#jsl.inter.array.scale(this.data, 1 / A), 
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.scale(this.data, 1 / A),
         this.rows, this.cols);
     }
   }
@@ -420,10 +420,10 @@ class PRDC_JSLAB_MATRIX {
    */
   multiplyEl(A) {
     if(this.#jsl.inter.mat.isMatrix(A)) {
-      return this.#jsl.inter.mat.new(this.#jsl.inter.array.multiplyEl(this.data, A.data), 
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.multiplyEl(this.data, A.data),
         this.rows, this.cols);
     } else {
-      return this.#jsl.inter.mat.new(this.#jsl.inter.array.scale(this.data, A), 
+      return this.#jsl.inter.mat.new(this.#jsl.inter.array.scale(this.data, A),
         this.rows, this.cols);
     }
   }
@@ -434,7 +434,7 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   powEl(p) {
-    return this.#jsl.inter.mat.new(this.#jsl.inter.array.powEl(this.data, p), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.powEl(this.data, p),
       this.rows, this.cols);
   }
 
@@ -444,19 +444,19 @@ class PRDC_JSLAB_MATRIX {
    * @returns {PRDC_JSLAB_MATRIX} The resulting matrix.
    */
   elementWise(func) {
-    return this.#jsl.inter.mat.new(this.#jsl.inter.array.elementWise((a) => func(a), this.data), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.elementWise((a) => func(a), this.data),
       this.rows, this.cols);
   }
-  
+
   /**
    * Computes the reciprocal of each element in the matrix.
    * @returns {PRDC_JSLAB_MATRIX} The matrix with reciprocals.
    */
   reciprocal() {
-    return this.#jsl.inter.mat.new(this.#jsl.inter.array.reciprocal(this.data, this.rows * this.cols), 
+    return this.#jsl.inter.mat.new(this.#jsl.inter.array.reciprocal(this.data, this.rows * this.cols),
       this.rows, this.cols);
   }
-  
+
   /**
    * Computes the sum of all elements in the matrix.
    * @returns {number} The sum of all elements.
@@ -489,7 +489,7 @@ class PRDC_JSLAB_MATRIX {
   max() {
     return this.#jsl.inter.env.math.max(this.toArray());
   }
-  
+
   /**
    * Creates a clone of the current matrix.
    * @returns {PRDC_JSLAB_MATRIX} A cloned matrix instance.
@@ -523,17 +523,17 @@ class PRDC_JSLAB_MATRIX {
       cols = [cols];
     }
     var A = this.#jsl.inter.array.zeros(rows.length * cols.length);
-    
+
     var k = 0;
     for(var j = 0; j < cols.length; j++) {
       for(var i = 0; i < rows.length; i++) {
         A[k++] = rows[i] + cols[j] * this.rows;
       }
     }
-    
+
     return A;
   }
-  
+
   /**
    * Sets a subset of the matrix elements.
    * @param {...*} args - Indices and values to set.
@@ -546,7 +546,7 @@ class PRDC_JSLAB_MATRIX {
       }
       return a;
     });
-    
+
     var indices;
     var B;
     if(A.length == 3) {
@@ -559,7 +559,7 @@ class PRDC_JSLAB_MATRIX {
       }
       B = A[1];
     }
-    
+
     var j = 0;
     for(var i = 0; i < indices.length; i++) {
       if(this.#jsl.inter.mat.isMatrix(B[0])) {
@@ -588,7 +588,7 @@ class PRDC_JSLAB_MATRIX {
       }
       return a;
     });
-    
+
     if(A.length == 1) {
       indices = A[0];
       rows = indices.length;
@@ -606,7 +606,7 @@ class PRDC_JSLAB_MATRIX {
       }
       indices = this.index(A[0], A[1]);
     }
-    
+
     var B = this.#jsl.inter.array.createFilledArray(indices.length, 0);
     var j = 0;
     for(var i = 0; i < indices.length; i++) {
@@ -614,7 +614,7 @@ class PRDC_JSLAB_MATRIX {
     }
     return this.#jsl.inter.mat.new(B, rows, cols);
   }
-  
+
   /**
    * Converts the matrix to a two-dimensional array.
    * @returns {Array} The matrix data as a two-dimensional array.
@@ -622,7 +622,7 @@ class PRDC_JSLAB_MATRIX {
   toArray() {
     return this.#jsl.inter.array.reshape(this.data, this.rows, this.cols);
   }
-  
+
   /**
    * Converts the matrix to a one-dimensional array.
    * @returns {Array} The matrix data as a one-dimensional array.
@@ -630,7 +630,7 @@ class PRDC_JSLAB_MATRIX {
   toFlatArray() {
     return this.data;
   }
-  
+
   /**
    * Returns a string representation of the matrix.
    * @returns {string} The string representation of the matrix.
@@ -646,10 +646,10 @@ class PRDC_JSLAB_MATRIX {
       str += '],\n';
     }
     str = str.slice(0, -2);
-    str += '\n])';    
+    str += '\n])';
     return str;
   }
-  
+
   /**
    * Returns a JSON representation of the matrix.
    * @returns {Array} The matrix data as a two-dimensional array.
@@ -657,7 +657,7 @@ class PRDC_JSLAB_MATRIX {
   toJSON() {
     return this.toArray();
   }
-  
+
   /**
    * Returns a safe JSON representation of the matrix.
    * @returns {Array} The matrix data as a two-dimensional array.
@@ -665,7 +665,7 @@ class PRDC_JSLAB_MATRIX {
   toSafeJSON() {
     return this.toJSON();
   }
-  
+
   /**
    * Returns a pretty string representation of the matrix.
    * @returns {string} The pretty string representation of the matrix.

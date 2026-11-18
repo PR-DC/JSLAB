@@ -5,6 +5,8 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_DOM } = require('../other-shared/dom');
+
 /**
  * Class for JSLAB workspace.
  */
@@ -12,12 +14,12 @@ class PRDC_JSLAB_WORKSPACE {
 
   /**
    * Initializes the workspace, setting up the UI component and event listeners for workspace interactions.
-   * @param {object} win The window object representing the current Electron window.
+   * @param {object} win The window object representing the owning window controller.
    */
   constructor(win) {
     var obj = this;
     this.win = win;
-    
+
     this.data = [];
     this.search = '';
     this.workspace_cont = document.getElementById('workspace');
@@ -25,12 +27,12 @@ class PRDC_JSLAB_WORKSPACE {
     this.context_menu = document.getElementById('workspace-context-menu');
     this.context_menu_inspect = document.getElementById('workspace-context-inspect');
     this.context_variable = undefined;
-    
+
     // Workspace clear button click
-    $('#workspace-options .clear').click(function(){
+    $('#workspace-options .clear').click(function() {
       obj.win.eval.evalCommand('clear');
     });
-    
+
     // Workspace search input
     if(this.search_input) {
       this.search_input.addEventListener('input', function() {
@@ -58,14 +60,7 @@ class PRDC_JSLAB_WORKSPACE {
       });
     }
 
-    document.addEventListener('click', function(e) {
-      if(!obj.context_menu || obj.context_menu.style.display === 'none') {
-        return;
-      }
-      if(!obj.context_menu.contains(e.target)) {
-        obj.hideContextMenu();
-      }
-    });
+    document.addEventListener('click', event => PRDC_JSLAB_DOM.dismissContextMenu(obj, event));
 
     document.addEventListener('keydown', function(e) {
       if(e.key === 'Escape') {
@@ -88,7 +83,7 @@ class PRDC_JSLAB_WORKSPACE {
     this.data = data;
     this.updateWorkspace();
   }
-  
+
   /**
    * Refreshes the workspace display based on the current data, updating the layout and content of the workspace area.
    */
@@ -96,7 +91,7 @@ class PRDC_JSLAB_WORKSPACE {
     var obj = this;
     var search = this.search;
     this.hideContextMenu();
-    
+
     var workspace_table = $('#workspace .table')[0];
     workspace_table.innerHTML = '';
     var cells_size = this.win.panels.workspace_columns.cells_size;
@@ -149,26 +144,8 @@ class PRDC_JSLAB_WORKSPACE {
     if(!this.context_menu || !variable) {
       return;
     }
-
     this.context_variable = variable;
-    this.context_menu.style.display = 'block';
-    this.context_menu.style.left = '0px';
-    this.context_menu.style.top = '0px';
-
-    var rect = this.context_menu.getBoundingClientRect();
-    var x = left;
-    var y = top;
-    var margin = 4;
-
-    if((x + rect.width) > window.innerWidth - margin) {
-      x = Math.max(margin, window.innerWidth - rect.width - margin);
-    }
-    if((y + rect.height) > window.innerHeight - margin) {
-      y = Math.max(margin, window.innerHeight - rect.height - margin);
-    }
-
-    this.context_menu.style.left = x + 'px';
-    this.context_menu.style.top = y + 'px';
+    PRDC_JSLAB_DOM.openContextMenu(this.context_menu, left, top);
   }
 
   /**

@@ -5,12 +5,12 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
- 
+
 // Import the filesystem module
 const fs = require('fs');
 
 global.process_arguments = process.argv;
-require('../shared/init-config.js');
+require('../other-shared/init-config.js');
 
 console.log('[build-configure.js] Started');
 var t = performance.now();
@@ -18,7 +18,7 @@ var t = performance.now();
 // Change package.json
 console.log('Changing package.json...');
 var data = JSON.parse(fs.readFileSync('package.json'));
-var filename = data.name+'_'+data.version;
+var filename = data.name + '_' + data.version;
 if(process.argv.length > 3) {
   var action = process.argv[3];
   if(action == 'dist-portable') {
@@ -26,7 +26,7 @@ if(process.argv.length > 3) {
   }
 }
 
-data.build.artifactName = filename+'.${ext}';
+data.build.artifactName = filename + '.${ext}';
 
 var sign_env = [
   {name: 'COMPANY_NAME', value: config.COMPANY_NAME},
@@ -44,8 +44,8 @@ if(config.SIGN_BUILD && missing_sign_env.length === 0) {
 } else {
   delete data.build.win.sign;
   if(config.SIGN_BUILD) {
-    console.warn('Signing requested, but missing environment variables: '+
-      missing_sign_env.join(', ')+'. Build will continue unsigned.');
+    console.warn('Signing requested, but missing environment variables: ' +
+      missing_sign_env.join(', ') + '. Build will continue unsigned.');
   }
 }
 
@@ -56,4 +56,4 @@ if(!fs.existsSync('bin/')) {
   fs.mkdirSync('bin/');
 }
 
-console.log('[build-configure.js] ' + ((performance.now()-t)/1000).toFixed(3) + ' s');
+console.log('[build-configure.js] ' + ((performance.now() - t) / 1000).toFixed(3) + ' s');

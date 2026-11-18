@@ -1,0 +1,25 @@
+/**
+ * @file Reusable playback controls on a standard 3D plot
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+var animation_time = Array.from({ length: 241 }, (_, index) => index / 60);
+var animation_plot = plot([{ id: 'moving-point', type: 'scatter3d', mode: 'markers',
+  x: [1], y: [0], z: [0], marker: { size: 8 } }],
+  { xlim: [-1.5, 1.5], ylim: [-1.5, 1.5], zlim: [-1.5, 1.5] });
+await animation_plot.ready;
+var playback = await animationControls(animation_plot.fid, {
+  time: animation_time,
+  loop: true,
+  play: true,
+  speed: 1,
+  speeds: [.25, .5, 1, 2, 4],
+  onFrame: function(index, time) {
+    var angle = time * Math.PI / 2;
+    animation_plot.updateById([{ id: 'moving-point',
+      x: [Math.cos(angle)], y: [Math.sin(angle)], z: [Math.sin(2 * angle) / 2] }]);
+  }
+});
+// Use playback.pause(), playback.play(), playback.seek(120),
+// playback.setSpeed(2), playback.setLoop(false) or playback.dispose().

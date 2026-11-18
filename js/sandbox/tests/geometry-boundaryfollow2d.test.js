@@ -5,40 +5,57 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D } = require('../geometry-boundaryfollow2d');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for geometry boundaryfollow2d test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW2D_TEST_HELPER {
 
-function createLanguageHarness() {
-  return {
-    inter: {
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
+  /**
+   * Creates language harness.
+   */
+  static createLanguageHarness() {
+    return {
+      inter: {
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          }
         }
       }
-    }
-  };
+    };
+  }
 }
 
+
+const { PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D } = require('../geometry-boundaryfollow2d');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('constructor validates bbox and normalizes coordinate limits', function(assert) {
-  var jsl = createLanguageHarness();
+  var jsl = PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW2D_TEST_HELPER.createLanguageHarness();
 
   assert.throws(function() {
-    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(jsl, function() { return true; }, null);
+    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(jsl, function() {
+      return true;
+    }, null);
   }, function(err) {
     return String(err.message).includes('LANG_274');
   });
 
   assert.throws(function() {
-    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(jsl, function() { return true; }, {
+    return new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(jsl, function() {
+      return true;
+    }, {
       bbox: { xmin: 0, xmax: 1, ymin: 0, ymax: NaN }
     });
   }, function(err) {
     return String(err.message).includes('LANG_284');
   });
 
-  var follower = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(jsl, function() { return true; }, {
+  var follower = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(jsl, function() {
+    return true;
+  }, {
     bbox: { xmin: 4, xmax: -2, ymin: 7, ymax: -3 }
   });
   assert.deepEqual(follower._bbox, { xmin: -2, xmax: 4, ymin: -3, ymax: 7 });
@@ -47,7 +64,7 @@ tests.add('constructor validates bbox and normalizes coordinate limits', functio
 tests.add('feasibility cache logs evaluations and resetLogs supports keepCache', function(assert) {
   var calls = 0;
   var follower = new PRDC_JSLAB_GEOMETRY_BOUNDARY_FOLLOW_2D(
-    createLanguageHarness(),
+    PRDC_JSLAB_SANDBOX_TESTS_GEOMETRY_BOUNDARYFOLLOW2D_TEST_HELPER.createLanguageHarness(),
     function(x, y) {
       calls += 1;
       return x + y > 0;
@@ -77,4 +94,3 @@ tests.add('feasibility cache logs evaluations and resetLogs supports keepCache',
 }, { tags: ['unit', 'geometry-boundaryfollow2d'] });
 
 exports.MODULE_TESTS = tests;
-

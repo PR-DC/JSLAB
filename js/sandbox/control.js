@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB control submodule.
  */
 class PRDC_JSLAB_LIB_CONTROL {
-  
+
   /**
    * Initializes the control submodule.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -54,8 +54,10 @@ class PRDC_JSLAB_LIB_CONTROL {
     const n = den.length;
     num = [...inter.zeros(n - num.length), ...num];
 
-    let A = inter.zeros(n-1).map(() => inter.zeros(n-1));
-    for(let i = 1; i < n - 1; i++) A[i-1][i] = 1;
+    let A = inter.zeros(n - 1).map(() => inter.zeros(n - 1));
+    for(let i = 1; i < n - 1; i++) {
+      A[i - 1][i] = 1;
+    }
     A[n - 2] = inter.fliplr(den.slice(1).map(d => -d));
 
     const C = inter.fliplr(num.map((c, i) => c - den[i] * num[0]).slice(1));
@@ -73,10 +75,10 @@ class PRDC_JSLAB_LIB_CONTROL {
   ss2tf(sys) {
     const inter = this.jsl.inter;
     const { A, B, C, D } = sys;
-  
+
     const den = inter.charpoly(A);
     let num = inter.plus(inter.charpoly(inter.minus(A, this.jsl.inter.env.math.multiply(B, [C]))),
-      inter.scale(den, D-1));
+      inter.scale(den, D - 1));
 
     var p = den.length - num.length;
     if(p > 0) {
@@ -118,15 +120,15 @@ class PRDC_JSLAB_LIB_CONTROL {
 
     return this.ss(Ad, Bd, C, D, Ts);
   }
-  
+
   /**
    * Simulate the time response of a discrete-time linear system.
    * @param {number[]} sys - transfer function of system.
    * @param {number[]} u - Input signal array.
    * @param {number[]} t - Time vector array.
    * @returns {object} An object containing the response:
-   *                   - y: Output signal array.
-   *                   - t: Time vector array (same as input).
+   * - y: Output signal array.
+   * - t: Time vector array (same as input).
    */
   lsim(sys, u, t, Ts) {
     const inter = this.jsl.inter;
@@ -169,15 +171,15 @@ class PRDC_JSLAB_LIB_CONTROL {
         }
       }
     }
-    
+
     if(num.length < den.length) {
       var n = den.length - num.length;
       y = [...inter.zeros(n), ...y.slice(0, y.length - n)];
     }
-    
+
     return { y, t };
   }
-  
+
   /**
    * Simulates the system response over a specified time period.
    * @param {Object} sys - The system to simulate.
@@ -188,10 +190,10 @@ class PRDC_JSLAB_LIB_CONTROL {
     const inter = this.jsl.inter;
     var u = inter.ones(101);
     var t = inter.linspace(0, Tfinal, 101);
-    var Ts = Tfinal/100;
+    var Ts = Tfinal / 100;
     return this.lsim(sys, u, t, Ts);
   }
-  
+
   /**
    * Estimates a transfer function model using numerical optimization.
    * @param {Array<number>} t - Time vector.
@@ -206,7 +208,7 @@ class PRDC_JSLAB_LIB_CONTROL {
     const inter = this.jsl.inter;
     var obj = this;
     var Ts = inter.mean(inter.diff(t));
-    var N = np+nz+1;
+    var N = np + nz + 1;
     var f = (x) => { // funkcija prilagodjenosti
       try {
         var den = [1, ...x.slice(0, np)];

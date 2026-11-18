@@ -5,15 +5,10 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_CODE_LINT } = require('../code/lint');
+
 const { PRDC_JSLAB_EDITOR_SCRIPT } = require('./script');
 
-const fs = require('fs');
-const { pathEqual } = require('path-equal');
-const Store = require('electron-store');
-const { ESLint } = require("eslint");
-const path = require("path");
-
-const store = new Store();
 
 /**
  * Class for JSLAB editor script.
@@ -25,25 +20,19 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    * @param {object} win The application window where the editor is hosted.
    */
   constructor(win) {
+    const { fs, store, host } = win.platform;
     var obj = this;
     this.win = win;
-    
+
     this.scripts = [];
     this.last_script_paths = [];
     this.last_active_script;
     this.active_tab;
     this.close_window = false;
     this.tabs = new PRDC_TABS();
-    
-    var LINT_OPTIONS = {
-      overrideConfigFile: config.LINT_OPTIONS.overrideConfigFile,
-      overrideConfig: {
-        languageOptions: config.LINT_OPTIONS.overrideConfig.languageOptions,
-        rules: config.LINT_OPTIONS.overrideConfig.rules,
-      }
-    };
-    this.eslint = new ESLint(LINT_OPTIONS);
-    
+
+    this.eslint = new PRDC_JSLAB_CODE_LINT();
+
     // Tabs
     this.tabs_cont = document.querySelector(".tabs");
     this.tabs.init(this.tabs_cont);
@@ -51,11 +40,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       event.preventDefault();
       obj.createScript();
     });
-    
+
     // On tab add
     this.tabs_cont.addEventListener("tabAdd", function({ detail }) {
       $("#close-dialog-cont").hide();
-      detail.tabEl.onmousedown = function (e) {
+      detail.tabEl.onmousedown = function(e) {
         if(e && (e.which == 2 || e.button == 4)) {
           obj.removeScriptByTab(detail.tabEl);
         }
@@ -68,7 +57,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
         if(obj.close_window) {
           store.set("last_script_paths", obj.last_script_paths);
           store.set("last_active_script", obj.last_active_script);
-          ipcRenderer.send("MainProcess", "close-editor");
+          host.send("MainProcess", "close-editor");
         } else {
           obj.createScript();
         }
@@ -100,9 +89,9 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       obj.updateActiveExtension(script);
     });
 
-    
+
     // On start up
-    var argv = ipcRenderer.sendSync('sync-message', 'get-process-arguments');
+    var argv = win.platform.getArguments();
     var file_path = argv.find(arg => arg.endsWith('.jsl')); // path as argument
     var script_paths = store.get("last_script_paths"); // last opened scripts
     if(file_path) {
@@ -125,7 +114,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
         }
       });
     }
-    
+
     if(this.scripts.length > 0) {
       if(file_path) {
         this.activateScriptByPath(file_path);
@@ -141,46 +130,47 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       this.createScript();
     }
   }
-  
+
   /**
    * Saves the currently active script.
    */
   saveScript() {
-    this.getScriptByTab(this.active_tab)[0].save();
+    return this.getScriptByTab(this.active_tab)[0].save();
   }
-  
+
   /**
    * Saves the currently active script under a new file name.
    */
   saveAsScript() {
-    this.getScriptByTab(this.active_tab)[0].saveAs();
+    return this.getScriptByTab(this.active_tab)[0].saveAs();
   }
-  
+
   /**
    * Opens search dialog for currently active script.
    */
   openSearchDialog() {
     this.getScriptByTab(this.active_tab)[0].openSearchDialog();
   }
-  
+
   /**
    * Compiles arduino code.
    */
   compileArduino() {
     this.getScriptByTab(this.active_tab)[0].compileArduino();
   }
-  
+
   /**
    * Uploads arduino code.
    */
   uploadArduino() {
     this.getScriptByTab(this.active_tab)[0].uploadArduino();
   }
-  
+
   /**
    * Opens a script file from the filesystem into the editor.
    */
   openScriptFile() {
+    const { host } = this.win.platform;
     var obj = this;
     let options = {
       title: language.currentString(146),
@@ -190,9 +180,11 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       ],
     };
 
-    ipcRenderer.invoke("dialog", "showOpenDialog", options)
+    host.invoke("dialog", "showOpenDialog", options)
       .then(function(result) {
-        if(result.canceled) return obj.win.editor.disp("@editor/openScriptFile: "+language.string(132));
+        if(result.canceled) {
+          return obj.win.editor.disp("@editor/openScriptFile: " + language.string(132));
+        }
         var open_path = result.filePaths[0];
         var [script, i] = obj.getScriptByPath(open_path);
         if(script == undefined) {
@@ -204,12 +196,13 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
         obj.win.editor.errorInternal(err);
       });
   }
-  
+
   /**
    * Opens a script by its path if not already open, or activates it if it is already open.
    * @param {Array<string, number>} data - An array where the first element is the script path and the second is the line number.
    */
   openScript(data) {
+    const { fs } = this.win.platform;
     var script_path = data[0];
     var script_lineno = data[1];
     var script_charpos = data[2];
@@ -219,13 +212,13 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       if(script == undefined) {
         this.createScript(script_path, script_lineno, script_charpos);
       } else {
-        this.win.editor.disp("@editor/openScript: "+language.string(133)+" "+script_path+" "+language.string(134)+"!", false);
+        this.win.editor.disp("@editor/openScript: " + language.string(133) + " " + script_path + " " + language.string(134) + "!", false);
         script.activate();
         script.setLine(script_lineno, script_charpos);
       }
     }
   }
-  
+
   /**
    * Executes the currently active script.
    */
@@ -263,12 +256,15 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    * @param {number} charpos - The char position to navigate to in the newly created script.
    */
   createScript(path, lineno, charpos) {
+    if(path === undefined) {
+      path = this.win.platform.createScriptPath();
+    }
     this.tab = this.tabs.addTab();
     var script = new PRDC_JSLAB_EDITOR_SCRIPT(this.win, this, path, this.tab);
     script.setLine(lineno, charpos);
     this.scripts.push(script);
   }
-  
+
   /**
    * Toggles the comment state of the selected lines in the currently active script tab.
    * This action uses the active tab's associated script editor to apply or remove comments.
@@ -276,7 +272,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   toggleComment() {
     this.getScriptByTab(this.active_tab)[0].toggleComment();
   }
-  
+
   /**
    * Inserts text in the currently active script editor.
    * @param {string} text Text to insert.
@@ -287,7 +283,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       script.insertText(text);
     }
   }
-  
+
   /**
    * Activates the script associated with the given tab element.
    * @param {HTMLElement} tab The tab element associated with the script to activate.
@@ -306,7 +302,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       this.activateScriptByTab(script.tab);
     }
   }
-  
+
   /**
    * Retrieves the script object and its index associated with the given tab element.
    * @param {HTMLElement} tab The tab element associated with the script.
@@ -329,6 +325,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    * @returns {Array} An array containing the script object and its index in the scripts array.
    */
   getScriptByPath(script_path) {
+    const { pathEqual } = this.win.platform;
     var i = this.scripts.findIndex(function(script) {
       return pathEqual(script.path, script_path);
     });
@@ -338,7 +335,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       return [undefined, -1];
     }
   }
-  
+
   /**
    * Updates the name displayed on a script's tab.
    * @param {HTMLElement} tab The tab element associated with the script.
@@ -348,9 +345,9 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     this.tabs.updateTab(tab, {
       title: name,
       favicon: false
-    }); 
+    });
   }
-  
+
   /**
    * Removes the script associated with the given tab element from the manager and UI.
    * @param {HTMLElement} tab The tab element associated with the script to remove.
@@ -364,11 +361,12 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       this.tabs.removeTab(tab);
     }
   }
-  
+
   /**
    * Initiates the closure of all open scripts, optionally persisting their state for future sessions.
    */
   closeAllScripts() {
+    const { host } = this.win.platform;
     var obj = this;
     this.close_window = true;
     this.last_script_paths = [];
@@ -380,8 +378,8 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
         obj.last_script_paths.push(path);
       }
     });
-    
-    ipcRenderer.send("MainProcess", "focus-win");
+
+    host.send("MainProcess", "focus-win");
     $("#close-dialog-cancel").hide();
     for(var i = this.scripts.length - 1; i >= 0; i--) {
       var tab = this.scripts[i].tab;
@@ -402,18 +400,20 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     var [script, i] = this.getScriptByPath(script_path);
     return !(script == undefined);
   }
-  
+
   /**
    * Handles user interaction with the script closing dialog, determining whether to save changes, discard them, or cancel the closure.
    * @param {number} s - button state
    */
-  closingDialogButton(s) {
+  async closingDialogButton(s) {
     var [script, i] = this.getScriptByTab(this.active_tab);
     var tab = this.scripts[i].tab;
     var script_path = this.scripts[i].path;
     if(s == 2 || s == 1) {
       if(s == 2) {
-        this.scripts[i].save();
+        if(!await this.scripts[i].save()) {
+          return;
+        }
         script_path = this.scripts[i].path;
       }
       this.scripts[i].removeCodeEditor();
@@ -427,11 +427,12 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       this.last_script_paths.push(script_path);
     }
   }
-  
+
   /**
-   * Updates body class based on active extension of script 
+   * Updates body class based on active extension of script
    */
   updateActiveExtension(script) {
+    const { path } = this.win.platform;
     if(script && (typeof script.path === 'string' || script.path instanceof String)) {
       $(document.body).attr("class", 'file-' + path.extname(script.path).substring(1));
     } else {
@@ -440,4 +441,4 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   }
 }
 
-exports.PRDC_JSLAB_EDITOR_SCRIPT_MANAGER = PRDC_JSLAB_EDITOR_SCRIPT_MANAGER
+exports.PRDC_JSLAB_EDITOR_SCRIPT_MANAGER = PRDC_JSLAB_EDITOR_SCRIPT_MANAGER;

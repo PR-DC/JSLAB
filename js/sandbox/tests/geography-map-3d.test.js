@@ -5,26 +5,37 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_GEOGRAPHY_MAP_3D } = require('../geography-map-3d');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for geography map 3d test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_3D_TEST_HELPER {
 
-function createMap3DHarness() {
-  var jsl = {
-    inter: {
-      format: {
-        hasKey: function(obj, key) {
-          return Object.prototype.hasOwnProperty.call(obj, key);
+  /**
+   * Creates map3 dharness.
+   */
+  static createMap3DHarness() {
+    var jsl = {
+      inter: {
+        format: {
+          hasKey: function(obj, key) {
+            return Object.prototype.hasOwnProperty.call(obj, key);
+          }
         }
       }
-    }
-  };
-  var map_3d = new PRDC_JSLAB_GEOGRAPHY_MAP_3D(jsl, 'TOKEN');
-  return { map_3d };
+    };
+    var map_3d = new PRDC_JSLAB_GEOGRAPHY_MAP_3D(jsl, 'TOKEN');
+    return { map_3d };
+  }
 }
 
+
+const { PRDC_JSLAB_GEOGRAPHY_MAP_3D } = require('../geography-map-3d');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('setView updates camera state and calls viewer camera when ready', function(assert) {
-  var harness = createMap3DHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_3D_TEST_HELPER.createMap3DHarness();
   var records = {};
   harness.map_3d.ready = true;
   harness.map_3d.context = {
@@ -59,7 +70,7 @@ tests.add('setView updates camera state and calls viewer camera when ready', fun
 }, { tags: ['unit', 'geography-map-3d'] });
 
 tests.add('entity helpers add, remove and fly to wrapped entities', function(assert) {
-  var harness = createMap3DHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_GEOGRAPHY_MAP_3D_TEST_HELPER.createMap3DHarness();
   var records = {};
   harness.map_3d.viewer = {
     entities: {
@@ -87,4 +98,3 @@ tests.add('entity helpers add, remove and fly to wrapped entities', function(ass
 }, { tags: ['unit', 'geography-map-3d'] });
 
 exports.MODULE_TESTS = tests;
-

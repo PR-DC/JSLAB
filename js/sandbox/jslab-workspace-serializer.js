@@ -9,8 +9,9 @@
  * Serializer for workspace/object save-load with reference preservation.
  */
 class PRDC_JSLAB_WORKSPACE_SERIALIZER {
-  
+
   /**
+   * Initializes the workspace serializer instance.
    * @constructor
    * @param {Object} jsl - JSLAB instance.
    */
@@ -26,7 +27,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       'PRDC_JSLAB_TIMETABLE'
     ];
   }
-  
+
   /**
    * Checks whether the provided payload uses the current serializer format.
    * @param {*} payload - Potential serialized payload.
@@ -40,7 +41,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       payload.__jslab_version__ === this.format_version
     );
   }
-  
+
   /**
    * Serializes a workspace map.
    * @param {Object<string, *>} workspace - Variables to save.
@@ -65,7 +66,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       warnings: ctx.warnings
     };
   }
-  
+
   /**
    * Deserializes a workspace payload.
    * @param {Object} payload - Serialized payload.
@@ -79,11 +80,11 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       }
       return { workspace: {}, warnings: ['Invalid workspace payload.'] };
     }
-    
+
     if(payload.scope !== 'workspace') {
       return { workspace: {}, warnings: ['Payload is not a workspace payload.'] };
     }
-    
+
     var ctx = this._createDeserializeContext(payload, options);
     var workspace = {};
     var root = payload.root || {};
@@ -94,7 +95,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return { workspace: workspace, warnings: ctx.warnings };
   }
-  
+
   /**
    * Serializes a single object/value.
    * @param {*} value - Value to serialize.
@@ -113,7 +114,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       warnings: ctx.warnings
     };
   }
-  
+
   /**
    * Deserializes a single object/value payload.
    * @param {Object} payload - Serialized payload.
@@ -124,16 +125,16 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     if(!this.isSerializedPayload(payload)) {
       return { value: payload, warnings: [] };
     }
-    
+
     if(payload.scope !== 'object') {
       return { value: undefined, warnings: ['Payload is not an object payload.'] };
     }
-    
+
     var ctx = this._createDeserializeContext(payload, options);
     var value = await this._decodeValue(payload.root, ctx);
     return { value: value, warnings: ctx.warnings };
   }
-  
+
   /**
    * Attempts to load a class definition by name and path.
    * @param {string} class_name - Constructor/class name.
@@ -145,19 +146,19 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     if(typeof class_name !== 'string' || !class_name.length) {
       return false;
     }
-    
+
     if(typeof this.jsl.context[class_name] === 'function') {
       return true;
     }
-    
+
     var resolved_path = this._resolveClassPath(class_path, this._getSaveDir(options));
     if(!resolved_path) {
       return false;
     }
-    
+
     var loaded = false;
     var ext = String(this.jsl.inter.env.pathExtName(resolved_path) || '').toLowerCase();
-    
+
     // First try CommonJS exports for .js module-like class definitions.
     if(ext === '.js' || ext === '.cjs' || ext === '.mjs') {
       try {
@@ -175,22 +176,22 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
           this.jsl.registerClassDefinition(class_name, ctor, resolved_path);
           loaded = true;
         }
-      } catch {}
+      } catch{}
     }
-    
+
     if(!loaded) {
       try {
         await this.jsl.inter.eval.runScript(resolved_path, undefined, true);
         loaded = typeof this.jsl.context[class_name] === 'function';
-      } catch {}
+      } catch{}
     }
-    
+
     if(loaded) {
       this.jsl.registerClassDefinition(class_name, this.jsl.context[class_name], resolved_path);
     }
     return loaded;
   }
-  
+
   /**
    * Creates serializer context.
    * @param {Object} options - Options.
@@ -206,7 +207,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       save_dir: this._getSaveDir(options)
     };
   }
-  
+
   /**
    * Creates deserializer context.
    * @param {Object} payload - Serialized payload.
@@ -224,7 +225,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       class_load_cache: {}
     };
   }
-  
+
   /**
    * Resolves base directory used for relative class paths.
    * @param {Object} [options={}] - Options object.
@@ -239,20 +240,22 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return undefined;
   }
-  
+
   /**
    * Adds a warning once.
    * @param {Object} ctx - Serialization context.
    * @param {string} message - Warning text.
    */
   _warnOnce(ctx, message) {
-    if(!message) return;
+    if(!message) {
+      return;
+    }
     if(!ctx.warning_set.has(message)) {
       ctx.warning_set.add(message);
       ctx.warnings.push(message);
     }
   }
-  
+
   /**
    * Encodes value recursively.
    * @param {*} value - Value.
@@ -264,9 +267,15 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       return { $type: 'Undefined' };
     }
     if(typeof value === 'number') {
-      if(Number.isNaN(value)) return { $type: 'Number', value: 'NaN' };
-      if(value === Infinity) return { $type: 'Number', value: 'Infinity' };
-      if(value === -Infinity) return { $type: 'Number', value: '-Infinity' };
+      if(Number.isNaN(value)) {
+        return { $type: 'Number', value: 'NaN' };
+      }
+      if(value === Infinity) {
+        return { $type: 'Number', value: 'Infinity' };
+      }
+      if(value === -Infinity) {
+        return { $type: 'Number', value: '-Infinity' };
+      }
       return value;
     }
     if(typeof value === 'bigint') {
@@ -281,11 +290,11 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     if(value === null || typeof value !== 'object') {
       return value;
     }
-    
+
     if(ctx.seen.has(value)) {
       return { $ref: ctx.seen.get(value) };
     }
-    
+
     var node_id = ctx.next_id++;
     ctx.seen.set(value, node_id);
     try {
@@ -301,7 +310,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return { $ref: node_id };
   }
-  
+
   /**
    * Encodes object node.
    * @param {Object} value - Object.
@@ -315,7 +324,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         items: value.map((item) => this._encodeValue(item, ctx))
       };
     }
-    
+
     if(value instanceof Date) {
       var t = value.getTime();
       return {
@@ -323,7 +332,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         value: isFinite(t) ? t : NaN
       };
     }
-    
+
     if(value instanceof RegExp) {
       return {
         kind: 'RegExp',
@@ -331,7 +340,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         flags: value.flags
       };
     }
-    
+
     if(value instanceof Map) {
       var map_entries = [];
       value.forEach((map_value, map_key) => {
@@ -345,7 +354,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         entries: map_entries
       };
     }
-    
+
     if(value instanceof Set) {
       var set_entries = [];
       value.forEach((set_value) => {
@@ -356,7 +365,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         entries: set_entries
       };
     }
-    
+
     if(this.jsl.inter.format.isTypedArray(value)) {
       return {
         kind: 'TypedArray',
@@ -364,14 +373,14 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         values: this._encodeValue(Array.from(value), ctx)
       };
     }
-    
+
     if(value instanceof ArrayBuffer) {
       return {
         kind: 'ArrayBuffer',
         values: this._encodeValue(Array.from(new Uint8Array(value)), ctx)
       };
     }
-    
+
     if(value instanceof Error) {
       return {
         kind: 'Error',
@@ -381,7 +390,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         properties: this._encodeProperties(value, ctx)
       };
     }
-    
+
     var class_name = this._getConstructorName(value);
     if(this._isBuiltinClassName(class_name)) {
       var builtin_state = this._extractBuiltinState(value, class_name);
@@ -394,7 +403,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         };
       }
     }
-    
+
     if(class_name && class_name !== 'Object') {
       var class_meta = this._resolveClassMeta(value, class_name, ctx.save_dir);
       return {
@@ -406,13 +415,13 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         properties: this._encodeProperties(value, ctx)
       };
     }
-    
+
     return {
       kind: 'Object',
       properties: this._encodeProperties(value, ctx)
     };
   }
-  
+
   /**
    * Encodes own data properties.
    * @param {Object} value - Object to encode.
@@ -429,7 +438,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       return properties;
     }
     var keys = Reflect.ownKeys(descriptors);
-    
+
     for(var i = 0; i < keys.length; i++) {
       var key = keys[i];
       if(typeof key !== 'string') {
@@ -437,7 +446,9 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         continue;
       }
       var descriptor = descriptors[key];
-      if(!descriptor) continue;
+      if(!descriptor) {
+        continue;
+      }
       if(descriptor.get || descriptor.set) {
         this._warnOnce(ctx, 'Skipped accessor property while saving workspace: ' + key + '.');
         continue;
@@ -452,20 +463,22 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return properties;
   }
-  
+
   /**
    * Gets constructor/class name for an object.
    * @param {*} value - Candidate value.
    * @returns {string}
    */
   _getConstructorName(value) {
-    if(!value || typeof value !== 'object') return '';
+    if(!value || typeof value !== 'object') {
+      return '';
+    }
     if(value.constructor && typeof value.constructor.name === 'string') {
       return value.constructor.name;
     }
     return '';
   }
-  
+
   /**
    * Checks whether class name is treated as built-in for restoration.
    * @param {string} class_name - Constructor name.
@@ -474,7 +487,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
   _isBuiltinClassName(class_name) {
     return this.builtin_class_names.includes(class_name);
   }
-  
+
   /**
    * Resolves class metadata for serialization.
    * @param {Object} value - Class instance.
@@ -485,7 +498,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
   _resolveClassMeta(value, class_name, save_dir) {
     var class_path;
     var ctor = value && value.constructor;
-    
+
     if(ctor && typeof ctor.__jslab_class_path === 'string') {
       class_path = ctor.__jslab_class_path;
     }
@@ -497,7 +510,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     } else {
       class_path = undefined;
     }
-    
+
     var class_path_relative;
     if(
       typeof class_path === 'string' &&
@@ -508,14 +521,14 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     ) {
       class_path_relative = this.jsl.inter.env.pathRelative(save_dir, class_path);
     }
-    
+
     return {
       class_builtin: this._isBuiltinClassName(class_name),
       class_path: class_path,
       class_path_relative: class_path_relative
     };
   }
-  
+
   /**
    * Extracts state for built-in class restoration.
    * @param {Object} value - Instance.
@@ -580,7 +593,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return false;
   }
-  
+
   /**
    * Decodes value recursively.
    * @param {*} encoded - Encoded value.
@@ -598,7 +611,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return encoded;
   }
-  
+
   /**
    * Decodes primitive wrappers.
    * @param {Object} encoded - Encoded marker.
@@ -610,14 +623,20 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       case 'Undefined':
         return undefined;
       case 'Number':
-        if(encoded.value === 'NaN') return NaN;
-        if(encoded.value === 'Infinity') return Infinity;
-        if(encoded.value === '-Infinity') return -Infinity;
+        if(encoded.value === 'NaN') {
+          return NaN;
+        }
+        if(encoded.value === 'Infinity') {
+          return Infinity;
+        }
+        if(encoded.value === '-Infinity') {
+          return -Infinity;
+        }
         return Number(encoded.value);
       case 'BigInt':
         try {
           return BigInt(encoded.value);
-        } catch {
+        } catch{
           this._warnOnce(ctx, 'Failed to restore BigInt value.');
           return undefined;
         }
@@ -630,7 +649,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         return undefined;
     }
   }
-  
+
   /**
    * Decodes node reference.
    * @param {(string|number)} ref_id - Node ID.
@@ -645,7 +664,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     if(Object.prototype.hasOwnProperty.call(ctx.loading, id)) {
       return await ctx.loading[id];
     }
-    
+
     var loading = this._decodeNode(id, ctx);
     ctx.loading[id] = loading;
     try {
@@ -654,7 +673,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       delete ctx.loading[id];
     }
   }
-  
+
   /**
    * Decodes node by ID.
    * @param {string} id - Node ID.
@@ -667,13 +686,13 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       this._warnOnce(ctx, 'Missing serialized node: ' + id + '.');
       return undefined;
     }
-    
+
     var target = await this._createNodeTarget(node, ctx);
     ctx.refs[id] = target;
     await this._fillNodeTarget(target, node, ctx);
     return target;
   }
-  
+
   /**
    * Creates target instance for decoded node.
    * @param {Object} node - Serialized node.
@@ -694,7 +713,9 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         return new Set();
       case 'TypedArray': {
         var values = await this._decodeValue(node.values, ctx);
-        if(!Array.isArray(values)) values = [];
+        if(!Array.isArray(values)) {
+          values = [];
+        }
         var typed_ctor = this.jsl.context[node.ctor];
         if(typeof typed_ctor === 'function') {
           return new typed_ctor(values.length);
@@ -704,7 +725,9 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       }
       case 'ArrayBuffer': {
         var buffer_values = await this._decodeValue(node.values, ctx);
-        if(!Array.isArray(buffer_values)) buffer_values = [];
+        if(!Array.isArray(buffer_values)) {
+          buffer_values = [];
+        }
         return new ArrayBuffer(buffer_values.length);
       }
       case 'Error': {
@@ -733,7 +756,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         return {};
     }
   }
-  
+
   /**
    * Populates decoded node target with values.
    * @param {*} target - Target object.
@@ -753,7 +776,9 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         var entries = node.entries || [];
         for(var j = 0; j < entries.length; j++) {
           var entry = entries[j];
-          if(!Array.isArray(entry) || entry.length < 2) continue;
+          if(!Array.isArray(entry) || entry.length < 2) {
+            continue;
+          }
           var key = await this._decodeValue(entry[0], ctx);
           var value = await this._decodeValue(entry[1], ctx);
           target.set(key, value);
@@ -791,7 +816,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       default:
         break;
     }
-    
+
     if(node.properties && typeof node.properties === 'object') {
       var prop_keys = Object.keys(node.properties);
       for(var p = 0; p < prop_keys.length; p++) {
@@ -804,7 +829,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       }
     }
   }
-  
+
   /**
    * Creates class instance target (without invoking constructor arguments).
    * @param {Object} node - Serialized class node.
@@ -816,7 +841,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     if(typeof class_name !== 'string' || !class_name.length) {
       return {};
     }
-    
+
     var ctor = this.jsl.context[class_name];
     if(typeof ctor !== 'function') {
       var class_path = this._resolveClassPathFromNode(node, ctx.save_dir);
@@ -832,21 +857,25 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
         ctor = this.jsl.context[class_name];
       }
     }
-    
+
     if(typeof ctor === 'function') {
       try {
         return Object.create(ctor.prototype);
-      } catch {}
+      } catch{}
     }
-    
+
     this._warnOnce(ctx, 'Class not found while loading: ' + class_name + '.');
     var fallback = {};
     fallback.__jslab_class_name = class_name;
-    if(node.class_path) fallback.__jslab_class_path = node.class_path;
-    if(node.class_path_relative) fallback.__jslab_class_path_relative = node.class_path_relative;
+    if(node.class_path) {
+      fallback.__jslab_class_path = node.class_path;
+    }
+    if(node.class_path_relative) {
+      fallback.__jslab_class_path_relative = node.class_path_relative;
+    }
     return fallback;
   }
-  
+
   /**
    * Resolves class path from node metadata.
    * @param {Object} node - Serialized node.
@@ -856,15 +885,19 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
   _resolveClassPathFromNode(node, save_dir) {
     if(typeof node.class_path === 'string' && node.class_path.length) {
       var p = this._resolveClassPath(node.class_path, save_dir);
-      if(p) return p;
+      if(p) {
+        return p;
+      }
     }
     if(typeof node.class_path_relative === 'string' && node.class_path_relative.length) {
       var r = this._resolveClassPath(node.class_path_relative, save_dir);
-      if(r) return r;
+      if(r) {
+        return r;
+      }
     }
     return false;
   }
-  
+
   /**
    * Resolves class path against known locations.
    * @param {string} class_path - Input path.
@@ -875,7 +908,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     if(typeof class_path !== 'string' || !class_path.length) {
       return false;
     }
-    
+
     var candidates = [];
     if(this.jsl.inter.env.pathIsAbsolute(class_path)) {
       candidates.push(class_path);
@@ -896,7 +929,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       }
       candidates.push(this.jsl.inter.env.pathResolve(class_path));
     }
-    
+
     for(var i = 0; i < candidates.length; i++) {
       var candidate = this.jsl.inter.env.pathNormalize(candidates[i]);
       if(this.jsl.inter.env.checkFile(candidate)) {
@@ -905,7 +938,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
     }
     return false;
   }
-  
+
   /**
    * Restores built-in class instance from serialized state.
    * @param {string} class_name - Class name.
@@ -919,14 +952,14 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       }
       return this.jsl.inter.mat.new(state.data || [], state.rows, state.cols);
     }
-    
+
     if(class_name === 'PRDC_JSLAB_VECTOR') {
       if(!state) {
         return false;
       }
       return this.jsl.inter.vec.new(state.x, state.y, state.z);
     }
-    
+
     if(class_name === 'PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL') {
       if(!state) {
         return false;
@@ -964,7 +997,7 @@ class PRDC_JSLAB_WORKSPACE_SERIALIZER {
       }
       return false;
     }
-    
+
     return false;
   }
 }

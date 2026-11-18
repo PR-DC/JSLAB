@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for JSLAB time submodule.
  */
 class PRDC_JSLAB_LIB_TIME {
-  
+
   /**
    * Initializes the time submodule, setting up properties for time tracking and exposing time measurement utilities.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -23,13 +23,13 @@ class PRDC_JSLAB_LIB_TIME {
      * @type {string}
      */
     this.timezone = 'Europe/Belgrade';
-    
+
     /**
      * Last tic timestamp.
      * @type {number}
      */
     this.last_tic = 0;
-    
+
     /**
      * Starts a timer for measuring elapsed time. To be used with `toc` to measure time intervals.
      * @name tic
@@ -38,13 +38,13 @@ class PRDC_JSLAB_LIB_TIME {
      */
     Object.defineProperty(this.jsl.context, 'tic', {configurable: true, get: this._tic.bind(this) });
   }
-  
+
   /**
    * Records the current wall-clock time to measure elapsed time.
    * @returns {number} The current wall-clock time in milliseconds.
    */
   _tic() {
-    this.jsl.context.last_tic = performance.now()/1000; // [s]
+    this.jsl.context.last_tic = performance.now() / 1000; // [s]
     return this.jsl.context.last_tic;
   }
 
@@ -54,12 +54,12 @@ class PRDC_JSLAB_LIB_TIME {
    * @returns {number} The elapsed time in seconds.
    */
   toc(tic) {
-    var dt = performance.now()/1000;
+    var dt = performance.now() / 1000;
     if(typeof tic === 'undefined') {
-      return dt-this.jsl.context.last_tic;
+      return dt - this.jsl.context.last_tic;
     } else {
-      return dt-tic;
-    } 
+      return dt - tic;
+    }
   }
 
   /**
@@ -71,7 +71,7 @@ class PRDC_JSLAB_LIB_TIME {
     if(typeof tic === 'undefined') {
       tic = this.jsl.context.last_tic;
     }
-    return (performance.now()-tic*1000);
+    return (performance.now() - tic * 1000);
   }
 
   /**
@@ -129,7 +129,7 @@ class PRDC_JSLAB_LIB_TIME {
   getDateTimeStr() {
     return this.jsl.inter.luxon.DateTime.now().setZone(this.timezone).toFormat('ddMMyyyy_HHmmss');
   }
-  
+
   /**
    * Sets the timezone to be used for time calculations and formatting. This method allows the application to adjust displayed times according to a specific timezone.
    * @param {String} tz The timezone identifier (e.g., "America/New_York", "Europe/Paris") to be set for all time-related operations.

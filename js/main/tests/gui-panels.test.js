@@ -4,11 +4,14 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-const { guiTest } = require('../../dev/gui-test-utils');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+const { guiTest } = require('../../dev/component-test-utils');
 var tests = new PRDC_JSLAB_TESTS();
 // These scenarios require their isolated GUI runner; ordinary module tests stay headless.
-if(!globalThis.__JSLAB_GUI_COMPONENT__) { exports.MODULE_TESTS = tests; return; }
+if(!globalThis.__JSLAB_GUI_COMPONENT__) {
+  exports.MODULE_TESTS = tests;
+  return;
+}
 
 for(const name of ['columns', 'left_rows', 'workspace_columns']) {
   for(const divider of (name === 'columns' ? [0] : [0, 1])) {
@@ -33,13 +36,18 @@ for(const name of ['columns', 'left_rows', 'workspace_columns']) {
       assert.ok(Math.abs(panel.cells_size.reduce((sum, value) => sum + value, 0) - 100) < 0.01);
       assert.deepEqual(f.data.get('panel-' + panel.id), Array.from(panel.cells_size));
       for(var i = 0; i < original.length; i++) {
-        if(i !== divider && i !== divider + 1) assert.equal(panel.cells_size[i], original[i]);
+        if(i !== divider && i !== divider + 1) {
+          assert.equal(panel.cells_size[i], original[i]);
+        }
       }
-      drag(-100); assert.ok(Math.abs(panel.cells_size[divider] - f.window.config.PANEL_MIN_SIZE) < 0.001);
-      drag(200); assert.ok(Math.abs(panel.cells_size[divider + 1] - f.window.config.PANEL_MIN_SIZE) < 0.001);
+      drag(-100);
+      assert.ok(Math.abs(panel.cells_size[divider] - f.window.config.PANEL_MIN_SIZE) < 0.001);
+      drag(200);
+      assert.ok(Math.abs(panel.cells_size[divider + 1] - f.window.config.PANEL_MIN_SIZE) < 0.001);
       f.mouse(f.document, 'mouseup', 0, 0);
       assert.equal(f.document.body.classList.contains('dragging'), false);
-      var stopped = [...panel.cells_size]; drag(50);
+      var stopped = [...panel.cells_size];
+      drag(50);
       assert.deepEqual(Array.from(panel.cells_size), stopped);
       var element = typeof panel.elements[divider] === 'string' ? f.query(panel.elements[divider]) : panel.elements[divider];
       assert.ok(Math.abs(parseFloat(element.style[panel.attr_size]) - panel.cells_size[divider]) < 0.001);
@@ -56,7 +64,8 @@ guiTest(tests, 'main', 'window resizing refreshes nested panel bounds', [], func
 });
 
 guiTest(tests, 'editor', 'search panel resize persists its height and enforces limits', ['#editor-search-all-resizer'], function(assert, f, c) {
-  var search = c.editor_search_all; search.open();
+  var search = c.editor_search_all;
+  search.open();
   var resizer = f.query('#editor-search-all-resizer');
   var initial = search.panel_height;
   f.mouse(resizer, 'mousedown', 300, 500);
@@ -71,7 +80,7 @@ guiTest(tests, 'editor', 'search panel resize persists its height and enforces l
   var stopped = search.panel_height;
   f.mouse(f.document, 'mousemove', 300, 0);
   assert.equal(search.panel_height, stopped);
-  assert.ok(f.window.localStorage.getItem(search.storage_height_percent_key));
+  assert.ok(c.platform.store.get(search.storage_height_percent_key));
 });
 
 exports.MODULE_TESTS = tests;

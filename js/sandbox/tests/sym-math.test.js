@@ -5,63 +5,74 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_SYMBOLIC_MATH } = require('../sym-math');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for sym math test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER {
 
-function createSymHarness() {
-  var pyodide_run_calls = [];
-  var load_calls = [];
-  var errors = [];
+  /**
+   * Creates sym harness.
+   */
+  static createSymHarness() {
+    var pyodide_run_calls = [];
+    var load_calls = [];
+    var errors = [];
 
-  var pyodide = {
-    loadPackage: async function(packages) {
-      load_calls.push(packages);
-    },
-    runPython: function(code) {
-      pyodide_run_calls.push(code);
-      return 'PY:' + code;
-    }
-  };
-
-  var jsl = {
-    app_path: 'C:/Electron/JSLAB',
-    inter: {
-      loadPyodide: async function(options) {
-        pyodide.indexURL = options.indexURL;
-        return pyodide;
+    var pyodide = {
+      loadPackage: async function(packages) {
+        load_calls.push(packages);
       },
-      env: {
-        error: function(message) {
-          errors.push(message);
-        },
-        disp: function() {}
-      },
-      lang: {
-        string: function(id) {
-          return 'LANG_' + id;
-        }
-      },
-      config: {
-        DEBUG_SYM_PYTHON_EVAL_CODE: false
-      },
-      format: {
-        safeStringify: function(value) {
-          return JSON.stringify(value);
-        }
+      runPython: function(code) {
+        pyodide_run_calls.push(code);
+        return 'PY:' + code;
       }
-    },
-    _console: {
-      log: function() {}
-    }
-  };
+    };
 
-  var sym = new PRDC_JSLAB_SYMBOLIC_MATH(jsl);
-  return { sym, jsl, errors, pyodide, pyodide_run_calls, load_calls };
+    var jsl = {
+      app_path: 'C:/Electron/JSLAB',
+      inter: {
+        loadPyodide: async function(options) {
+          pyodide.indexURL = options.indexURL;
+          return pyodide;
+        },
+        env: {
+          error: function(message) {
+            errors.push(message);
+          },
+          disp: function() {}
+        },
+        lang: {
+          string: function(id) {
+            return 'LANG_' + id;
+          }
+        },
+        config: {
+          DEBUG_SYM_PYTHON_EVAL_CODE: false
+        },
+        format: {
+          safeStringify: function(value) {
+            return JSON.stringify(value);
+          }
+        }
+      },
+      _console: {
+        log: function() {}
+      }
+    };
+
+    var sym = new PRDC_JSLAB_SYMBOLIC_MATH(jsl);
+    return { sym, jsl, errors, pyodide, pyodide_run_calls, load_calls };
+  }
 }
 
+
+const { PRDC_JSLAB_SYMBOLIC_MATH } = require('../sym-math');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('load initializes pyodide once and imports sympy/numpy', async function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   await harness.sym.load();
   await harness.sym.load();
 
@@ -75,13 +86,13 @@ tests.add('load initializes pyodide once and imports sympy/numpy', async functio
 }, { tags: ['unit', 'sym'] });
 
 tests.add('symbol naming helpers generate sequential internal names', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   assert.equal(harness.sym._nextVar(), 'jslabVar1');
   assert.equal(harness.sym._nextVar(), 'jslabVar2');
 }, { tags: ['unit', 'sym'] });
 
 tests.add('new symbols are tracked and expose name/json helpers', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   var symbol = harness.sym._newSymbol('x', 'x');
 
   assert.equal(harness.sym._symbols.length, 1);
@@ -92,7 +103,7 @@ tests.add('new symbols are tracked and expose name/json helpers', function(asser
 }, { tags: ['unit', 'sym'] });
 
 tests.add('symbol setValue parses matrix text to nested numeric arrays', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   var symbol = harness.sym._newSymbol('M', 'M');
   symbol.setValue('Matrix([[1, 2], [3, 4]])');
 
@@ -101,13 +112,13 @@ tests.add('symbol setValue parses matrix text to nested numeric arrays', functio
 }, { tags: ['unit', 'sym'] });
 
 tests.add('checkLoaded reports error when symbolic backend is not loaded', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   harness.sym.checkLoaded();
   assert.ok(harness.errors.length > 0);
 }, { tags: ['unit', 'sym'] });
 
 tests.add('eval delegates to pyodide.runPython when loaded', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   harness.sym.loaded = true;
   harness.sym.pyodide = {
     runPython: function(code) {
@@ -120,7 +131,7 @@ tests.add('eval delegates to pyodide.runPython when loaded', function(assert) {
 }, { tags: ['unit', 'sym'] });
 
 tests.add('sym and syms create tracked symbol wrappers', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   harness.sym.loaded = true;
   var eval_calls = [];
   harness.sym.eval = function(code) {
@@ -132,14 +143,16 @@ tests.add('sym and syms create tracked symbol wrappers', function(assert) {
   var sxy = harness.sym.syms(['y', 'z']);
 
   assert.equal(sx.name, 'x');
-  assert.deepEqual(sxy.map(function(item) { return item.name; }), ['y', 'z']);
+  assert.deepEqual(sxy.map(function(item) {
+    return item.name;
+  }), ['y', 'z']);
   assert.ok(eval_calls[0].includes("x = Symbol('x')"));
   assert.ok(eval_calls[1].includes("y, z = symbols('y z')"));
   assert.equal(harness.sym._symbols.length, 3);
 }, { tags: ['unit', 'sym'] });
 
 tests.add('clear resets symbol state and reinitializes python globals when loaded', function(assert) {
-  var harness = createSymHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
   harness.sym.loaded = true;
   harness.sym._var_counter = 3;
   harness.sym._symbols = [1, 2, 3];

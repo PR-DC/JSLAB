@@ -9,7 +9,7 @@
  * Class for JSLAB serial device submodule.
  */
 class PRDC_JSLAB_LIB_SERIAL_DEVICE {
-  
+
   /**
    * Constructs a serial device submodule object with access to JSLAB's device functions.
    * @constructor
@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     var obj = this;
     this.jsl = jsl;
   }
-  
+
   /**
    * Retrieves all available serial ports.
    * @returns {Promise<Array>} Resolves with an array of serial port info.
@@ -39,14 +39,14 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     }
     return false;
   }
-  
+
   /**
    * Checks if there is a USB device connected with the specified Vendor ID and Product ID.
    * @param {string} VID - Vendor ID of the USB device.
    * @param {string} PID - Product ID of the USB device.
    * @returns {boolean} True if the device is found, false otherwise.
    */
-  async checkDeviceUSB(VID, PID){
+  async checkDeviceUSB(VID, PID) {
     var devices = await this.listSerialPorts();
     if(Array.isArray(devices)) {
       if(this.jsl.debug) {
@@ -54,7 +54,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
       }
       return devices.some(device => device.vendorId === VID && device.productId === PID);
     }
-    return false; 
+    return false;
   }
 
   /**
@@ -65,7 +65,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
   async checkDeviceSTM(PID = '5740') {
     return await this.checkDeviceUSB('0483', PID);
   }
- 
+
   /**
    * Checks if there is a USB device connected using a CH340 chip.
    * @returns {boolean} True if the device is found, false otherwise.
@@ -73,7 +73,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
   async checkDeviceCH340() {
     return await this.checkDeviceUSB('1A86', '7523');
   }
-  
+
   /**
    * Opens a serial port.
    * @param {string} port - Port path.
@@ -82,13 +82,13 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    * @returns {SerialPort} The opened SerialPort instance.
    */
   connectSerialPorts(port_path, baudrate = 9600, opts_in = {}) {
-    var opts = { 
-      dataBits: 8, 
-      parity: 'none', 
-      stopBits: 1, 
+    var opts = {
+      dataBits: 8,
+      parity: 'none',
+      stopBits: 1,
       flowControl: false,
       ...opts_in
-    }
+    };
     var port = new this.jsl.inter.env.SerialPort({
       path: port_path,
       baudRate: baudrate,
@@ -102,16 +102,16 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         });
       } catch(err) {}
     });
-    
+
     this.jsl.addForCleanup(this, function() {
       if(port && port.isOpen) {
         port.close();
       }
     });
-    
+
     return port;
   }
-  
+
   /**
    * Opens a window to choose a serial port.
    * @returns {Promise<string|false>}
@@ -130,7 +130,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         ports_list += `<li class="ui" port='${port.path}'>${port.friendlyName}</li>`;
       }
     } else {
-      ports_list += '<li class="ui"><str sid="230"></str></li>'
+      ports_list += '<li class="ui"><str sid="230"></str></li>';
     }
     context.document.body.innerHTML = `<ul class="ui">${ports_list}</ul>`;
     var win = this.jsl.inter.windows.open_windows[context.wid];
@@ -140,8 +140,8 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     await this.jsl.inter.non_blocking.waitMSeconds(30);
     var win_height = context.document.body.offsetHeight;
     context.setSize(300, (win_height > 500 ? 500 : win_height));
-    
-    
+
+
     if(ports.length == 0) {
       return false;
     } else {
@@ -161,12 +161,12 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
             returned = true;
             resolve(false);
           }
-        }
+        };
       });
       return await p;
     }
   }
-  
+
 
   /**
    * Opens a window to choose serial options.
@@ -186,7 +186,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         ports_list += `<option value='${port.path}'>${port.friendlyName}</option>`;
       }
     } else {
-      ports_list += "<option value='' str='230'></option>"
+      ports_list += "<option value='' str='230'></option>";
     }
     context.document.body.innerHTML = `
     <label class="ui"><str sid="232"></str>:</label>
@@ -201,34 +201,34 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
     await this.jsl.inter.non_blocking.waitMSeconds(30);
     var win_height = context.document.body.offsetHeight;
     context.setSize(400, (win_height > 500 ? 500 : win_height));
-    
+
     if(ports.length == 0) {
-      this.jsl.inter.warn('@chooseSerialOptions: '+this.jsl.inter.lang.currentString(230));
+      this.jsl.inter.warn('@chooseSerialOptions: ' + this.jsl.inter.lang.currentString(230));
       context.close();
       return [false, false];
     } else {
       var returned = false;
       var p = new Promise((resolve, reject) => {
         context.document.getElementById('choose').
-            addEventListener('click', function(e) {
-          if(!returned) {
-            returned = true;
-            resolve([context.document.getElementById('port').value, 
-              Number(context.document.getElementById('baudrate').value)]);
-            context.close();
-          }
-        });
+          addEventListener('click', function(e) {
+            if(!returned) {
+              returned = true;
+              resolve([context.document.getElementById('port').value,
+                Number(context.document.getElementById('baudrate').value)]);
+              context.close();
+            }
+          });
         win.onClosed = function() {
           if(!returned) {
             returned = true;
             resolve([false, false]);
           }
-        }
+        };
       });
       return await p;
     }
   }
-  
+
   /**
    * Opens a serial terminal.
    * @param {string} port_path - The identifier or path of the serial port to connect to.
@@ -238,45 +238,45 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
    */
   async openSerialTerminal(port_path, baudrate = 9600, opts = {}) {
     var obj = this;
-    
+
     if(!baudrate) {
       baudrate = 9600;
     }
-    
+
     this.port_path = port_path;
     this.baudrate = baudrate;
     this.opts = opts;
-    
+
     var wid = this.jsl.inter.windows.openWindow('serial_terminal.html');
     var win = this.jsl.inter.windows.open_windows[wid];
     await win.ready;
     win.addUI();
-    win.addScript("../js/shared/terminal-buffer.js");
-    win.addScript("../js/windows/terminal.js");
+    win.addScript("../js/other-shared/terminal-buffer.js");
+    win.addScript("../js/windows/serial-terminal.js");
     var context = win.context;
-    var serial_terminal_label = this.jsl.inter.lang.currentString(520);
+    var serial_terminal_label = this.jsl.inter.lang.currentString(519);
     context.setTitle(port_path + ' (' + baudrate + ') | ' + serial_terminal_label);
     context.setSize(500, 500);
-    context.document.getElementById('terminal-title').innerText = 
+    context.document.getElementById('terminal-title').innerText =
       port_path + ' (' + baudrate + ')';
     win._updateLanguage();
-    
+
     // Wait for terminal
     while(!context.terminal) {
       await this.jsl.inter.waitMSeconds(1);
     }
-    
+
     context.terminal.setOptions(opts);
-    
+
     win.onClosed = function() {
       if(obj.port && obj.port.isOpen) {
         obj.port.close();
       }
       delete obj.port;
-    }
+    };
 
     this.port = this.connectSerialPorts(port_path, baudrate);
-    
+
     this.port.on('data', (data) => {
       var data_in = data;
       if(obj.opts && typeof obj.opts.decodeData == 'function') {
@@ -294,7 +294,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         }
       }
     });
-    
+
     function sendMessage() {
       var data_out_raw = context.terminal.message_input.value;
       var data_out;
@@ -309,7 +309,7 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         context.terminal.autoResizeInput();
       }
     }
-    
+
     context.terminal.message_input.addEventListener('keydown', function(e) {
       if(e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -317,10 +317,10 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
       }
     });
     context.document.getElementById('send-button')
-        .addEventListener('click', function(e) {
-      sendMessage();
-    });
-    
+      .addEventListener('click', function(e) {
+        sendMessage();
+      });
+
     context.document.getElementById('timestamp').addEventListener('click', () => {
       setTimeout(function() {
         win._updateLanguage();
@@ -331,27 +331,18 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         win._updateLanguage();
       }, 30);
     });
-    
+
     async function saveLog() {
       var options = {
-       title: obj.jsl.inter.lang.currentString(58),
-       defaultPath: 'terminal_'+ obj.jsl.inter.time.getDateTimeStr() + '.log',
-       buttonLabel: obj.jsl.inter.lang.currentString(58),
-       filters :[
-        {name: 'Log', extensions: ['log', 'txt']},
-        {name: obj.jsl.inter.lang.currentString(345), extensions: ['*']}
-       ]
+        title: obj.jsl.inter.lang.currentString(58),
+        defaultPath: 'terminal_' + obj.jsl.inter.time.getDateTimeStr() + '.log',
+        buttonLabel: obj.jsl.inter.lang.currentString(58),
+        filters: [
+          {name: 'Log', extensions: ['log', 'txt']},
+          {name: obj.jsl.inter.lang.currentString(345), extensions: ['*']}
+        ]
       };
-      var save_target = false;
-      if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
-        save_target = await obj.jsl.inter.env.showSaveDialog(options);
-        if(save_target && save_target.canceled) {
-          return;
-        }
-      }
-      if(!save_target) {
-        save_target = obj.jsl.inter.env.showSaveDialogSync(options);
-      }
+      var save_target = await obj.jsl.inter.file_system._chooseSaveTarget(options);
       if(save_target) {
         var log_path = typeof save_target == 'object' ? save_target.filePath : save_target;
         var data = context.terminal.getLog();
@@ -366,13 +357,13 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
         obj.jsl.inter.env.writeFileSync(log_path, data);
       }
     }
-    context.document.getElementById('save-log').addEventListener('click', async() => {
+    context.document.getElementById('save-log').addEventListener('click', async () => {
       await saveLog();
     });
-    
+
     return context;
   }
-  
+
   /**
    * Prompts the user to choose serial options and opens a serial terminal if a valid port is selected.
    * @param {Object} [opts={}] - An optional configuration object for additional settings.

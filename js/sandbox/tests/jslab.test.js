@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('JSLAB instance is initialized', function(assert) {
@@ -29,12 +29,15 @@ tests.add('Joining two paths with path separator', function(assert) {
 }, { tags: ['unit', 'core'] });
 
 tests.add('formatLang replaces placeholders', function(assert) {
-  var message = jsl.formatLang(429, { variable: 'x', path: '[0]' });
+  var message = jsl.formatLang(428, { variable: 'x', path: '[0]' });
   assert.ok(typeof message === 'string' && message.length > 0);
   assert.ok(message.indexOf('x') >= 0);
 }, { tags: ['unit', 'core'] });
 
 tests.add('Class registry stores registered class path', function(assert) {
+  /**
+   * Class for test class for registry.
+   */
   class TestClassForRegistry {}
   var ok = jsl.registerClassDefinition('TestClassForRegistry', TestClassForRegistry, 'C:/tmp/test-class.js');
   assert.equal(ok, true);

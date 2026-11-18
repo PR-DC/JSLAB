@@ -5,11 +5,10 @@
  * info@pr-dc.com
  */
 
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const http = require('http');
-const cp = require('child_process');
+const { PRDC_JSLAB_PRESENTATION_CONTENT } = require('../windows/presentation-content');
+
+const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
+
 const recast = require('recast');
 const recast_babel_parser = require('recast/parsers/babel');
 
@@ -36,7 +35,7 @@ const auto_global_modules = Object.freeze({
  * Class for JSLAB presentation submodule.
  */
 class PRDC_JSLAB_LIB_PRESENTATION {
-  
+
   /**
    * Constructs a presentation submodule object with access to JSLAB's functions.
    * @constructor
@@ -45,7 +44,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
   constructor(jsl) {
     var obj = this;
     this.jsl = jsl;
-    this.presentation_servers = new Map();
+    this._host = jsl.inter.env._createPresentationTransport(this);
     this.three_export_cache = new Map();
   }
 
@@ -60,59 +59,13 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    * @returns {Promise<Window>} Resolves to the window context of the opened presentation.
    */
   async openPresentation(file_path, type) {
-    file_path = this._getPath('openPresentation', file_path);
-    if(this._checkPresentation('openPresentation', file_path)) {
-      var obj = this;
-      var presentation_type = type || this._getPresentationMode(file_path);
-      if(presentation_type == 'standalone') {
-        var url = this.jsl.inter.env.pathJoin(file_path, 'index.html')
-        var wid = this.jsl.inter.windows.openWindow(url);
-      } else {
-        var url = await this._startPresentation(file_path);
-        var wid = this.jsl.inter.windows.openWindow('url.html');
-      }
-      await this.jsl.inter.windows.open_windows[wid].ready;
-      var context = this.jsl.inter.windows.open_windows[wid].context;
-      var fullscreen = false;
-      if(presentation_type == 'standalone') {
-        while(typeof context.presentation == 'undefined') {
-          await this.jsl.inter.non_blocking.waitMSeconds(1);
-        }
-        context.document.addEventListener('keydown', (event) => {
-          if(event.key == 'F11') {
-            fullscreen = !fullscreen;
-            obj.jsl.inter.windows.open_windows[wid].setFullscreen(fullscreen);
-          }
-        });
-      } else {
-        context.document.getElementById('webview').src = url;
-        context.document.addEventListener('keydown', function(event) {
-          var key = event.key ? event.key.toLowerCase() : '';
-          if(event.ctrlKey && !event.altKey && !event.shiftKey &&
-              key === 's') {
-            event.preventDefault();
-            context.webview.send('data', { toggle_slide_nav: true });
-          } else if(!event.ctrlKey && !event.altKey && !event.shiftKey &&
-              event.key == 'F9') {
-            event.preventDefault();
-            context.webview.send('data', { toggle_stopwatch: true });
-          }
-        });
-        context.webview.addEventListener('ipc-message', (e) => {
-          if(e.args[0].key !== undefined) {
-            if(e.args[0].key == 'F11') {
-              fullscreen = !fullscreen;
-              obj.jsl.inter.windows.open_windows[wid].setFullscreen(fullscreen);
-            }
-          }
-        });
-      }
-      var presentation_title = this.jsl.inter.lang.currentString(515);
-      this.jsl.inter.windows.open_windows[wid].setTitle(file_path + ' - ' + presentation_title);
-      return context;
+    file_path = await this._getPath('openPresentation', file_path);
+    if(!file_path || !this._checkPresentation('openPresentation', file_path)) {
+      return false;
     }
+    return this._host.open(file_path, type);
   }
-  
+
   /**
    * Opens the presentation editor for the specified project and returns its context.
    * The preview uses the same runtime controls as openPresentation,
@@ -123,48 +76,34 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    * @returns {Promise<Window>} Resolves to the window context of the editor window.
    */
   async editPresentation(file_path, type) {
-    file_path = this._getPath('editPresentation', file_path);
-    if(this._checkPresentation('editPresentation', file_path)) {
-      var presentation_type = type || this._getPresentationMode(file_path);
-      if(presentation_type == 'standalone') {
-        var url = this.jsl.inter.env.pathJoin(file_path, 'index.html')
-      } else {
-        var url = await this._startPresentation(file_path);
-      }
-      var wid = this.jsl.inter.windows.openWindow('presentation-editor.html');
-      await this.jsl.inter.windows.open_windows[wid].ready;
-      var context = this.jsl.inter.windows.open_windows[wid].context;
-      while(typeof context.presentation_editor == 'undefined') {
-        await this.jsl.inter.non_blocking.waitMSeconds(1);
-      }
-      var fullscreen = false;
-      var toggleFullscreen = () => {
-        fullscreen = !fullscreen;
-        context.fullscreen = fullscreen;
-        this.jsl.inter.windows.open_windows[wid].setFullscreen(fullscreen);
-        if(fullscreen) {
-          context.document.body.classList.add('fullscreen');
-        } else {
-          context.document.body.classList.remove('fullscreen');
-        }
-      }
-      context.preview.addEventListener('ipc-message', (e) => {
-        if(e.args[0].key !== undefined) {
-          if(e.args[0].key == 'F11') {
-            toggleFullscreen();
-          }
-        }
-      });
-      context.document.addEventListener('keydown', (event) => {
-        if(event.key == 'F11') {
-           toggleFullscreen();
-        }
-      });
-      context.presentation_editor.setPath(file_path, url);
-      var presentation_editor_title = this.jsl.inter.lang.currentString(516);
-      this.jsl.inter.windows.open_windows[wid].setTitle(file_path + ' - ' + presentation_editor_title);
-      return context;
+    file_path = await this._getPath('editPresentation', file_path);
+    if(!file_path || !this._checkPresentation('editPresentation', file_path)) {
+      return false;
     }
+    const url = await this._host.editorLocation?.(file_path, type);
+    const wid = this.jsl.inter.windows.openWindow('presentation-editor.html');
+    const win = this.jsl.inter.windows.open_windows[wid];
+    await win.ready;
+    const context = win.context;
+    while(typeof context.presentation_editor == 'undefined') {
+      await this.jsl.inter.non_blocking.waitMSeconds(1);
+    }
+    let fullscreen = false;
+    const toggle = () => {
+      fullscreen = !fullscreen;
+      context.fullscreen = fullscreen;
+      win.setFullscreen(fullscreen);
+      context.document.body.classList.toggle('fullscreen', fullscreen);
+    };
+    this._host.bindEditor?.(context, toggle);
+    context.document.addEventListener('keydown', event => {
+      if(event.key === 'F11') {
+        toggle();
+      }
+    });
+    context.presentation_editor.setPath(file_path, url);
+    win.setTitle(file_path + ' - ' + this.jsl.inter.lang.currentString(515));
+    return context;
   }
 
   /**
@@ -173,6 +112,12 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   updatePresentation(file_path) {
     file_path = this._getPath('updatePresentation', file_path);
+    if(file_path && typeof file_path.then === 'function') {
+      return file_path.then(path => path ? this.updatePresentation(path) : false);
+    }
+    if(!file_path) {
+      return false;
+    }
     if(this._checkPresentation('updatePresentation', file_path)) {
       var mode = this._getPresentationMode(file_path);
       this._setPresentationMode(file_path, mode);
@@ -184,7 +129,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
       }
     }
   }
-  
+
   /**
    * Creates a new presentation project on disk and optionally opens it in the editor.
    * @param {String} file_path - Target directory where the presentation project will be created.
@@ -193,36 +138,42 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   createPresentation(file_path, opts_in = {}, open_editor = true) {
     file_path = this._getPath('createPresentation', file_path);
+    if(file_path && typeof file_path.then === 'function') {
+      return file_path.then(path => path ? this.createPresentation(path, opts_in, open_editor) : false);
+    }
+    if(!file_path) {
+      return false;
+    }
     var presentation_config = {
       "jslab_version": this.jsl.context.version,
       "slide_width": 1920,
       "slide_height": 1080,
       "presentation_mode": "online",
       ...opts_in
-    }
+    };
     this.jsl.inter.env.makeDirectory(file_path);
     this.jsl.inter.env.makeDirectory(this.jsl.inter.env.pathJoin(file_path, 'res/'));
     this.jsl.inter.env.makeDirectory(this.jsl.inter.env.pathJoin(file_path, 'res/internal/'));
 
-    var js = this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/presentation.js')).toString();
-    js = js.replace('%presentation_config%', JSON.stringify(presentation_config, false, 2));
-    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.js'), js);
+    this._writePresentationRuntime(file_path, presentation_config);
     this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'css/presentation.css'),
       this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.css'));
-    
+
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'main.css'), '');
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'main.js'), '');
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/config.json'), JSON.stringify(presentation_config, false, 2));
-    
+
     var presentation_scripts = '';
     var presentation_stylesheets = '';
     if(opts_in.hasOwnProperty('modules')) {
       var handled = new Set();
       for(var module of opts_in.modules) {
         var module = (module === 'plot-json') ? 'plot' : module;
-        if(handled.has(module)) continue;
+        if(handled.has(module)) {
+          continue;
+        }
         handled.add(module);
-    
+
         if(module == 'img-pdf') {
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/pdfjs-dist-3.11.174/pdf.min.js'), this.jsl.inter.env.pathJoin(file_path, 'res/pdf.min.js'));
           this.jsl.inter.file_system.copyFile(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/pdfjs-dist-3.11.174/pdf.worker.min.js'), this.jsl.inter.env.pathJoin(file_path, 'res/pdf.worker.min.js'));
@@ -243,17 +194,19 @@ class PRDC_JSLAB_LIB_PRESENTATION {
         } else if(module == 'scene-3d-json') {
           this.jsl.inter.file_system.copyFolder(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'lib/three.js-r162'), this.jsl.inter.env.pathJoin(file_path, 'res/three.js-r162'));
         }
-      }        
+      }
     }
     var html = this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'html/presentation.html')).toString();
     html = html.replace('%presentation_scripts%', presentation_scripts);
     html = html.replace('%presentation_stylesheets%', presentation_stylesheets);
     this._writePresentationGlobals(file_path, opts_in.modules);
     this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'index.html'), html);
-    
+
     if(open_editor) {
-      this.editPresentation(file_path);
+      return this.editPresentation(file_path);
     }
+
+    return true;
   }
 
   /**
@@ -262,6 +215,12 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   packPresentation(file_path) {
     file_path = this._getPath('packPresentation', file_path);
+    if(file_path && typeof file_path.then === 'function') {
+      return file_path.then(path => path ? this.packPresentation(path) : false);
+    }
+    if(!file_path) {
+      return false;
+    }
     if(this._checkPresentation('packPresentation', file_path)) {
       var dest = this.jsl.inter.env.pathResolve(this.jsl.inter.env.pathJoin(file_path, '..', this.jsl.inter.env.pathBaseName(file_path) + '.zip'));
       this.jsl.inter.env.execSync(`"${this.jsl.inter.env.bin7zip}" a -tzip "${dest}" "${this.jsl.inter.env.pathJoin(file_path, '*')}"`);
@@ -275,6 +234,12 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   makeStandalonePresentation(file_path) {
     file_path = this._getPath('makeStandalonePresentation', file_path);
+    if(file_path && typeof file_path.then === 'function') {
+      return file_path.then(path => path ? this.makeStandalonePresentation(path) : false);
+    }
+    if(!file_path) {
+      return false;
+    }
     if(this._checkPresentation('makeStandalonePresentation', file_path)) {
       this._setPresentationMode(file_path, 'standalone');
       this._updatePresentationBackend(file_path);
@@ -288,10 +253,18 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   makeOnlinePresentation(file_path) {
     file_path = this._getPath('makeOnlinePresentation', file_path);
+    if(file_path && typeof file_path.then === 'function') {
+      return file_path.then(path => path ? this.makeOnlinePresentation(path) : false);
+    }
+    if(!file_path) {
+      return false;
+    }
     if(this._checkPresentation('makeOnlinePresentation', file_path)) {
       var resources = this._readPresentationResourceFlags(file_path);
-      this._restoreStandaloneBufferedAssets(file_path);
-      this._restorePresentationModuleResources(file_path, resources);
+      if(this._host.standalone_bundles) {
+        this._restoreStandaloneBufferedAssets(file_path);
+        this._restorePresentationModuleResources(file_path, resources);
+      }
       this._setPresentationMode(file_path, 'online');
       this._updatePresentationBackend(file_path);
       this._applyOnlinePresentationState(file_path);
@@ -304,7 +277,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    * @param {Boolean} run_make_standalone - Whether to run makeStandalonePresentation method or not.
    */
   async presentationToPdf(file_path, run_make_standalone = true) {
-    file_path = this._getPath('presentationToPdf', file_path);
+    file_path = await this._getPath('presentationToPdf', file_path);
     if(this._checkPresentation('presentationToPdf', file_path)) {
       if(run_make_standalone) {
         this.makeStandalonePresentation(file_path);
@@ -329,7 +302,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
         printBackground: true,
         landscape: false,
         pageSize: {
-          width: p.config.slide_width / 96, 
+          width: p.config.slide_width / 96,
           height: p.config.slide_height / 96
         }
       });
@@ -340,18 +313,14 @@ class PRDC_JSLAB_LIB_PRESENTATION {
       this.jsl.inter.env.disp('@presentationToPdf: ' + this.jsl.inter.lang.string(244) + dest);
     }
   }
-  
+
   /**
    * Waits for slide elements to be loaded
    * @param {Window} win - Window context with presentation.
    * @param {HTMLElement} slide - HTML element of slide.
    */
   async _waitForSlide(win, slide) {
-    var is_in_notes = function(el) {
-      if(!el || typeof el.closest !== 'function') return false;
-      var notes = el.closest('notes');
-      return !!(notes && notes.closest('slide'));
-    };
+    var is_in_notes = PRDC_JSLAB_PRESENTATION_CONTENT.isInsideNotes;
     var img_pdfs = Array.from(slide.querySelectorAll('img-pdf')).filter(function(el) {
       return !is_in_notes(el);
     });
@@ -372,10 +341,10 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     for(var v of videos) {
       await this._waitForVideo(v);
     }
-    
+
     await this._replaceCanvases(win, slide);
   }
-  
+
   /**
    * Waits for video elements to be loaded
    * @param {HTMLElement} slide - HTML element of video.
@@ -393,10 +362,12 @@ class PRDC_JSLAB_LIB_PRESENTATION {
         video.addEventListener('loadeddata', resolve, { once: true });
       }
     });
-    
+
     video.controls = false;
     video.muted = true;
-    try { await video.play(); } catch { }
+    try {
+      await video.play();
+    } catch{ }
     video.pause();
 
     if('requestVideoFrameCallback' in video) {
@@ -408,7 +379,7 @@ class PRDC_JSLAB_LIB_PRESENTATION {
       }
     }
   }
-  
+
   /**
    * Replaces all canvases with static images.
    * @param {Window} win - Window context with presentation.
@@ -416,21 +387,21 @@ class PRDC_JSLAB_LIB_PRESENTATION {
    */
   async _replaceCanvases(win, slide) {
     var plot_divs = Array.from(slide.querySelectorAll('.js-plotly-plot'))
-                         .filter(div => {
-                           var notes = div.closest('notes');
-                           return div.querySelector('canvas') &&
+      .filter(div => {
+        var notes = div.closest('notes');
+        return div.querySelector('canvas') &&
                              !(notes && notes.closest('slide'));
-                         });
+      });
     for(var plot_div of plot_divs) {
       var data_url;
       try {
         data_url = await win.Plotly.toImage(plot_div, {
-          format : 'png',
-          width  : plot_div.clientWidth  * win.devicePixelRatio,
-          height : plot_div.clientHeight * win.devicePixelRatio
+          format: 'png',
+          width: plot_div.clientWidth  * win.devicePixelRatio,
+          height: plot_div.clientHeight * win.devicePixelRatio
         });
       } catch(err) {}
-      
+
       var img = new win.Image();
       img.src = data_url;
       img.style.width  = (plot_div.style.width  || plot_div.width  + 'px');
@@ -456,11 +427,11 @@ class PRDC_JSLAB_LIB_PRESENTATION {
     var styles = '';
     var scripts = '';
     if(this.jsl.inter.file_system.existFile(
-        this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.css'))) {
+      this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.css'))) {
       styles += '  <link rel="stylesheet" type="text/css" href="./res/ui.css" />\n';
     }
     if(this.jsl.inter.file_system.existFile(
-        this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.js'))) {
+      this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.js'))) {
       scripts += '  <script type="text/javascript" src="./res/ui.js"></script>\n';
     }
 
@@ -493,18 +464,16 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
       "slide_width": 1920,
       "slide_height": 1080,
     };
-    
+
     this.jsl.inter.env.makeDirectory(this.jsl.inter.env.pathJoin(file_path, 'res/'));
     this.jsl.inter.env.makeDirectory(this.jsl.inter.env.pathJoin(file_path, 'res/internal/'));
-    
+
     if(this.jsl.inter.file_system.existFile(config_file)) {
       presentation_config = JSON.parse(this.jsl.inter.env.readFileSync(config_file).toString());
       presentation_config.jslab_version = this.jsl.context.version;
     }
-    
-    var js = this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/presentation.js')).toString();
-    js = js.replace('%presentation_config%', JSON.stringify(presentation_config, false, 2));
-    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.js'), js);
+
+    this._writePresentationRuntime(file_path, presentation_config);
     this.jsl.inter.file_system.writeFile(config_file, JSON.stringify(presentation_config, false, 2));
     this._refreshPresentationModuleResources(file_path);
     this._writePresentationGlobals(file_path);
@@ -613,6 +582,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {String[]}
    */
   _getStandaloneModuleEntries(file_path) {
+    var { files: fs } = this._host;
     var modules = new Set();
     var obj = this;
 
@@ -672,6 +642,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {String[]}
    */
   _getAutoGlobalModuleEntries(file_path) {
+    var { files: fs, paths: path } = this._host;
     var modules = new Set();
     var sources = [];
     var index_file = path.join(file_path, 'index.html');
@@ -685,13 +656,10 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
       } catch(err) {}
     }
 
-    function escapeRegExp(str) {
-      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
 
     for(var source of sources) {
       for(var [name, module_path] of Object.entries(auto_global_modules)) {
-        var escaped = escapeRegExp(name);
+        var escaped = PRDC_JSLAB_TEXT.escapeRegExp(name);
         if(new RegExp("waitForGlobal\\(\\s*['\"]" + escaped + "['\"]\\s*\\)").test(source) ||
             new RegExp("\\bnew\\s+" + escaped + "\\s*\\(").test(source)) {
           modules.add(module_path);
@@ -701,7 +669,6 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
 
     return Array.from(modules).sort();
   }
-
   /**
    * Returns a static string literal value from a JS AST node when possible.
    * @param {Object} node - Babel/recast AST node.
@@ -732,6 +699,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {(String|null)}
    */
   _normalizeStandaloneModuleSpecifier(file_path, source_file, specifier) {
+    var { files: fs, paths: path } = this._host;
     if(typeof specifier != 'string' || !specifier) {
       return null;
     }
@@ -769,16 +737,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {String}
    */
   _getStandaloneBundlePath(module_path) {
-    if(module_path.endsWith('.module.js')) {
-      return module_path.replace(/\.module\.js$/, '.standalone.js');
-    }
-    if(module_path.endsWith('.js')) {
-      return module_path.replace(/\.js$/, '.standalone.js');
-    }
-    if(module_path.endsWith('.mjs')) {
-      return module_path.replace(/\.mjs$/, '.standalone.mjs');
-    }
-    return module_path + '.standalone.js';
+    return PRDC_JSLAB_PRESENTATION_CONTENT.standaloneModulePath(module_path);
   }
 
   /**
@@ -787,6 +746,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {Boolean}
    */
   _hasStandaloneModuleBundles(file_path) {
+    var { files: fs, paths: path } = this._host;
     return this._getStandaloneModuleEntries(file_path).some((module_path) => {
       return fs.existsSync(path.resolve(file_path,
         this._getStandaloneBundlePath(module_path)));
@@ -819,6 +779,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {String[]}
    */
   _getStandaloneThreeExportNames(file_path) {
+    var { files: fs, paths: path } = this._host;
     var three_module_path = path.resolve(
       file_path,
       'res',
@@ -955,6 +916,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {(String|null)}
    */
   _writeStandaloneThreeShim(file_path, temp_dir) {
+    var { files: fs, paths: path } = this._host;
     var export_names = this._getStandaloneThreeExportNames(file_path);
     if(!export_names.length) {
       return null;
@@ -984,14 +946,14 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} file_path - Path to presentation directory.
    */
   _bundleStandaloneModuleResources(file_path, modules = this._getStandaloneModuleEntries(file_path)) {
+    var { files: fs, paths: path } = this._host;
     var wanted_bundles = new Set();
     if(!modules.length) {
       this._removeStaleStandaloneBundles(file_path, wanted_bundles);
       return;
     }
 
-    var esbuild_exe = this._getEsbuildExecutable();
-    var temp_dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-presentation-esbuild-'));
+    var temp_dir = this._host.createTempDirectory();
     try {
       var shared_three_shim = this._writeStandaloneThreeShim(file_path, temp_dir);
       for(var module_path of modules) {
@@ -1018,28 +980,13 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
         if(shared_three_shim && this._usesSharedThreeBundle(module_path)) {
           args.push('--alias:three=' + shared_three_shim.replace(/\\/g, '/'));
         }
-        cp.execFileSync(esbuild_exe, args, {
-          windowsHide: true
-        });
+        this._host.bundle(args);
       }
     } finally {
       fs.rmSync(temp_dir, { recursive: true, force: true });
     }
 
     this._removeStaleStandaloneBundles(file_path, wanted_bundles);
-  }
-
-  /**
-   * Returns the esbuild executable path for the current platform.
-   * @returns {String}
-   */
-  _getEsbuildExecutable() {
-    var pkg_dir = path.dirname(require.resolve(
-      '@esbuild/' + process.platform + '-' + process.arch + '/package.json'));
-    if(process.platform == 'win32') {
-      return path.join(pkg_dir, 'esbuild.exe');
-    }
-    return path.join(pkg_dir, 'bin', 'esbuild');
   }
 
   /**
@@ -1071,6 +1018,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {Iterable<String>} assets - Asset paths referenced by standalone-only elements.
    */
   _syncStandaloneBufferedAssets(file_path, assets) {
+    var { files: fs, paths: path } = this._host;
     var wanted = new Set();
     for(var rel of assets) {
       var abs = path.resolve(file_path, rel);
@@ -1082,22 +1030,12 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
       }
     }
 
-    function walk(dir_path) {
-      if(!fs.existsSync(dir_path)) {
-        return;
+    this._visitPresentationFiles(file_path, (entry_path, entry) => {
+      if(entry.name.endsWith('.buf.js') &&
+          !wanted.has(entry_path)) {
+        fs.rmSync(entry_path, { force: true });
       }
-      for(var entry of fs.readdirSync(dir_path, { withFileTypes: true })) {
-        var entry_path = path.join(dir_path, entry.name);
-        if(entry.isDirectory()) {
-          walk(entry_path);
-        } else if(entry.isFile() && entry.name.endsWith('.buf.js') &&
-            !wanted.has(entry_path)) {
-          fs.rmSync(entry_path, { force: true });
-        }
-      }
-    }
-
-    walk(file_path);
+    });
   }
 
   /**
@@ -1106,22 +1044,13 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {Set<String>} wanted_bundles - Bundle files that must remain.
    */
   _removeStaleStandaloneBundles(file_path, wanted_bundles) {
-    function walk(dir_path) {
-      if(!fs.existsSync(dir_path)) {
-        return;
+    var { files: fs, paths: path } = this._host;
+    this._visitPresentationFiles(path.join(file_path, 'res'), (entry_path, entry) => {
+      if(entry.name.endsWith('.standalone.js') &&
+          !wanted_bundles.has(entry_path)) {
+        fs.rmSync(entry_path, { force: true });
       }
-      for(var entry of fs.readdirSync(dir_path, { withFileTypes: true })) {
-        var entry_path = path.join(dir_path, entry.name);
-        if(entry.isDirectory()) {
-          walk(entry_path);
-        } else if(entry.isFile() && entry.name.endsWith('.standalone.js') &&
-            !wanted_bundles.has(entry_path)) {
-          fs.rmSync(entry_path, { force: true });
-        }
-      }
-    }
-
-    walk(path.join(file_path, 'res'));
+    });
   }
 
   /**
@@ -1129,6 +1058,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} file_path - Path to presentation directory.
    */
   _removePresentationServerExecutable(file_path) {
+    var { files: fs, paths: path } = this._host;
     var exe_file = path.join(file_path,
       this.jsl.inter.env.pathBaseName(file_path) + '.exe');
     if(fs.existsSync(exe_file)) {
@@ -1142,6 +1072,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {String}
    */
   _getPresentationMode(file_path) {
+    var { files: fs, paths: path } = this._host;
     var config = this._readPresentationConfig(file_path);
     if(config.presentation_mode == 'standalone' ||
         config.presentation_mode == 'online') {
@@ -1182,6 +1113,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} mode - Presentation mode.
    */
   _setPresentationMode(file_path, mode) {
+    var { files: fs, paths: path } = this._host;
     var config_file = path.join(file_path, 'res', 'internal', 'config.json');
     var config = this._readPresentationConfig(file_path);
     config.presentation_mode = mode;
@@ -1195,6 +1127,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {Object}
    */
   _readPresentationConfig(file_path) {
+    var { files: fs, paths: path } = this._host;
     var config_file = path.join(file_path, 'res', 'internal', 'config.json');
     if(!fs.existsSync(config_file)) {
       return {};
@@ -1211,6 +1144,9 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} file_path - Path to presentation directory.
    */
   _applyStandalonePresentationState(file_path) {
+    if(!this._host.standalone_bundles) {
+      return;
+    }
     this._bundleStandaloneModuleResources(file_path);
     this._rewriteStandaloneImports(file_path);
     var html_file = this.jsl.inter.env.pathJoin(file_path, 'index.html');
@@ -1228,6 +1164,9 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} file_path - Path to presentation directory.
    */
   _applyOnlinePresentationState(file_path) {
+    if(!this._host.standalone_bundles) {
+      return;
+    }
     this._bundleStandaloneModuleResources(
       file_path,
       this._getAutoGlobalModuleEntries(file_path)
@@ -1242,6 +1181,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {Object}
    */
   _readPresentationResourceFlags(file_path) {
+    var { files: fs, paths: path } = this._host;
     var globals_file = path.join(file_path, 'res', 'internal', 'globals.js');
     if(!fs.existsSync(globals_file)) {
       return {};
@@ -1263,29 +1203,20 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} file_path - Path to presentation directory.
    */
   _restoreStandaloneBufferedAssets(file_path) {
-    function walk(dir_path) {
-      if(!fs.existsSync(dir_path)) {
-        return;
-      }
-      for(var entry of fs.readdirSync(dir_path, { withFileTypes: true })) {
-        var entry_path = path.join(dir_path, entry.name);
-        if(entry.isDirectory()) {
-          walk(entry_path);
-        } else if(entry.isFile() && entry.name.endsWith('.buf.js')) {
-          var source = fs.readFileSync(entry_path, 'utf8');
-          var match = source.match(/registerFile\("([^"]+)",\s*"([^"]*)"\);?/);
-          if(!match) {
-            continue;
-          }
-          var rel = decodeURIComponent(match[1]);
-          var asset_path = path.resolve(file_path, rel);
-          fs.mkdirSync(path.dirname(asset_path), { recursive: true });
-          fs.writeFileSync(asset_path, Buffer.from(match[2], 'base64'));
+    var { files: fs, paths: path } = this._host;
+    this._visitPresentationFiles(file_path, (entry_path, entry) => {
+      if(entry.name.endsWith('.buf.js')) {
+        var source = fs.readFileSync(entry_path, 'utf8');
+        var match = source.match(/registerFile\("([^"]+)",\s*"([^"]*)"\);?/);
+        if(!match) {
+          return;
         }
+        var rel = decodeURIComponent(match[1]);
+        var asset_path = path.resolve(file_path, rel);
+        fs.mkdirSync(path.dirname(asset_path), { recursive: true });
+        fs.writeFileSync(asset_path, Buffer.from(match[2], 'base64'));
       }
-    }
-
-    walk(file_path);
+    });
   }
 
   /**
@@ -1346,6 +1277,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @returns {String[]}
    */
   _getStandaloneRewriteJsFiles(file_path) {
+    var { files: fs, paths: path } = this._host;
     var skip_dirs = new Set([
       path.resolve(file_path, 'res', 'MathJax-3.2.0'),
       path.resolve(file_path, 'res', 'tex-mml-chtml-3.2.0'),
@@ -1382,6 +1314,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
    * @param {String} file_path - Path to presentation directory.
    */
   _rewriteStandaloneImports(file_path) {
+    var { files: fs } = this._host;
     var js_files = this._getStandaloneRewriteJsFiles(file_path);
     var b = recast.types.builders;
 
@@ -1435,7 +1368,7 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
       }
     }
   }
-  
+
   /**
    * Writes globals required by generated presentation runtime files.
    * @param {String} file_path - Path to presentation directory.
@@ -1459,81 +1392,10 @@ ${scripts}  <script type="text/javascript" src="./res/internal/presentation.js">
       ui: handled.size ? handled.has('ui') :
         this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'res', 'ui.js'))
     };
-    var presentation_language_strings = {
-      "315": this.jsl.inter.lang.currentString(315),
-      "316": this.jsl.inter.lang.currentString(316),
-      "317": this.jsl.inter.lang.currentString(317),
-      "318": this.jsl.inter.lang.currentString(318),
-      "363": this.jsl.inter.lang.currentString(363),
-      "542": this.jsl.inter.lang.currentString(542),
-    };
-    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/globals.js'), `
-window._standalone = window.location.protocol == 'file:';
-window.presentation_resources = ${JSON.stringify(resources)};
-window.__standalone_modules = window.__standalone_modules || {};
-window.__presentation_script_promises = window.__presentation_script_promises || {};
-window.__getPresentationStandaloneModulePath = function(module_path) {
-  if(module_path.endsWith('.module.js')) {
-    return module_path.replace(/\\.module\\.js$/, '.standalone.js');
+    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/globals.js'),
+      PRDC_JSLAB_PRESENTATION_CONTENT.globalsSource(id => this.jsl.inter.lang.currentString(id), resources));
   }
-  if(module_path.endsWith('.js')) {
-    return module_path.replace(/\\.js$/, '.standalone.js');
-  }
-  if(module_path.endsWith('.mjs')) {
-    return module_path.replace(/\\.mjs$/, '.standalone.mjs');
-  }
-  return module_path + '.standalone.js';
-};
-window.__loadPresentationScript = function(script_path) {
-  if(typeof script_path != 'string' ||
-      !/\\.(?:js|mjs)(?:[?#].*)?$/i.test(script_path)) {
-    return Promise.reject(new Error('Invalid presentation script path: ' + script_path));
-  }
-  var resolved = new URL(script_path, window.location.href).href;
-  if(/\\/index\\.html?(?:[#?].*)?$/i.test(resolved.replace(/\\\\/g, '/'))) {
-    return Promise.reject(new Error('Refusing to load presentation page as script: ' + resolved));
-  }
-  if(window.__presentation_script_promises[resolved]) {
-    return window.__presentation_script_promises[resolved];
-  }
-  window.__presentation_script_promises[resolved] = new Promise(function(resolve, reject) {
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = resolved;
-    script.onload = function() {
-      resolve(true);
-    };
-    script.onerror = function() {
-      reject(new Error('Failed to load script: ' + resolved));
-    };
-    document.head.appendChild(script);
-  });
-  return window.__presentation_script_promises[resolved];
-};
-window.__importPresentationModule = async function(module_path) {
-  if(window._standalone) {
-    if(Object.prototype.hasOwnProperty.call(window.__standalone_modules, module_path)) {
-      return window.__standalone_modules[module_path];
-    }
-    var standalone_path = window.__getPresentationStandaloneModulePath(module_path);
-    await window.__loadPresentationScript(standalone_path);
-    return window.__standalone_modules[module_path];
-  }
-  return import(new URL(module_path, window.location.href).href);
-};
-window.language = {
-  currentString: function(id) {
-    var strings = ${JSON.stringify(presentation_language_strings)};
-    var key = String(id);
-    if(Object.prototype.hasOwnProperty.call(strings, key)) {
-      return strings[key];
-    }
-    return '';
-  }
-};
-    `);
-  }
-  
+
   /**
    * Resolves and returns a presentation directory path, prompting the user if necessary.
    * @param {String} method - Name of the calling method for error reporting.
@@ -1547,17 +1409,26 @@ window.language = {
         buttonLabel: this.jsl.inter.lang.currentString(231),
         properties: ['openDirectory'],
       };
+      if(this.jsl.inter.env.getCapabilities?.().dialogs === false) {
+        return this.jsl.inter.env.showOpenDialog(options).then(paths => {
+          if(Array.isArray(paths) && paths.length) {
+            return paths[0];
+          }
+          this.jsl.inter.env.error('@' + method + ': ' + this.jsl.inter.lang.string(119) + '.');
+          return false;
+        });
+      }
       file_path = this.jsl.inter.env.showOpenDialogSync(options);
       if(file_path === undefined) {
-        this.jsl.inter.env.error('@' + method + ': '+this.jsl.inter.lang.string(119)+'.');
+        this.jsl.inter.env.error('@' + method + ': ' + this.jsl.inter.lang.string(119) + '.');
         return false;
       } else {
         file_path = file_path[0];
       }
-    }    
+    }
     return file_path;
   }
-  
+
   /**
    * Checks whether the supplied directory contains a valid presentation structure.
    * @param {String} method - Name of the calling method for error reporting.
@@ -1565,50 +1436,16 @@ window.language = {
    * @returns {Boolean} True if the directory contains a `index.html` file, otherwise false.
    */
   _checkPresentation(method, file_path) {
-    if(!this.jsl.inter.file_system.existFile(this.jsl.inter.env.pathJoin(file_path, 'index.html'))) {
-      this.jsl.inter.env.error('@' + method + ': '+this.jsl.inter.lang.string(240));
-      return false;
-    }
-    return true;
+    return PRDC_JSLAB_PRESENTATION_CONTENT.checkFolder(this.jsl, method, file_path);
   }
-  
+
   /**
    * Starts or reuses the internal HTTP server that serves the presentation.
    * @param {String} file_path - Absolute path to the presentation directory.
    * @returns {Promise<String>} Resolves to the presentation URL.
    */
   _startPresentation(file_path) {
-    var key = path.resolve(file_path);
-    var cached = this.presentation_servers.get(key);
-    if(cached) {
-      if(cached.url) {
-        return Promise.resolve(cached.url);
-      }
-      if(cached.promise) {
-        return cached.promise;
-      }
-    }
-
-    var promise = new Promise((resolve, reject) => {
-      var server = http.createServer(this._handlePresentationRequest.bind(this, key));
-      server.once('error', (err) => {
-        this.presentation_servers.delete(key);
-        reject(err);
-      });
-      server.listen(0, '127.0.0.1', () => {
-        var address = server.address();
-        var url = 'http://127.0.0.1:' + address.port + '/';
-        this.presentation_servers.set(key, {
-          root_path: key,
-          server: server,
-          url: url
-        });
-        resolve(url);
-      });
-    });
-
-    this.presentation_servers.set(key, { promise: promise });
-    return promise;
+    return this._host._startPresentation(file_path);
   }
 
   /**
@@ -1616,177 +1453,9 @@ window.language = {
    * @param {String} file_path - Absolute or relative path to the presentation directory.
    */
   _stopPresentationServer(file_path) {
-    var key = path.resolve(file_path);
-    var cached = this.presentation_servers.get(key);
-    if(cached && cached.server) {
-      cached.server.close();
-    }
-    this.presentation_servers.delete(key);
+    return this._host._stopPresentationServer(file_path);
   }
 
-  /**
-   * Handles one internal presentation HTTP request.
-   * @param {String} root_path - Absolute path to the presentation directory.
-   * @param {Object} req
-   * @param {Object} res
-   */
-  _handlePresentationRequest(root_path, req, res) {
-    if(req.method != 'GET' && req.method != 'HEAD') {
-      res.writeHead(405, { 'Allow': 'GET, HEAD' });
-      res.end();
-      return;
-    }
-
-    var req_url;
-    try {
-      req_url = new URL(req.url, 'http://127.0.0.1');
-    } catch(err) {
-      res.writeHead(400);
-      res.end();
-      return;
-    }
-
-    if(req_url.pathname == '/keepalive') {
-      res.writeHead(204, { 'Cache-Control': 'no-store' });
-      res.end();
-      return;
-    }
-
-    var rel_path = req_url.pathname == '/' ? '/index.html' : req_url.pathname;
-    var file_path;
-    try {
-      file_path = path.resolve(root_path, '.' + decodeURIComponent(rel_path));
-    } catch(err) {
-      res.writeHead(400);
-      res.end();
-      return;
-    }
-
-    var root_norm = path.resolve(root_path);
-    var file_norm = path.resolve(file_path);
-    if(file_norm != root_norm &&
-        !file_norm.toLowerCase().startsWith((root_norm + path.sep).toLowerCase())) {
-      res.writeHead(403);
-      res.end();
-      return;
-    }
-
-    this._servePresentationPath(req, res, root_norm, file_norm);
-  }
-
-  /**
-   * Serves one static file from the internal presentation HTTP server.
-   * @param {Object} req
-   * @param {Object} res
-   * @param {String} root_path
-   * @param {String} file_path
-   */
-  _servePresentationPath(req, res, root_path, file_path) {
-    fs.stat(file_path, (err, stats) => {
-      if(err) {
-        res.writeHead(404);
-        res.end();
-        return;
-      }
-
-      if(stats.isDirectory()) {
-        this._servePresentationPath(req, res, root_path,
-          path.join(file_path, 'index.html'));
-        return;
-      }
-
-      var headers = {
-        'Content-Type': this._getPresentationContentType(file_path),
-        'Cache-Control': 'no-store',
-        'Accept-Ranges': 'bytes'
-      };
-
-      var start = 0;
-      var end = stats.size - 1;
-      var status = 200;
-      var range = req.headers.range;
-      if(typeof range == 'string') {
-        var match = /^bytes=(\d*)-(\d*)$/.exec(range);
-        if(match) {
-          if(match[1]) {
-            start = parseInt(match[1], 10);
-          } else if(match[2]) {
-            start = Math.max(0, stats.size - parseInt(match[2], 10));
-          }
-          if(match[2]) {
-            end = parseInt(match[2], 10);
-          }
-          if(!match[1]) {
-            end = stats.size - 1;
-          }
-          if(start > end || start >= stats.size) {
-            res.writeHead(416, {
-              'Content-Range': 'bytes */' + stats.size,
-              'Cache-Control': 'no-store'
-            });
-            res.end();
-            return;
-          }
-          end = Math.min(end, stats.size - 1);
-          status = 206;
-          headers['Content-Range'] = 'bytes ' + start + '-' + end + '/' + stats.size;
-        }
-      }
-
-      headers['Content-Length'] = String(end - start + 1);
-      res.writeHead(status, headers);
-      if(req.method == 'HEAD') {
-        res.end();
-        return;
-      }
-
-      var stream = fs.createReadStream(file_path, { start: start, end: end });
-      stream.on('error', function() {
-        if(!res.headersSent) {
-          res.writeHead(500);
-        }
-        res.end();
-      });
-      stream.pipe(res);
-    });
-  }
-
-  /**
-   * Returns the HTTP content type for one served presentation asset.
-   * @param {String} file_path
-   * @returns {String}
-   */
-  _getPresentationContentType(file_path) {
-    var ext = path.extname(file_path).toLowerCase();
-    var types = {
-      '.css': 'text/css; charset=utf-8',
-      '.gif': 'image/gif',
-      '.htm': 'text/html; charset=utf-8',
-      '.html': 'text/html; charset=utf-8',
-      '.ico': 'image/x-icon',
-      '.jpeg': 'image/jpeg',
-      '.jpg': 'image/jpeg',
-      '.js': 'text/javascript; charset=utf-8',
-      '.json': 'application/json; charset=utf-8',
-      '.map': 'application/json; charset=utf-8',
-      '.mjs': 'text/javascript; charset=utf-8',
-      '.mp3': 'audio/mpeg',
-      '.mp4': 'video/mp4',
-      '.ogg': 'audio/ogg',
-      '.otf': 'font/otf',
-      '.pdf': 'application/pdf',
-      '.png': 'image/png',
-      '.svg': 'image/svg+xml',
-      '.txt': 'text/plain; charset=utf-8',
-      '.ttf': 'font/ttf',
-      '.wasm': 'application/wasm',
-      '.webm': 'video/webm',
-      '.woff': 'font/woff',
-      '.woff2': 'font/woff2'
-    };
-    return types[ext] || 'application/octet-stream';
-  }
-  
   /**
    * Convert file to JavaScript base64 buffer.
    * @param {String} file_path - Path to presentation.
@@ -1798,8 +1467,61 @@ window.language = {
     var b64  = bin.toString('base64');
     var name = encodeURIComponent(rel.replace(/\\/g, "/"));
     this.jsl.inter.file_system.writeFile(abs + '.buf.js',
-      'registerFile("'+name+'", "'+b64+'");');
+      'registerFile("' + name + '", "' + b64 + '");');
   }
+  /**
+   * Writes the current portable viewer and its shared content implementation.
+   * @param {string} file_path Presentation directory.
+   * @param {Object} presentation_config Viewer settings.
+   */
+  _writePresentationRuntime(file_path, presentation_config) {
+    this.jsl.inter.file_system.writeFile(this.jsl.inter.env.pathJoin(file_path, 'res/internal/presentation.js'),
+      this._buildPresentationRuntimeSource(presentation_config));
+  }
+
+  /**
+   * Visits presentation files recursively without following non-directory entries.
+   * @param {string} dir_path Directory to visit.
+   * @param {Function} visit File callback.
+   */
+  _visitPresentationFiles(dir_path, visit) {
+    var { files: fs, paths: path } = this._host;
+    if(!fs.existsSync(dir_path)) {
+      return;
+    }
+    for(const entry of fs.readdirSync(dir_path, { withFileTypes: true })) {
+      const entry_path = path.join(dir_path, entry.name);
+      if(entry.isDirectory()) {
+        this._visitPresentationFiles(entry_path, visit);
+      } else if(entry.isFile()) {
+        visit(entry_path, entry);
+      }
+    }
+  }
+
+  /**
+   * Builds the current presentation runtime source with embedded config.
+   * @param {Object} config
+   * @returns {string|false}
+   */
+  _buildPresentationRuntimeSource(config) {
+    var js_template = String(this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/presentation-viewer.js'), 'utf8') || '');
+    if(!js_template.length) {
+      this.jsl.inter.env.error('@presentation: bundled presentation runtime is missing.');
+      return false;
+    }
+    return PRDC_JSLAB_PRESENTATION_CONTENT.runtimeSource(js_template,
+      String(this.jsl.inter.env.readFileSync(this.jsl.inter.env.pathJoin(this.jsl.app_path, 'js/windows/presentation-content.js'), 'utf8') || ''), config);
+  }
+
+  /**
+   * Builds translated globals for an embedded or saved presentation.
+   * @returns {string} Viewer globals source.
+   */
+  _buildPresentationGlobalsSource() {
+    return PRDC_JSLAB_PRESENTATION_CONTENT.globalsSource(id => this.jsl.inter.lang.currentString(id));
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_PRESENTATION = PRDC_JSLAB_LIB_PRESENTATION;

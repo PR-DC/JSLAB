@@ -5,39 +5,15 @@
  * info@pr-dc.com
  */
 
-const fs = require('fs');
-const Store = require('electron-store');
+const { PRDC_JSLAB_COMMAND_WINDOW_MODULE } = require('./command-window-module');
 
-const store = new Store();
 
-class PRDC_JSLAB_COMMAND_WINDOW_SETTINGS {
+/**
+ * Class for command window settings.
+ */
+class PRDC_JSLAB_COMMAND_WINDOW_SETTINGS extends PRDC_JSLAB_COMMAND_WINDOW_MODULE {
 
-  /**
-   * Creates settings submodule and binds methods to parent command window.
-   * @param {Object} command_window Parent command window instance.
-   */
-  constructor(command_window) {
-    this.command_window = command_window;
-    this._bindToCommandWindow();
-  }
 
-  /**
-   * Binds all submodule methods to command window and exposes them on parent.
-   */
-  _bindToCommandWindow() {
-    var obj = this;
-    Object.getOwnPropertyNames(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype).forEach(function(name) {
-      if(name === 'constructor' || name === '_bindToCommandWindow') {
-        return;
-      }
-      if(typeof obj[name] !== 'function') {
-        return;
-      }
-      var bound = obj[name].bind(obj.command_window);
-      obj[name] = bound;
-      obj.command_window[name] = bound;
-    });
-  }
 }
 
 Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
@@ -48,8 +24,8 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    */
   openTerminalDialog(e) {
     if(!e.is(':visible')) {
-      $('.terminal-dialog').fadeOut(300, 'linear');
-      e.fadeIn(300, 'linear', function() {
+      $('.terminal-dialog').fadeOut(this.win.platform.animation_duration ?? 300, 'linear');
+      e.fadeIn(this.win.platform.animation_duration ?? 300, 'linear', function() {
         e.focus();
       });
     }
@@ -60,7 +36,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    * @param {jQuery} e The jQuery object representing the dialog to close.
    */
   closeTerminalDialog(e) {
-    e.fadeOut(300, 'linear');
+    e.fadeOut(this.win.platform.animation_duration ?? 300, 'linear');
     this.code_input.focus();
     this.code_input.setCursor(this.code_input.lineCount(), 0);
   },
@@ -69,6 +45,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    * Toggles the visibility of timestamps in the command window.
    */
   setTimestamp() {
+    const { store } = this.win.platform;
     var timestamp_button =
       $('#right-panel .options .timestamp');
     if(this.show_timestamp) {
@@ -93,6 +70,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    * Toggles the autoscroll feature of the command window, ensuring the latest messages are always in view.
    */
   setAutoscroll() {
+    const { store } = this.win.platform;
     var autoscroll_button =
       $('#right-panel .options .autoscroll');
     if(this.autoscroll) {
@@ -115,6 +93,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    * Sets the maximum number of messages to display in the command window before older messages are removed.
    */
   setNMessagesMax() {
+    const { store } = this.win.platform;
     var N_messages_max_input =
       $('#right-panel .terminal-settings .N-messages-max');
     if(isFinite(this.N_messages_max) && this.N_messages_max < this.min_messages_max) {
@@ -131,6 +110,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    * Toggles whether timestamps are written to the log file.
    */
   setWriteTimestamps() {
+    const { store } = this.win.platform;
     var write_timestamps_input =
       $('#right-panel .terminal-log .write-timestamps')[0];
     if(this.write_timestamps) {
@@ -149,18 +129,19 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_SETTINGS.prototype, {
    * Saves the current log of the command window to a file.
    */
   saveLog() {
+    const { fs, host } = this.win.platform;
     let options = {
-     title: language.currentString(150),
-     defaultPath : 'jslab_'+ this.win.app.getDateTimeFullStr() + '.log',
-     buttonLabel: language.currentString(151),
+      title: language.currentString(150),
+      defaultPath: 'jslab_' + this.win.getDateTimeFullStr() + '.log',
+      buttonLabel: language.currentString(151),
       filters: [
         {name: 'Log', extensions: ['log', 'txt']},
         {name: language.currentString(345), extensions: ['*']}
-       ]
+      ]
     };
 
     var obj = this;
-    ipcRenderer.invoke('dialog', 'showSaveDialog', options).then(function(result) {
+    host.invoke('dialog', 'showSaveDialog', options).then(function(result) {
       if(!result.canceled) {
         var data = '';
         obj.log.forEach(function(x) {

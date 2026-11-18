@@ -117,7 +117,7 @@ body.has-minimized-windows #taskbar-container {
 }
 
 #panels-container {
-  top: 43px;
+  top: 78px;
   bottom: calc(25px + var(--taskbar-offset));
 }
 

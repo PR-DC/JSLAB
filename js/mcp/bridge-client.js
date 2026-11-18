@@ -16,6 +16,7 @@ const http = require('http');
 class PRDC_JSLAB_BRIDGE_CLIENT {
 
   /**
+   * Initializes the bridge client instance.
    * @param {Object} [options={}] Session selection options.
    * @param {string} [options.session_file] Explicit descriptor path.
    * @param {number} [options.pid] Desktop process ID.
@@ -70,12 +71,18 @@ class PRDC_JSLAB_BRIDGE_CLIENT {
         res.on('end', function() {
           try {
             var data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-            if(res.statusCode !== 200) throw new Error(data.error || 'Automation request failed.');
+            if(res.statusCode !== 200) {
+              throw new Error(data.error || 'Automation request failed.');
+            }
             resolve(data);
-          } catch(err) { reject(err); }
+          } catch(err) {
+            reject(err);
+          }
         });
       });
-      req.setTimeout(3000, function() { req.destroy(new Error('JSLAB bridge did not respond.')); });
+      req.setTimeout(3000, function() {
+        req.destroy(new Error('JSLAB bridge did not respond.'));
+      });
       req.on('error', reject);
       req.end(body);
     });
@@ -90,13 +97,17 @@ class PRDC_JSLAB_BRIDGE_CLIENT {
     var filenames = this.session_file ? [this.session_file] :
       fs.readdirSync(os.tmpdir()).filter(function(name) {
         return /^jslab-mcp-\d+\.json$/.test(name);
-      }).map(function(name) { return path.join(os.tmpdir(), name); });
+      }).map(function(name) {
+        return path.join(os.tmpdir(), name);
+      });
     var sessions = await Promise.all(filenames.map(async function(filename) {
       try {
         var state = obj.readSession(filename);
         var status = await obj.request(state, 'get_session_status');
         return Object.assign({ session_file: filename }, status);
-      } catch(err) { return null; }
+      } catch(err) {
+        return null;
+      }
     }));
     return sessions.filter(Boolean);
   }
@@ -106,11 +117,19 @@ class PRDC_JSLAB_BRIDGE_CLIENT {
    * @returns {Promise<Object>} Selected private descriptor.
    */
   async selectSession() {
-    if(this.session_file) return this.readSession(this.session_file);
-    if(this.pid) return this.readSession(path.join(os.tmpdir(), 'jslab-mcp-' + this.pid + '.json'));
+    if(this.session_file) {
+      return this.readSession(this.session_file);
+    }
+    if(this.pid) {
+      return this.readSession(path.join(os.tmpdir(), 'jslab-mcp-' + this.pid + '.json'));
+    }
     var sessions = await this.listSessions();
-    if(sessions.length === 0) throw new Error('No shared JSLAB session. Start JSLAB with --mcp.');
-    if(sessions.length > 1) throw new Error('Multiple JSLAB sessions. Configure --pid or --session-file.');
+    if(sessions.length === 0) {
+      throw new Error('No shared JSLAB session. Start JSLAB with --mcp.');
+    }
+    if(sessions.length > 1) {
+      throw new Error('Multiple JSLAB sessions. Configure --pid or --session-file.');
+    }
     return this.readSession(sessions[0].session_file);
   }
 
@@ -121,13 +140,17 @@ class PRDC_JSLAB_BRIDGE_CLIENT {
    * @returns {Promise<Object>} Result or running execution record.
    */
   async call(method, args = {}) {
-    if(method === 'list_sessions') return { sessions: await this.listSessions() };
+    if(method === 'list_sessions') {
+      return { sessions: await this.listSessions() };
+    }
     var state = await this.selectSession();
     var result = await this.request(state, method, args);
     var wait_ms = args.wait_ms === undefined ? 10000 : args.wait_ms;
     var deadline = Date.now() + Math.max(0, Math.min(10000, Number(wait_ms) || 0));
     while(result.status === 'running' && Date.now() < deadline) {
-      await new Promise(function(resolve) { setTimeout(resolve, 100); });
+      await new Promise(function(resolve) {
+        setTimeout(resolve, 100);
+      });
       result = await this.request(state, 'get_execution', { execution_id: result.execution_id });
     }
     return result;

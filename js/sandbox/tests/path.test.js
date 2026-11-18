@@ -8,7 +8,7 @@
 const fs = require('fs');
 const os = require('os');
 const node_path = require('path');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 
 var tests = new PRDC_JSLAB_TESTS();
 

@@ -5,22 +5,35 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+/**
+ * Class for jslab workspace serializer test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER {
+
+  /**
+   * Returns serializer.
+   */
+  static getSerializer() {
+    if(typeof jsl !== 'undefined') {
+      return jsl.inter.basic._workspace_serializer;
+    }
+    return new PRDC_JSLAB_WORKSPACE_SERIALIZER({
+      context: globalThis,
+      inter: { format: { isTypedArray: function(value) {
+        return ArrayBuffer.isView(value) && !(value instanceof DataView);
+      } } }
+    });
+  }
+}
+
+
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 const { PRDC_JSLAB_WORKSPACE_SERIALIZER } = require('../jslab-workspace-serializer');
 var tests = new PRDC_JSLAB_TESTS();
 
-function getSerializer() {
-  if(typeof jsl !== 'undefined') return jsl.inter.basic._workspace_serializer;
-  return new PRDC_JSLAB_WORKSPACE_SERIALIZER({
-    context: globalThis,
-    inter: { format: { isTypedArray: function(value) {
-      return ArrayBuffer.isView(value) && !(value instanceof DataView);
-    } } }
-  });
-}
 
 tests.add('serializeObject creates valid payload format', function(assert) {
-  var serializer = getSerializer();
+  var serializer = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER.getSerializer();
   var payload = serializer.serializeObject({ a: 1 });
   assert.equal(serializer.isSerializedPayload(payload), true);
   assert.equal(payload.scope, 'object');
@@ -28,7 +41,7 @@ tests.add('serializeObject creates valid payload format', function(assert) {
 }, { tags: ['unit', 'serializer'] });
 
 tests.add('deserializeObject roundtrip keeps basic structures', async function(assert) {
-  var serializer = getSerializer();
+  var serializer = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER.getSerializer();
   var source = {
     n: 42,
     s: 'abc',
@@ -57,7 +70,7 @@ tests.add('deserializeObject roundtrip keeps basic structures', async function(a
 }, { tags: ['unit', 'serializer'], timeout_ms: 10000 });
 
 tests.add('serializeObject preserves cyclic references', async function(assert) {
-  var serializer = getSerializer();
+  var serializer = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER.getSerializer();
   var source = { name: 'root' };
   source.self = source;
   source.child = { parent: source };
@@ -69,14 +82,14 @@ tests.add('serializeObject preserves cyclic references', async function(assert) 
 }, { tags: ['unit', 'serializer'], timeout_ms: 10000 });
 
 tests.add('deserializeWorkspace handles plain object payload fallback', async function(assert) {
-  var serializer = getSerializer();
+  var serializer = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER.getSerializer();
   var out = await serializer.deserializeWorkspace({ a: 1, b: 2 });
   assert.deepEqual(out.workspace, { a: 1, b: 2 });
   assert.deepEqual(out.warnings, []);
 }, { tags: ['unit', 'serializer'] });
 
 tests.add('serializeWorkspace and deserializeWorkspace roundtrip', async function(assert) {
-  var serializer = getSerializer();
+  var serializer = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER.getSerializer();
   var workspace = {
     alpha: 11,
     beta: [1, 2, 3],
@@ -90,7 +103,7 @@ tests.add('serializeWorkspace and deserializeWorkspace roundtrip', async functio
 }, { tags: ['unit', 'serializer'], timeout_ms: 10000 });
 
 tests.add('deserializeObject returns input for non-serialized payload', async function(assert) {
-  var serializer = getSerializer();
+  var serializer = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WORKSPACE_SERIALIZER_TEST_HELPER.getSerializer();
   var source = { x: 5 };
   var out = await serializer.deserializeObject(source);
   assert.equal(out.value, source);

@@ -45,6 +45,7 @@ class PRDC_APP_CONFIG {
     };
     
     // JSLAB settings
+    this.SIMULATE_BUNDLE = 'openmodelica-jslab';
     this.MATHJS_PREVENT_OVERRIDE = ['config', 'print', 'Infinity', 'NaN', 'isNaN', 'Node'];
     this.SUBMODULES = {
       'builtin': [
@@ -94,10 +95,10 @@ class PRDC_APP_CONFIG {
       {name: 'Window', file: 'windows', class_name: 'PRDC_JSLAB_WINDOW'},
       {name: 'Figure', file: 'figures', class_name: 'PRDC_JSLAB_FIGURE'},
       {name: 'Plot', file: 'figures', class_name: 'PRDC_JSLAB_PLOT'},
-      {name: 'freecad_link', file: 'freecad-link', class_name: 'PRDC_JSLAB_FREECAD_LINK'},
-      {name: 'om_link', file: 'om-link', class_name: 'PRDC_JSLAB_OPENMODELICA_LINK'},
-      {name: 'excel_link', file: 'excel-link', class_name: 'PRDC_JSLAB_EXCEL_LINK'},
-      {name: 'calc_link', file: 'calc-link', class_name: 'PRDC_JSLAB_CALC_LINK'},
+      {name: 'freecad_link', file: '../backend-electron/freecad-link', class_name: 'PRDC_JSLAB_FREECAD_LINK'},
+      {name: 'om_link', file: '../backend-electron/openmodelica-link', class_name: 'PRDC_JSLAB_OPENMODELICA_LINK'},
+      {name: 'excel_link', file: '../backend-electron/excel-link', class_name: 'PRDC_JSLAB_EXCEL_LINK'},
+      {name: 'calc_link', file: '../backend-electron/calc-link', class_name: 'PRDC_JSLAB_CALC_LINK'},
       {name: 'tcp_client', file: 'networking-tcp', class_name: 'PRDC_JSLAB_TCP_CLIENT'},
       {name: 'tcp_server', file: 'networking-tcp', class_name: 'PRDC_JSLAB_TCP_SERVER'},
       {name: 'udp_client', file: 'networking-udp', class_name: 'PRDC_JSLAB_UDP'},

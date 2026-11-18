@@ -4,12 +4,12 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
+
 /**
  * Class for gamepad.
  */
 class PRDC_JSLAB_DEVICE_GAMEPAD {
-  
+
   /**
    * Initializes the gamepad device instance.
    * @param {Object} jsl - Reference to the main JSLAB object.
@@ -22,19 +22,19 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
     this.id = id;
     this.active = false;
     this.data;
-    
+
     this.read_gamepad_loop;
     this.read_gamepad_dt = dt;
-    
+
     this._checkGamepadFun = function() {
       obj._checkGamepad();
     };
     this.jsl.context.addEventListener("gamepadconnected", obj._checkGamepadFun);
-    
+
     this.jsl.addForCleanup(this, function() {
       obj.close();
     });
-    
+
     this._checkGamepad();
   }
 
@@ -67,13 +67,13 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
     }
     return false;
   }
-  
+
   /**
    * Handles gamepad connection events.
    */
   _onConnect() {
     var obj = this;
-    
+
     // Read loop
     this.detect_gamepad_loop = this.jsl.inter.clearIntervalIf(this.detect_gamepad_loop);
     this.active = true;
@@ -90,7 +90,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
         obj._onDisconnect();
       }
     }, this.read_gamepad_dt);
-    
+
     if(this.jsl.inter.format.isFunction(this.onConnectCallback)) {
       this.onConnectCallback();
     }
@@ -128,7 +128,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
       this.onDataCallback = callback;
     }
   }
-  
+
   /**
    * Sets the callback function for gamepad connection events.
    * @param {Function} callback - Function to execute on connection.
@@ -141,7 +141,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
       }
     }
   }
-  
+
   /**
    * Sets the callback function for gamepad disconnection events.
    * @param {Function} callback - Function to execute on disconnection.

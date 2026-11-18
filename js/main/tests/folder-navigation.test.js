@@ -1,39 +1,25 @@
 /**
- * @file JSLAB main folder navigation tests
+ * @file JSLAB main window module tests
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-function ensureWritableAppData() {
-  var appdata = process.env.APPDATA || '';
-  try {
-    if(!appdata.length) {
-      throw new Error('missing APPDATA');
-    }
-    fs.mkdirSync(path.join(appdata, 'electron-store-nodejs', 'Config'), { recursive: true });
-  } catch(err) {
-    appdata = path.join(process.cwd(), 'temp', 'test-appdata-main');
-    try {
-      fs.mkdirSync(appdata, { recursive: true });
-    } catch(err2) {
-      appdata = path.join(os.tmpdir(), 'jslab-test-appdata-main');
-      fs.mkdirSync(appdata, { recursive: true });
-    }
-    process.env.APPDATA = appdata;
-  }
-}
-ensureWritableAppData();
+
+PRDC_JSLAB_TESTS.ensureWritableAppData('main');
 
 const { PRDC_JSLAB_FOLDER_NAVIGATION } = require('../folder-navigation');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('addPathSep appends separator only when needed', function(assert) {
   var nav = Object.create(PRDC_JSLAB_FOLDER_NAVIGATION.prototype);
+  nav.win = { platform: { path: path, fs: fs } };
   var out1 = nav.addPathSep('C:\\A');
   var out2 = nav.addPathSep('C:\\A\\');
   assert.equal(out1.endsWith(path.sep), true);
@@ -42,6 +28,7 @@ tests.add('addPathSep appends separator only when needed', function(assert) {
 
 tests.add('checkDirectory and checkFile validate filesystem paths', function(assert) {
   var nav = Object.create(PRDC_JSLAB_FOLDER_NAVIGATION.prototype);
+  nav.win = { platform: { path: path, fs: fs } };
   var temp_dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-folder-nav-'));
   var temp_file = path.join(temp_dir, 'a.jsl');
   fs.writeFileSync(temp_file, 'x');
@@ -57,8 +44,10 @@ tests.add('checkDirectory and checkFile validate filesystem paths', function(ass
 
 tests.add('unknownScriptDir returns false when last script path is missing', function(assert) {
   var nav = Object.create(PRDC_JSLAB_FOLDER_NAVIGATION.prototype);
+  nav.win = { platform: { path: path, fs: fs } };
   var opened = false;
   nav.win = {
+    platform: { path: path, fs: fs },
     eval: {
       last_script_path: undefined
     },

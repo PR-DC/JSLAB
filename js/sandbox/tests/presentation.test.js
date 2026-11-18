@@ -5,125 +5,143 @@
  * info@pr-dc.com
  */
 
+const { PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT } = require('../../backend-electron/presentation-transport');
+
+/**
+ * Class for presentation test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER {
+
+  /**
+   * Runs with temp dir.
+   * @param {*} fn Fn.
+   */
+  static withTempDir(fn) {
+    var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-presentation-test-'));
+    try {
+      return fn(dir);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  /**
+   * Creates presentation harness.
+   */
+  static createPresentationHarness() {
+    var errors = [];
+    var write_calls = [];
+    var copy_calls = [];
+    var copy_folder_calls = [];
+    var spawn_calls = [];
+    var existing_files = new Set();
+    var last_child = null;
+
+    var env = {
+      showOpenDialogSync: function() {
+        return undefined;
+      },
+      error: function(message) {
+        errors.push(message);
+      },
+      pathJoin: function() {
+        return path.join.apply(path, arguments);
+      },
+      pathBaseName: function(value) {
+        return path.basename(value);
+      },
+      pathResolve: function(value) {
+        return path.resolve(value);
+      },
+      checkDirectory: function(target_path) {
+        return existing_files.has(target_path);
+      },
+      makeDirectory: function() {
+        return true;
+      },
+      readFileSync: function(file_path) {
+        return fs.readFileSync(file_path);
+      },
+      spawn: function(exe_file, args, opts) {
+        spawn_calls.push({ exe_file: exe_file, args: args, opts: opts });
+        var child = new EventEmitter();
+        child.stdout = new EventEmitter();
+        child.stdout.setEncoding = function() {};
+        last_child = child;
+        return child;
+      }
+    };
+
+    var jsl = {
+      inter: {
+        lang: {
+          currentString: function(id) {
+            return 'LANG_' + id;
+          },
+          string: function(id) {
+            return 'LANG_' + id;
+          }
+        },
+        env: env,
+        file_system: {
+          existFile: function(file_path) {
+            return existing_files.has(file_path);
+          },
+          writeFile: function(file_path, content) {
+            write_calls.push({ file_path: file_path, content: content });
+            return true;
+          },
+          copyFile: function(source, destination) {
+            copy_calls.push({ source: source, destination: destination });
+            return true;
+          },
+          copyFolder: function(source, destination) {
+            copy_folder_calls.push({ source: source, destination: destination });
+            return true;
+          }
+        }
+      },
+      context: { version: 'test-version' },
+      app_path: path.resolve(__dirname, '..', '..', '..')
+    };
+
+    env._createPresentationTransport = presentation => new PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT(presentation);
+    var presentation = new PRDC_JSLAB_LIB_PRESENTATION(jsl);
+    return {
+      presentation,
+      errors,
+      write_calls,
+      copy_calls,
+      copy_folder_calls,
+      spawn_calls,
+      setExistingFiles: function(list) {
+        existing_files = new Set(list);
+      },
+      getLastChild: function() {
+        return last_child;
+      },
+      setShowOpenDialogResult: function(value) {
+        env.showOpenDialogSync = function() {
+          return value;
+        };
+      }
+    };
+  }
+}
+
+
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const vm = require('vm');
 const { EventEmitter } = require('events');
 const { PRDC_JSLAB_LIB_PRESENTATION } = require('../presentation');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
-function withTempDir(fn) {
-  var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-presentation-test-'));
-  try {
-    return fn(dir);
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-function createPresentationHarness() {
-  var errors = [];
-  var write_calls = [];
-  var copy_calls = [];
-  var copy_folder_calls = [];
-  var spawn_calls = [];
-  var existing_files = new Set();
-  var last_child = null;
-
-  var env = {
-    showOpenDialogSync: function() {
-      return undefined;
-    },
-    error: function(message) {
-      errors.push(message);
-    },
-    pathJoin: function() {
-      return path.join.apply(path, arguments);
-    },
-    pathBaseName: function(value) {
-      return path.basename(value);
-    },
-    pathResolve: function(value) {
-      return path.resolve(value);
-    },
-    checkDirectory: function(target_path) {
-      return existing_files.has(target_path);
-    },
-    makeDirectory: function() {
-      return true;
-    },
-    readFileSync: function(file_path) {
-      return fs.readFileSync(file_path);
-    },
-    spawn: function(exe_file, args, opts) {
-      spawn_calls.push({ exe_file: exe_file, args: args, opts: opts });
-      var child = new EventEmitter();
-      child.stdout = new EventEmitter();
-      child.stdout.setEncoding = function() {};
-      last_child = child;
-      return child;
-    }
-  };
-
-  var jsl = {
-    inter: {
-      lang: {
-        currentString: function(id) {
-          return 'LANG_' + id;
-        },
-        string: function(id) {
-          return 'LANG_' + id;
-        }
-      },
-      env: env,
-      file_system: {
-        existFile: function(file_path) {
-          return existing_files.has(file_path);
-        },
-        writeFile: function(file_path, content) {
-          write_calls.push({ file_path: file_path, content: content });
-          return true;
-        },
-        copyFile: function(source, destination) {
-          copy_calls.push({ source: source, destination: destination });
-          return true;
-        },
-        copyFolder: function(source, destination) {
-          copy_folder_calls.push({ source: source, destination: destination });
-          return true;
-        }
-      }
-    },
-    context: { version: 'test-version' },
-    app_path: path.resolve(__dirname, '..', '..', '..')
-  };
-
-  var presentation = new PRDC_JSLAB_LIB_PRESENTATION(jsl);
-  return {
-    presentation,
-    errors,
-    write_calls,
-    copy_calls,
-    copy_folder_calls,
-    spawn_calls,
-    setExistingFiles: function(list) {
-      existing_files = new Set(list);
-    },
-    getLastChild: function() {
-      return last_child;
-    },
-    setShowOpenDialogResult: function(value) {
-      env.showOpenDialogSync = function() {
-        return value;
-      };
-    }
-  };
-}
 
 tests.add('_getPath returns provided path and reports cancel when no selection', function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var out_direct = harness.presentation._getPath('openPresentation', 'C:/tmp/pres');
   assert.equal(out_direct, 'C:/tmp/pres');
 
@@ -134,7 +152,7 @@ tests.add('_getPath returns provided path and reports cancel when no selection',
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_checkPresentation validates existence of index.html', function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/presentation';
   var index_path = path.join(pres_path, 'index.html');
 
@@ -148,7 +166,7 @@ tests.add('_checkPresentation validates existence of index.html', function(asser
 tests.add('_startPresentation serves presentation files from internal HTTP server', async function(assert) {
   var tmp_dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-presentation-test-'));
   try {
-    var harness = createPresentationHarness();
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'server-pres');
     fs.mkdirSync(pres_path, { recursive: true });
     fs.writeFileSync(path.join(pres_path, 'index.html'),
@@ -168,8 +186,8 @@ tests.add('_startPresentation serves presentation files from internal HTTP serve
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_fileToBuffer writes JS wrapper with encoded path and base64 payload', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var rel = path.join('assets', 'sample.bin');
     var abs = path.join(tmp_dir, rel);
     fs.mkdirSync(path.dirname(abs), { recursive: true });
@@ -185,8 +203,8 @@ tests.add('_fileToBuffer writes JS wrapper with encoded path and base64 payload'
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('createPresentation writes globals.js with language provider for window scripts', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'language-pres');
 
     harness.presentation.createPresentation(pres_path, {}, false);
@@ -210,7 +228,7 @@ tests.add('createPresentation writes globals.js with language provider for windo
     assert.ok(globals_write.content.includes('"317":"LANG_317"'));
     assert.ok(globals_write.content.includes('"318":"LANG_318"'));
     assert.ok(globals_write.content.includes('"363":"LANG_363"'));
-    assert.ok(globals_write.content.includes('"542":"LANG_542"'));
+    assert.ok(globals_write.content.includes('"541":"LANG_541"'));
 
     var config_write = harness.write_calls.find(function(entry) {
       return entry.file_path === path.join(pres_path, 'res', 'internal', 'config.json');
@@ -221,8 +239,8 @@ tests.add('createPresentation writes globals.js with language provider for windo
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('createPresentation writes presentation resource flags from modules', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'resource-pres');
 
     harness.presentation.createPresentation(pres_path, {
@@ -244,7 +262,7 @@ tests.add('createPresentation writes presentation resource flags from modules', 
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_writePresentationGlobals detects legacy embedded module resources', function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/legacy-resource-pres';
 
   harness.setExistingFiles([
@@ -265,8 +283,8 @@ tests.add('_writePresentationGlobals detects legacy embedded module resources', 
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_refreshPresentationHtmlIncludes rewrites generated includes for lean startup', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'refresh-pres');
     var html_path = path.join(pres_path, 'index.html');
     var ui_css_path = path.join(pres_path, 'res', 'ui.css');
@@ -314,8 +332,8 @@ tests.add('_refreshPresentationHtmlIncludes rewrites generated includes for lean
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_updatePresentationBackend refreshes generated backend files', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'old-pres');
     var config_path = path.join(pres_path, 'res', 'internal', 'config.json');
     fs.mkdirSync(path.dirname(config_path), { recursive: true });
@@ -363,8 +381,8 @@ tests.add('_updatePresentationBackend refreshes generated backend files', functi
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_updatePresentationBackend skips MathJax folder copy when legacy version matches', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'legacy-mathjax-pres');
     var config_path = path.join(pres_path, 'res', 'internal', 'config.json');
     var legacy_mathjax_path = path.join(pres_path, 'res', 'tex-mml-chtml-3.2.0',
@@ -397,8 +415,8 @@ tests.add('_updatePresentationBackend skips MathJax folder copy when legacy vers
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_updatePresentationBackend copies current Plotly when only legacy version exists', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'legacy-plotly-pres');
     var config_path = path.join(pres_path, 'res', 'internal', 'config.json');
     var legacy_plotly_path = path.join(pres_path, 'res', 'plotly-2.24.2.min.js');
@@ -425,8 +443,8 @@ tests.add('_updatePresentationBackend copies current Plotly when only legacy ver
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_bundleStandaloneModuleResources bundles exported module graphs for standalone mode', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'three-bundle-pres');
     var main_path = path.join(pres_path, 'main.js');
     var module_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.module.js');
@@ -463,8 +481,8 @@ tests.add('_bundleStandaloneModuleResources bundles exported module graphs for s
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_getStandaloneModuleEntries discovers only referenced module entries', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'module-entry-pres');
     fs.mkdirSync(path.join(pres_path, 'res', 'internal'), { recursive: true });
     fs.mkdirSync(path.join(pres_path, 'res', 'mods'), { recursive: true });
@@ -490,8 +508,8 @@ tests.add('_getStandaloneModuleEntries discovers only referenced module entries'
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_getStandaloneModuleEntries parses generated runtime numeric separators', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'numeric-separator-pres');
     fs.mkdirSync(path.join(pres_path, 'res', 'internal'), { recursive: true });
     fs.mkdirSync(path.join(pres_path, 'res', 'three.js-r162', 'build'), { recursive: true });
@@ -515,8 +533,8 @@ tests.add('_getStandaloneModuleEntries parses generated runtime numeric separato
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_getStandaloneModuleEntries discovers inline auto-loaded three globals', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'orbit-controls-pres');
     fs.mkdirSync(path.join(pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'controls'), { recursive: true });
     fs.writeFileSync(path.join(pres_path, 'index.html'), [
@@ -542,8 +560,8 @@ tests.add('_getStandaloneModuleEntries discovers inline auto-loaded three global
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_bundleStandaloneModuleResources resolves bare three imports for addon globals', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'orbit-controls-bundle-pres');
     var three_path = path.join(pres_path, 'res', 'three.js-r162', 'build', 'three.module.js');
     var orbit_path = path.join(pres_path, 'res', 'three.js-r162', 'examples', 'jsm', 'controls', 'OrbitControls.js');
@@ -582,7 +600,10 @@ tests.add('_bundleStandaloneModuleResources resolves bare three imports for addo
       'OrbitControls.standalone.js'
     );
     var bundle = fs.readFileSync(bundle_path, 'utf8');
-    var EventDispatcher = class EventDispatcher {};
+    var EventDispatcher = /**
+ * Class for event dispatcher.
+ */
+class EventDispatcher {};
     var context = {
       window: {
         THREE: { EventDispatcher: EventDispatcher }
@@ -607,7 +628,7 @@ tests.add('_bundleStandaloneModuleResources resolves bare three imports for addo
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_collectStandaloneBufferedAssets finds only standalone-buffered asset refs', function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var assets = harness.presentation._collectStandaloneBufferedAssets([
     '<img-pdf src="./doc.pdf"></img-pdf>',
     '<plot-json src="./plot.json"></plot-json>',
@@ -623,8 +644,8 @@ tests.add('_collectStandaloneBufferedAssets finds only standalone-buffered asset
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_rewriteStandaloneImports rewrites dynamic imports to standalone helper', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var main_path = path.join(tmp_dir, 'main.js');
     fs.writeFileSync(main_path, [
       'async function loadThing(path) {',
@@ -641,8 +662,8 @@ tests.add('_rewriteStandaloneImports rewrites dynamic imports to standalone help
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_rewriteStandaloneImports keeps generated globals fallback import intact', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var globals_path = path.join(tmp_dir, 'res', 'internal', 'globals.js');
     fs.mkdirSync(path.dirname(globals_path), { recursive: true });
     fs.writeFileSync(globals_path, [
@@ -665,8 +686,8 @@ tests.add('_rewriteStandaloneImports keeps generated globals fallback import int
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_syncStandaloneBufferedAssets regenerates current buffers and removes stale ones', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var current_asset = path.join(tmp_dir, 'scene.json');
     var stale_asset = path.join(tmp_dir, 'old.json');
     var current_buf = current_asset + '.buf.js';
@@ -687,8 +708,8 @@ tests.add('_syncStandaloneBufferedAssets regenerates current buffers and removes
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_removePresentationServerExecutable removes stale portable server exe', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'standalone-pres');
     var exe_path = path.join(pres_path, 'standalone-pres.exe');
 
@@ -702,8 +723,8 @@ tests.add('_removePresentationServerExecutable removes stale portable server exe
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_getPresentationMode prefers config marker and falls back to artifacts', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var online_path = path.join(tmp_dir, 'online-pres');
     var standalone_path = path.join(tmp_dir, 'standalone-pres');
     var legacy_standalone_path = path.join(tmp_dir, 'legacy-standalone');
@@ -728,8 +749,8 @@ tests.add('_getPresentationMode prefers config marker and falls back to artifact
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_setPresentationMode persists mode in config.json', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
 
     harness.presentation._setPresentationMode(tmp_dir, 'standalone');
 
@@ -741,8 +762,8 @@ tests.add('_setPresentationMode persists mode in config.json', function(assert) 
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_readPresentationResourceFlags parses persisted globals resources', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var globals_path = path.join(tmp_dir, 'res', 'internal', 'globals.js');
     fs.mkdirSync(path.dirname(globals_path), { recursive: true });
     fs.writeFileSync(globals_path, [
@@ -760,8 +781,8 @@ tests.add('_readPresentationResourceFlags parses persisted globals resources', f
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_restoreStandaloneBufferedAssets recreates raw files from .buf.js wrappers', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var buf_path = path.join(tmp_dir, 'doc.pdf.buf.js');
     fs.writeFileSync(buf_path, 'registerFile("doc.pdf", "AQID");', 'utf8');
 
@@ -772,8 +793,8 @@ tests.add('_restoreStandaloneBufferedAssets recreates raw files from .buf.js wra
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_restorePresentationModuleResources copies resources from persisted flags', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
 
     harness.presentation._restorePresentationModuleResources(tmp_dir, {
       pdfjs: true,
@@ -811,8 +832,8 @@ tests.add('_restorePresentationModuleResources copies resources from persisted f
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('_removeStandaloneGeneratedArtifacts removes standalone-only outputs', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var buf_path = path.join(tmp_dir, 'doc.pdf.buf.js');
     var bundle_path = path.join(tmp_dir, 'res', 'mod.standalone.js');
     fs.mkdirSync(path.dirname(bundle_path), { recursive: true });
@@ -827,8 +848,8 @@ tests.add('_removeStandaloneGeneratedArtifacts removes standalone-only outputs',
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('makeStandalonePresentation bundles resource modules automatically', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'standalone-pres');
     var index_path = path.join(pres_path, 'index.html');
     var calls = [];
@@ -886,8 +907,8 @@ tests.add('makeStandalonePresentation bundles resource modules automatically', f
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('makeOnlinePresentation restores online resources and removes standalone artifacts', function(assert) {
-  withTempDir(function(tmp_dir) {
-    var harness = createPresentationHarness();
+  PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.withTempDir(function(tmp_dir) {
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
     var pres_path = path.join(tmp_dir, 'online-pres');
     var index_path = path.join(pres_path, 'index.html');
     var globals_path = path.join(pres_path, 'res', 'internal', 'globals.js');
@@ -932,7 +953,7 @@ tests.add('makeOnlinePresentation restores online resources and removes standalo
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('updatePresentation refreshes backend and reapplies standalone mode', function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/update-standalone-pres';
   var calls = [];
 
@@ -965,7 +986,7 @@ tests.add('updatePresentation refreshes backend and reapplies standalone mode', 
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('updatePresentation refreshes backend and reapplies online mode', function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/update-online-pres';
   var calls = [];
 
@@ -998,7 +1019,7 @@ tests.add('updatePresentation refreshes backend and reapplies online mode', func
 }, { tags: ['unit', 'presentation'] });
 
 tests.add('editPresentation starts preview server without updating backend', async function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/edit-pres';
   var calls = [];
   var set_path_calls = [];
@@ -1060,7 +1081,7 @@ tests.add('editPresentation starts preview server without updating backend', asy
 }, { tags: ['unit', 'presentation', 'async'] });
 
 tests.add('openPresentation starts presentation server without updating backend', async function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/open-pres';
   var calls = [];
   var keydown_handler;
@@ -1117,7 +1138,7 @@ tests.add('openPresentation starts presentation server without updating backend'
   assert.equal(calls[0].value, pres_path);
   assert.equal(webview.src, 'http://127.0.0.1:1234/');
   assert.equal(typeof keydown_handler, 'function');
-  
+
   keydown_handler({
     ctrlKey: false,
     altKey: false,
@@ -1133,7 +1154,7 @@ tests.add('openPresentation starts presentation server without updating backend'
     key: 's',
     preventDefault: function() {}
   });
-  
+
   assert.deepEqual(sent_messages, [
     { channel: 'data', payload: { toggle_stopwatch: true } },
     { channel: 'data', payload: { toggle_slide_nav: true } }
@@ -1141,7 +1162,7 @@ tests.add('openPresentation starts presentation server without updating backend'
 }, { tags: ['unit', 'presentation', 'async'] });
 
 tests.add('openPresentation infers standalone mode from presentation config', async function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/open-standalone-pres';
   var calls = [];
   var keydown_handler;
@@ -1194,7 +1215,7 @@ tests.add('openPresentation infers standalone mode from presentation config', as
 }, { tags: ['unit', 'presentation', 'async'] });
 
 tests.add('editPresentation infers standalone mode from presentation config', async function(assert) {
-  var harness = createPresentationHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
   var pres_path = 'C:/tmp/edit-standalone-pres';
   var calls = [];
   var set_path_calls = [];

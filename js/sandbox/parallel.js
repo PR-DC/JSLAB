@@ -4,8 +4,8 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
- 
- /**
+
+/**
  * Class for JSLAB parallel submodule.
  */
 class PRDC_JSLAB_PARALLEL {
@@ -21,7 +21,7 @@ class PRDC_JSLAB_PARALLEL {
     this.task_queue = [];
     this.is_initialized = false;
   }
-  
+
   /**
    * Retrieves the number of logical processors available.
    * @returns {number} Number of processors.
@@ -29,7 +29,7 @@ class PRDC_JSLAB_PARALLEL {
   getProcessorsNum() {
     return this.jsl.inter.env.processors_number || 4;
   }
-  
+
   /**
    * Generates the worker's internal script.
    * @param {Object} [context={}] - Optional context to pass to the work_function.
@@ -79,7 +79,9 @@ class PRDC_JSLAB_PARALLEL {
    * @param {Function|String} [setup_function_str] - Optional setup function to execute on init.
    */
   init(num_workers, context = {}, setup_function_str = "") {
-    if(this.is_initialized) return;
+    if(this.is_initialized) {
+      return;
+    }
 
     if(!num_workers || num_workers <= 0) {
       num_workers = this.getProcessorsNum();
@@ -93,11 +95,11 @@ class PRDC_JSLAB_PARALLEL {
         self.postMessage({ type: 'error', error: String(err && err.stack || err) });
       });
     `;
-    
+
     if(this.jsl.inter.config.DEBUG_PARALLEL_WORKER_SETUP_FUN) {
       this.jsl._console.log(worker_script);
     }
-    
+
     const blob = new Blob([worker_script], { type: 'application/javascript' });
     const blobURL = URL.createObjectURL(blob);
 
@@ -120,11 +122,11 @@ class PRDC_JSLAB_PARALLEL {
       if(!worker.busy && this.task_queue.length > 0) {
         const task = this.task_queue.shift();
         worker.busy = true;
-        
+
         if(this.jsl.inter.config.DEBUG_PARALLEL_WORKER_WORK_FUN) {
           this.jsl._console.log(task);
         }
-    
+
         function executeTask() {
           worker.postMessage({
             type: 'execute',
@@ -132,7 +134,7 @@ class PRDC_JSLAB_PARALLEL {
             args: task.args,
           });
         }
-        
+
         worker.onmessage = (e) => {
           if(e.data.type === 'ready') {
             worker.ready = true;
@@ -151,7 +153,7 @@ class PRDC_JSLAB_PARALLEL {
           worker.busy = false;
           this.assignTasksToWorkers();
         };
-        
+
         if(worker.ready) {
           executeTask();
         }
@@ -208,8 +210,8 @@ class PRDC_JSLAB_PARALLEL {
    * @param {boolean} reset_workers - Wether to reset all workers or not.
    * @returns {Promise<Array>} - A promise that resolves to an array of results.
    */
-  async parfor(start, end, step = 1, num_workers, context, 
-      setup_function, work_function, reset_workers = false) {
+  async parfor(start, end, step = 1, num_workers, context,
+    setup_function, work_function, reset_workers = false) {
     var setup_function_str = this.jsl.inter.eval.rewriteCode(this.jsl.inter.eval.getFunctionBody(setup_function)).code;
     if(reset_workers) {
       this.terminate();
@@ -219,15 +221,15 @@ class PRDC_JSLAB_PARALLEL {
     }
 
     if(step === 0) {
-      this.jsl.inter.env.error('@parfor: '+this.jsl.inter.lang.string(197));
+      this.jsl.inter.env.error('@parfor: ' + this.jsl.inter.lang.string(197));
     }
 
     const isAscending = (end - start) * step > 0;
 
     if(!isAscending) {
-      this.jsl.inter.env.error('@parfor: '+this.jsl.inter.lang.string(198));
+      this.jsl.inter.env.error('@parfor: ' + this.jsl.inter.lang.string(198));
     }
-    
+
     const total_items = Math.ceil(Math.abs((end - start) / step)) + 1;
     const chunk_size = Math.ceil(total_items / num_workers);
     const tasks = [];
@@ -242,7 +244,7 @@ class PRDC_JSLAB_PARALLEL {
       return results;
     };
     var task_function_str = task_function.toString();
-    
+
     for(let worker_index = 0; worker_index < num_workers; worker_index++) {
       const chunk_start_index = worker_index * chunk_size;
       const chunk_end_index = Math.min(chunk_start_index + chunk_size, total_items);
@@ -257,15 +259,15 @@ class PRDC_JSLAB_PARALLEL {
       if(chunk_end > end) {
         chunk_end = end;
       }
-      
+
       var work_function_str = work_function;
       if(typeof work_function == 'function') {
         work_function_str = work_function.toString();
       }
-      
+
       const task = this.run(
         context,
-        setup_function_str,   
+        setup_function_str,
         [chunk_start, chunk_end, step, work_function_str],
         task_function_str
       );

@@ -6,7 +6,7 @@
  */
 
 const { PRDC_JSLAB_PLOTTER } = require('../jslab-plotter-echarts');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('constructor sets echarts as selected library', function(assert) {
@@ -15,4 +15,3 @@ tests.add('constructor sets echarts as selected library', function(assert) {
 }, { tags: ['unit', 'plotter'] });
 
 exports.MODULE_TESTS = tests;
-

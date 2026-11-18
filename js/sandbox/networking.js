@@ -13,7 +13,7 @@ var { PRDC_JSLAB_VIDEOCALL } = require('./networking-videocall');
  * Class for JSLAB networking submodule.
  */
 class PRDC_JSLAB_LIB_NETWORKING {
-  
+
   /**
    * Create submodule object.
    * @param {Object} jsl Reference to the main JSLAB object.
@@ -27,8 +27,8 @@ class PRDC_JSLAB_LIB_NETWORKING {
      * @type {Array}
      */
     this.CRC_TABLE_XMODEM = [
-      0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7, 
-      0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef, 
+      0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
+      0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
       0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
       0x9339, 0x8318, 0xb37b, 0xa35a, 0xd3bd, 0xc39c, 0xf3ff, 0xe3de,
       0x2462, 0x3443, 0x0420, 0x1401, 0x64e6, 0x74c7, 0x44a4, 0x5485,
@@ -61,7 +61,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
       0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0,
     ];
   }
-  
+
   /**
    * Checks if the environment is currently online.
    * @returns {boolean} `true` if online, otherwise `false`.
@@ -69,7 +69,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
   isOnline() {
     return this.jsl.inter.env.online;
   }
-  
+
   /**
    * Calculates the CRC-16/XMODEM checksum of a byte array.
    * @param {Uint8Array} byte_array - The input data as a byte array.
@@ -89,9 +89,13 @@ class PRDC_JSLAB_LIB_NETWORKING {
    */
   getIP() {
     return Object.values(this.jsl.inter.env.os.networkInterfaces())
-      .reduce(function(r, list) { return r.concat(
-      list.reduce(function(rr, i) { return rr.concat(
-      i.family === 'IPv4' && !i.internal && i.address || []); }, []));}, [])[0];    
+      .reduce(function(r, list) {
+        return r.concat(
+          list.reduce(function(rr, i) {
+            return rr.concat(
+              i.family === 'IPv4' && !i.internal && i.address || []);
+          }, []));
+      }, [])[0];
   }
 
   /**
@@ -107,16 +111,16 @@ class PRDC_JSLAB_LIB_NETWORKING {
       const socket = obj.jsl.inter.env.net.createConnection(port, host);
       socket.setTimeout(timeout);
       socket.on('connect', function() {
-         socket.end();
-         resolve(true);
+        socket.end();
+        resolve(true);
       });
       socket.on('timeout', function() {
-         socket.destroy();
-         resolve(false);
+        socket.destroy();
+        resolve(false);
       });
       socket.on('error', function() {
-         socket.destroy();
-         resolve(false);
+        socket.destroy();
+        resolve(false);
       });
     });
   }
@@ -128,7 +132,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    */
   async pingAddress(host, timeout) {
     return new Promise((resolve) => {
-      this.jsl.inter.exec('ping -n 1 -w '+timeout+' '+host, function(error, stdout, stderr) {
+      this.jsl.inter.exec('ping -n 1 -w ' + timeout + ' ' + host, function(error, stdout, stderr) {
         if(error || stderr) {
           resolve(false);
         } else {
@@ -145,9 +149,9 @@ class PRDC_JSLAB_LIB_NETWORKING {
    */
   pingAddressSync(host, timeout) {
     try {
-      var stdout = this.jsl.inter.execSync('ping -n 1 -w '+timeout+' '+host);
+      var stdout = this.jsl.inter.execSync('ping -n 1 -w ' + timeout + ' ' + host);
       return stdout.includes('Reply from');
-    } catch {
+    } catch{
       return false;
     }
   }
@@ -184,11 +188,11 @@ class PRDC_JSLAB_LIB_NETWORKING {
     const octets = ip.split('.').map(Number).reverse();
     let value = 0;
     for(let i = 0; i < subnets; i++) {
-      value += octets[i]*Math.pow(256,i);
+      value += octets[i] * Math.pow(256, i);
     }
     return value;
   }
-  
+
   /**
    * Creates a TCP client for communication with a specified host and port.
    * @param {string} host - The hostname or IP address to connect to.
@@ -199,7 +203,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
   tcp(host, port, onConnectCallback) {
     return new PRDC_JSLAB_TCP_CLIENT(this.jsl, host, port, onConnectCallback);
   }
-   
+
   /**
    * Creates a TCP server to listen on a specified port.
    * @param {string} host - The hostname or IP address.
@@ -210,7 +214,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
   tcpServer(...args) {
     return new PRDC_JSLAB_TCP_SERVER(this.jsl, ...args);
   }
-  
+
   /**
    * Creates a UDP client for sending data to a specified host and port.
    * @param {string} host - The hostname or IP address to connect to.
@@ -220,7 +224,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
   udp(host, port) {
     return new PRDC_JSLAB_UDP(this.jsl, host, port);
   }
-   
+
   /**
    * Creates a UDP server to listen on a specified port.
    * @param {number} port - The port number to listen on.
@@ -229,7 +233,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
   udpServer(port) {
     return new PRDC_JSLAB_UDP_SERVER(this.jsl, port);
   }
-   
+
   /**
    * Initializes and returns a new video call instance.
    * @param {string} type - The call type ('server' or 'client').
@@ -242,7 +246,7 @@ class PRDC_JSLAB_LIB_NETWORKING {
    * @returns {PRDC_JSLAB_VIDEOCALL} The created video call object.
    */
   videoCall(type, video_source_type, video_id, mic_id, tcp_host, tcp_port, opts) {
-    return new PRDC_JSLAB_VIDEOCALL(this.jsl, type, video_source_type, 
+    return new PRDC_JSLAB_VIDEOCALL(this.jsl, type, video_source_type,
       video_id, mic_id, tcp_host, tcp_port, opts);
   }
 }

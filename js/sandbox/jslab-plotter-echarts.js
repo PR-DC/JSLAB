@@ -9,7 +9,7 @@
  * Class for JSLAB plotter echarts based.
  */
 class PRDC_JSLAB_PLOTTER {
-  
+
   /**
    * Create plotter object.
    */

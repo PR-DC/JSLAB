@@ -5,36 +5,18 @@
  * info@pr-dc.com
  */
 
-const { safeStringify } = require('../shared/value-serializer');
+const { PRDC_JSLAB_COMMAND_WINDOW_MODULE } = require('./command-window-module');
 
-class PRDC_JSLAB_COMMAND_WINDOW_MESSAGES {
+const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
 
-  /**
-   * Creates messages submodule and binds methods to parent command window.
-   * @param {Object} command_window Parent command window instance.
-   */
-  constructor(command_window) {
-    this.command_window = command_window;
-    this._bindToCommandWindow();
-  }
+const { safeStringify } = require('../other-shared/value-serializer');
 
-  /**
-   * Binds all submodule methods to command window and exposes them on parent.
-   */
-  _bindToCommandWindow() {
-    var obj = this;
-    Object.getOwnPropertyNames(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype).forEach(function(name) {
-      if(name === 'constructor' || name === '_bindToCommandWindow') {
-        return;
-      }
-      if(typeof obj[name] !== 'function') {
-        return;
-      }
-      var bound = obj[name].bind(obj.command_window);
-      obj[name] = bound;
-      obj.command_window[name] = bound;
-    });
-  }
+/**
+ * Class for command window messages.
+ */
+class PRDC_JSLAB_COMMAND_WINDOW_MESSAGES extends PRDC_JSLAB_COMMAND_WINDOW_MODULE {
+
+
 }
 
 Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
@@ -45,9 +27,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    * @returns {string} HTML string representing the highlighted code. Special HTML characters like '<' and '>' are properly escaped.
    */
   highlightCode(data) {
-    return hljs.highlight(data,
-      {language: 'javascript'}).value
-      .replaceAll('&lt;', '<').replaceAll('&gt;', '>');  // Return < and >
+    return hljs.highlight(data, {language: 'javascript'}).value;
   },
 
   /**
@@ -55,11 +35,12 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   renderWelcomeMessage() {
     var ts = this.getTimestamp();
+    const asset = filename => this.win.platform.getAssetURL(filename);
     var html =
       '<div class="welcome-message system-in message">' +
         '<span class="timestamp">' + ts + '</span>' +
-        '<img class="app-logo" src="../img/JSLAB.svg">' +
-        '<img class="company-logo" src="../img/PR-DC_icon.svg">' +
+        '<img class="app-logo" src="' + asset('img/JSLAB.svg') + '">' +
+        '<img class="company-logo" src="' + asset('img/PR-DC_icon.svg') + '">' +
         '<div class="clear"></div>' +
         '<p><span>JSLAB</span>, ' + language.string(8) + ' ' + this.win.app.version + '</p>' +
         '<p>' + language.string(136) + ' ' + new Date().getFullYear() + ' &copy; <span>PR-DC</span> info@pr-dc.com</p>' +
@@ -69,11 +50,11 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
         '<p>' + language.string(135) + ' <a href="https://pr-dc.com/jslab">pr-dc.com/jslab</a></p>' +
         '<p>' + language.string(249) + ': ' +
           '<a href="https://pr-dc.com/jslab/">' + language.string(250) + '</a> &bull; ' +
-          '<a href="https://pr-dc.com/jslab/web/">' + language.string(646) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/web/">' + language.string(645) + '</a> &bull; ' +
           '<a href="https://discourse.jsl.pr-dc.com/">' + language.string(251) + '</a> &bull; ' +
           '<a href="https://pr-dc.com/jslab/doc/">' + language.string(252) + '</a> &bull; ' +
-          '<a href="https://pr-dc.com/jslab/doc/#command-line-interface">' + language.string(647) + '</a> &bull; ' +
-          '<a href="https://pr-dc.com/jslab/doc/#mcp-server">' + language.string(648) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/#command-line-interface">' + language.string(646) + '</a> &bull; ' +
+          '<a href="https://pr-dc.com/jslab/doc/#mcp-server">' + language.string(647) + '</a> &bull; ' +
           '<a href="https://github.com/PR-DC/JSLAB/releases">' + language.string(254) + '</a> &bull; ' +
           '<a href="https://github.com/PR-DC/JSLAB/tree/master/examples">' + language.string(255) + '</a>' +
         '</p>' +
@@ -85,11 +66,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    * Clears all messages from the command window.
    */
   clear() {
-    this.message_buffer.clear();
-    this.log = this.message_buffer.log;
-    this.last_class = this.message_buffer.last_class;
-    this.last_tic = this.message_buffer.last_tic;
-    this.N_messages = this.message_buffer.N_messages;
+    this.message_buffer.clearController(this);
   },
 
   /**
@@ -223,17 +200,24 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
     }
   },
 
-  /** Binds lazy remote-object expansion in the command window. */
+  /**
+   * Binds lazy remote-object expansion in the command window.
+   */
   initConsoleValueHandlers() {
+    const { host } = this.win.platform;
     var obj = this;
     $(document.body).on('click', '#command-window .jslab-console-toggle', async function(e) {
       e.preventDefault();
       e.stopPropagation();
       var recursive = !!e.altKey;
       var value_el = this.closest('.jslab-console-value');
-      if(!value_el) return;
+      if(!value_el) {
+        return;
+      }
       var children = value_el.querySelector(':scope > .jslab-console-children');
-      if(!children) return;
+      if(!children) {
+        return;
+      }
       if(value_el.classList.contains('open')) {
         value_el.classList.remove('open');
         this.setAttribute('aria-expanded', 'false');
@@ -245,18 +229,22 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
         value_el.dataset.consoleExpandPath = JSON.stringify([value_el.dataset.objectId]);
       }
       if(children.dataset.loaded === 'true') {
-        if(recursive) obj.expandConsoleDescendants(value_el);
+        if(recursive) {
+          obj.expandConsoleDescendants(value_el);
+        }
         return;
       }
       children.textContent = '...';
-      var result = await ipcRenderer.invoke('get-console-properties', {
+      var result = await host.invoke('get-console-properties', {
         object_id: value_el.dataset.objectId,
         offset: 0,
         limit: 100
       });
       obj.renderConsolePropertyPage(children, result, false);
       obj.syncConsoleValueLog(value_el);
-      if(recursive) obj.expandConsoleDescendants(value_el);
+      if(recursive) {
+        obj.expandConsoleDescendants(value_el);
+      }
     });
     $(document.body).on('click', '#command-window .jslab-console-more', async function(e) {
       e.preventDefault();
@@ -264,9 +252,11 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       var button = this;
       var children = button.closest('.jslab-console-children');
       var value_el = button.closest('.jslab-console-value');
-      if(!children || !value_el) return;
+      if(!children || !value_el) {
+        return;
+      }
       button.disabled = true;
-      var result = await ipcRenderer.invoke('get-console-properties', {
+      var result = await host.invoke('get-console-properties', {
         object_id: value_el.dataset.objectId,
         offset: Number(button.dataset.offset) || 0,
         limit: 100
@@ -280,32 +270,50 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       e.stopPropagation();
       var button = this;
       var value_el = button.closest('.jslab-console-value');
-      if(!value_el || button.dataset.loading === 'true') return;
+      if(!value_el || button.dataset.loading === 'true') {
+        return;
+      }
       button.dataset.loading = 'true';
-      var result = await ipcRenderer.invoke('get-console-accessor', {
+      var result = await host.invoke('get-console-accessor', {
         object_id: value_el.dataset.objectId,
         property: button.dataset.property
       });
       button.dataset.loading = 'false';
-      if(result && result.success) button.replaceWith(obj.createConsoleValueElement(result.value));
-      else button.textContent = result?.error || language.string(631);
+      if(result && result.success) {
+        button.replaceWith(obj.createConsoleValueElement(result.value));
+      } else {
+        button.textContent = result?.error || language.string(630);
+      }
       obj.syncConsoleValueLog(value_el);
     });
   },
 
-  /** Recursively expands loaded descendants for DevTools-style Alt-click. */
+  /**
+   * Recursively expands loaded descendants for DevTools-style Alt-click.
+   */
   expandConsoleDescendants(value_el) {
     var path;
-    try { path = JSON.parse(value_el.dataset.consoleExpandPath || '[]'); }
-    catch(err) { path = []; }
-    if(path.length >= 8) return;
+    try {
+      path = JSON.parse(value_el.dataset.consoleExpandPath || '[]');
+    } catch(err) {
+      path = [];
+    }
+    if(path.length >= 8) {
+      return;
+    }
     var children = value_el.querySelector(':scope > .jslab-console-children');
-    if(!children) return;
+    if(!children) {
+      return;
+    }
     children.querySelectorAll('.jslab-console-value').forEach(function(child) {
-      if(child.closest('.jslab-console-children') !== children) return;
+      if(child.closest('.jslab-console-children') !== children) {
+        return;
+      }
       var object_id = child.dataset.objectId;
       var toggle = child.querySelector(':scope > .jslab-console-toggle');
-      if(!object_id || !toggle || path.includes(object_id)) return;
+      if(!object_id || !toggle || path.includes(object_id)) {
+        return;
+      }
       child.dataset.consoleExpandPath = JSON.stringify(path.concat(object_id));
       if(!child.classList.contains('open')) {
         toggle.dispatchEvent(new MouseEvent('click', { bubbles: true, altKey: true }));
@@ -313,7 +321,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
     });
   },
 
-  /** Creates one safe DOM representation of a remote console value. */
+  /**
+   * Creates one safe DOM representation of a remote console value.
+   */
   createConsoleValueElement(value) {
     var root = document.createElement('span');
     root.className = 'jslab-console-value jslab-console-type-' + String(value.type || 'object');
@@ -323,7 +333,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       toggle.type = 'button';
       toggle.className = 'jslab-console-toggle';
       toggle.setAttribute('aria-expanded', 'false');
-      toggle.title = language.currentString(640);
+      toggle.title = language.currentString(639);
       root.appendChild(toggle);
     }
     var label = document.createElement('span');
@@ -345,14 +355,18 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
     return root;
   },
 
-  /** Appends a lazy property page without evaluating accessors. */
+  /**
+   * Appends a lazy property page without evaluating accessors.
+   */
   renderConsolePropertyPage(container, result, append) {
-    if(!append) container.replaceChildren();
+    if(!append) {
+      container.replaceChildren();
+    }
     container.dataset.loaded = 'true';
     if(!result || result.success === false) {
       var error = document.createElement('span');
       error.className = 'jslab-console-error';
-      error.textContent = result?.error || language.string(631);
+      error.textContent = result?.error || language.string(630);
       container.appendChild(error);
       return;
     }
@@ -373,7 +387,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
         var accessor = document.createElement(property.getter && property.property !== undefined ? 'button' : 'span');
         accessor.className = 'jslab-console-accessor';
         accessor.textContent = '(...)';
-        if(property.property !== undefined) accessor.dataset.property = property.property;
+        if(property.property !== undefined) {
+          accessor.dataset.property = property.property;
+        }
         row.appendChild(accessor);
       } else {
         row.appendChild(this.createConsoleValueElement(property.value));
@@ -385,17 +401,21 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       more.type = 'button';
       more.className = 'jslab-console-more';
       more.dataset.offset = result.next_offset;
-      more.textContent = '… ' + language.formatLang(633, {
+      more.textContent = '… ' + language.formatLang(632, {
         count: Math.max(0, result.total - result.next_offset)
       });
       container.appendChild(more);
     }
   },
 
-  /** Persists expanded markup in the virtualized terminal log. */
+  /**
+   * Persists expanded markup in the virtualized terminal log.
+   */
   syncConsoleValueLog(value_el) {
     var message_el = value_el.closest('.message');
-    if(message_el) this.syncLogEntryHtmlFromElement($(message_el));
+    if(message_el) {
+      this.syncLogEntryHtmlFromElement($(message_el));
+    }
   },
 
   /**
@@ -578,7 +598,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   messageMonospaced(msg, raw) {
     this.win.workspace.updateWorkspace();
-    return this.addMessage('data-in', '<div class="monospaced">'+this.prettyPrint(msg)+"</div>", raw);
+    return this.addMessage('data-in', '<div class="monospaced">' + this.prettyPrint(msg) + "</div>", raw);
   },
 
   /**
@@ -587,15 +607,23 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   messageLatex(msg) {
     this.win.workspace.updateWorkspace();
-    var el = this.addMessage('data-in', '\\('+msg+'\\)');
+    var el = this.addMessage('data-in', '\\(' + msg + '\\)');
     if(this.log.length) {
       this.log[this.log.length - 1].needs_mathjax = true;
     }
-    if(el && el.length && typeof MathJax !== 'undefined' && MathJax.typeset) {
-      MathJax.typeset(el);
-      this.syncLogEntryHtmlFromElement(el);
+    if(el && el.length) {
+      Promise.resolve(this.typesetMath(Array.from(el))).then(() => this.syncLogEntryHtmlFromElement(el)).catch(error => console.warn(error));
     }
     return el;
+  },
+
+  /**
+   * Typesets console math through the host's renderer or an already loaded renderer.
+   * @param {HTMLElement[]} elements Rendered console nodes.
+   * @returns {*} Renderer completion when rendering is asynchronous.
+   */
+  typesetMath(elements) {
+    return this.win.platform.typesetMath(elements);
   },
 
   /**
@@ -629,7 +657,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    * @param {string} cmd The command to add to the terminal output.
    */
   addMessageCmd(cmd) {
-    var txt = this.prettyPrint(cmd);
+    var txt = String(cmd);
     this.addMessage('data-out', this.highlightCode(txt), txt);
   },
 
@@ -657,7 +685,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       this.log[this.log.length - 1].timestamp :
       this.getTimestamp();
     this.writeDiaryEntry(msg_class, raw, entry_timestamp);
-    if(typeof this.applyConsoleFilter === 'function') this.applyConsoleFilter();
+    if(typeof this.applyConsoleFilter === 'function') {
+      this.applyConsoleFilter();
+    }
     return el ? $(el) : $();
   },
 
@@ -674,18 +704,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    * @returns {string} A string representing the current timestamp.
    */
   getTimestamp() {
-    var date = new Date();
-    var pad = function(num, size) {
-      return('000' + num).slice(size * -1);
-    };
-    var time = parseFloat(date.getTime()/1000).toFixed(3);
-    var hours = date.getHours();
-    var minutes = Math.floor(time / 60) % 60;
-    var seconds = Math.floor(time - minutes * 60);
-    var milliseconds = time.slice(-3);
-
-    return pad(hours, 2) + ':' + pad(minutes, 2) + ':' +
-      pad(seconds, 2) + '.' + pad(milliseconds, 3);
+    return PRDC_JSLAB_TEXT.getTimestamp();
   },
 
   /**
@@ -697,7 +716,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
     if(typeof data == 'string') {
       return data.replace(/\n/g, '<br/>');
     }
-    if(data instanceof Error) return String(data.stack || data).replace(/\n/g, '<br/>');
+    if(data instanceof Error) {
+      return String(data.stack || data).replace(/\n/g, '<br/>');
+    }
     if(data !== null && (typeof data === 'object' || typeof data === 'function')) {
       return safeStringify(data, {
         max_depth: 5,
@@ -718,7 +739,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   truncateStrings(data) {
     if(typeof data === 'string') {
-      if(data.length <= config.MAX_JSON_STRING_LENGTH) return data;
+      if(data.length <= config.MAX_JSON_STRING_LENGTH) {
+        return data;
+      }
 
       const suffix_prefix = " ... [truncated | full size: ";
       const suffix_suffix = "]";
@@ -732,7 +755,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
           prefix_length = new_prefix_length;
           break;
         }
-        if(new_prefix_length === prefix_length) break;
+        if(new_prefix_length === prefix_length) {
+          break;
+        }
         prefix_length = new_prefix_length;
       }
       const suffix = suffix_prefix + data.length + suffix_suffix;

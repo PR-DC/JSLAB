@@ -5,64 +5,75 @@
  * info@pr-dc.com
  */
 
-const { PRDC_JSLAB_DEVICE_GAMEPAD } = require('../device-gamepad');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
-var tests = new PRDC_JSLAB_TESTS();
+/**
+ * Class for device gamepad test fixtures.
+ */
+class PRDC_JSLAB_SANDBOX_TESTS_DEVICE_GAMEPAD_TEST_HELPER {
 
-function createGamepadHarness() {
-  var listeners = {};
-  var removed_listeners = [];
-  var cleanup_callbacks = [];
-  var clear_interval_args = [];
-  var gamepads = [];
+  /**
+   * Creates gamepad harness.
+   */
+  static createGamepadHarness() {
+    var listeners = {};
+    var removed_listeners = [];
+    var cleanup_callbacks = [];
+    var clear_interval_args = [];
+    var gamepads = [];
 
-  var jsl = {
-    context: {
-      addEventListener: function(name, handler) {
-        listeners[name] = handler;
+    var jsl = {
+      context: {
+        addEventListener: function(name, handler) {
+          listeners[name] = handler;
+        },
+        removeEventListener: function(name, handler) {
+          removed_listeners.push([name, handler]);
+        }
       },
-      removeEventListener: function(name, handler) {
-        removed_listeners.push([name, handler]);
-      }
-    },
-    inter: {
-      env: {
-        navigator: {
-          getGamepads: function() {
-            return gamepads;
+      inter: {
+        env: {
+          navigator: {
+            getGamepads: function() {
+              return gamepads;
+            }
           }
+        },
+        format: {
+          isFunction: function(value) {
+            return typeof value === 'function';
+          }
+        },
+        clearIntervalIf: function(interval_id) {
+          clear_interval_args.push(interval_id);
+          return undefined;
         }
       },
-      format: {
-        isFunction: function(value) {
-          return typeof value === 'function';
-        }
-      },
-      clearIntervalIf: function(interval_id) {
-        clear_interval_args.push(interval_id);
-        return undefined;
+      addForCleanup: function(_target, callback) {
+        cleanup_callbacks.push(callback);
       }
-    },
-    addForCleanup: function(_target, callback) {
-      cleanup_callbacks.push(callback);
-    }
-  };
+    };
 
-  var gamepad = new PRDC_JSLAB_DEVICE_GAMEPAD(jsl, 'pad-1', 10);
-  return {
-    gamepad,
-    listeners,
-    removed_listeners,
-    cleanup_callbacks,
-    clear_interval_args,
-    setGamepads: function(next_gamepads) {
-      gamepads = next_gamepads;
-    }
-  };
+    var gamepad = new PRDC_JSLAB_DEVICE_GAMEPAD(jsl, 'pad-1', 10);
+    return {
+      gamepad,
+      listeners,
+      removed_listeners,
+      cleanup_callbacks,
+      clear_interval_args,
+      setGamepads: function(next_gamepads) {
+        gamepads = next_gamepads;
+      }
+    };
+  }
 }
 
+
+const { PRDC_JSLAB_DEVICE_GAMEPAD } = require('../device-gamepad');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+var tests = new PRDC_JSLAB_TESTS();
+
+
 tests.add('getGamepad finds matching id and returns serialized object', function(assert) {
-  var harness = createGamepadHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_GAMEPAD_TEST_HELPER.createGamepadHarness();
   harness.setGamepads([
     null,
     {
@@ -79,14 +90,20 @@ tests.add('getGamepad finds matching id and returns serialized object', function
 }, { tags: ['unit', 'device', 'gamepad'] });
 
 tests.add('data/connect/disconnect callbacks are invoked when configured', function(assert) {
-  var harness = createGamepadHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_GAMEPAD_TEST_HELPER.createGamepadHarness();
   var connected = 0;
   var disconnected = 0;
   var last_data = null;
 
-  harness.gamepad.setOnConnect(function() { connected += 1; });
-  harness.gamepad.setOnDisconnect(function() { disconnected += 1; });
-  harness.gamepad.setOnData(function(data) { last_data = data; });
+  harness.gamepad.setOnConnect(function() {
+    connected += 1;
+  });
+  harness.gamepad.setOnDisconnect(function() {
+    disconnected += 1;
+  });
+  harness.gamepad.setOnData(function(data) {
+    last_data = data;
+  });
 
   harness.gamepad._onConnect();
   assert.equal(harness.gamepad.active, true);
@@ -102,7 +119,7 @@ tests.add('data/connect/disconnect callbacks are invoked when configured', funct
 }, { tags: ['unit', 'device', 'gamepad'] });
 
 tests.add('close removes listener and cleanup callback is registered', function(assert) {
-  var harness = createGamepadHarness();
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_DEVICE_GAMEPAD_TEST_HELPER.createGamepadHarness();
   assert.equal(typeof harness.listeners.gamepadconnected, 'function');
   assert.equal(harness.cleanup_callbacks.length, 1);
 

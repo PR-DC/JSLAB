@@ -48,7 +48,7 @@
 
 \lstdefinestyle{JavaScriptStyle}{
     language=JavaScript,
-    basicstyle=\fontfamily{pcr}\selectfont\footnotesize, 
+    basicstyle=\fontfamily{pcr}\selectfont\footnotesize,
     commentstyle=\color{jsl-green},
     keywordstyle=\bf\color{jsl-blue},
     stringstyle=\color{jsl-gray},
@@ -63,7 +63,7 @@
     extendedchars=true,
     literate=
         {°}{{\textdegree}}1
-        {º}{{\textordmasculine}}1 
+        {º}{{\textordmasculine}}1
         {š}{{\v{s}}}1
         {Š}{{\v{S}}}1
         {č}{{\v{c}}}1
@@ -73,14 +73,14 @@
         {ć}{{\'{c}}}1
         {Ć}{{\'{C}}}1
         {θ}{{$\theta$}}1
-        {µ}{{$\micro$}}1 
+        {µ}{{$\micro$}}1
 }
 
 \newtcbox{\code}[1][]{%
     on line,
     colback=jsl-light-gray,
-    colframe=jsl-light-gray, 
-    boxrule=0pt, 
+    colframe=jsl-light-gray,
+    boxrule=0pt,
     arc=3pt,
     left=2pt,
     right=2pt,
@@ -93,8 +93,8 @@
 
 \newtcbox{\codeBlock}[1][]{%
     colback=jsl-light-gray,
-    colframe=jsl-light-gray, 
-    boxrule=0pt, 
+    colframe=jsl-light-gray,
+    boxrule=0pt,
     arc=3pt,
     left=2pt,
     right=2pt,
@@ -157,7 +157,7 @@
             \end{minipage}
             \begin{minipage}{2.6cm}
                 \vspace{1mm}
-                
+
                 \companyLogo[0.15]{black}
             \end{minipage}
            \begin{minipage}{5cm}
@@ -165,7 +165,7 @@
                 web: \href{https://pr-dc.com}{pr-dc.com} \\
                 email: \href{mailto:info@pr-dc.com}{info@pr-dc.com}\\
                 github: \href{https://github.com/PR-DC}{github.com/PR-DC}
-            \end{minipage}  
+            \end{minipage}
            \begin{minipage}{6.5cm}
                 \raggedleft {\large\textbf{JSLAB \appversion}} \\
                 \raggedleft DOCUMENTATION
@@ -206,43 +206,43 @@
 \begin{titlepage}
 
     \centering
-    
+
     \vphantom{vspace}
-    
+
     \vspace{5mm}
-    
+
     \companyLogo[0.5]{black}
-	
+
     \vspace{5mm}
-    
+
     \centerline{\footnotesize{web: \href{https://pr-dc.com}{pr-dc.com}, email: \href{mailto:info@pr-dc.com}{info@pr-dc.com}, github: \href{https://github.com/PR-DC}{github.com/PR-DC}}}
-    
+
     \vspace{5mm}
 
     \hrule
-	
+
     \vspace{10mm}
 
     \jslabLogo[0.2]{0.1cm}
 
     \vspace{8mm}
-    
+
     {\Huge\textbf{JSLAB \appversion} \par}
-   
+
     \vspace{2mm}
 
     {\LARGE DOCUMENTATION \par}
 
     \vspace{8mm}
-    
+
    \href{https://github.com/PR-DC/JSLAB}{github.com/PR-DC/JSLAB}
-    
+
     \vspace{8mm}
-    
+
     \hrule
-    
+
     \vfill
-    
+
     \textbf{PRDC d.o.o.}, Novo naselje bb, 22310 Šimanovci, Republic of Serbia
 
 \end{titlepage}
@@ -263,7 +263,7 @@
 
 Welcome to the \textbf{JSLAB} Documentation! This guide provides comprehensive information for users and contributors, detailing the features, usage, and contribution guidelines to ensure a consistent and high-quality codebase.
 
-\textbf{Quick links:} 
+\textbf{Quick links:}
 \begin{itemize}
   \item \href{https://pr-dc.com/jslab/}{Website - pr-dc.com/jslab/}
   \item \href{https://pr-dc.com/jslab/web/}{Try it online - pr-dc.com/jslab/web/}
@@ -392,7 +392,7 @@ Clear documentation is essential for maintaining and understanding the codebase.
 
 \begin{itemize}
   \item \textbf{JSDoc:} Use JSDoc comments to document files, classes, methods, parameters, and return values.
-  
+
   \item \textbf{Inline Comments:} Add comments to explain non-trivial code segments.
 \end{itemize}
 
@@ -412,11 +412,11 @@ constructor(config) {
 \subsection{Naming Conventions}
 \begin{itemize}
   \item \textbf{Classes and Constants:} Use uppercase letters with underscores (e.g., \code{PRDC\_JSLAB\_LIB}).
-  
+
   \item \textbf{Functions and Methods:} Use camelCase (e.g., \code{getFullFilePath}).
-  
+
   \item \textbf{Variables:} Use lowercase letters with underscores (e.g., \code{new\_file\_path}).
-  
+
   \item \textbf{Meaningful Names:} Choose self-explanatory names that convey the purpose clearly.
 \end{itemize}
 
@@ -424,7 +424,7 @@ constructor(config) {
 \subsection{Code Structure and Modularization}
 \begin{itemize}
   \item \textbf{Separation of Concerns:} Organize code into separate modules/files based on functionality.
-  
+
   \item \textbf{Object-Oriented Design:} Use ES6 classes to encapsulate related properties and methods.
 \end{itemize}
 
@@ -443,7 +443,7 @@ class PRDC_JSLAB_LIB {
 \subsection{Error Handling}
 \begin{itemize}
   \item \textbf{Try-Catch Blocks:} Use try-catch to handle potential errors gracefully.
-  
+
   \item \textbf{Custom Errors:} Throw custom error objects for specific error scenarios.
 \end{itemize}
 
@@ -459,7 +459,7 @@ try {
 \subsection{State Management and Cleanup}
 \begin{itemize}
   \item \textbf{Resource Tracking:} Maintain arrays and objects to track active asynchronous operations.
-  
+
   \item \textbf{Cleanup Methods:} Implement methods to clear resources and reset the environment state.
 \end{itemize}
 
@@ -467,7 +467,7 @@ try {
 \subsection{Configuration Management}
 \begin{itemize}
   \item \textbf{Centralized Configuration:} Use a dedicated class (\code{PRDC\_APP\_CONFIG}) to manage all configuration settings.
-  
+
   \item \textbf{Conditional Configurations:} Adjust settings based on the runtime environment or command-line arguments.
 \end{itemize}
 
@@ -475,11 +475,11 @@ try {
 \subsection{Best Practices}
 \begin{itemize}
   \item \textbf{Consistent Formatting:} Use a consistent code formatter to maintain uniform code style.
-  
+
   \item \textbf{Meaningful Commit Messages:} Write clear and descriptive commit messages that explain the purpose of the changes.
-  
+
   \item \textbf{Modular Code:} Write reusable and modular code to enhance maintainability and scalability.
-  
+
   \item \textbf{Comprehensive Testing:} Implement thorough tests to ensure the reliability of your contributions.
 \end{itemize}
 
@@ -491,10 +491,10 @@ You can install \textbf{JSLAB} by either downloading the latest stable release f
 % ----------
 \subsection{Download the Latest Stable Release}
 \begin{itemize}
-  \item Visit the JSLAB Releases Page on GitHub Repository: 
-  
-  \url{https://github.com/PR-DC/JSLAB/releases} 
-  
+  \item Visit the JSLAB Releases Page on GitHub Repository:
+
+  \url{https://github.com/PR-DC/JSLAB/releases}
+
   \item Download the appropriate installer and install program.
 
   \item Try the examples from:
@@ -518,20 +518,20 @@ If you prefer to build \textbf{JSLAB} from source, follow the detailed \hyperref
 In order to download necessary tools, clone the repository, and install dependencies via npm, you need network access.
 
 \begin{itemize}
-    \item \textbf{Node.js:} Ensure that Node.js is installed on your system. You can download it from the official website: 
-    
+    \item \textbf{Node.js:} Ensure that Node.js is installed on your system. You can download it from the official website:
+
     \url{https://nodejs.org/}
-    
+
     \item \textbf{npm:} npm is typically installed alongside Node.js.
-    
+
     \item \textbf{Emscripten:} Install the SDK to compile the shared numerical and geometry backend. See the WebAssembly backend section for setup instructions.
 
     \item \textbf{node-gyp:} Included for compiling user extensions and third-party native dependencies. Required platform tools are described at:
-    
+
     \url{https://github.com/nodejs/node-gyp}
-    
-    \item \textbf{Git:} Suggested for cloning the repository. Download it from the official website: 
-    
+
+    \item \textbf{Git:} Suggested for cloning the repository. Download it from the official website:
+
     \url{https://git-scm.com/}
 
 \end{itemize}
@@ -543,7 +543,7 @@ In order to download necessary tools, clone the repository, and install dependen
 \begin{verbatim}
    git clone git clone https://github.com/PR-DC/JSLAB.git
 \end{verbatim}
-    
+
     \item Navigate to the project directory:
 \begin{verbatim}
     cd JSLAB
@@ -813,7 +813,7 @@ function onWindowResize() {
 function animate( time ) {
   mesh.rotation.x = time / 2000;
   mesh.rotation.y = time / 1000;
-  
+
   renderer.render( scene, camera );
 }
 \end{lstlisting}
@@ -828,8 +828,8 @@ Parallel execution is critical for handling computationally intensive tasks, as 
 // JavaScript Example
 var computeSquare = (i) => i * i;
 
-// Run parallel execution 
-var results = await parallel.parfor(0, 20, 1, 
+// Run parallel execution
+var results = await parallel.parfor(0, 20, 1,
   parallel.getProcessorsNum(), {}, undefined, computeSquare);
 disp(results);
 \end{lstlisting}
@@ -883,9 +883,9 @@ await sym.load();
 [le, x, E, Iz] = sym.syms(['le', 'x', 'E', 'Iz']);
 
 P = sym.mat([
-  [1, 0, 0, 0], 
-  [0, 1, 0, 0], 
-  [1, le, sym.pow(le, 2), sym.pow(le, 3)], 
+  [1, 0, 0, 0],
+  [0, 1, 0, 0],
+  [1, le, sym.pow(le, 2), sym.pow(le, 3)],
   [0, 1, sym.mul(2, le), sym.mul(3, sym.pow(le, 2))]
 ]);
 p = sym.mat([[1, x, sym.pow(x, 2), sym.pow(x, 3)]]);
@@ -956,7 +956,7 @@ var data = {
 var beamsFile = pwd + 'out/beams.json';
 writeFile(beamsFile, stringify(data));
 
-// Run FreeCADLink 
+// Run FreeCADLink
 await freecad_link.start(exe, {
   port: port,
   host: host,

@@ -6,7 +6,7 @@
  */
 
 const { PRDC_JSLAB_CODE_DOC_HOVER } = require('../doc-hover');
-const { PRDC_JSLAB_TESTS } = require('../../shared/tester');
+const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('_extractIdentifierFromLine returns identifier and parent around dot access', function(assert) {
@@ -92,7 +92,7 @@ tests.add('_ensureIndex loads browser-preloaded docs without filesystem access',
     };
 
     var hover = Object.create(PRDC_JSLAB_CODE_DOC_HOVER.prototype);
-    hover._getPreloadedDocs = PRDC_JSLAB_CODE_DOC_HOVER.prototype._getPreloadedDocs;
+    hover.get_docs = () => globalThis.__JSLAB_WEB_DOCS__;
     hover._ensureIndex = PRDC_JSLAB_CODE_DOC_HOVER.prototype._ensureIndex;
     hover._ensureIndex();
 
