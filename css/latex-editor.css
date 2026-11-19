@@ -1,0 +1,911 @@
+/**
+ * @file JSLAB LaTeX Editor layout
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+.latex-editor {
+  --latex-icon-tone: 30%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100dvh;
+  min-height: 0;
+  padding-top: 0;
+}
+
+.latex-editor [hidden] {
+  display: none !important;
+}
+
+.latex-editor :is(button, summary, select, input):focus-visible {
+  outline: 1px solid #999;
+  outline-offset: 1px;
+}
+
+#columns {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.latex-editor #left-panel .panel-container:hover {
+  border-color: #f1f3f4;
+}
+
+.latex-editor .latex-source-toolbar {
+  border-bottom: 0;
+}
+
+.latex-editor #right-panel .panel-title {
+  padding-right: 0;
+}
+
+.latex-pdf-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.latex-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.latex-heading-actions .latex-icon {
+  width: 25px;
+  height: 24px;
+  padding: 3px;
+}
+
+#show-messages {
+  position: relative;
+}
+
+#show-messages[aria-expanded="true"] {
+  border-color: #999;
+}
+
+#message-count {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  min-width: 14px;
+  padding: 0 3px;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  background: #9f570e;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+#message-count[data-severity="errors"] {
+  background: #b9362e;
+}
+
+#message-count[data-severity="typesetting"] {
+  background: #2e85c7;
+}
+
+#source-panel {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 5px;
+  overflow: hidden;
+}
+
+#source-panel .cell-padding {
+  box-sizing: border-box;
+}
+
+#project-panel {
+  --sidebar-heading-height: 34px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#tree-pane,
+#outline-pane {
+  position: absolute;
+  inset-inline: 0;
+}
+
+#project-panel .panel-title {
+  min-height: 18px;
+  margin-top: 3px;
+  margin-bottom: 1px;
+  padding: 1px 0 2px;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.latex-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.latex-sidebar-toggle::before {
+  content: '';
+  flex: 0 0 9px;
+  height: 9px;
+  background: url(../img/expand.svg) center / contain no-repeat;
+  filter: grayscale(1);
+}
+
+.latex-sidebar-toggle[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+
+#project-panel[data-tree-collapsed] #tree-pane .panel-title,
+#project-panel[data-outline-collapsed] #outline-pane .panel-title {
+  border-bottom-color: transparent;
+}
+
+.latex-sidebar-content {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#project-panel[data-tree-collapsed] #tree-pane,
+#project-panel[data-outline-collapsed] #outline-pane {
+  height: var(--sidebar-heading-height) !important;
+}
+
+#project-panel[data-tree-collapsed] #outline-pane {
+  top: var(--sidebar-heading-height) !important;
+}
+
+#project-panel[data-tree-collapsed]:not([data-outline-collapsed]) #outline-pane {
+  height: calc(100% - var(--sidebar-heading-height)) !important;
+}
+
+#project-panel[data-outline-collapsed]:not([data-tree-collapsed]) #tree-pane {
+  height: calc(100% - var(--sidebar-heading-height)) !important;
+}
+
+#project-panel[data-outline-collapsed]:not([data-tree-collapsed]) #outline-pane {
+  top: auto !important;
+  bottom: 0;
+}
+
+#project-panel:is([data-tree-collapsed], [data-outline-collapsed]) > .horizontal-resizer {
+  display: none;
+}
+
+#source-panel > .vertical-resizer,
+#project-panel > .horizontal-resizer {
+  z-index: 5;
+}
+
+#file-outline {
+  min-height: 0;
+  margin: 0 10px;
+  overflow: auto;
+  font-size: 13px;
+}
+
+.latex-outline-link {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  padding-block: 5px;
+  color: #666;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+}
+
+.latex-outline-link:hover {
+  border-color: #999;
+}
+
+.latex-outline-empty {
+  padding: 8px 4px;
+  color: #666;
+  line-height: 1.4;
+}
+
+#project-tree {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+  margin: 0 10px;
+  font-size: 14px;
+  line-height: 18px;
+  color: #666;
+}
+
+#project-tree summary {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  cursor: pointer;
+}
+
+#project-tree summary::before {
+  content: '';
+  flex: 0 0 12px;
+  height: 12px;
+  margin-inline-end: 6px;
+  background: url(../img/expand.svg) center / 12px no-repeat;
+  filter: grayscale(1);
+  transition: transform .2s linear;
+}
+
+#project-tree details[open] > summary::before {
+  transform: rotate(90deg);
+  filter: none;
+}
+
+#project-tree img {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+
+#project-tree span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.latex-tree-children {
+  padding-left: 15px;
+}
+
+.latex-tree-file {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 15px);
+  min-height: 24px;
+  margin: 2px 0 2px 15px;
+  padding: 0 3px 0 2px;
+  color: inherit;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  text-align: left;
+  font: inherit;
+  background: transparent;
+  cursor: default;
+}
+
+button.latex-tree-file {
+  cursor: pointer;
+}
+
+button.latex-tree-file:hover,
+.latex-tree-file.active {
+  border-color: #999;
+}
+
+.latex-dirty-dot,
+.latex-tree-dirty::after {
+  flex: 0 0 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #2e85c7;
+}
+
+.latex-tree-dirty::after {
+  content: '';
+  margin-inline-start: auto;
+}
+
+.latex-folder-reveal {
+  margin-left: auto;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.latex-folder-reveal:hover {
+  border-color: #999;
+}
+
+.latex-folder-reveal img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+#source-content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.latex-controls.latex-source-toolbar {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 2px;
+  min-height: 21px;
+  margin: 2px 5px 0;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.latex-source-toolbar.latex-controls .latex-icon {
+  flex: 0 0 21px;
+  width: 21px;
+  height: 21px;
+  padding: 2px;
+}
+
+.latex-source-toolbar .latex-icon :is(img, svg) {
+  width: 14px;
+  height: 14px;
+}
+
+.latex-source-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+#latex-format-menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 4px;
+  max-width: calc(100vw - 16px);
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 2px 8px #0002;
+}
+
+#latex-format-menu:popover-open {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+#latex-format-menu button {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 3px;
+}
+
+#latex-format-menu button svg {
+  flex: 0 0 16px;
+}
+
+#latex-format-menu hr {
+  align-self: stretch;
+  margin: 3px 2px;
+  border: 0;
+  border-inline-start: 1px solid #e4e4e4;
+}
+
+#latex-symbol-popup {
+  position: fixed;
+  z-index: 10;
+  box-shadow: 0 2px 8px #0002;
+}
+
+.latex-source-file {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 0;
+  min-width: 0;
+  margin-inline: 3px;
+}
+
+#source-title {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.latex-editor #code {
+  flex: 1 1 0;
+  position: relative;
+  inset: auto;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+  height: auto;
+  padding: 5px;
+  border: 0;
+}
+
+#code .CodeMirror {
+  height: 100%;
+  margin: 0;
+}
+
+#code .latex-source-hit {
+  background: #fff3a0;
+}
+
+.latex-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+.latex-controls button,
+.latex-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: #fff;
+  color: #36342b;
+  font: inherit;
+  cursor: pointer;
+}
+
+.latex-controls button.latex-icon,
+.latex-icon {
+  color: rgb(var(--latex-icon-tone) var(--latex-icon-tone) var(--latex-icon-tone));
+}
+
+.latex-controls button:hover:not(:disabled),
+.latex-icon:hover:not(:disabled) {
+  border-color: #999;
+}
+
+.latex-controls button:disabled,
+.latex-icon:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.latex-controls img,
+.latex-icon img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(var(--latex-icon-tone));
+}
+
+.latex-line-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.latex-symbol-icon {
+  display: block;
+  fill: currentColor;
+}
+
+.latex-controls .latex-icon {
+  width: 25px;
+  height: 25px;
+  padding: 3px;
+}
+
+.latex-arrow-up {
+  transform: rotate(90deg);
+}
+
+.latex-arrow-down {
+  transform: rotate(-90deg);
+}
+
+.latex-tree-controls {
+  gap: 2px;
+  padding-block: 3px;
+  margin: 0 10px;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.latex-pdf-toolbar {
+  justify-content: space-between;
+  flex: 0 0 auto;
+  column-gap: 8px;
+  row-gap: 4px;
+  padding: 5px 6px;
+  margin: 4px 10px 0;
+  background: #fff;
+  border-bottom: 1px solid #f2eacd;
+}
+
+.latex-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.latex-pdf-toolbar button {
+  padding-inline: 4px;
+}
+
+.latex-editor #compile {
+  min-height: 26px;
+  padding-inline: 8px;
+  margin-inline-end: 3px;
+  background: #f7df1e;
+  border-color: #e7cd1a;
+  color: #302800;
+  font-weight: 600;
+}
+
+.latex-editor #compile:hover:not(:disabled) {
+  border-color: #999;
+}
+
+.latex-compile-icon {
+  width: 0;
+  height: 0;
+  border-block: 5px solid transparent;
+  border-inline-start: 8px solid currentColor;
+}
+
+.latex-stop-icon {
+  width: 8px;
+  height: 8px;
+  background: #a03d25;
+  border-radius: 2px;
+}
+
+#cancel {
+  position: relative;
+}
+
+#cancel::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 2px solid #e4e4e4;
+  border-top-color: #a03d25;
+  border-radius: 50%;
+  animation: latex-compile-progress .8s linear infinite;
+}
+
+@keyframes latex-compile-progress {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cancel::before { animation: none; }
+}
+
+.latex-pdf-toolbar :is(input, select) {
+  min-height: 22px;
+  border: 1px solid #e5dcb9;
+  border-radius: 4px;
+  background: #fff;
+  color: #36342b;
+  font: inherit;
+}
+
+.latex-editor #page {
+  box-sizing: border-box;
+  width: max(2.9em, calc(var(--page-digits, 1) * 1ch + 1em));
+  padding-inline: 0;
+  text-align: center;
+  appearance: textfield;
+}
+
+#pages {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#pages:not(:empty) {
+  margin-inline-start: .25em;
+}
+
+.latex-editor #page::-webkit-inner-spin-button,
+.latex-editor #page::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+#back-to-pdf {
+  width: auto;
+  padding-inline: 6px;
+}
+
+.latex-editor #zoom {
+  width: 5.3em;
+}
+
+#setup {
+  padding: 6px 15px;
+  background: #fff9d4;
+}
+
+#asset-preview {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  margin: 5px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+}
+
+#asset-image {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+#asset-text {
+  align-self: stretch;
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  color: #333;
+  font: 14px/1.4 monospace;
+}
+
+#asset-pdf,
+#pdf-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: #fff;
+}
+
+#asset-pdf {
+  width: 100%;
+}
+
+#pdf-scroll {
+  margin: 0 10px;
+}
+
+#empty-project,
+#empty-pdf {
+  margin: 12px;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.latex-page {
+  position: relative;
+  width: max-content;
+  margin: 12px auto;
+  background: #fff;
+  outline: 1px solid #f0e8cc;
+  box-shadow: 0 2px 10px #59430013;
+}
+
+.latex-page canvas {
+  display: block;
+}
+
+#asset-pdf .latex-page {
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.latex-pdf-hit {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  background: #f7df1e44;
+  outline: 2px solid #b79e10;
+}
+
+#compiler-messages {
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 0 10px;
+  overflow: auto;
+  font-size: 12px;
+}
+
+.latex-diagnostic-group h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+#message-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 8px 0;
+}
+
+#message-filters button {
+  padding: 4px 6px;
+  gap: 5px;
+}
+
+#message-filters button[aria-pressed="true"] {
+  border-color: #999;
+}
+
+#message-filters span {
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.latex-diagnostic-group {
+  --latex-message-color: #286886;
+  margin: 4px 0 14px;
+}
+
+#latex-errors {
+  --latex-message-color: #9d3028;
+}
+
+#latex-warnings {
+  --latex-message-color: #865018;
+}
+
+.latex-diagnostic-group h3 {
+  color: var(--latex-message-color);
+}
+
+.latex-diagnostic-group ul {
+  display: grid;
+  gap: 5px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.latex-diagnostic-group li {
+  padding: 8px;
+  border: 1px solid #e4e4e4;
+  border-inline-start: 3px solid var(--latex-message-color);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+.latex-diagnostic-group p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.latex-diagnostic-group button {
+  margin-top: 3px;
+  padding-inline: 0;
+  color: #12568a;
+}
+
+#empty-messages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 10px;
+  border: 1px solid #e4e4e4;
+  border-radius: 4px;
+  color: #666;
+  line-height: 1.4;
+}
+
+#empty-messages .latex-line-icon {
+  flex: 0 0 16px;
+}
+
+#messages-ready {
+  color: #3a785c;
+}
+
+#status {
+  flex: 0 0 auto;
+  margin: 2px 10px 0;
+  padding: 5px 8px;
+  background: #fff8e3;
+  color: #6b4b21;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+#latex-settings {
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  max-height: 100%;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+#latex-settings::backdrop {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+#latex-settings .options-cont {
+  box-sizing: border-box;
+  width: min(500px, 100%);
+  pointer-events: auto;
+}
+
+#settings-close {
+  position: absolute;
+  inset: 0 0 auto auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+#settings-close img {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+#latex-settings .float-select {
+  margin: 0 0 14px;
+}
+
+#latex-settings select {
+  appearance: auto;
+}
+
+.latex-toolchain {
+  padding: 0 5px;
+  line-height: 1.4;
+}
+
+.latex-toolchain output {
+  display: block;
+  color: #333;
+}
+
+#latex-settings .checkcont input:focus-visible + .checkmark {
+  outline: 1px solid #2e85c7;
+  outline-offset: 2px;
+}

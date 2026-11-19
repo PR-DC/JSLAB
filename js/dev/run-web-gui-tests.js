@@ -42,7 +42,7 @@ class PRDC_JSLAB_DEV_RUN_WEB_GUI_TESTS_HELPER {
       report.covered = report.handlers.filter(row => row.covered).length;
       report.missing = report.handlers.filter(row => !row.covered);
       // The component suite covers common controllers; this suite gates browser host adapters and inline document surfaces.
-      report.adapter_handlers = report.handlers.filter(row => row.file.startsWith('js/backend-web/') || row.file === 'js/windows/presentation-editor-inline.js');
+      report.adapter_handlers = report.handlers.filter(row => row.file.startsWith('js/backend-web/') || row.file === 'js/presentation-editor/presentation-editor-inline.js');
       report.adapter_missing = report.adapter_handlers.filter(row => !row.covered);
       report.adapter_covered = report.adapter_handlers.length - report.adapter_missing.length;
       fs.writeFileSync(path.join(root, 'temp/gui-handler-coverage-web.json'), JSON.stringify(report, null, 2));

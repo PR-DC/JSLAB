@@ -92,11 +92,14 @@ for(const choice of ['save', 'discard', 'cancel']) {
     c.js_editor.code_editor.setValue('// unsaved');
     c.requestClose();
     assert.equal(f.visible('#close-dialog-cont'), true);
+    sent(assert, f, 'MainProcess', 'focus-win');
     f.click('#close-dialog-' + choice);
     await f.tick();
     assert.equal(f.visible('#close-dialog-cont'), false);
     if(choice !== 'cancel') {
       sent(assert, f, 'MainProcess', 'close-presentation-editor');
+    } else {
+      sent(assert, f, 'MainProcess', 'keep-presentation-editor-open');
     }
     assert.equal(f.files.get(c.js_editor.file_path), choice === 'save' ? '// unsaved' : '// source');
   });

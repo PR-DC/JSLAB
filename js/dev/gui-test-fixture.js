@@ -51,7 +51,7 @@ class PRDC_JSLAB_DEV_GUI_TEST_FIXTURE_HELPER {
     var win = frame.contentWindow;
     win.__JSLAB_GUI_HIT__ = handler_coverage.hit;
     var html = fs.readFileSync(path.join(root, 'html', type + '.html'), 'utf8');
-    var scripts = [...html.matchAll(/<script[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(m => m[1]);
+    var scripts = [...html.matchAll(/<script(?![^>]*type="module")[^>]*src="([^"]+)"[^>]*><\/script>/g)].map(m => m[1]);
     html = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
     // The disposable fixture evaluates instrumented sources instead of loading scripts.
     html = html.replace(/<meta\b[^>]*http-equiv="Content-Security-Policy"[^>]*>/gi, '');

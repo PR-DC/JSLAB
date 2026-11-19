@@ -77,22 +77,16 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
     this.pending_open_scripts = [];
     this.instance_router = new PRDC_JSLAB_INSTANCE_ROUTER({
       on_open_scripts: function(script_paths) {
-        return obj.files.openScriptsInEditor(script_paths);
+        obj.files.openScriptsInEditor(script_paths);
+        const project = script_paths.find(file => obj.files.isSimulateProjectPath(file));
+        if(project) void obj.windows.showSimulate(project).catch(console.error);
       },
       is_script_path: function(script_path) {
-        return obj.files.isJslScriptPath(script_path);
+        return obj.files.isJslScriptPath(script_path) || obj.files.isSimulateProjectPath(script_path);
       }
     });
-    this.startup_script_paths = this.instance_router.getStartupScriptPaths(process.argv);
-    this.startup_model_path = process.argv.map(function(argument) {
-      try {
-        return path.resolve(String(argument));
-      } catch(_error) {
-        return '';
-      }
-    }).find(function(argument) {
-      return /\.(?:jslmo|mo)$/i.test(argument) && fs.existsSync(argument);
-    }) || '';
+    this.startup_file_paths = this.instance_router.getStartupScriptPaths(process.argv)
+      .map(file => this.files.isSimulateProjectPath(file) ? path.resolve(file) : file);
     this.cli_mode = process.argv.includes('--cli-runtime');
     this.automation_external = process.argv.includes('--mcp') || this.cli_mode;
     this.automation = new PRDC_JSLAB_AUTOMATION(this);
@@ -221,9 +215,9 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
     app.whenReady().then(async function() {
-      if(!obj.cli_mode && obj.startup_script_paths.length > 0) {
+      if(!obj.cli_mode && obj.startup_file_paths.length > 0) {
         var forwarded = await obj.instance_router.forwardScriptsToLastActive(
-          obj.startup_script_paths
+          obj.startup_file_paths
         );
         if(forwarded) {
           app.quit();
@@ -231,6 +225,10 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
         }
       }
       obj.windows.createWindows();
+      if(!obj.cli_mode) {
+        const project = obj.startup_file_paths.find(file => obj.files.isSimulateProjectPath(file));
+        if(project) void obj.windows.showSimulate(path.resolve(project)).catch(console.error);
+      }
 
       app.on('activate', function() {
         // On macOS it's common to re-create a window in the app when the
@@ -372,6 +370,27 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       e.returnValue = await desktopCapturer.getSources({ types: ['screen', 'window'] });
     });
 
+    ipcMain.handle('JSLAB_LATEX_SCRIPT', async function(event, action, file, main) {
+      if(event.sender !== obj.win_sandbox?.webContents || event.senderFrame !== event.sender.mainFrame) return false;
+      if(action === 'edit' && file == null && !obj.cli_mode) {
+        obj.windows.showLatex();
+        return true;
+      }
+      if(typeof file !== 'string' || !path.isAbsolute(file)) return false;
+      const stat = await fs.promises.stat(file).catch(() => null);
+      const source = stat?.isFile() && /\.tex$/i.test(file);
+      if(action === 'edit' && !obj.cli_mode && (stat?.isDirectory() || source)) {
+        if(main !== undefined && (!stat.isDirectory() || typeof main !== 'string' || !/\.tex$/i.test(main))) return false;
+        obj.windows.showLatex(file, main);
+        return true;
+      }
+      if(action === 'compile' && source) {
+        const { PRDC_JSLAB_LATEX } = require('./latex');
+        return PRDC_JSLAB_LATEX.compileFile(file, obj.store.get('latex-toolchain-bin'));
+      }
+      return false;
+    });
+
     ipcMain.handle('JSLAB_ASSISTANT_SETTINGS_GET', function() {
       return obj.assistant.request('JSLAB_ASSISTANT_SETTINGS_GET');
     });
@@ -399,19 +418,19 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
     });
 
     ipcMain.handle('JSLAB_SIMULATE_PARSE', function(event, source) {
-      if(event.sender !== obj.win_simulate.webContents) {
+      if(event.sender !== obj.win_simulate?.webContents) {
         throw new Error('Expected the Simulate window.');
       }
       return obj._getSimulateProject().parse(source);
     });
     ipcMain.handle('JSLAB_SIMULATE_OPEN', async function(event, file_path) {
-      if(event.sender !== obj.win_simulate.webContents) {
+      if(event.sender !== obj.win_simulate?.webContents) {
         throw new Error('Expected the Simulate window.');
       }
       return obj._getSimulateProject().openFile(file_path);
     });
     ipcMain.handle('JSLAB_SIMULATE_SAVE', async function(event, request) {
-      if(event.sender !== obj.win_simulate.webContents) {
+      if(event.sender !== obj.win_simulate?.webContents) {
         throw new Error('Expected the Simulate window.');
       }
       return obj._getSimulateProject().saveFile(request);
@@ -419,7 +438,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
     obj.simulate_resolve_pending = new Map();
     obj.simulate_resolve_id = 0;
     ipcMain.handle('JSLAB_SIMULATE_RESOLVE', function(event, expression) {
-      if(event.sender !== obj.win_simulate.webContents) {
+      if(event.sender !== obj.win_simulate?.webContents) {
         throw new Error('Expected the Simulate window.');
       }
       if(!obj.win_sandbox || obj.win_sandbox.isDestroyed()) {
@@ -449,23 +468,40 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
     });
     obj.simulate_automation_pending = new Map();
     obj.simulate_automation_id = 0;
-    ipcMain.handle('JSLAB_SIMULATE_AUTOMATION', function(event, request) {
+    ipcMain.handle('JSLAB_SIMULATE_AUTOMATION', async function(event, request) {
       if(event.sender !== obj.win_sandbox.webContents) {
         throw new Error('Expected the JSLAB sandbox.');
       }
+      let filepath = request?.filepath;
+      const current = obj.win_simulate;
+      if(filepath || !current || current.isDestroyed()) {
+        filepath ||= await obj.files.selectSimulateProject();
+        if(!obj.files.isSimulateProjectPath(filepath, true)) {
+          return { success: false, error: obj.currentString(filepath ? 674 : 776) };
+        }
+      }
+      const win = await obj.windows.getSimulateWindow();
+      if(!obj.windows.focusFeatureWindow(win)) return { success: false, error: obj.currentString(675) };
       var id = ++obj.simulate_automation_id;
-      obj.windows.showSimulate();
       return new Promise(function(resolve) {
-        obj.simulate_automation_pending.set(id, { resolve: resolve });
-        obj.win_simulate.send('SimulateWindow', 'automation', {
+        const close = () => {
+          obj.simulate_automation_pending.delete(id);
+          resolve({ success: false, error: obj.currentString(675) });
+        };
+        win.once('closed', close);
+        obj.simulate_automation_pending.set(id, { resolve: response => {
+          win.removeListener('closed', close);
+          resolve(response);
+        } });
+        win.send('SimulateWindow', 'automation', {
           id: id,
-          filepath: request && request.filepath || '',
+          filepath,
           options: request && request.options || {}
         });
       });
     });
     ipcMain.on('JSLAB_SIMULATE_AUTOMATION_RESULT', function(event, response) {
-      if(event.sender !== obj.win_simulate.webContents || !response) {
+      if(event.sender !== obj.win_simulate?.webContents || !response) {
         return;
       }
       var pending = obj.simulate_automation_pending.get(Number(response.id));
@@ -476,7 +512,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       pending.resolve(response);
     });
     ipcMain.on('JSLAB_SIMULATE_RESULT', function(event, data) {
-      if(event.sender !== obj.win_simulate.webContents) {
+      if(event.sender !== obj.win_simulate?.webContents) {
         return;
       }
       if(obj.win_sandbox && !obj.win_sandbox.isDestroyed()) {
@@ -484,7 +520,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       }
     });
     ipcMain.on('JSLAB_SIMULATE_ANIMATION', function(event, data) {
-      if(event.sender !== obj.win_simulate.webContents) {
+      if(event.sender !== obj.win_simulate?.webContents) {
         return;
       }
       if(obj.win_sandbox && !obj.win_sandbox.isDestroyed()) {
@@ -593,7 +629,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       e.returnValue = retval;
     });
 
-    ipcMain.on('MainProcess', function(e, action, data) {
+    ipcMain.on('MainProcess', async function(e, action, data) {
       switch(action) {
         case 'show-dev-tools':
           // Show DevTools
@@ -614,7 +650,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
           shell.showItemInFolder(data);
           break;
         case 'focus-win':
-          e.sender.focus();
+          obj.windows.focusFeatureWindow(BrowserWindow.fromWebContents(e.sender));
           break;
         case 'fade-in-win':
           obj.windows.fadeWindowIn(BrowserWindow.fromWebContents(e.sender), 0.1, 10);
@@ -629,7 +665,19 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
           }
           break;
         case 'close-app':
-          obj.is_app_quitting = true;
+          if(obj.is_app_quitting || obj.app_close_pending) break;
+          obj.app_close_pending = true;
+          try {
+            if(!await obj.windows.confirmSimulateClose(obj.win_simulate)) break;
+            if(obj.windows.latex_window && !await obj.windows.latex_window.close()) break;
+            if(!await obj.runtime.closePresentationEditors()) break;
+            obj.is_app_quitting = true;
+          } catch(error) {
+            console.error(error);
+            break;
+          } finally {
+            obj.app_close_pending = false;
+          }
           if(obj.win_main !== undefined && !obj.win_main.isDestroyed()) {
             obj.win_main.destroy();
           }
@@ -640,7 +688,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
             obj.win_assistant.destroy();
           }
           if(obj.win_simulate !== undefined && !obj.win_simulate.isDestroyed()) {
-            obj.win_simulate.destroy();
+            obj.win_simulate.close();
           }
           for(const record of obj.terminal_windows.values()) {
             if(!record.win.isDestroyed()) {
@@ -682,11 +730,11 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
           obj.windows.showAssistant();
           break;
         case 'show-simulate':
-          obj.windows.showSimulate(data);
+          void obj.windows.showSimulate(data).catch(console.error);
           break;
-        case 'hide-simulate':
-          if(obj.win_simulate && !obj.win_simulate.isDestroyed()) {
-            obj.win_simulate.hide();
+        case 'close-simulate':
+          if(e.sender === obj.win_simulate?.webContents) {
+            obj.win_simulate.close();
           }
           break;
         case 'hide-assistant':
@@ -715,6 +763,11 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
             sub_win.close();
           }
           break;
+        case 'keep-presentation-editor-open': {
+          const sub_win = BrowserWindow.fromWebContents(e.sender);
+          sub_win?.emit('presentation-close-cancelled');
+          break;
+        }
         case 'show-presentation-editor-slide-context-menu':
           var sub_win = BrowserWindow.fromWebContents(e.sender);
           if(sub_win) {
@@ -856,7 +909,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
 
     ipcMain.on('SimulateWindow', function(e, action, data) {
       if(action === 'show') {
-        obj.windows.showSimulate(data);
+        void obj.windows.showSimulate(data).catch(console.error);
       } else if(obj.win_simulate && !obj.win_simulate.isDestroyed()) {
         obj.win_simulate.send('SimulateWindow', action, data);
       }

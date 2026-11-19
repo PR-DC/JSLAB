@@ -241,6 +241,7 @@ class PRDC_JSLAB_ELECTRON_SANDBOX_HOST {
           sub_win.webContents.send('PresentationEditorWindow', 'request-close');
           return;
         }
+        if(is_presentation_editor) sub_win.emit('presentation-close-accepted');
         e.preventDefault();
         obj.application.win_sandbox.webContents.send('SandboxWindow', 'window-closed', wid);
         sub_win.hide();
@@ -295,6 +296,33 @@ class PRDC_JSLAB_ELECTRON_SANDBOX_HOST {
     if(this.application.sandbox_sub_wins[wid] === win) {
       delete this.application.sandbox_sub_wins[wid];
     }
+  }
+
+  /**
+   * Runs the normal close confirmation for each open Presentation Editor before app shutdown.
+   * @returns {Promise<boolean>} Whether all Presentation Editors accepted closure.
+   */
+  async closePresentationEditors() {
+    for(const win of Object.values(this.application.sandbox_sub_wins || {})) {
+      if(win.isDestroyed() || win.forClose ||
+          !win.webContents.getURL().endsWith('/presentation-editor.html')) continue;
+      const accepted = await new Promise(resolve => {
+        const finish = result => {
+          win.removeListener('presentation-close-accepted', accept);
+          win.removeListener('closed', accept);
+          win.removeListener('presentation-close-cancelled', cancel);
+          resolve(result);
+        };
+        const accept = () => finish(true);
+        const cancel = () => finish(false);
+        win.once('presentation-close-accepted', accept);
+        win.once('closed', accept);
+        win.once('presentation-close-cancelled', cancel);
+        win.close();
+      });
+      if(!accepted) return false;
+    }
+    return true;
   }
 
   /**

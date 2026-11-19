@@ -37,7 +37,7 @@ class PRDC_JSLAB_ELECTRON_TESTS_MAIN_PROCESS_HELPER {
       out.electron = electron_stub;
     }
     var context = {
-      module: { exports: {} },
+      module: { exports: {}, parent: {} },
       exports: null,
       process: process,
       config: {},

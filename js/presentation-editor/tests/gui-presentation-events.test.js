@@ -69,7 +69,7 @@ guiTest(tests, 'presentation-editor', 'presentation keyboard save/search and Esc
 });
 
 guiTest(tests, 'presentation', 'presentation wheel, messages, resize, print and gestures navigate correctly', [], function(assert, f) {
-  var c = require('./gui-presentation-viewer.test').setup(f);
+  var c = require('../../windows/tests/gui-presentation-viewer.test').setup(f);
   c.setSlide(0);
   f.query('#slides-cont').dispatchEvent(new f.window.WheelEvent('wheel', { deltaY: 80, bubbles: true }));
   assert.equal(c.current_slide, 1);
@@ -89,7 +89,7 @@ guiTest(tests, 'presentation', 'presentation wheel, messages, resize, print and 
 });
 
 guiTest(tests, 'presentation', 'presentation animation completion removes transition state', [], function(assert, f) {
-  var c = require('./gui-presentation-viewer.test').setup(f);
+  var c = require('../../windows/tests/gui-presentation-viewer.test').setup(f);
   c.setSlide(0);
   c.transition = 'fade';
   c.showSlide(1);
@@ -101,7 +101,7 @@ guiTest(tests, 'presentation', 'presentation animation completion removes transi
 });
 
 guiTest(tests, 'presentation', 'presentation script loading resolves both success and failure and caches failures', [], async function(assert, f) {
-  var c = require('./gui-presentation-viewer.test').setup(f);
+  var c = require('../../windows/tests/gui-presentation-viewer.test').setup(f);
   var success = c._loadScriptOnce('test-success', 'not-requested.js');
   var script = f.document.head.querySelector('script:last-of-type');
   script.removeAttribute('src');
@@ -126,7 +126,7 @@ guiTest(tests, 'presentation', 'presentation script loading resolves both succes
 });
 
 guiTest(tests, 'presentation', 'presentation image and video errors resolve resource readiness instead of hanging', [], async function(assert, f) {
-  var c = require('./gui-presentation-viewer.test').setup(f);
+  var c = require('../../windows/tests/gui-presentation-viewer.test').setup(f);
   var slide = f.query('slide'), image = f.document.createElement('img'), video = f.document.createElement('video');
   Object.defineProperty(image, 'complete', { value: false });
   slide.appendChild(image);

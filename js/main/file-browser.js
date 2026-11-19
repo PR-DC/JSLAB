@@ -117,7 +117,8 @@ class PRDC_JSLAB_FILE_BROWSER {
       li.ondblclick = function(e) {
         e.stopPropagation();
         e.preventDefault();
-        host.send('EditorWindow', 'open-script', [absolute_path]);
+        if(/\.jslmo$/i.test(absolute_path)) host.send('MainProcess', 'show-simulate', absolute_path);
+        else host.send('EditorWindow', 'open-script', [absolute_path]);
       };
       var ext = absolute_path.split('.').pop();
       if(ext == 'jsl') {

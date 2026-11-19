@@ -59,6 +59,16 @@ class PRDC_JSLAB_LIB_WINDOWS {
   }
 
   /**
+   * Opens a local project folder or .tex file in the desktop LaTeX Editor.
+   * @param {string} [file] Project path, relative to the working directory or absolute.
+   * @param {string} [main] Main .tex file when opening a project folder.
+   * @returns {Promise<boolean>} Whether the desktop accepted the request.
+   */
+  editLatex(file, main) {
+    return this.jsl.inter.env.editLatex(file, main);
+  }
+
+  /**
    * Opens the developer tools for a specified window by ID if it exists.
    * @param {string} wid - The window ID.
    * @returns {boolean} True if the developer tools were opened; otherwise, false.

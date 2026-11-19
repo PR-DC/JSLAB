@@ -167,7 +167,8 @@ class PRDC_JSLAB_DEV_GUI_TEST_COVERAGE_HELPER {
         PRDC_JSLAB_DEV_GUI_TEST_COVERAGE_HELPER.instrument(fs.readFileSync(filename, 'utf8').replace('%presentation_config%', '{}'), filename);
       }
     }
-    for(const folder of ['js/main', 'js/editor', 'js/code', 'js/windows', 'lib/PRDC_TABS', 'lib/PRDC_PANEL', 'lib/PRDC_POPUP']) {
+    for(const folder of ['js/main', 'js/editor', 'js/code', 'js/windows', 'js/latex-editor', 'js/presentation-editor',
+      'lib/PRDC_TABS', 'lib/PRDC_PANEL', 'lib/PRDC_POPUP']) {
       visit(path.join(root, folder));
     }
   }

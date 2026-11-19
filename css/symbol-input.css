@@ -1,0 +1,104 @@
+/**
+ * @file JSLAB editor symbol picker styles
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+.editor-symbol-popup {
+  position: absolute;
+  display: block;
+  border-radius: 5px;
+  width: 430px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #f7df1e;
+  padding: 8px;
+}
+
+.editor-symbol-popup::-webkit-scrollbar,
+.editor-symbol-popup::-webkit-scrollbar-button,
+.editor-symbol-popup::-webkit-scrollbar-track,
+.editor-symbol-popup::-webkit-scrollbar-track-piece,
+.editor-symbol-popup::-webkit-scrollbar-thumb,
+.editor-symbol-popup::-webkit-scrollbar-corner,
+.editor-symbol-popup::-webkit-resizer {
+  background: transparent;
+}
+
+.editor-symbol-popup::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.editor-symbol-popup::-webkit-scrollbar-track-piece {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.editor-symbol-popup::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 5px;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+.editor-symbol-popup::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+}
+
+.editor-symbol-header {
+  color: #999;
+  font-weight: 300;
+  font-size: 18px;
+  padding: 3px 6px 2px 6px;
+  border-bottom: 1px solid #ededed;
+  margin-bottom: 6px;
+}
+
+.editor-symbol-group {
+  margin-bottom: 8px;
+}
+
+.editor-symbol-group:last-child {
+  margin-bottom: 0;
+}
+
+.editor-symbol-group-title {
+  color: #777;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 4px;
+}
+
+.editor-symbol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px;
+}
+
+.editor-symbol-key {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #444;
+  border-radius: 4px;
+  min-height: 32px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s linear;
+}
+
+.editor-symbol-key:hover {
+  background: #f3f3f3;
+}
+
+.editor-symbol-key:active {
+  background: #ececec;
+}

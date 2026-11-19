@@ -1,0 +1,10 @@
+/**
+ * @file Opens the example LaTeX project in the desktop editor
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+if(!await editLatex(pathJoin(jsl.app_path, 'examples', 'resources', 'latex-project'))) {
+  throw new Error('Could not open the example in the desktop LaTeX Editor.');
+}

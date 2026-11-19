@@ -51,6 +51,17 @@ class PRDC_JSLAB_CODE_EDITOR {
   }
 
   /**
+   * Inserts text at the active cursor or replaces the current selection.
+   * @param {Object} editor CodeMirror instance.
+   * @param {string} text Text to insert.
+   */
+  static insertText(editor, text) {
+    if(typeof text !== 'string' || !text.length) return;
+    editor.replaceSelection(text, 'end', '+input');
+    editor.focus();
+  }
+
+  /**
    * Enables completion while typing in presentation source tabs.
    * @param {Object} CodeMirror Editor library.
    * @param {Object} editor CodeMirror instance.

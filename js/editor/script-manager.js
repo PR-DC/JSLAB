@@ -6,6 +6,7 @@
  */
 
 const { PRDC_JSLAB_CODE_LINT } = require('../code/lint');
+const { PRDC_JSLAB_UI_CLOSE_DIALOG } = require('../windows/ui');
 
 const { PRDC_JSLAB_EDITOR_SCRIPT } = require('./script');
 
@@ -29,6 +30,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
     this.last_active_script;
     this.active_tab;
     this.close_window = false;
+    this.close_dialog = new PRDC_JSLAB_UI_CLOSE_DIALOG(document, choice => this.closingDialogButton(choice));
     this.tabs = new PRDC_TABS();
 
     this.eslint = new PRDC_JSLAB_CODE_LINT();
@@ -43,7 +45,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
 
     // On tab add
     this.tabs_cont.addEventListener("tabAdd", function({ detail }) {
-      $("#close-dialog-cont").hide();
+      obj.close_dialog.hide();
       detail.tabEl.onmousedown = function(e) {
         if(e && (e.which == 2 || e.button == 4)) {
           obj.removeScriptByTab(detail.tabEl);
@@ -82,7 +84,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       var [script] = obj.getScriptByTab(obj.active_tab);
       if(script !== undefined) {
         if(!script.closing) {
-          $("#close-dialog-cont").hide();
+          obj.close_dialog.hide();
         }
         script.show();
       }
@@ -366,7 +368,6 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
    * Initiates the closure of all open scripts, optionally persisting their state for future sessions.
    */
   closeAllScripts() {
-    const { host } = this.win.platform;
     var obj = this;
     this.close_window = true;
     this.last_script_paths = [];
@@ -379,8 +380,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       }
     });
 
-    host.send("MainProcess", "focus-win");
-    $("#close-dialog-cancel").hide();
+    this.close_dialog.cancel.hidden = true;
     for(var i = this.scripts.length - 1; i >= 0; i--) {
       var tab = this.scripts[i].tab;
       if(this.scripts[i].remove()) {
@@ -403,14 +403,14 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
 
   /**
    * Handles user interaction with the script closing dialog, determining whether to save changes, discard them, or cancel the closure.
-   * @param {number} s - button state
+   * @param {string} choice Selected dialog action.
    */
-  async closingDialogButton(s) {
+  async closingDialogButton(choice) {
     var [script, i] = this.getScriptByTab(this.active_tab);
     var tab = this.scripts[i].tab;
     var script_path = this.scripts[i].path;
-    if(s == 2 || s == 1) {
-      if(s == 2) {
+    if(choice === 'save' || choice === 'discard') {
+      if(choice === 'save') {
         if(!await this.scripts[i].save()) {
           return;
         }
@@ -421,7 +421,8 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
       this.tabs.removeTab(tab);
     } else {
       this.scripts[i].closing = false;
-      $("#close-dialog-cont").hide();
+      this.close_dialog.hide();
+      script.code_editor.focus();
     }
     if(this.close_window && script_path !== undefined) {
       this.last_script_paths.push(script_path);

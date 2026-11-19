@@ -392,21 +392,23 @@
   var SEARCH_HISTORY_MAX = 100;
 
   CodeMirror.defineOption('jslabStorage', null);
+  CodeMirror.defineOption('jslabCurrentString', null);
 
 
   CodeMirror.defineOption('searchDialog', false, function(cm, val) {
     if(val) {
       var div = document.createElement('div');
       div.className = 'CodeMirror-search-dialog';
-      var findLabel = language.currentString(336);
-      var prevLabel = language.currentString(337);
-      var nextLabel = language.currentString(338);
-      var replaceLabel = language.currentString(339);
-      var replaceAllLabel = language.currentString(340);
-      var matchCaseLabel = language.currentString(341);
-      var regexLabel = language.currentString(342);
-      var ofLabel = language.currentString(343);
-      var closeLabel = language.currentString(344);
+      const currentString = cm.getOption('jslabCurrentString') || (id => language.currentString(id));
+      var findLabel = currentString(336);
+      var prevLabel = currentString(337);
+      var nextLabel = currentString(338);
+      var replaceLabel = currentString(339);
+      var replaceAllLabel = currentString(340);
+      var matchCaseLabel = currentString(341);
+      var regexLabel = currentString(342);
+      var ofLabel = currentString(343);
+      var closeLabel = currentString(344);
       div.innerHTML =
         '<input class="CodeMirror-search-find" value="" placeholder="' + findLabel + '" autocomplete="off" spellcheck="false" title="' + findLabel + '">' +
         '<i class="CodeMirror-search-find-prev-btn" title="' + prevLabel + '"></i>' +

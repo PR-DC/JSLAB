@@ -43,7 +43,7 @@ class PRDC_JSLAB_DEV_RUN_GUI_TESTS_RENDERER {
         }
       }
       var summary = { total: 0, passed: 0, failed: 0, skipped: 0 };
-      for(const folder of ['main/tests', 'editor/tests', 'simulate/tests', 'windows/tests']) {
+      for(const folder of ['main/tests', 'editor/tests', 'simulate/tests', 'windows/tests', 'latex-editor/tests', 'presentation-editor/tests']) {
         var result = await new PRDC_JSLAB_GUI_TESTER(folder, { include_tags: ['gui'], exclude_tags: ['unit'] }).runTests();
         for(const key of ['total', 'passed', 'failed', 'skipped']) {
           summary[key] += Number(result[key] || 0);

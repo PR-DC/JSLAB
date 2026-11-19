@@ -46,7 +46,7 @@ guiTest(tests, 'editor', 'double-clicking empty tab strip creates a document ass
 });
 
 guiTest(tests, 'presentation-editor', 'double-clicking presentation tabs preserves the fixed source documents', [], function(assert, f) {
-  var c = require('../../windows/tests/gui-presentation-editor.test').setup(f), before = c.tabs.tabEls.length;
+  var c = require('../../presentation-editor/tests/gui-presentation-editor.test').setup(f), before = c.tabs.tabEls.length;
   f.query('.tabs-content').dispatchEvent(new f.window.MouseEvent('dblclick', { bubbles: true }));
   assert.equal(c.tabs.tabEls.length, before);
 });

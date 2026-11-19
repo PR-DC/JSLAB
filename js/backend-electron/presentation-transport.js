@@ -208,7 +208,7 @@ class PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT {
 
       headers['Content-Length'] = String(end - start + 1);
       res.writeHead(status, headers);
-      if(req.method == 'HEAD') {
+      if(req.method == 'HEAD' || stats.size === 0) {
         res.end();
         return;
       }

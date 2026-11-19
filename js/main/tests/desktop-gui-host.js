@@ -28,10 +28,11 @@ for(const method of ['start', 'markAsLastActive', 'trackWindowActivity']) {
 PRDC_JSLAB_INSTANCE_ROUTER.prototype.forwardScriptsToLastActive = async function() {
   return false;
 };
+let focused_window;
 app.on('browser-window-created', function(_event, win) {
   win.show = function() {};
   win.showInactive = function() {};
-  win.focus = function() {};
+  win.focus = function() { focused_window = win; };
 });
 var parent_arg = process.argv.find(arg => arg.startsWith('--gui-parent-pid='));
 var parent_pid = Number(parent_arg && parent_arg.split('=')[1]);
@@ -52,5 +53,8 @@ ipcMain.on('JSLAB_DESKTOP_GUI_TEST_EXIT', function() {
 ipcMain.handle('JSLAB_DESKTOP_GUI_TEST_CAPTURE', async function(event) {
   var image = await event.sender.capturePage(undefined, { stayHidden: true, stayAwake: true });
   return image.toPNG().toString('base64');
+});
+ipcMain.handle('JSLAB_DESKTOP_GUI_TEST_FOREGROUND', function() {
+  return focused_window && !focused_window.isDestroyed() ? focused_window.webContents.getURL() : '';
 });
 require('../../backend-electron/main-process').PRDC_JSLAB_ELECTRON_MAIN_PROCESS.start();

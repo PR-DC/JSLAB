@@ -27,6 +27,23 @@ globalThis.__JSLAB_WEB_SIMULATE_READY__ = (async function() {
   const { PRDC_JSLAB_WIN_SIMULATE } = require('../simulate/simulate');
   globalThis.win_simulate = new PRDC_JSLAB_WIN_SIMULATE({ host: ipcRenderer, path: require('./node-compatibility') });
   win_simulate.onReady();
+  let close_approved = false;
+  let close_pending = false;
+  globalThis.__JSLAB_WEB_BEFORE_CLOSE__ = () => {
+    if(close_approved || !win_simulate.hasUnsavedProjectChanges()) return true;
+    if(!close_pending) {
+      close_pending = true;
+      void win_simulate.confirmProjectClose().then(approved => {
+        if(approved) {
+          close_approved = true;
+          bridge.closeFrameWindow(globalThis);
+        }
+      }).catch(console.error).finally(() => {
+        close_pending = false;
+      });
+    }
+    return false;
+  };
   globalThis.__JSLAB_WEB_FRAME_onLanguageChange = function() {
     ipcRenderer.emit('SimulateWindow', 'set-language', bridge.getLanguage().lang);
   };

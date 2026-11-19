@@ -98,6 +98,31 @@ for(const [selector, action] of [['#save-as-menu', 'save'], ['#reset-menu', 'res
     assert.deepEqual(f.calls.at(-1), ['figure', action, 1]);
   });
 }
+
+guiTest(tests, 'figure', 'closing an animated figure restores its Plotly drawing methods', [], function(assert, f) {
+  const { PRDC_JSLAB_PLOT_MESH_ANIMATION } = f.load(path.join(root, 'js/windows/plot-mesh-animation.js'),
+    ['PRDC_JSLAB_PLOT_MESH_ANIMATION']);
+  f.window.PRDC_JSLAB_PLOT_MESH_ANIMATION = PRDC_JSLAB_PLOT_MESH_ANIMATION;
+  f.window.Plotly = { version: '3.3.0' };
+  const { plot } = f.load(path.join(root, 'js/windows/plot.js'), ['plot']);
+  const draw = () => {};
+  const mesh = { draw, drawTransparent: draw, drawPick: draw };
+  const linear = { type: 'linear' };
+  plot.plot_cont = {
+    _fullData: [{ uid: 'mesh' }],
+    _fullLayout: { scene: { _scene: {
+      fullSceneLayout: { xaxis: linear, yaxis: linear, zaxis: linear },
+      traces: { mesh: { mesh } }
+    } } }
+  };
+  assert.equal(plot.initMeshAnimation(() => []), true);
+  assert.notEqual(mesh.draw, draw);
+  f.window.dispatchEvent(new f.window.Event('beforeunload'));
+  assert.equal(mesh.draw, draw);
+  assert.equal(mesh.drawTransparent, draw);
+  assert.equal(mesh.drawPick, draw);
+});
+
 guiTest(tests, 'figure', 'figure menu opens, closes outside and supports hiding', ['#figure-menu-button'], async function(assert, f) {
   var controller = await PRDC_JSLAB_WINDOWS_TESTS_GUI_AUXILIARY_WINDOWS_TEST_HELPER.figure(f);
   f.click('#figure-menu-button');

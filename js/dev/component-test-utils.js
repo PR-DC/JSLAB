@@ -63,7 +63,7 @@ class PRDC_JSLAB_COMPONENT_TEST_UTILS {
 
 
 const { createFixture } = require('./gui-test-fixture');
-const coverage = { main: new Set(), editor: new Set(), simulate: new Set(), assistant: new Set(), terminal: new Set(), figure: new Set(), serial_terminal: new Set(), 'presentation-editor': new Set(), presentation: new Set(), blank: new Set() };
+const coverage = { main: new Set(), editor: new Set(), simulate: new Set(), assistant: new Set(), terminal: new Set(), figure: new Set(), serial_terminal: new Set(), 'presentation-editor': new Set(), 'latex-editor': new Set(), presentation: new Set(), blank: new Set() };
 
 
 exports.guiTest = PRDC_JSLAB_COMPONENT_TEST_UTILS.guiTest;

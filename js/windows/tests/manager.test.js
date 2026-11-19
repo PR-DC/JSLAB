@@ -14,11 +14,11 @@ tests.add('window definitions remain independent and translate when requested', 
   const manager = new PRDC_JSLAB_WINDOW_MANAGER({}, id => language + ':' + id);
   const definition = manager.getFeatureDefinition('assistant');
   assert.equal(definition.file, 'assistant.html');
-  assert.equal(definition.title, 'en:651');
+  assert.equal(definition.title, 'en:650');
   definition.width = 1;
   language = 'rs';
   assert.equal(manager.getFeatureDefinition('assistant').width, 760);
-  assert.equal(manager.getFeatureDefinition('assistant').title, 'rs:651');
+  assert.equal(manager.getFeatureDefinition('assistant').title, 'rs:650');
   assert.throws(() => manager.getFeatureDefinition('missing'), /Unknown/);
 }, { tags: ['unit', 'windows'] });
 

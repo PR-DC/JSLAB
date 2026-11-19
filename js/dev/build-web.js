@@ -21,7 +21,7 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
     if(/^js\/backend-web\/(init-(sandbox|worker)|worker-(children|modules|ui|debugger-runtime)|sandbox-(modules|startup)|remote-ui|debug-instrument)\.js$/.test(relative)) {
       return false;
     }
-    return /^(js\/(backend-web|main|editor|code|windows)\/.*\.js|lib\/PRDC_(TABS|PANEL|POPUP)\/.*\.js)$/.test(relative) &&
+    return /^(js\/(backend-web|main|editor|code|windows|presentation-editor)\/.*\.js|lib\/PRDC_(TABS|PANEL|POPUP)\/.*\.js)$/.test(relative) &&
       !relative.endsWith('node-compatibility.js') && !relative.endsWith('presentation-viewer.js');
   }
 
@@ -681,8 +681,10 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
       'basic.css',
       'figure.css',
       'three.css',
+      'panel.css',
       'editor.css',
       'editor-debugger.css',
+      'symbol-input.css',
       'presentation-editor.css',
       'tabs.css',
       'big-json-viewer-notepadpp-theme.css',

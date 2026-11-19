@@ -90,6 +90,7 @@ for(const choice of ['save', 'discard', 'cancel']) {
       assert.equal(script.tab.classList.contains('changed'), true);
       script.tab.querySelector('.tab-close').click();
       assert.equal(f.visible('#close-dialog-cont'), true);
+      sent(assert, f, 'MainProcess', 'focus-win');
       assert.equal(script.tab.isConnected, true);
       f.click('#close-dialog-' + choice);
       await f.tick();

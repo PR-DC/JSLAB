@@ -1426,6 +1426,7 @@ class PRDC_JSLAB_LIB_BASIC {
     var seen = Object.create(null);
     var start_str = String(start || "");
     var start_lower = start_str.toLowerCase();
+    const query = Array.from(start_lower);
 
     function getMatchScore(str) {
       var candidate = String(str);
@@ -1446,7 +1447,24 @@ class PRDC_JSLAB_LIB_BASIC {
       if(candidate_lower.startsWith(start_lower)) {
         return 3;
       }
-      return Infinity;
+      if(query.length === 1) return Infinity;
+      if(candidate.includes(start_str)) {
+        return 4;
+      }
+      if(candidate_lower.includes(start_lower)) {
+        return 5;
+      }
+      const initials = (candidate.match(/^[\p{L}\p{N}]|[\p{Lu}]|(?<=[^\p{L}\p{N}])[\p{L}\p{N}]/gu) || []).join('').toLowerCase();
+      if(initials.startsWith(start_lower)) return 6;
+      if(initials.includes(start_lower)) return 7;
+      if(query.length === 2) return Infinity;
+      let position = 0;
+      for(const character of query) {
+        const found = candidate_lower.indexOf(character, position);
+        if(found === -1) return Infinity;
+        position = found + character.length;
+      }
+      return 8;
     }
 
     function maybeAdd(str, inherited) {
@@ -1526,6 +1544,7 @@ class PRDC_JSLAB_LIB_BASIC {
       gatherCompletions(root_scope);
       keywords.forEach(maybeAdd);
     }
+    if(Array.isArray(request.editorNames)) request.editorNames.forEach(name => maybeAdd(name));
     if(found.length) {
       var natural = new Intl.Collator(undefined, { numeric: true, sensitivity: 'variant' });
       found.sort(function(a, b) {

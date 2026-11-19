@@ -535,77 +535,6 @@ lang {
   opacity: 0.3;
 }
 
-#close-dialog-cont {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: none;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 24px;
-  background-color: rgba(255, 255, 255, 0.55);
-  z-index: 20;
-}
-
-#close-dialog {
-  width: 420px;
-  max-width: 100%;
-  background: #fff;
-  box-shadow: 0 0 10px #00000026;
-  border-radius: 10px;
-  padding: 20px;
-  color: #333;
-  line-height: 22px;
-}
-
-#close-dialog-header {
-  border-bottom: 1px solid #666;
-  margin-bottom: 25px;
-  padding-bottom: 10px;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-}
-
-#close-dialog-header span {
-  color: #666;
-  display: block;
-  font-weight: bold;
-  font-size: 24px;
-  border-radius: 3px;
-}
-
-#close-file {
-  font-weight: bold;
-}
-
-#close-dialog-buttons {
-  float: right;
-  padding-top: 10px;
-}
-
-#close-dialog-buttons button {
-  color: #fff;
-  background: #2e85c7;
-  cursor: pointer;
-  border: 2px solid #2e85c7;
-  transition: background 0.2s linear, color 0.2s linear;
-  -webkit-transition: background 0.2s linear, color 0.2s linear;
-  border-radius: 3px;
-  padding: 2px 5px;
-  font-size: 16px;
-  margin: 3px 1px;
-  font-weight: normal;
-  text-decoration: none;
-}
-
-#close-dialog-buttons button:hover {
-  background: transparent;
-  color: #2e85c7;
-}
-
 #presentation-title {
   width: auto;
   flex: 0 0 auto;
@@ -649,128 +578,10 @@ lang {
   margin: 0; 
 }
 
-.panel::-webkit-scrollbar,
-.panel::-webkit-scrollbar-button,
-.panel::-webkit-scrollbar-track,
-.panel::-webkit-scrollbar-track-piece,
-.panel::-webkit-scrollbar-thumb,
-.panel::-webkit-scrollbar-corner,
-.panel::-webkit-resizer,
-#slide-notes::-webkit-scrollbar,
-#slide-notes::-webkit-scrollbar-button,
-#slide-notes::-webkit-scrollbar-track,
-#slide-notes::-webkit-scrollbar-track-piece,
-#slide-notes::-webkit-scrollbar-thumb,
-#slide-notes::-webkit-scrollbar-corner,
-#slide-notes::-webkit-resizer,
-#slide-notes-body::-webkit-scrollbar,
-#slide-notes-body::-webkit-scrollbar-button,
-#slide-notes-body::-webkit-scrollbar-track,
-#slide-notes-body::-webkit-scrollbar-track-piece,
-#slide-notes-body::-webkit-scrollbar-thumb,
-#slide-notes-body::-webkit-scrollbar-corner,
-#slide-notes-body::-webkit-resizer {
-  background: transparent;
-}
-
-.panel::-webkit-scrollbar,
-#slide-notes::-webkit-scrollbar,
-#slide-notes-body::-webkit-scrollbar {
-  width:  12px;
-  height: 12px;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-}
-
-.panel::-webkit-scrollbar-track-piece,
-#slide-notes::-webkit-scrollbar-track-piece,
-#slide-notes-body::-webkit-scrollbar-track-piece {
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-}
-
-.panel::-webkit-scrollbar-thumb,
-#slide-notes::-webkit-scrollbar-thumb,
-#slide-notes-body::-webkit-scrollbar-thumb {
-  background: #ddd;
-  border-radius: 5px;
-  background-clip: content-box;
-  border: 2px solid transparent;
-}
-
-.panel::-webkit-scrollbar-button,
-#slide-notes::-webkit-scrollbar-button,
-#slide-notes-body::-webkit-scrollbar-button {
-  width:0;
-  height:0;
-}
-
-.horizontal-resizer {
-  width: 100%;
-  background-image: url(../img/hdrag.svg);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: auto 6px;
-  cursor: n-resize;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-  position: absolute;
-}
-
-.horizontal-resizer:after {
-  content: '';
-  border-bottom: 1px solid transparent;
-  position: absolute;
-  top: 4px;
-  left: 0px;
-  right: 0px;
-  pointer-events: none;
-}
-
-.vertical-resizer {
-  height: 100%;
-  background-image: url(../img/vdrag.svg);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 6px auto;
-  cursor: w-resize;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-  position: absolute;
-}
-
-.vertical-resizer:after {
-  content: '';
-  border-right: 1px solid transparent;
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 4px;
-  pointer-events: none;
-}
-
-.vertical-resizer:hover:after, .horizontal-resizer:hover:after  {
-  border-right: 1px solid #f7df1e;
-}
-
-.horizontal-resizer:hover:after  {
-  border-bottom: 1px solid #f7df1e;
-}
-
 .panel-container {
-  height: 100%;
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.cell-padding { 
-  padding: 5px;
-  height: 100%;
-  width: 100%;
-  position: relative;
 }
 
 #left-panel {
@@ -791,47 +602,13 @@ lang {
 
 .panel-title {
   flex: 0 0 auto;
-  margin: 5px 10px;
-  margin-bottom: 0px;
-  color: #666;
   padding-top: 3px;
-  padding-bottom: 3px;
-  border-bottom: 1px solid #f7df1e;
-  font-weight: 300;
-  font-size: 14px;
   line-height: 18px;
   min-height: 25px;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 #right-panel .panel-title {
   padding-right: 155px;
-}
-
-.panel-container {
-  border: 1px solid #f1f3f4;
-  -webkit-transition: border .2s linear;
-  transition: border .2s linear;
-  position: relative;
-  border-radius: 3px;
-}
-
-.panel-container:hover {
-  border: 1px solid #f7df1e;
-}
-
-.panel {
-  overflow: auto;
-  position: absolute;
-  top: 23px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
 }
 
 html.editor-search-all-open #code {
@@ -853,42 +630,6 @@ html.editor-search-all-open #code {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-}
-
-#editor-search-all-resizer {
-  display: none;
-  height: 10px;
-  background-image: url(../img/hdrag.svg);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: auto 6px;
-  cursor: n-resize;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: calc(var(--editor-search-all-panel-height) + 9px);
-  z-index: 6;
-}
-
-html.editor-search-all-open #editor-search-all-resizer {
-  display: block;
-}
-
-#editor-search-all-resizer:after {
-  content: '';
-  border-bottom: 1px solid transparent;
-  position: absolute;
-  top: 4px;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-
-#editor-search-all-resizer:hover:after {
-  border-bottom: 1px solid #f7df1e;
 }
 
 .editor-search-all-header {

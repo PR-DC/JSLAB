@@ -6,12 +6,35 @@
  */
 
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
-const { guiTest } = require('../../dev/component-test-utils');
+const { guiTest, sent } = require('../../dev/component-test-utils');
 var tests = new PRDC_JSLAB_TESTS();
 if(!globalThis.__JSLAB_GUI_COMPONENT__) {
   exports.MODULE_TESTS = tests;
   return;
 }
+
+guiTest(tests, 'simulate', 'Simulate brings its unsaved project forward and respects shutdown choices',
+  ['#close-dialog-cancel', '#close-dialog-discard', '#close-dialog-save'], async function(assert, fixture) {
+    const controller = fixture.window.win_simulate;
+    const dialog = fixture.query('#close-dialog-cont');
+    assert.equal(await controller.confirmProjectClose(), true);
+    fixture.input('#simulate-stop-time', '42');
+    let closing = controller.confirmProjectClose();
+    assert.equal(dialog.open, true);
+    sent(assert, fixture, 'MainProcess', 'focus-win');
+    fixture.click('#close-dialog-cancel');
+    assert.equal(await closing, false);
+    closing = controller.confirmProjectClose();
+    fixture.click('#close-dialog-discard');
+    assert.equal(await closing, true);
+    assert.equal(fixture.query('#simulate-stop-time').value, '42');
+    fixture.setDialogResult({ canceled: false, file_path: 'saved.jslmo' });
+    closing = controller.confirmProjectClose();
+    fixture.click('#close-dialog-save');
+    assert.equal(await closing, true);
+    assert.equal(await controller.confirmProjectClose(), true);
+    assert.ok(fixture.calls.some(call => call[0] === 'JSLAB_SIMULATE_SAVE' && call[1].simulation.stop_time === '42'));
+  });
 
 guiTest(tests, 'simulate', 'Simulate keeps hidden visual components editable without drawing their blocks or wires',
   [], async function(assert, fixture) {
@@ -347,6 +370,15 @@ guiTest(tests, 'simulate', 'Simulate context actions insert at the pointer, edit
     svg.dispatchEvent(new fixture.window.MouseEvent('contextmenu', { bubbles: true }));
     fixture.key('#simulate-context-menu button', 'Escape');
     assert.equal(fixture.query('#simulate-context-menu').style.display, 'none');
+    svg.dispatchEvent(new fixture.window.MouseEvent('contextmenu', { bubbles: true }));
+    svg.dispatchEvent(new fixture.window.WheelEvent('wheel', { bubbles: true, deltaY: 10 }));
+    assert.equal(fixture.query('#simulate-context-menu').style.display, 'none');
+    for(const event of ['blur', 'resize']) {
+      svg.dispatchEvent(new fixture.window.MouseEvent('contextmenu', { bubbles: true }));
+      assert.equal(fixture.query('#simulate-context-menu').style.display, 'block');
+      fixture.window.dispatchEvent(new fixture.window.Event(event));
+      assert.equal(fixture.query('#simulate-context-menu').style.display, 'none');
+    }
     controller.setBusy(true);
     svg.dispatchEvent(new fixture.window.MouseEvent('contextmenu', { bubbles: true }));
     assert.equal(fixture.query('#simulate-context-menu').style.display, 'none');
@@ -390,6 +422,11 @@ guiTest(tests, 'simulate', 'Simulate browses nested categories separately from b
     assert.equal(tree.querySelector('[data-library-type="Modelica.Blocks.Sources"]'), null);
     assert.ok(fixture.query('#simulate-library-items [data-library-type="Modelica.Blocks.Sources.TimeTable"]'));
     fixture.key('#simulate-library-categories [data-library-type="Modelica.Blocks"]', 'ArrowRight');
+    assert.ok(tree.querySelector('[data-library-type="Modelica.Blocks.Sources"]'));
+    const selector = '[data-library-type="Modelica.Blocks"]';
+    tree.querySelector(selector).previousElementSibling.click();
+    assert.equal(tree.querySelector('[data-library-type="Modelica.Blocks.Sources"]'), null);
+    tree.querySelector(selector).previousElementSibling.click();
     assert.ok(tree.querySelector('[data-library-type="Modelica.Blocks.Sources"]'));
     fixture.input('#simulate-library-search', 'BodyShape', 'input');
     assert.equal(fixture.document.querySelectorAll('#simulate-library-items [data-library-type]').length, 1);
@@ -920,7 +957,7 @@ guiTest(tests, 'simulate', 'Simulate new, save and window controls are connected
       return call[0] === 'MainProcess' && call[1] === 'toggle-maximize-win';
     }));
     assert.ok(fixture.calls.some(function(call) {
-      return call[0] === 'MainProcess' && call[1] === 'hide-simulate';
+      return call[0] === 'MainProcess' && call[1] === 'close-simulate';
     }));
     fixture.key(null, 's', { ctrlKey: true });
     fixture.key(null, 'o', { ctrlKey: true });

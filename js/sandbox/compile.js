@@ -19,6 +19,15 @@ class PRDC_JSLAB_LIB_COMPILE {
   }
 
   /**
+   * Compiles a local .tex file using JSLAB's configured TeX toolchain.
+   * @param {string} file TeX source path, relative to the working directory or absolute.
+   * @returns {Promise<Object|boolean>} Build status and log, with the PDF path on success.
+   */
+  compileLatex(file) {
+    return this.jsl.inter.env.compileLatex(file);
+  }
+
+  /**
    * Compiles a N-API module located at the specified path.
    * @param {string} path - The path to the N-API module.
    * @param {boolean} [show_output=true] - Whether to show output in the command window.

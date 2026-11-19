@@ -40,6 +40,7 @@ class PRDC_JSLAB_SIMULATE_DOCUMENT {
       obj.diagram_fitted = false;
       obj.editor.setValue('model ModelName\nequation\nend ModelName;\n');
       obj.editor.clearHistory();
+      obj.saved_project_state = JSON.stringify(obj.projectState());
     });
 
     document.getElementById('simulate-open').addEventListener('click', function() {
@@ -204,25 +205,23 @@ class PRDC_JSLAB_SIMULATE_DOCUMENT {
     obj.editor.setValue(response.source);
     obj.editor.clearHistory();
     clearTimeout(obj.parse_timer);
+    obj.saved_project_state = JSON.stringify(obj.projectState());
     await obj.parseModel();
     obj.showDiagram();
     return true;
   }
 
   /**
-   * Saves the project source, workspace bindings and imported libraries.
+   * Captures the editable fields written to a Simulate project.
+   * @returns {Object} Source, libraries, bindings, visualization and simulation options.
    */
-  async saveModel(save_as) {
-    const { host } = this.platform;
-    var obj = this;
-    var response = await host.invoke('JSLAB_SIMULATE_SAVE', {
-      file_path: save_as ? '' : obj.file_path,
-      suggested_file_path: obj.suggested_file_path,
-      libraries: obj.project_libraries,
-      source: obj.editor.getValue(),
-      component_bindings: Array.from(obj.component_bindings),
-      parameter_bindings: Array.from(obj.parameter_bindings),
-      visualization: obj.visualization,
+  projectState() {
+    return {
+      libraries: this.project_libraries,
+      source: this.editor.getValue(),
+      component_bindings: Array.from(this.component_bindings),
+      parameter_bindings: Array.from(this.parameter_bindings),
+      visualization: this.visualization,
       simulation: {
         start_time: document.getElementById('simulate-start-time').value,
         stop_time: document.getElementById('simulate-stop-time').value,
@@ -230,12 +229,63 @@ class PRDC_JSLAB_SIMULATE_DOCUMENT {
         tolerance: document.getElementById('simulate-tolerance').value,
         solver: document.getElementById('simulate-solver').value
       }
+    };
+  }
+
+  /**
+   * Saves the project and records the contents sent to the host.
+   */
+  async saveModel(save_as) {
+    const state = this.projectState();
+    const saved_state = JSON.stringify(state);
+    const response = await this.platform.host.invoke('JSLAB_SIMULATE_SAVE', {
+      ...state,
+      file_path: save_as ? '' : this.file_path,
+      suggested_file_path: this.suggested_file_path
     });
-    if(response && !response.canceled) {
-      obj.suggested_file_path = response.file_path;
-      obj.setFilePath(response.file_path);
+    if(response && !response.canceled && !response.error) {
+      this.saved_project_state = saved_state;
+      this.suggested_file_path = response.file_path;
+      this.setFilePath(response.file_path);
     }
     return response;
+  }
+
+  /**
+   * Checks whether the project differs from its last saved state.
+   * @returns {boolean} Whether there are unsaved changes.
+   */
+  hasUnsavedProjectChanges() {
+    return JSON.stringify(this.projectState()) !== this.saved_project_state;
+  }
+
+  /**
+   * Protects unsaved project changes before closing the window.
+   * @returns {Promise<boolean>} Whether the project can be closed.
+   */
+  async confirmProjectClose() {
+    if(!this.hasUnsavedProjectChanges()) return true;
+    this.platform.host.send('MainProcess', 'focus-win');
+    let choice;
+    try {
+      choice = await new Promise(resolve => {
+        this.close_answer = resolve;
+        this.close_dialog.show(this.projectFileName());
+      });
+    } finally {
+      this.close_answer = null;
+      this.close_dialog.hide();
+    }
+    if(choice === 'discard') return true;
+    if(choice !== 'save') return false;
+    try {
+      const response = await this.saveModel(false);
+      if(response?.error) this.setOutput(response.error, true);
+      return Boolean(response && !response.canceled && !response.error && !this.hasUnsavedProjectChanges());
+    } catch(error) {
+      this.setOutput(error.message, true);
+      return false;
+    }
   }
 }
 

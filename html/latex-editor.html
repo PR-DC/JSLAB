@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" class="ui-app-window">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; img-src 'self' data: blob:; font-src 'self' data: blob:">
+    <title str="697"></title>
+    <link rel="stylesheet" href="../lib/codemirror-5.49.2/lib/codemirror.css">
+    <link rel="stylesheet" href="../lib/codemirror-5.49.2/addon/dialog/dialog.css">
+    <link rel="stylesheet" href="../lib/codemirror-5.49.2/addon/hint/show-hint.css">
+    <link rel="stylesheet" href="../lib/codemirror-5.49.2/addon/fold/foldgutter.css">
+    <link rel="stylesheet" href="../css/codemirror-notepadpp-theme.css">
+    <link rel="stylesheet" href="../css/codemirror-editor-custom.css">
+    <link rel="stylesheet" href="../css/ui.css">
+    <link rel="stylesheet" href="../css/panel.css">
+    <link rel="stylesheet" href="../css/presentation-editor.css">
+    <link rel="stylesheet" href="../node_modules/pdfjs-dist/web/pdf_viewer.css">
+    <link rel="stylesheet" href="../font/roboto.css">
+    <link rel="stylesheet" href="../css/symbol-input.css">
+    <link rel="stylesheet" href="../css/latex-editor.css">
+    <script defer src="../lib/codemirror-5.49.2/lib/codemirror.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/mode/stex/stex.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/edit/matchbrackets.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/display/rulers.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/selection/active-line.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/comment/comment.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/hint/show-hint.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/fold/foldcode.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/fold/foldgutter.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/fold/indent-fold.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/search/searchcursor.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/dialog/dialog.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/scroll/annotatescrollbar.js"></script>
+    <script defer src="../lib/codemirror-5.49.2/addon/search/matchesonscrollbar.js"></script>
+    <script defer src="../js/code/dialog-search.js"></script>
+    <script type="module" src="../js/backend-electron/latex-editor-bootstrap.js"></script>
+  </head>
+  <body class="latex-editor">
+    <div id="setup" class="latex-controls" hidden>
+      <span><str sid="710"></str> <code id="missing-tools"></code></span>
+      <button id="locate"><str sid="708"></str></button>
+      <button id="install"><str sid="709"></str></button>
+    </div>
+
+    <main id="columns">
+      <section id="left-panel">
+        <div class="cell-padding">
+          <div class="panel-container">
+            <div class="panel-title"><str sid="737"></str></div>
+            <div id="source-panel">
+              <aside id="project-panel" aria-label-str="728">
+                <section id="tree-pane" class="cell-padding">
+                  <div class="panel-container">
+                    <h2 class="panel-title">
+                      <button id="toggle-tree" class="latex-sidebar-toggle" aria-expanded="true" aria-controls="tree-content"><str sid="738"></str></button>
+                    </h2>
+                    <div id="tree-content" class="latex-sidebar-content">
+                      <div class="latex-controls latex-tree-controls">
+                        <button id="open-folder" class="latex-icon" title-str="699" aria-label-str="699"><img src="../img/open-folder.svg" alt=""></button>
+                        <button id="refresh-files" class="latex-icon" title-str="735" aria-label-str="735" disabled>
+                          <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 6A5.1 5.1 0 1 0 13 10M13 2.8V6H9.8"/></svg>
+                        </button>
+                        <button id="new-file" class="latex-icon" title-str="733" aria-label-str="733" disabled>
+                          <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+                        </button>
+                      </div>
+                      <div id="project-tree" class="panel-scroll"></div>
+                    </div>
+                  </div>
+                </section>
+                <section id="outline-pane" class="cell-padding">
+                  <div class="panel-container">
+                    <h2 class="panel-title">
+                      <button id="toggle-outline" class="latex-sidebar-toggle" aria-expanded="true" aria-controls="file-outline"><str sid="739"></str></button>
+                    </h2>
+                    <div id="file-outline" class="panel-scroll"></div>
+                  </div>
+                </section>
+              </aside>
+              <section id="source-content" class="cell-padding">
+                <div class="panel-container">
+                  <div class="panel-title latex-controls latex-source-toolbar">
+                    <span class="latex-source-file">
+                      <span id="source-title"></span>
+                      <span id="source-dirty" class="latex-dirty-dot" role="img" title-str="777" aria-label-str="777" hidden></span>
+                    </span>
+                    <div class="latex-source-actions">
+                      <button id="save" class="latex-icon" title-str="700" aria-label-str="700" disabled><img src="../img/tab-save.svg" alt=""></button>
+                      <button id="undo-source" class="latex-icon" title-str="381" aria-label-str="381" disabled>
+                        <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 3 2.5 6l3 3M3 6h6a4 4 0 0 1 0 8"/></svg>
+                      </button>
+                      <button id="redo-source" class="latex-icon" title-str="382" aria-label-str="382" disabled>
+                        <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="m10.5 3 3 3-3 3M13 6H7a4 4 0 0 0 0 8"/></svg>
+                      </button>
+                      <button id="search-source" class="latex-icon" title-str="168" aria-label-str="168" disabled>
+                        <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true">
+                          <circle cx="7.2" cy="7.2" r="4.5"/>
+                          <path d="m10.4 10.4 3.2 3.2"/>
+                        </svg>
+                      </button>
+                      <button id="format-source" class="latex-icon" title-str="760" aria-label-str="760" popovertarget="latex-format-menu" disabled>
+                        <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6V3h10v3M8 3v10M5 13h6"/></svg>
+                      </button>
+                      <button id="symbol-input" class="latex-icon" title-str="364" aria-label-str="364" aria-controls="latex-symbol-popup" aria-expanded="false" disabled>
+                        <svg class="latex-symbol-icon" viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="M13.5 3.6C12.6 4.8 11.6 7 10.5 8.9c.3 1.2.7 2.5 1.4 2.5.5 0 .9-.4 1.3-1l.4.3c-.6 1.2-1.3 2-2.2 2-1 0-1.5-.9-1.8-2.2-1 1.4-2.2 2.3-3.7 2.3-1.8 0-2.8-1.1-2.8-2.7 0-2.4 2-4.5 4.3-4.5 1.4 0 2.3.8 2.8 2.2.9-1.8 1.6-3.5 1.9-4.2ZM9.3 9.4C9 7.9 8.6 6.3 7.4 6.3c-1.5 0-2.7 2.1-2.7 3.9 0 1 .4 1.7 1.3 1.7 1.1 0 2.2-.9 3.3-2.5Z" fill-rule="evenodd"/>
+                        </svg>
+                      </button>
+                      <button id="forward" class="latex-icon" title-str="704" aria-label-str="704" disabled>
+                        <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11m-5-5 5 5-5 5"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="code">
+                    <p id="empty-project"><str sid="712"></str></p>
+                  </div>
+                  <div id="asset-preview" hidden>
+                    <img id="asset-image" alt="" hidden>
+                    <div id="asset-pdf" class="panel-scroll" hidden></div>
+                    <pre id="asset-text" class="panel-scroll" tabindex="0" hidden></pre>
+                    <div id="asset-controls" class="latex-controls" hidden>
+                      <button id="asset-previous" class="latex-icon" title-str="725" aria-label-str="725"><img class="latex-arrow-up" src="../img/arrow.svg" alt=""></button>
+                      <button id="asset-next" class="latex-icon" title-str="726" aria-label-str="726"><img class="latex-arrow-down" src="../img/arrow.svg" alt=""></button>
+                      <output id="asset-pages"></output>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="right-panel">
+        <div class="cell-padding">
+          <div class="panel-container">
+            <div class="panel-title latex-pdf-heading">
+              <str id="pdf-heading" sid="736"></str>
+              <str id="messages-heading" sid="706" hidden></str>
+              <div class="latex-heading-actions">
+                <button id="settings" class="latex-icon" title-str="740" aria-label-str="740">
+                  <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M6 2v4M2 8h12M10 6v4M2 12h12M5 10v4"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="latex-controls latex-pdf-toolbar">
+              <div class="latex-toolbar-group">
+                <button id="compile" disabled><span class="latex-compile-icon" aria-hidden="true"></span><str sid="702"></str></button>
+                <button id="show-messages" class="latex-icon" title-str="706" aria-label-str="706" aria-controls="compiler-messages" aria-expanded="false">
+                  <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h6L13 5.5V14H3.5zM9.5 2v3.5H13M6 8h4.5M6 10.5h4.5"/></svg>
+                  <span id="message-count" aria-hidden="true" hidden></span>
+                </button>
+                <button id="cancel" class="latex-icon" title-str="707" aria-label-str="707" hidden disabled><span class="latex-stop-icon" aria-hidden="true"></span></button>
+              </div>
+              <div id="pdf-page-controls" class="latex-toolbar-group latex-page-controls">
+                <button id="previous" class="latex-icon" title-str="725" aria-label-str="725" disabled><img class="latex-arrow-up" src="../img/arrow.svg" alt=""></button>
+                <button id="next" class="latex-icon" title-str="726" aria-label-str="726" disabled><img class="latex-arrow-down" src="../img/arrow.svg" alt=""></button>
+                <input id="page" type="number" min="1" value="1" aria-label-str="729" disabled>
+                <output id="pages" aria-label-str="774"></output>
+                <button id="zoom-out" class="latex-icon" title-str="723" aria-label-str="723" disabled><img src="../img/simulate-zoom-out.svg" alt=""></button>
+                <button id="zoom-in" class="latex-icon" title-str="722" aria-label-str="722" disabled><img src="../img/simulate-zoom-in.svg" alt=""></button>
+                <select id="zoom" aria-label-str="747" disabled>
+                  <option value="fit" str="724"></option>
+                  <option value="0.5" lang-fixed>50%</option><option value="0.75" lang-fixed>75%</option>
+                  <option value="1" lang-fixed>100%</option><option value="1.25" lang-fixed>125%</option>
+                  <option value="1.5" lang-fixed>150%</option><option value="2" lang-fixed>200%</option>
+                  <option value="custom" hidden></option>
+                </select>
+                <button id="rotate" class="latex-icon" title-str="727" aria-label-str="727" disabled>
+                  <svg class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 4.5H13V1M13 4.5a5.5 5.5 0 1 0 .5 4.8"/><path d="M6.5 6.5h3v3h-3z"/></svg>
+                </button>
+                <button id="reverse" class="latex-icon" title-str="705" aria-label-str="705" disabled><img src="../img/arrow.svg" alt=""></button>
+              </div>
+              <button id="back-to-pdf" class="latex-icon" hidden><img src="../img/arrow.svg" alt=""><str sid="757"></str></button>
+            </div>
+            <div id="status" role="status" hidden></div>
+            <div id="pdf-scroll" class="panel-scroll"><p id="empty-pdf"><str sid="711"></str></p></div>
+            <div id="compiler-messages" class="panel-scroll" hidden>
+              <div id="message-filters" role="group" aria-label-str="706">
+                <button class="latex-icon" data-message-filter="all" aria-pressed="true"><str sid="331"></str><span></span></button>
+                <button class="latex-icon" data-message-filter="errors" aria-pressed="false"><str sid="644"></str><span></span></button>
+                <button class="latex-icon" data-message-filter="warnings" aria-pressed="false"><str sid="643"></str><span></span></button>
+                <button class="latex-icon" data-message-filter="typesetting" aria-pressed="false"><str sid="758"></str><span></span></button>
+              </div>
+              <div id="empty-messages" role="status">
+                <svg id="messages-ready" class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true" hidden><circle cx="8" cy="8" r="6"/><path d="m5 8 2 2 4-4"/></svg>
+                <svg id="messages-pending" class="latex-line-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h6L13 5.5V14H3.5zM9.5 2v3.5H13M6 8h4.5M6 10.5h4.5"/></svg>
+                <p id="empty-messages-text"><str sid="759"></str></p>
+              </div>
+              <section class="latex-diagnostic-group" id="latex-errors" hidden>
+                <h3><str sid="644"></str> <span></span></h3>
+                <ul></ul>
+              </section>
+              <section class="latex-diagnostic-group" id="latex-warnings" hidden>
+                <h3><str sid="643"></str> <span></span></h3>
+                <ul></ul>
+              </section>
+              <section class="latex-diagnostic-group" id="latex-typesetting" hidden>
+                <h3><str sid="758"></str> <span></span></h3>
+                <ul></ul>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="latex-format-menu" popover role="group" aria-label-str="760"></div>
+
+    <div id="latex-symbol-popup" class="editor-symbol-popup" style="display: none;">
+      <div class="editor-symbol-header"><str sid="364"></str></div>
+      <div id="latex-symbol-groups"></div>
+    </div>
+
+    <div id="close-dialog-cont" role="dialog" aria-modal="true" aria-labelledby="close-dialog-header" hidden>
+      <div id="close-dialog">
+        <div id="close-dialog-header">
+          <span><str sid="47"></str></span>
+        </div>
+        <div id="close-dialog-msg">
+          <str sid="48"></str> <span id="close-file"></span> <str sid="49"></str>
+        </div>
+        <div id="close-project-msg" hidden><str sid="719"></str></div>
+        <div id="close-dialog-buttons">
+          <button id="close-dialog-save"><str sid="50"></str></button>
+          <button id="close-dialog-discard"><str sid="51"></str></button>
+          <button id="close-dialog-cancel"><str sid="52"></str></button>
+        </div>
+        <br class="clear">
+      </div>
+    </div>
+    <dialog id="latex-settings" aria-labelledby="latex-settings-title">
+      <form class="options-cont ui" method="dialog">
+        <header class="options-header ui">
+          <span id="latex-settings-title"><str sid="740"></str></span>
+          <button id="settings-close" class="options-close ui" type="submit" title-str="376" aria-label-str="376"><img src="../img/close.svg" alt=""></button>
+        </header>
+        <div class="float-select ui">
+          <select id="main-file" class="ui" disabled></select>
+          <label class="float-label" for="main-file"><str sid="701"></str></label>
+        </div>
+        <div class="float-select ui">
+          <select id="engine" class="ui">
+            <option value="pdflatex" lang-fixed>pdfLaTeX</option>
+            <option value="xelatex" lang-fixed>XeLaTeX</option>
+            <option value="lualatex" lang-fixed>LuaLaTeX</option>
+          </select>
+          <label class="float-label" for="engine"><str sid="741"></str></label>
+        </div>
+        <div class="latex-toolchain"><str sid="742"></str><output id="toolchain"></output></div>
+        <label class="checkcont ui"><str sid="743"></str><input id="draft-images" type="checkbox"><span class="checkmark"></span></label>
+        <label class="checkcont ui"><str sid="744"></str><input id="reuse-build" type="checkbox"><span class="checkmark"></span></label>
+        <label class="checkcont ui"><str sid="745"></str><input id="halt-on-error" type="checkbox"><span class="checkmark"></span></label>
+        <label class="checkcont ui"><str sid="748"></str><input id="wrap-source" type="checkbox"><span class="checkmark"></span></label>
+      </form>
+    </dialog>
+  </body>
+</html>

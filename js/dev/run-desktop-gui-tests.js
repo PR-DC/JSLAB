@@ -111,10 +111,10 @@ class PRDC_JSLAB_DEV_RUN_DESKTOP_GUI_TESTS_HELPER {
          */
         _scanForTestModules(folder) {
           return super._scanForTestModules(folder).filter(filename =>
-            ['desktop-gui-integration.test.js', 'desktop-simulate.test.js'].includes(path.basename(filename)));
+            ['desktop-gui-integration.test.js', 'desktop-simulate.test.js', 'desktop-project-editors.test.js'].includes(path.basename(filename)));
         }
       }
-      var summary = await new PRDC_JSLAB_DESKTOP_GUI_TESTER('main/tests', { include_tags: ['integration'] }).runTests();
+      var summary = await new PRDC_JSLAB_DESKTOP_GUI_TESTER('', { include_tags: ['integration'] }).runTests();
       if(!summary.total || summary.failed) {
         process.exitCode = 1;
         if(diagnostics.trim()) {

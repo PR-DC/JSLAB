@@ -16,14 +16,14 @@ tests.add('feature controllers receive platform services instead of importing ba
   const root = path.resolve(__dirname, '../../..');
   const native_modules = new Set(['electron', 'electron-store', 'fs', 'path', 'os', 'child_process', 'eslint']);
   const files = [];
-  for(const folder of ['main', 'editor', 'simulate']) {
+  for(const folder of ['main', 'editor', 'simulate', 'latex-editor', 'presentation-editor']) {
     for(const entry of fs.readdirSync(path.join(root, 'js', folder), { withFileTypes: true })) {
       if(entry.isFile() && entry.name.endsWith('.js')) {
         files.push(path.join(root, 'js', folder, entry.name));
       }
     }
   }
-  for(const name of ['assistant', 'system-terminal', 'presentation-editor', 'presentation-editor-inline']) {
+  for(const name of ['assistant', 'system-terminal']) {
     files.push(path.join(root, 'js/windows', name + '.js'));
   }
   files.push(path.join(root, 'js/code/doc-hover.js'), path.join(root, 'js/code/dialog-search.js'),

@@ -3,9 +3,7 @@
 #editor-workspace > #code { position: absolute; left: 0; right: 0; height: 100%; }
 #editor-debugger-pane { position: absolute; left: 0; right: 0; padding: 5px; box-sizing: border-box; background: #fff; overflow: hidden; }
 #editor-debugger-pane[hidden], #editor-workspace .horizontal-resizer[hidden] { display: none; }
-#editor-debugger-pane > .panel-container { height: 100%; box-sizing: border-box; position: relative; border: 1px solid #f1f3f4; border-radius: 3px; transition: border .2s linear; }
-#editor-debugger-pane > .panel-container:hover { border-color: #f7df1e; }
-#editor-debugger-header { display: flex; align-items: center; gap: 12px; margin: 5px 10px 0; padding-bottom: 3px; border-bottom: 1px solid #f7df1e; color: #666; font-size: 14px; font-weight: 300; user-select: none; white-space: nowrap; }
+#editor-debugger-header { display: flex; align-items: center; gap: 12px; overflow: visible; }
 .editor-debugger-title { text-transform: uppercase; color: inherit; }
 #debugger-state { color: #999; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
 #editor-debugger-header-controls { margin-left: auto; display: flex; align-items: center; gap: 3px; }
@@ -38,5 +36,4 @@
 #debugger-content ::-webkit-scrollbar-track, #debugger-menu::-webkit-scrollbar-track { background: transparent; }
 #debugger-content ::-webkit-scrollbar-thumb, #debugger-menu::-webkit-scrollbar-thumb { background: #ddd; border-radius: 5px; background-clip: content-box; border: 2px solid transparent; }
 #debugger-content ::-webkit-scrollbar-button, #debugger-menu::-webkit-scrollbar-button { width: 0; height: 0; }
-#editor-workspace .horizontal-resizer { position: absolute; left: 0; right: 0; z-index: 5; background: url(../img/hdrag.svg) center / auto 6px no-repeat; cursor: n-resize; user-select: none; }
-#editor-workspace .horizontal-resizer:hover { border-bottom: 1px solid #f7df1e; }
+#editor-workspace .horizontal-resizer { left: 0; right: 0; z-index: 5; }

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html class="ui-app-window">
   <head>
     <meta charset="UTF-8">
     <title str="673"></title>
     <meta http-equiv="Content-Security-Policy" content="script-src * 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:;">
     <link rel="stylesheet" href="../font/roboto.css">
     <link rel="stylesheet" href="../font/RobotoMono.css">
+    <link rel="stylesheet" href="../css/ui.css">
     <link rel="stylesheet" href="../css/simulate.css">
     <style id="simulate-icon-style"></style>
   </head>
@@ -54,6 +55,19 @@
       <progress id="simulate-compiler-progress" max="100" value="0" hidden></progress>
       <pre id="simulate-output"></pre>
     </section>
+    <dialog id="close-dialog-cont" aria-labelledby="close-dialog-header" hidden>
+      <div id="close-dialog">
+        <div id="close-dialog-header"><str sid="47"></str></div>
+        <div id="close-dialog-msg">
+          <str sid="48"></str> <span id="close-file"></span> <str sid="49"></str>
+        </div>
+        <div id="close-dialog-buttons">
+          <button id="close-dialog-save" type="button"><str sid="50"></str></button>
+          <button id="close-dialog-discard" type="button"><str sid="51"></str></button>
+          <button id="close-dialog-cancel" type="button"><str sid="52"></str></button>
+        </div>
+      </div>
+    </dialog>
     <div id="simulate-simulation-dialog" class="simulate-dialog" hidden tabindex="0">
       <div class="simulate-dialog-panel simulate-simulation-panel">
         <div class="simulate-dialog-header"><span><str sid="omjsl-8442"></str></span><img id="simulate-simulation-close" src="../img/close.svg" title-str="24" alt=""></div>

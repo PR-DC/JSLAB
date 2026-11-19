@@ -10,7 +10,7 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 const fs = require('fs');
 const path = require('path');
-const { PRDC_JSLAB_SIMULATE_COMPILER } = require('./platform');
+const { PRDC_JSLAB_SIMULATE_COMPILER } = require('./compiler-fixture');
 const candidate_bundle = new URLSearchParams(location.search).get('bundle');
 const runtime = candidate_bundle ? require(path.join(candidate_bundle, 'js')) :
   PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();

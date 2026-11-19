@@ -6,8 +6,9 @@
  */
 
 const { PRDC_JSLAB_CODE_EDITOR } = require('../code/editor');
+const { PRDC_JSLAB_UI_CLOSE_DIALOG } = require('../windows/ui');
 
-const { PRDC_JSLAB_PRESENTATION_CONTENT } = require('./presentation-content');
+const { PRDC_JSLAB_PRESENTATION_CONTENT } = require('../windows/presentation-content');
 
 
 const { PRDC_JSLAB_PRESENTATION_EDITOR_NOTES } = require('./presentation-editor-notes');
@@ -233,6 +234,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_INLINE_CODE_TAB {
     });
     this.tab.tab_obj = this;
     this.code_editor = CodeMirror(document.getElementById('code'), PRDC_JSLAB_CODE_EDITOR.options());
+    this.code_editor.setOption('hintOptions', {
+      includeBrowserCompletions: true,
+      requestCompletions: request => editor.platform.bridge.getCompletions(request)
+    });
 
     PRDC_JSLAB_CODE_EDITOR.bindShortcuts(CodeMirror);
 
@@ -461,8 +466,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_INLINE extends PRDC_JSLAB_PRESENTATION_EDIT
     this.slide_notes_body = document.getElementById('slide-notes-body');
     this.set_slide = document.getElementById('set-slide');
     this.total_slides = document.getElementById('total-slides');
-    this.close_dialog_cont = document.getElementById('close-dialog-cont');
-    this.close_file = document.getElementById('close-file');
+    this.close_dialog = new PRDC_JSLAB_UI_CLOSE_DIALOG(document, choice => this._resolveCloseDialog(choice));
     this.tab_save = document.getElementById('tab-save');
     this.thumb_render_token = 0;
     this.drag_slide_index = undefined;
@@ -513,15 +517,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_INLINE extends PRDC_JSLAB_PRESENTATION_EDIT
     this.tab_save.addEventListener('click', function() {
       obj.saveCode();
     });
-    document.getElementById('close-dialog-save').addEventListener('click', function() {
-      obj._resolveCloseDialog('save');
-    });
-    document.getElementById('close-dialog-discard').addEventListener('click', function() {
-      obj._resolveCloseDialog('discard');
-    });
-    document.getElementById('close-dialog-cancel').addEventListener('click', function() {
-      obj._resolveCloseDialog('cancel');
-    });
 
     this.slide_thumbnails.addEventListener('contextmenu', function(event) {
       var item = event.target.closest('.slide-thumb');
@@ -549,9 +544,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_INLINE extends PRDC_JSLAB_PRESENTATION_EDIT
         obj.saveCode();
         return;
       }
-      if(event.key == 'Escape' && obj.close_requested) {
-        obj._resolveCloseDialog('cancel');
-      } else if(event.key == 'Escape') {
+      if(event.key == 'Escape') {
         obj._hideSlideContextMenu();
       }
     });
@@ -731,8 +724,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_INLINE extends PRDC_JSLAB_PRESENTATION_EDIT
       return true;
     }
     this.close_requested = true;
-    this.close_file.textContent = this.presentation_title.textContent || PRDC_JSLAB_PRESENTATION_EDITOR_INLINE_HELPER.getBaseName(this.root_path);
-    this.close_dialog_cont.style.display = 'block';
+    this.close_dialog.show(this.presentation_title.textContent ||
+      PRDC_JSLAB_PRESENTATION_EDITOR_INLINE_HELPER.getBaseName(this.root_path));
     return false;
   }
 
@@ -742,7 +735,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_INLINE extends PRDC_JSLAB_PRESENTATION_EDIT
    */
   async _resolveCloseDialog(action) {
     this.close_requested = false;
-    this.close_dialog_cont.style.display = 'none';
+    this.close_dialog.hide();
     if(action == 'cancel') {
       return;
     }

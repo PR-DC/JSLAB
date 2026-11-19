@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="ui-app-window">
   <head>
     <meta charset="UTF-8">
     <title str="517"></title>
@@ -11,6 +11,9 @@
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/hint/show-hint.css">
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-editor-custom.css">
+    <link rel="stylesheet" href="../css/symbol-input.css">
+    <link rel="stylesheet" href="../css/ui.css">
+    <link rel="stylesheet" href="../css/panel.css">
 		<link rel="stylesheet" type="text/css" href="../css/editor.css" />
     <link rel="stylesheet" href="../css/editor-debugger.css">
     <link rel="stylesheet" type="text/css" href="../css/context-menu.css" />
@@ -97,7 +100,7 @@
       </ul>
       <div class="popup-triangle"></div>
     </div>
-    <div id="close-dialog-cont">
+    <div id="close-dialog-cont" role="dialog" aria-labelledby="close-dialog-header" hidden>
       <div id="close-dialog">
         <div id="close-dialog-header">
           <span><str sid="47"></str></span>
@@ -110,7 +113,6 @@
           <button id="close-dialog-discard"><str sid="51"></str></button>
           <button id="close-dialog-cancel"><str sid="52"></str></button>
         </div>
-        <br class="clear">
       </div>
     </div>
 
@@ -126,7 +128,7 @@
       <div class="popup-triangle"></div>
     </div>
     
-    <div id="editor-symbol-popup" style="display: none;">
+    <div id="editor-symbol-popup" class="editor-symbol-popup" style="display: none;">
       <div class="editor-symbol-header">
         <span><str sid="364"></str></span>
       </div>
@@ -134,7 +136,7 @@
       <div class="popup-triangle"></div>
     </div>
     
-    <div id="editor-search-all-resizer"></div>
+    <div id="editor-search-all-resizer" class="horizontal-resizer"></div>
     <div id="editor-search-all-panel" style="display: none;">
       <div class="editor-search-all-header">
         <input id="editor-search-all-input" type="text" str="374" title-str="373" autocomplete="off" spellcheck="false">

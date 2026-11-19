@@ -73,4 +73,13 @@ webTest(tests, 'web every main panel divider resizes and persists with mouseup c
   window.dispatchEvent(new Event('resize'));
   t.ok(Object.keys(localStorage).some(key => key.includes('panel-')));
 });
+
+webTest(tests, 'web Command Window panel fills the space below its title', function() {
+  const command = GUI.q('#command-window');
+  const frame = command.closest('.panel-container');
+  GUI.eq(getComputedStyle(command).position, 'absolute');
+  GUI.eq(command.offsetTop, 23);
+  GUI.eq(command.offsetHeight, frame.clientHeight - 23);
+});
+
 exports.MODULE_TESTS = tests;

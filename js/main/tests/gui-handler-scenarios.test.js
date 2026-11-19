@@ -33,6 +33,24 @@ guiTest(tests, 'figure', 'figure hover timers, leave cleanup and resize callback
   await f.waitFor(() => !menu.classList.contains('hovered'), 'figure hover timeout');
 });
 
+guiTest(tests, 'main', 'Command Window clears the argument hint when source changes or focus leaves', [], async function(assert, f, c) {
+  const input = c.command_window.code_input;
+  const wrapper = input.getWrapperElement();
+  const CodeMirror = f.window.CodeMirror;
+  const options = { requestCompletions: async () => ({ items: [], argument_hint: 'plot(x, y)' }) };
+  input.setValue('plot(');
+  input.setCursor(0, 5);
+  input.focus();
+  await CodeMirror.hint.javascript(input, options);
+  assert.equal(wrapper.querySelector('.jslab-argument-hint')?.textContent, 'plot(x, y)');
+  input.replaceRange('x', input.getCursor());
+  await f.waitFor(() => !wrapper.querySelector('.jslab-argument-hint'), 'source edit dismisses the argument hint');
+  await CodeMirror.hint.javascript(input, options);
+  assert.ok(wrapper.querySelector('.jslab-argument-hint'));
+  CodeMirror.signal(input, 'blur', input);
+  assert.equal(wrapper.querySelector('.jslab-argument-hint'), null);
+});
+
 for(const type of ['main', 'editor']) {
   guiTest(tests, type, type + ' runtime error handlers report errors without crashing the window', [], function(assert, f, c) {
     var rejection = new f.window.Event('unhandledrejection', { cancelable: true });

@@ -26,6 +26,8 @@
    */
   class PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER {
 
+    static hint_editors = new WeakSet();
+
     /**
      * Returns bridge.
      */
@@ -136,7 +138,7 @@
         function(e, cur) {
           return e.getTokenAt(cur);
         },
-        options);
+        options || callback);
     }
 
     /**
@@ -162,6 +164,12 @@
       hint.style.left = Math.max(0, coords.left) + 'px';
       hint.style.top = (coords.bottom + 3) + 'px';
       editor.getWrapperElement().appendChild(hint);
+      if(typeof editor.on === 'function' && !this.hint_editors.has(editor)) {
+        const clear = () => this.showArgumentHint(editor, null);
+        this.hint_editors.add(editor);
+        editor.on('change', clear);
+        editor.on('blur', clear);
+      }
     }
 
     /**
@@ -188,18 +196,35 @@
     static getCompletions(editor, token, context, keywords, options, cur) {
       return new Promise(function(resolve) {
         var input = typeof editor.getValue == 'function' ? editor.getValue() : '';
+        const line = editor.getLine ? editor.getLine(cur.line).slice(0, cur.ch) : input;
+        const showHint = text => {
+          const cursor = editor.getCursor();
+          if((typeof editor.getValue !== 'function' || editor.getValue() === input) &&
+              cursor.line === cur.line && cursor.ch === cur.ch && editor.hasFocus?.() !== false) {
+            PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.showArgumentHint(editor, text);
+          }
+        };
         var request = {
           start: token.string,
-          context: context || [],
+          context: context?.map(({ type, string }) => ({ type, string })) || [],
           keywords: keywords,
           input: input,
           expression: token.consoleExpression ||
-            (context && context.length ? PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.expressionBeforeProperty(input, token) : ''),
+            (context?.length ? PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.expressionBeforeProperty(line, token) : ''),
           history: options && Array.isArray(options.history) ? options.history : []
         };
-        PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.requestCompletions(request).then(function(response) {
+        const editor_names = options?.includeBrowserCompletions ?
+          browserHint?.(editor, { ...options, filter: false })?.list || [] : [];
+        if(!context?.length) {
+          for(const scope of [token.state?.localVars, token.state?.globalVars]) {
+            for(let binding = scope; binding; binding = binding.next) editor_names.push(binding.name);
+          }
+        }
+        if(editor_names.length) request.editorNames = editor_names;
+        const requestCompletions = options?.requestCompletions || PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.requestCompletions;
+        Promise.resolve().then(() => requestCompletions(request)).then(function(response) {
           var found = Array.isArray(response) ? response : (response && response.items) || [];
-          PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.showArgumentHint(editor, response && response.argument_hint);
+          showHint(response && response.argument_hint);
           if(found.length === 1) {
             var only_item = found[0];
             var only_text = typeof only_item == 'string' ? only_item : only_item && only_item.text;
@@ -222,8 +247,8 @@
             from: Pos(cur.line, token.start),
             to: Pos(cur.line, token.end)});
         }).catch(function() {
-          PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.showArgumentHint(editor, null);
-          resolve({list: [],
+          showHint(null);
+          resolve({list: editor_names.filter(name => name.startsWith(token.string)),
             from: Pos(cur.line, token.start),
             to: Pos(cur.line, token.end)});
         });
@@ -232,6 +257,7 @@
   }
 
   var Pos = CodeMirror.Pos;
+  const browserHint = CodeMirror.hint?.javascript;
 
 
   CodeMirror.registerHelper("hint", "javascript", PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.javascriptHint);

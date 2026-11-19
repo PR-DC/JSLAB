@@ -57,16 +57,6 @@ class PRDC_JSLAB_EDITOR {
       obj.win.script_manager.createScript();
     });
 
-    $("#close-dialog-save").click(function() {
-      obj.win.script_manager.closingDialogButton(2);
-    });
-    $("#close-dialog-discard").click(function() {
-      obj.win.script_manager.closingDialogButton(1);
-    });
-    $("#close-dialog-cancel").click(function() {
-      obj.win.script_manager.closingDialogButton(0);
-    });
-
     $("#search-dialog-menu").click(function() {
       obj.win.script_manager.openSearchDialog();
       obj.win.editor_more_popup.close();

@@ -689,19 +689,34 @@ tests.add('getCompletions prioritizes exact match and includes context symbols',
   assert.ok(completions.includes('customKeyword2'));
 }, { tags: ['unit', 'basic'] });
 
-tests.add('getCompletions uses DevTools-style prefix filtering and property ordering', function(assert) {
+tests.add('global autocomplete ranks prefixes above case-insensitive substring matches', function(assert) {
+  const harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
+  for(const name of ['presentations', 'makeOnlinePresentation', 'editPresentation', 'plot']) {
+    harness.jsl.context[name] = function() {};
+  }
+  const { items } = harness.basic.getCompletions({ start: 'presentation' });
+  assert.deepEqual(items, ['presentations', 'editPresentation', 'makeOnlinePresentation']);
+}, { tags: ['unit', 'basic'] });
+
+tests.add('getCompletions ranks property prefixes before substring and fuzzy matches', function(assert) {
   var harness = PRDC_JSLAB_SANDBOX_TESTS_BASIC_TEST_HELPER.createBasicCompletionsHarness();
   var prototype = { prop10: true, prop2: true, _private: true };
   var value = Object.create(prototype);
   value.prop1 = true;
   value.unrelatedProp = true;
+  value.printOnlyProperties = true;
   harness.jsl.context.value = value;
+  harness.jsl.inter = { env: { babel_parser: require('@babel/parser') } };
   var context = JSON.stringify([{ type: 'variable', string: 'value' }]);
 
   var completions = harness.basic.getCompletions(['prop', context, []]);
 
   assert.deepEqual(completions.slice(0, 3), ['prop1', 'prop2', 'prop10']);
-  assert.equal(completions.includes('unrelatedProp'), false);
+  assert.ok(completions.includes('unrelatedProp'));
+  assert.ok(harness.basic.getCompletions(['pop', context, []]).includes('printOnlyProperties'));
+  assert.equal(harness.basic.getCompletions(['u', context, []]).includes('unrelatedProp'), true);
+  assert.equal(harness.basic.getCompletions(['n', context, []]).includes('unrelatedProp'), false);
+  assert.deepEqual(harness.basic.getCompletions({ expression: 'value', start: 'related' }).items, ['unrelatedProp']);
 }, { tags: ['unit', 'basic'] });
 
 tests.add('console completion and eager preview do not invoke accessors', function(assert) {

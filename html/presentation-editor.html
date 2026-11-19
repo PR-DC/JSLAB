@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="ui-app-window">
   <head>
     <meta charset="UTF-8">
     <title str="515"></title>
@@ -11,6 +11,8 @@
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/addon/hint/show-hint.css">
     <link rel="stylesheet" type="text/css" href="../lib/codemirror-5.49.2/lib/codemirror.css">
     <link rel="stylesheet" type="text/css" href="../css/codemirror-presentation-editor-custom.css">
+    <link rel="stylesheet" href="../css/ui.css">
+    <link rel="stylesheet" href="../css/panel.css">
 		<link rel="stylesheet" type="text/css" href="../css/presentation-editor.css" />
     <link rel="stylesheet" type="text/css" href="../font/roboto.css" />
     
@@ -33,9 +35,9 @@
                   <webview id="preview" useragent="presentation-editor-preview" nodeintegration webpreferences="backgroundThrottling=no, contextIsolation=no"></webview>
                 </div>
               </div>
-              <div id="slide-notes">
+              <div id="slide-notes" class="panel-scroll">
                 <label id="slide-notes-label" for="slide-notes-body"><str sid="553"></str></label>
-                <textarea id="slide-notes-body" spellcheck="false"></textarea>
+                <textarea id="slide-notes-body" class="panel-scroll" spellcheck="false"></textarea>
               </div>
               <div id="slide-controls">
                 <div id="first-slide" class="button" title-str="315">|⏴</div>
@@ -65,7 +67,7 @@
             </div>
             <div id="code"></div>
 
-            <div id="editor-search-all-resizer"></div>
+            <div id="editor-search-all-resizer" class="horizontal-resizer"></div>
             <div id="editor-search-all-panel" style="display: none;">
               <div class="editor-search-all-header">
                 <input id="editor-search-all-input" type="text" str="374" title-str="373" autocomplete="off" spellcheck="false">
@@ -99,7 +101,7 @@
         </div>
       </div>
     </div>
-    <div id="close-dialog-cont" style="display: none;">
+    <div id="close-dialog-cont" role="dialog" aria-labelledby="close-dialog-header" hidden>
       <div id="close-dialog">
         <div id="close-dialog-header">
           <span><str sid="538"></str></span>
@@ -112,7 +114,6 @@
           <button id="close-dialog-discard"><str sid="51"></str></button>
           <button id="close-dialog-cancel"><str sid="52"></str></button>
         </div>
-        <br class="clear">
       </div>
     </div>
     <div id="thumbnail-preview-host">
@@ -152,6 +153,7 @@
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/hint/javascript-hint.js"></script>
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/hint/css-hint.js"></script>
     <script type="text/javascript" src="../lib/codemirror-5.49.2/addon/hint/html-hint.js"></script>
+    <script type="text/javascript" src="../js/code/custom-javascript-hint.js"></script>
     <script type="text/javascript" src="../js/code/dialog-search.js"></script>
     
     <script type="text/javascript" src="../lib/jquery-3.7.0/jquery-3.7.0.min.js"></script>

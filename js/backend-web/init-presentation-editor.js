@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 const { PRDC_JSLAB_WEB_RENDERER_ADAPTER } = require('./renderer');
-const { PRDC_JSLAB_PRESENTATION_EDITOR_INLINE } = require('../windows/presentation-editor-inline');
+const { PRDC_JSLAB_PRESENTATION_EDITOR_INLINE } = require('../presentation-editor/presentation-editor-inline');
 
 document.addEventListener('DOMContentLoaded', function() {
   const platform = new PRDC_JSLAB_WEB_RENDERER_ADAPTER(globalThis.__JSLAB_WEB_getBridge(), 'presentation-editor');

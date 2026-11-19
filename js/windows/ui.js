@@ -424,8 +424,59 @@ class PRDC_JSLAB_UI_ANIMATION {
   }
 }
 
+/**
+ * Connects the shared save, discard and cancel dialog to a window's close flow.
+ */
+class PRDC_JSLAB_UI_CLOSE_DIALOG {
+
+  /**
+   * Binds the dialog in the owning document.
+   * @param {Document} doc Owning window document.
+   * @param {Function} on_choice Receives the selected action.
+   */
+  constructor(doc, on_choice) {
+    this.element = doc.getElementById('close-dialog-cont');
+    this.file = doc.getElementById('close-file');
+    this.cancel = doc.getElementById('close-dialog-cancel');
+    this.save = doc.getElementById('close-dialog-save');
+    for(const choice of ['save', 'discard', 'cancel']) {
+      doc.getElementById('close-dialog-' + choice).addEventListener('click', () => on_choice(choice));
+    }
+    doc.addEventListener('keydown', event => {
+      if(event.key === 'Escape' && !this.element.hidden) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if(!this.cancel.hidden) on_choice('cancel');
+      }
+    }, true);
+  }
+
+  /**
+   * Shows the prompt for the named file or project.
+   * @param {string} file Name displayed in the prompt.
+   */
+  show(file) {
+    const was_hidden = this.element.hidden;
+    this.file.textContent = file;
+    this.element.hidden = false;
+    if(was_hidden) {
+      this.element.showModal?.();
+      (this.cancel.hidden ? this.save : this.cancel).focus();
+    }
+  }
+
+  /**
+   * Dismisses the prompt.
+   */
+  hide() {
+    this.element.hidden = true;
+    if(this.element.open) this.element.close();
+  }
+}
+
 var ui = typeof document == 'undefined' ? null : new PRDC_JSLAB_UI();
 if(typeof module != 'undefined' && module.exports) {
   module.exports.PRDC_JSLAB_UI = PRDC_JSLAB_UI;
   module.exports.PRDC_JSLAB_UI_ANIMATION = PRDC_JSLAB_UI_ANIMATION;
+  module.exports.PRDC_JSLAB_UI_CLOSE_DIALOG = PRDC_JSLAB_UI_CLOSE_DIALOG;
 }

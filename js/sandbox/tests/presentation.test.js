@@ -134,7 +134,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const vm = require('vm');
-const { EventEmitter } = require('events');
+const http = require('node:http');
+const { EventEmitter, once } = require('events');
 const { PRDC_JSLAB_LIB_PRESENTATION } = require('../presentation');
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
 var tests = new PRDC_JSLAB_TESTS();
@@ -165,22 +166,48 @@ tests.add('_checkPresentation validates existence of index.html', function(asser
 
 tests.add('_startPresentation serves presentation files from internal HTTP server', async function(assert) {
   var tmp_dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-presentation-test-'));
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
+  var pres_path = path.join(tmp_dir, 'server-pres');
+  const request = (url, options = {}) => new Promise((resolve, reject) => {
+    const outgoing = http.request(url, { ...options, agent: false }, response => {
+      let body = '';
+      response.setEncoding('utf8');
+      response.on('data', chunk => { body += chunk; });
+      response.on('error', reject);
+      response.on('end', () => resolve({ status: response.statusCode, headers: response.headers, body }));
+    });
+    outgoing.on('error', reject);
+    outgoing.end();
+  });
   try {
-    var harness = PRDC_JSLAB_SANDBOX_TESTS_PRESENTATION_TEST_HELPER.createPresentationHarness();
-    var pres_path = path.join(tmp_dir, 'server-pres');
     fs.mkdirSync(pres_path, { recursive: true });
     fs.writeFileSync(path.join(pres_path, 'index.html'),
       '<!DOCTYPE html><html><body>ok</body></html>', 'utf8');
+    fs.writeFileSync(path.join(pres_path, 'empty.js'), '');
 
     var url = await harness.presentation._startPresentation(pres_path);
-    var response = await fetch(url);
+    var response = await request(url);
 
     assert.equal(response.status, 200);
     assert.ok(url.startsWith('http://127.0.0.1:'));
-    assert.ok((await response.text()).includes('<body>ok</body>'));
+    assert.ok(response.body.includes('<body>ok</body>'));
 
-    harness.presentation._stopPresentationServer(pres_path);
+    const empty_url = new URL('empty.js', url).href;
+    for(const method of ['GET', 'HEAD']) {
+      const empty = await request(empty_url, { method });
+      assert.equal(empty.status, 200);
+      assert.equal(empty.headers['content-length'], '0');
+      assert.equal(empty.body, '');
+    }
+    const range = await request(empty_url, { headers: { Range: 'bytes=0-1' } });
+    assert.equal(range.status, 416);
+    assert.equal(range.headers['content-range'], 'bytes */0');
+
   } finally {
+    const server = harness.presentation._host.presentation_servers.get(path.resolve(pres_path))?.server;
+    const closed = server && once(server, 'close');
+    harness.presentation._stopPresentationServer(pres_path);
+    await closed;
     fs.rmSync(tmp_dir, { recursive: true, force: true });
   }
 }, { tags: ['unit', 'presentation'] });

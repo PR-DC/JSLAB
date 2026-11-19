@@ -11,5 +11,5 @@ var language = window.opener.jsl.inter.lang;
 
 
 const { PRDC_JSLAB_ELECTRON_RENDERER_ADAPTER } = require('../js/backend-electron/renderer');
-const { PRDC_JSLAB_PRESENTATION_EDITOR } = require('../js/windows/presentation-editor');
+const { PRDC_JSLAB_PRESENTATION_EDITOR } = require('../js/presentation-editor/presentation-editor');
 var presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR(new PRDC_JSLAB_ELECTRON_RENDERER_ADAPTER());

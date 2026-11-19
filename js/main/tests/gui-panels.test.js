@@ -63,6 +63,18 @@ guiTest(tests, 'main', 'window resizing refreshes nested panel bounds', [], func
   assert.ok(c.panels.workspace_columns.container_bcr.width > 0);
 });
 
+guiTest(tests, 'main', 'Command Window panel fills the space below its title', [], function(assert, f) {
+  const command = f.query('#command-window');
+  const frame = command.closest('.panel-container');
+  const bounds = command.getBoundingClientRect();
+  assert.equal(f.window.getComputedStyle(command).position, 'absolute');
+  assert.equal(bounds.top, frame.getBoundingClientRect().top + frame.clientTop + 23);
+  assert.equal(bounds.height, frame.clientHeight - 23);
+  for(const id of ['command-window-settings', 'command-window-log']) {
+    assert.equal(f.window.getComputedStyle(f.query('#' + id)).top, '23px');
+  }
+});
+
 guiTest(tests, 'editor', 'search panel resize persists its height and enforces limits', ['#editor-search-all-resizer'], function(assert, f, c) {
   var search = c.editor_search_all;
   search.open();

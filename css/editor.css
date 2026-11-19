@@ -5,6 +5,10 @@ html {
   --editor-search-all-panel-height: 240px;
 }
 
+#close-dialog-cont {
+  inset: 75px 6px 7px;
+}
+
 :focus {
   outline: 0;
 }
@@ -203,77 +207,6 @@ lang {
   user-drag: none;
 }
 
-#close-dialog-cont {
-  position: absolute;
-  top: 75px;
-  left: 6px;
-  right: 6px;
-  bottom: 7px;
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-#close-dialog {
-  margin: 0 auto;
-  width: 400px;
-  position: relative;
-  background: #fff;
-  box-shadow: 0 0 10px #00000026;
-  border-radius: 10px;
-  padding: 20px;
-  padding-bottom: 20px;
-  color: #333;
-  margin-bottom: 20px;
-  margin-top: 20px;
-  line-height: 22px;
-}
-
-#close-dialog-header {
-  position: relative;
-  border-bottom: 1px solid #666;
-  margin-bottom: 25px;
-  padding-bottom: 10px;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-}
-
-#close-dialog-header span {
-  color: #666;
-  display: block;
-  font-weight: bold;
-  font-size: 24px;
-  border-radius: 3px;
-}
-
-#close-file {
-  font-weight: bold;
-}
-
-#close-dialog-buttons {
-  float: right;
-  padding-top: 10px;
-}
-
-#close-dialog-buttons button {
-  color: #fff;
-  background: #2e85c7;
-  cursor: pointer;
-  border: 2px solid #2e85c7;
-  transition: background 0.2s linear, color 0.2s linear;
-  -webkit-transition: background 0.2s linear, color 0.2s linear;
-  border-radius: 3px;
-  padding: 2px 5px;
-  font-size: 16px;
-  margin: 3px 1px;
-  font-weight: normal;
-  text-decoration: none;
-}
-
-#close-dialog-buttons button:hover {
-  background: transparent;
-  color: #2e85c7;
-}
-
 :is(#editor-more-popup, #debugger-menu) {
   position: absolute;
   display: block;
@@ -329,52 +262,8 @@ lang {
 }
 
 #editor-symbol-popup {
-  position: absolute;
-  display: block;
-  border-radius: 5px;
-  width: 430px;
-  max-width: calc(100vw - 20px);
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
   top: 81px;
   right: 10px;
-  background: #ffffff;
-  border: 1px solid #f7df1e;
-  padding: 8px;
-}
-
-#editor-symbol-popup::-webkit-scrollbar,
-#editor-symbol-popup::-webkit-scrollbar-button,
-#editor-symbol-popup::-webkit-scrollbar-track,
-#editor-symbol-popup::-webkit-scrollbar-track-piece,
-#editor-symbol-popup::-webkit-scrollbar-thumb,
-#editor-symbol-popup::-webkit-scrollbar-corner,
-#editor-symbol-popup::-webkit-resizer {
-  background: transparent;
-}
-
-#editor-symbol-popup::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-}
-
-#editor-symbol-popup::-webkit-scrollbar-track-piece {
-  -webkit-border-radius: 5px;
-  border-radius: 5px;
-}
-
-#editor-symbol-popup::-webkit-scrollbar-thumb {
-  background: #ddd;
-  border-radius: 5px;
-  background-clip: content-box;
-  border: 2px solid transparent;
-}
-
-#editor-symbol-popup::-webkit-scrollbar-button {
-  width: 0;
-  height: 0;
 }
 
 #editor-symbol-popup .popup-triangle {
@@ -387,57 +276,6 @@ lang {
   top: -11px;
   right: 5px;
   transform: rotate(180deg);
-}
-
-.editor-symbol-header {
-  color: #999;
-  font-weight: 300;
-  font-size: 18px;
-  padding: 3px 6px 2px 6px;
-  border-bottom: 1px solid #ededed;
-  margin-bottom: 6px;
-}
-
-.editor-symbol-group {
-  margin-bottom: 8px;
-}
-
-.editor-symbol-group:last-child {
-  margin-bottom: 0;
-}
-
-.editor-symbol-group-title {
-  color: #777;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 2px 4px;
-}
-
-.editor-symbol-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
-  gap: 4px;
-}
-
-.editor-symbol-key {
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #444;
-  border-radius: 4px;
-  min-height: 32px;
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.2s linear;
-}
-
-.editor-symbol-key:hover {
-  background: #f3f3f3;
-}
-
-.editor-symbol-key:active {
-  background: #ececec;
 }
 
 html.editor-search-all-open #code {
@@ -459,42 +297,6 @@ html.editor-search-all-open #code {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-}
-
-#editor-search-all-resizer {
-  display: none;
-  height: 10px;
-  background-image: url(../img/hdrag.svg);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: auto 6px;
-  cursor: n-resize;
-  user-select: none;
-  -webkit-user-drag: none;
-  user-drag: none;
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  bottom: calc(var(--editor-search-all-panel-height) + 9px);
-  z-index: 6;
-}
-
-html.editor-search-all-open #editor-search-all-resizer {
-  display: block;
-}
-
-#editor-search-all-resizer:after {
-  content: '';
-  border-bottom: 1px solid transparent;
-  position: absolute;
-  top: 4px;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-
-#editor-search-all-resizer:hover:after {
-  border-bottom: 1px solid #f7df1e;
 }
 
 .editor-search-all-header {

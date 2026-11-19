@@ -206,7 +206,8 @@ class PRDC_JSLAB_SHARED_UI_TRANSLATION_CHECKER_HELPER {
       }
     };
     walk('html', '.html');
-    for(const folder of ['js/main', 'js/editor', 'js/simulate', 'js/code', 'js/backend-web', 'js/backend-electron', 'js/windows']) {
+    for(const folder of ['js/main', 'js/editor', 'js/simulate', 'js/code', 'js/backend-web', 'js/backend-electron', 'js/windows',
+      'js/latex-editor', 'js/presentation-editor']) {
       walk(folder, '.js');
     }
     const library_strings = options.additional_strings || {};

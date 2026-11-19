@@ -3478,5 +3478,410 @@
     "en": "Animation position",
     "rs": "Položaj animacije",
     "rsc": "Положај анимације"
+  },
+  "697": {
+    "en": "LaTeX Editor",
+    "rs": "LaTeX uređivač",
+    "rsc": "LaTeX уређивач"
+  },
+  "698": {
+    "en": "Open .tex",
+    "rs": "Otvori .tex",
+    "rsc": "Отвори .tex"
+  },
+  "699": {
+    "en": "Open project folder",
+    "rs": "Otvori fasciklu projekta",
+    "rsc": "Отвори фасциклу пројекта"
+  },
+  "700": {
+    "en": "Save all",
+    "rs": "Sačuvaj sve",
+    "rsc": "Сачувај све"
+  },
+  "701": {
+    "en": "Main document",
+    "rs": "Glavni dokument",
+    "rsc": "Главни документ"
+  },
+  "702": {
+    "en": "Compile",
+    "rs": "Kompajliraj",
+    "rsc": "Компајлирај"
+  },
+  "703": {
+    "en": "Save and compile",
+    "rs": "Sačuvaj i kompajliraj",
+    "rsc": "Сачувај и компајлирај"
+  },
+  "704": {
+    "en": "Show in PDF",
+    "rs": "Prikaži u PDF-u",
+    "rsc": "Прикажи у PDF-у"
+  },
+  "705": {
+    "en": "Show in source",
+    "rs": "Prikaži u izvornom kodu",
+    "rsc": "Прикажи у изворном коду"
+  },
+  "706": {
+    "en": "Errors and warnings",
+    "rs": "Greške i upozorenja",
+    "rsc": "Грешке и упозорења"
+  },
+  "707": {
+    "en": "Cancel",
+    "rs": "Otkaži",
+    "rsc": "Откажи"
+  },
+  "708": {
+    "en": "Locate TeX installation",
+    "rs": "Pronađi instalaciju TeX-a",
+    "rsc": "Пронађи инсталацију TeX-а"
+  },
+  "709": {
+    "en": "Install MiKTeX",
+    "rs": "Instaliraj MiKTeX",
+    "rsc": "Инсталирај MiKTeX"
+  },
+  "710": {
+    "en": "Install missing tools or locate the TeX bin folder. If latexmk cannot start, check that Perl is available on PATH. Missing tools:",
+    "rs": "Instalirajte potrebne alate ili pronađite fasciklu bin instalacije TeX-a. Ako se latexmk ne pokreće, proverite da li je Perl dostupan preko PATH-a. Nedostaju alati:",
+    "rsc": "Инсталирајте потребне алате или пронађите фасциклу bin инсталације TeX-а. Ако се latexmk не покреће, проверите да ли је Perl доступан преко PATH-а. Недостају алати:"
+  },
+  "711": {
+    "en": "Compile the project to preview its PDF.",
+    "rs": "Kompajlirajte projekat za pregled PDF-a.",
+    "rsc": "Компајлирајте пројекат за преглед PDF-а."
+  },
+  "712": {
+    "en": "Open a project folder to start editing.",
+    "rs": "Otvorite fasciklu projekta za uređivanje.",
+    "rsc": "Отворите фасциклу пројекта за уређивање."
+  },
+  "713": {
+    "en": "Compiling LaTeX…",
+    "rs": "Kompajliranje LaTeX-a…",
+    "rsc": "Компајлирање LaTeX-а…"
+  },
+  "714": {
+    "en": "Compilation failed.",
+    "rs": "Kompajliranje nije uspelo.",
+    "rsc": "Компајлирање није успело."
+  },
+  "715": {
+    "en": "Compile the project to sync the source and PDF.",
+    "rs": "Kompajlirajte projekat da biste sinhronizovali izvorni kod i PDF.",
+    "rsc": "Компајлирајте пројекат да бисте синхронизовали изворни код и PDF."
+  },
+  "716": {
+    "en": "PDF is up to date.",
+    "rs": "PDF je ažuran.",
+    "rsc": "PDF је ажуран."
+  },
+  "717": {
+    "en": "SyncTeX found no matching location.",
+    "rs": "SyncTeX nije pronašao odgovarajuće mesto.",
+    "rsc": "SyncTeX није пронашао одговарајуће место."
+  },
+  "718": {
+    "en": "Could not open the LaTeX project or file.",
+    "rs": "Nije moguće otvoriti LaTeX projekat ili datoteku.",
+    "rsc": "Није могуће отворити LaTeX пројекат или датотеку."
+  },
+  "719": {
+    "en": "Save changes to the LaTeX project?",
+    "rs": "Sačuvati izmene u LaTeX projektu?",
+    "rsc": "Сачувати измене у LaTeX пројекту?"
+  },
+  "720": {
+    "en": "Discard changes",
+    "rs": "Odbaci izmene",
+    "rsc": "Одбаци измене"
+  },
+  "721": {
+    "en": "The operation could not be completed.",
+    "rs": "Radnja nije završena.",
+    "rsc": "Радња није завршена."
+  },
+  "722": {
+    "en": "Zoom in",
+    "rs": "Uvećaj",
+    "rsc": "Увећај"
+  },
+  "723": {
+    "en": "Zoom out",
+    "rs": "Umanji",
+    "rsc": "Умањи"
+  },
+  "724": {
+    "en": "Fit width",
+    "rs": "Prilagodi širini",
+    "rsc": "Прилагоди ширини"
+  },
+  "725": {
+    "en": "Previous page",
+    "rs": "Prethodna strana",
+    "rsc": "Претходна страна"
+  },
+  "726": {
+    "en": "Next page",
+    "rs": "Sledeća strana",
+    "rsc": "Следећа страна"
+  },
+  "727": {
+    "en": "Rotate",
+    "rs": "Rotiraj",
+    "rsc": "Ротирај"
+  },
+  "728": {
+    "en": "Project files",
+    "rs": "Datoteke projekta",
+    "rsc": "Датотеке пројекта"
+  },
+  "729": {
+    "en": "Page",
+    "rs": "Strana",
+    "rsc": "Страна"
+  },
+  "730": {
+    "en": "LaTeX documents",
+    "rs": "LaTeX dokumenti",
+    "rsc": "LaTeX документи"
+  },
+  "731": {
+    "en": "Save PDF",
+    "rs": "Sačuvaj PDF",
+    "rsc": "Сачувај PDF"
+  },
+  "732": {
+    "en": "Compilation cancelled.",
+    "rs": "Prevođenje je otkazano.",
+    "rsc": "Превођење је отказано."
+  },
+  "733": {
+    "en": "New .tex",
+    "rs": "Nova .tex datoteka",
+    "rsc": "Нова .tex датотека"
+  },
+  "734": {
+    "en": "Open folder location",
+    "rs": "Otvori lokaciju fascikle",
+    "rsc": "Отвори локацију фасцикле"
+  },
+  "735": {
+    "en": "Refresh project files",
+    "rs": "Osveži datoteke projekta",
+    "rsc": "Освежи датотеке пројекта"
+  },
+  "736": {
+    "en": "PDF preview",
+    "rs": "Pregled PDF-a",
+    "rsc": "Преглед PDF-а"
+  },
+  "737": {
+    "en": "Source and assets",
+    "rs": "Izvorni kod i datoteke",
+    "rsc": "Изворни код и датотеке"
+  },
+  "738": {
+    "en": "Project tree",
+    "rs": "Stablo projekta",
+    "rsc": "Стабло пројекта"
+  },
+  "739": {
+    "en": "File outline",
+    "rs": "Struktura dokumenta",
+    "rsc": "Структура документа"
+  },
+  "740": {
+    "en": "LaTeX settings",
+    "rs": "LaTeX podešavanja",
+    "rsc": "LaTeX подешавања"
+  },
+  "741": {
+    "en": "Compiler",
+    "rs": "Kompajler",
+    "rsc": "Компајлер"
+  },
+  "742": {
+    "en": "Installed TeX version",
+    "rs": "Instalirana verzija TeX-a",
+    "rsc": "Инсталирана верзија TeX-а"
+  },
+  "743": {
+    "en": "Use placeholders for images",
+    "rs": "Prikaži okvire umesto slika",
+    "rsc": "Прикажи оквире уместо слика"
+  },
+  "744": {
+    "en": "Reuse unchanged build files",
+    "rs": "Ponovo koristi neizmenjene datoteke prevođenja",
+    "rsc": "Поново користи неизмењене датотеке превођења"
+  },
+  "745": {
+    "en": "Stop on first error",
+    "rs": "Zaustavi se kod prve greške",
+    "rsc": "Заустави се код прве грешке"
+  },
+  "746": {
+    "en": "Source editor",
+    "rs": "Uređivač izvornog koda",
+    "rsc": "Уређивач изворног кода"
+  },
+  "747": {
+    "en": "Zoom",
+    "rs": "Uvećanje",
+    "rsc": "Увећање"
+  },
+  "748": {
+    "en": "Wrap long lines",
+    "rs": "Prelomi duge redove",
+    "rsc": "Преломи дуге редове"
+  },
+  "749": {
+    "en": "Toolchain has not been checked.",
+    "rs": "Alati još nisu provereni.",
+    "rsc": "Алати још нису проверени."
+  },
+  "750": {
+    "en": "Select a source or asset in the file tree.",
+    "rs": "Izaberite izvorni kod ili datoteku u stablu.",
+    "rsc": "Изаберите изворни код или датотеку у стаблу."
+  },
+  "751": {
+    "en": "Version unavailable",
+    "rs": "Verzija nije dostupna",
+    "rsc": "Верзија није доступна"
+  },
+  "752": {
+    "en": "No section headings in this file.",
+    "rs": "Datoteka nema naslove odeljaka.",
+    "rsc": "Датотека нема наслове одељака."
+  },
+  "753": {
+    "en": "Select a source file to see its outline.",
+    "rs": "Izaberite izvornu datoteku da biste videli njenu strukturu.",
+    "rsc": "Изаберите изворну датотеку да бисте видели њену структуру."
+  },
+  "754": {
+    "en": "Set as main document",
+    "rs": "Postavi kao glavni dokument",
+    "rsc": "Постави као главни документ"
+  },
+  "755": {
+    "en": "No errors or warnings to show.",
+    "rs": "Nema grešaka ni upozorenja za prikaz.",
+    "rsc": "Нема грешака ни упозорења за приказ."
+  },
+  "756": {
+    "en": "Click a location in the PDF to jump to source.",
+    "rs": "Kliknite na mesto u PDF-u da biste prešli na izvorni kod.",
+    "rsc": "Кликните на место у PDF-у да бисте прешли на изворни код."
+  },
+  "757": {
+    "en": "Back to PDF",
+    "rs": "Nazad na PDF",
+    "rsc": "Назад на PDF"
+  },
+  "758": {
+    "en": "Typesetting",
+    "rs": "Prelom teksta",
+    "rsc": "Прелом текста"
+  },
+  "759": {
+    "en": "Compile the document to check for errors and warnings.",
+    "rs": "Kompajlirajte dokument da biste proverili ima li grešaka i upozorenja.",
+    "rsc": "Компајлирајте документ да бисте проверили има ли грешака и упозорења."
+  },
+  "760": {
+    "en": "Text formatting",
+    "rs": "Formatiranje teksta",
+    "rsc": "Форматирање текста"
+  },
+  "761": {
+    "en": "Bold",
+    "rs": "Podebljano",
+    "rsc": "Подебљано"
+  },
+  "762": {
+    "en": "Italic",
+    "rs": "Kurziv",
+    "rsc": "Курзив"
+  },
+  "763": {
+    "en": "Bulleted list",
+    "rs": "Lista sa oznakama",
+    "rsc": "Листа са ознакама"
+  },
+  "764": {
+    "en": "Numbered list",
+    "rs": "Numerisana lista",
+    "rsc": "Нумерисана листа"
+  },
+  "765": {
+    "en": "Increase indentation",
+    "rs": "Povećaj uvlačenje",
+    "rsc": "Повећај увлачење"
+  },
+  "766": {
+    "en": "Decrease indentation",
+    "rs": "Smanji uvlačenje",
+    "rsc": "Смањи увлачење"
+  },
+  "767": {
+    "en": "Normal text",
+    "rs": "Običan tekst",
+    "rsc": "Обичан текст"
+  },
+  "768": {
+    "en": "Section",
+    "rs": "Odeljak",
+    "rsc": "Одељак"
+  },
+  "769": {
+    "en": "Subsection",
+    "rs": "Pododeljak",
+    "rsc": "Пододељак"
+  },
+  "770": {
+    "en": "Subsubsection",
+    "rs": "Pododeljak trećeg nivoa",
+    "rsc": "Пододељак трећег нивоа"
+  },
+  "771": {
+    "en": "Paragraph",
+    "rs": "Pasus",
+    "rsc": "Пасус"
+  },
+  "772": {
+    "en": "Subparagraph",
+    "rs": "Potpasus",
+    "rsc": "Потпасус"
+  },
+  "773": {
+    "en": "Go to line",
+    "rs": "Idi na red",
+    "rsc": "Иди на ред"
+  },
+  "774": {
+    "en": "Total pages",
+    "rs": "Ukupan broj strana",
+    "rsc": "Укупан број страна"
+  },
+  "775": {
+    "en": "Open Simulate project",
+    "rs": "Otvori projekat simulacije",
+    "rsc": "Отвори пројекат симулације"
+  },
+  "776": {
+    "en": "Project selection canceled.",
+    "rs": "Izbor projekta je otkazan.",
+    "rsc": "Избор пројекта је отказан."
+  },
+  "777": {
+    "en": "Unsaved changes",
+    "rs": "Nesačuvane izmene",
+    "rsc": "Несачуване измене"
   }
 }

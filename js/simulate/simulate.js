@@ -15,6 +15,7 @@ const { PRDC_JSLAB_SIMULATE_INTERACTION } = require('./interaction');
 const { PRDC_JSLAB_SIMULATE_CONTEXT_MENU } = require('./context-menu');
 const { PRDC_JSLAB_SIMULATE_COMPILATION } = require('./compilation');
 const { PRDC_JSLAB_SIMULATE_DOCUMENT } = require('./document');
+const { PRDC_JSLAB_UI_CLOSE_DIALOG } = require('../windows/ui');
 
 /**
  * Coordinates the Simulate feature controllers and their shared window state.
@@ -81,6 +82,7 @@ class PRDC_JSLAB_WIN_SIMULATE {
     this.compiler = PRDC_JSLAB_SIMULATE_COMPILER.createClient(app_path, status => this.setCompilerStatus(status));
     this.setCompilerStatus('');
     this.setFilePath('');
+    this.saved_project_state = JSON.stringify(this.projectState());
     this.parseModel();
     this.showDiagram();
   }
@@ -91,6 +93,7 @@ class PRDC_JSLAB_WIN_SIMULATE {
   _bindWindowEvents() {
     const { host } = this.platform;
     var obj = this;
+    this.close_dialog = new PRDC_JSLAB_UI_CLOSE_DIALOG(document, choice => this.close_answer?.(choice));
     document.getElementById('simulate-menu').addEventListener('click', function(event) {
       if(event.target.closest('li.disabled')) {
         event.preventDefault();
@@ -106,7 +109,7 @@ class PRDC_JSLAB_WIN_SIMULATE {
     });
 
     document.getElementById('win-close').addEventListener('click', function() {
-      host.send('MainProcess', 'hide-simulate');
+      host.send('MainProcess', 'close-simulate');
     });
 
     window.addEventListener('beforeunload', function() {

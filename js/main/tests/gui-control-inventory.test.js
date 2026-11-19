@@ -21,16 +21,18 @@ for(const name of ['main-controls', 'main-data', 'inspector', 'terminal-history'
 for(const name of ['editor-controls', 'editor-tabs', 'editor-search', 'debugger', 'debugger-pane']) {
   require('../../editor/tests/gui-' + name + '.test');
 }
-for(const name of ['auxiliary-windows', 'presentation-editor', 'presentation-viewer']) {
+for(const name of ['auxiliary-windows', 'presentation-viewer']) {
   require('../../windows/tests/gui-' + name + '.test');
 }
+require('../../presentation-editor/tests/gui-presentation-editor.test');
+require('../../latex-editor/tests/gui-latex-editor.test');
 
-for(const type of ['main', 'editor', 'figure', 'serial_terminal', 'presentation-editor', 'presentation']) {
+for(const type of ['main', 'editor', 'figure', 'serial_terminal', 'presentation-editor', 'presentation', 'latex-editor']) {
   tests.add(type + ' interactive controls have registered behavior coverage', async function(assert) {
     var f = await createFixture(type);
     try {
       if(type === 'presentation-editor') {
-        require('../../windows/tests/gui-presentation-editor.test').setup(f);
+        require('../../presentation-editor/tests/gui-presentation-editor.test').setup(f);
       }
       if(type === 'presentation') {
         require('../../windows/tests/gui-presentation-viewer.test').setup(f);

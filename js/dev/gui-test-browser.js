@@ -225,11 +225,12 @@ class PRDC_JSLAB_GUI_TEST_BROWSER {
    * @param {*} fun Fun.
    * @param {*} [description] Description.
    * @param {number} [timeout] Timeout.
+   * @param {...*} args Arguments passed to the condition.
    */
-  async waitFor(fun, description = 'browser condition', timeout = 20000) {
+  async waitFor(fun, description = 'browser condition', timeout = 20000, ...args) {
     var deadline = Date.now() + timeout;
     while(Date.now() < deadline) {
-      if(await this.evaluate(fun)) {
+      if(await this.evaluate(fun, ...args)) {
         return;
       }
       await new Promise(resolve => setTimeout(resolve, 40));

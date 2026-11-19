@@ -878,6 +878,32 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
   }
 
   /**
+   * Selects and opens a model before creating the Simulate window.
+   * @param {string} [filepath] Requested model project path.
+   * @param {Object} [options] Explicit script settings.
+   * @param {string} [request_id] Owning script request identity.
+   * @returns {Promise<Object>} Completed operation response.
+   */
+  async _openSimulateProject(filepath, options, request_id) {
+    if(!filepath && options && this.application.window_manager.windows.has('simulate-window')) {
+      return this._openSimulateWindow(filepath, options, request_id);
+    }
+    if(!filepath) {
+      const selected = await this.application.files._showOpenDialog({
+        title: this.application.language.currentString(775),
+        properties: ['openFile'],
+        filters: [{ name: this.application.language.currentString(672), extensions: ['jslmo'] }]
+      });
+      filepath = selected?.[0];
+    }
+    const supported = options ? /\.(?:jslmo|mo)$/i : /\.jslmo$/i;
+    if(typeof filepath !== 'string' || !supported.test(filepath) || !await this.application.fs.existsFile(filepath)) {
+      return { success: false, error: this.application.language.currentString(filepath ? 674 : 776) };
+    }
+    return this._openSimulateWindow(filepath, options, request_id);
+  }
+
+  /**
    * Opens the shared Simulate model editor and optionally performs a script request.
    * @param {string} filepath Optional project path.
    * @param {Object} options Simulation and animation options.

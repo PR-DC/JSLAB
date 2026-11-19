@@ -6,6 +6,7 @@
  */
 
 const { PRDC_JSLAB_CODE_EDITOR } = require('../code/editor');
+const { PRDC_JSLAB_UI_CLOSE_DIALOG } = require('../windows/ui');
 
 const { PRDC_PANEL } = require('../../lib/PRDC_PANEL/PRDC_PANEL');
 
@@ -41,6 +42,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
     this.tab.tab_obj = this;
 
     this.code_editor = CodeMirror(document.getElementById("code"), PRDC_JSLAB_CODE_EDITOR.options());
+    this.code_editor.setOption('hintOptions', {
+      includeBrowserCompletions: true,
+      requestCompletions: request => editor.platform.host.invoke('get-completions', request)
+    });
 
     PRDC_JSLAB_CODE_EDITOR.bindShortcuts(CodeMirror);
 
@@ -292,8 +297,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
     this.slide_notes_body = document.getElementById('slide-notes-body');
     this.slide_controls = document.getElementById('slide-controls');
     this.slide_thumbnails = document.getElementById('slide-thumbnails');
-    this.close_dialog_cont = document.getElementById('close-dialog-cont');
-    this.close_file = document.getElementById('close-file');
+    this.close_dialog = new PRDC_JSLAB_UI_CLOSE_DIALOG(document, choice => this.closeDialogButton(choice));
     this.left = document.getElementById('left-panel-cont');
 
     this.eslint = new PRDC_JSLAB_CODE_LINT();
@@ -371,14 +375,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
     }
 
     document.addEventListener("keydown", function(e) {
-      if(obj.close_requested) {
-        if(e.key == 'Escape') {
-          obj.closeDialogButton(0);
-          e.stopPropagation();
-          e.preventDefault();
-        }
-        return;
-      }
+      if(obj.close_requested) return;
       if(e.ctrlKey && e.key.toLowerCase() === "s" && !e.shiftKey) {
         obj.saveCode().catch(function(err) {
           console.error(err);
@@ -422,15 +419,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
       obj.saveCode().catch(function(err) {
         console.error(err);
       });
-    });
-    $("#close-dialog-save").click(function() {
-      obj.closeDialogButton(2);
-    });
-    $("#close-dialog-discard").click(function() {
-      obj.closeDialogButton(1);
-    });
-    $("#close-dialog-cancel").click(function() {
-      obj.closeDialogButton(0);
     });
     $("#search-dialog-menu").click(function() {
       obj.active_tab.tab_obj.openSearchDialog();
@@ -664,8 +652,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
    */
   showCloseDialog() {
     this.close_requested = true;
-    this.close_file.innerText = this.presentation_title.innerText || '';
-    this.close_dialog_cont.style.display = 'flex';
+    this.close_dialog.show(this.presentation_title.innerText || '');
   }
 
   /**
@@ -673,7 +660,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
    */
   hideCloseDialog() {
     this.close_requested = false;
-    this.close_dialog_cont.style.display = 'none';
+    this.close_dialog.hide();
   }
 
   /**
@@ -681,6 +668,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
    */
   requestClose() {
     if(this.hasUnsavedChanges()) {
+      this.platform.host.send("MainProcess", "focus-win");
       this.showCloseDialog();
     } else {
       this.confirmCloseWindow();
@@ -698,10 +686,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
 
   /**
    * Handles close dialog buttons.
-   * @param {Number} state
+   * @param {string} choice Selected dialog action.
    */
-  async closeDialogButton(state) {
-    if(state == 2) {
+  async closeDialogButton(choice) {
+    if(choice === 'save') {
       try {
         await this.saveCode(this.current_slide);
       } catch(err) {
@@ -709,10 +697,11 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
         return;
       }
       this.confirmCloseWindow();
-    } else if(state == 1) {
+    } else if(choice === 'discard') {
       this.confirmCloseWindow();
     } else {
       this.hideCloseDialog();
+      this.platform.host.send("MainProcess", "keep-presentation-editor-open");
     }
   }
 

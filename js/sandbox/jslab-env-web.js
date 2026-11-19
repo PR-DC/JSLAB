@@ -875,6 +875,16 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Desktop editor integration');
   }
 
+  /** Reports the desktop compiler requirement in browser sessions. */
+  compileLatex() {
+    return this.reportUnavailable('compileLatex');
+  }
+
+  /** Reports the desktop editor requirement in browser sessions. */
+  editLatex() {
+    return this.reportUnavailable('editLatex');
+  }
+
   /**
    * Handles info.
    */

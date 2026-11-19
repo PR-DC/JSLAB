@@ -1,0 +1,130 @@
+/**
+ * @file JSLAB shared panel frames and resize handles
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+.cell-padding {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+}
+
+.panel-container {
+  position: relative;
+  height: 100%;
+  border: 1px solid #f1f3f4;
+  border-radius: 3px;
+  transition: border .2s linear;
+}
+
+.panel-container:hover {
+  border-color: #f7df1e;
+}
+
+.panel-title {
+  margin: 5px 10px 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #f7df1e;
+  color: #666;
+  font-size: 14px;
+  font-weight: 300;
+  user-select: none;
+  -webkit-user-drag: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel,
+#panels-container .panel {
+  position: absolute;
+  inset: 23px 0 0;
+  overflow: auto;
+}
+
+:is(.panel, .panel-scroll)::-webkit-scrollbar,
+:is(.panel, .panel-scroll)::-webkit-scrollbar-track,
+:is(.panel, .panel-scroll)::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+:is(.panel, .panel-scroll)::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  border-radius: 5px;
+}
+
+:is(.panel, .panel-scroll)::-webkit-scrollbar-track-piece {
+  border-radius: 5px;
+}
+
+:is(.panel, .panel-scroll)::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 5px;
+  background: #ddd;
+  background-clip: content-box;
+}
+
+:is(.panel, .panel-scroll)::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+}
+
+:is(.horizontal-resizer, .vertical-resizer) {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.horizontal-resizer {
+  width: 100%;
+  background-image: url(../img/hdrag.svg);
+  background-size: auto 6px;
+  cursor: n-resize;
+}
+
+.vertical-resizer {
+  height: 100%;
+  background-image: url(../img/vdrag.svg);
+  background-size: 6px auto;
+  cursor: w-resize;
+}
+
+:is(.horizontal-resizer, .vertical-resizer)::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.horizontal-resizer::after {
+  inset: 4px 0 auto;
+  border-bottom: 1px solid transparent;
+}
+
+.vertical-resizer::after {
+  inset: 0 auto 0 4px;
+  border-right: 1px solid transparent;
+}
+
+:is(.horizontal-resizer, .vertical-resizer):hover::after {
+  border-color: #f7df1e;
+}
+
+#editor-search-all-resizer {
+  display: none;
+  width: auto;
+  height: 10px;
+  left: 6px;
+  right: 6px;
+  bottom: calc(var(--editor-search-all-panel-height) + 9px);
+  z-index: 6;
+}
+
+html.editor-search-all-open #editor-search-all-resizer {
+  display: block;
+}

@@ -176,12 +176,9 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       typeof this.win.editor.hideContextMenu === 'function') {
       this.win.editor.hideContextMenu();
     }
-    if(this.closing) {
-      $("#close-file").text(this.name);
-      $("#close-dialog-cont").fadeIn(300, "linear");
-    }
     $(this.code_editor.display.wrapper).show();
     this.code_editor.focus();
+    if(this.closing) this.win.script_manager.close_dialog.show(this.name);
     this.updateEditorMode();
   }
 
@@ -273,11 +270,9 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
       this.update();
     }
     if(this.code.replace(/[\r]/g, '') != this.saved_code.replace(/[\r]/g, '')) {
-      // Fade in window
-      host.send("MainProcess", "fade-in-win");
+      host.send("MainProcess", "focus-win");
       if(this.isActive()) {
-        $("#close-file").text(this.name);
-        $("#close-dialog-cont").fadeIn(300, "linear");
+        this.win.script_manager.close_dialog.show(this.name);
       }
       return false;
     } else {
@@ -394,11 +389,7 @@ class PRDC_JSLAB_EDITOR_SCRIPT {
    * @param {string} text Text to insert.
    */
   insertText(text) {
-    if(typeof text !== 'string' || !text.length) {
-      return;
-    }
-    this.code_editor.replaceSelection(text, 'end', '+input');
-    this.code_editor.focus();
+    PRDC_JSLAB_CODE_EDITOR.insertText(this.code_editor, text);
   }
 
   /**

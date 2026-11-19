@@ -1089,6 +1089,39 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Sends a LaTeX build request to the desktop toolchain.
+   * @param {string} file TeX source path.
+   * @returns {Promise<Object|boolean>} Build result.
+   */
+  compileLatex(file) {
+    return this._latexRequest('compile', file);
+  }
+
+  /**
+   * Opens a project in the desktop LaTeX Editor.
+   * @param {string} [file] Project folder or TeX source path.
+   * @param {string} [main] Main .tex file under the project folder.
+   * @returns {Promise<boolean>} Whether the desktop accepted the request.
+   */
+  editLatex(file, main) {
+    return this._latexRequest('edit', file, main);
+  }
+
+  /**
+   * Resolves a workspace path and sends a LaTeX request to the host.
+   * @param {string} action LaTeX request name.
+   * @param {string} [file] Project or source path.
+   * @param {string} [main] Main source file under the project folder.
+   * @returns {Promise<Object|boolean>} Desktop request result.
+   */
+  _latexRequest(action, file, main) {
+    if(this.is_worker) return Promise.resolve(false);
+    if(file == null && action === 'edit' && main === undefined) return ipcRenderer.invoke('JSLAB_LATEX_SCRIPT', action);
+    if(typeof file !== 'string' || !file.trim()) return Promise.resolve(false);
+    return ipcRenderer.invoke('JSLAB_LATEX_SCRIPT', action, path.resolve(this.jsl.current_path, file), main);
+  }
+
+  /**
    * Opens the Assistant chat window.
    */
   assistant() {

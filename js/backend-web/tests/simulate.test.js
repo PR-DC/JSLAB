@@ -15,7 +15,31 @@ if(!globalThis.gui_browser) {
 }
 
 tests.add('Web Simulate opens the shared editor without downloading the solver or standard library', async function(assert) {
-  await gui_browser.evaluate(() => document.getElementById('simulate-menu').click());
+  const canceled = await gui_browser.evaluate(async () => {
+    const files = jslab_web.files;
+    const pick = files._showOpenDialog;
+    files._showOpenDialog = async () => false;
+    try {
+      await jslab_web.platform.host.send('MainProcess', 'show-simulate');
+      return jslab_web.window_manager.windows.has('simulate-window');
+    } finally {
+      files._showOpenDialog = pick;
+    }
+  });
+  assert.equal(canceled, false);
+  await gui_browser.evaluate(async () => {
+    const files = jslab_web.files;
+    const pick = files._showOpenDialog;
+    const project = '/workspace/on-demand.jslmo';
+    jslab_web.fs.writeTextFileSync(project, JSON.stringify({ format: 'JSLAB Simulate', version: 1,
+      source: 'model OnDemand\nend OnDemand;' }));
+    files._showOpenDialog = async () => [project];
+    try {
+      await jslab_web.platform.host.send('MainProcess', 'show-simulate');
+    } finally {
+      files._showOpenDialog = pick;
+    }
+  });
   await gui_browser.waitFor(() => {
     const frame = jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow;
     return !!frame?.win_simulate && !frame.win_simulate.busy;
@@ -23,20 +47,48 @@ tests.add('Web Simulate opens the shared editor without downloading the solver o
   const state = await gui_browser.evaluate(async () => {
     const frame = jslab_web.window_manager.windows.get('simulate-window').iframe.contentWindow;
     const api = await frame.__JSLAB_WEB_SIMULATE_READY__;
-    return { controller: api.controller.constructor.name,
+    return { controller: api.controller.constructor.name, filepath: api.controller.file_path,
       workersStarted: !!api.controller.compiler.worker,
       caches: await caches.keys(),
       title: frame.document.title,
       blocks: frame.document.querySelectorAll('#simulate-library-items button').length };
   });
   assert.equal(state.controller, 'PRDC_JSLAB_WIN_SIMULATE');
+  assert.equal(state.filepath, '/workspace/on-demand.jslmo');
   assert.equal(state.workersStarted, false);
   assert.equal(state.caches.includes('openmodelica-jslab-binary-v1'), false);
   assert.equal(state.title, 'JSLAB / SIMULATE');
+  await gui_browser.evaluate(() => {
+    const win = jslab_web.window_manager.windows.get('simulate-window');
+    win.iframe.contentDocument.getElementById('simulate-stop-time').value = '45';
+    win.header.querySelector('button.close').click();
+  });
+  await gui_browser.waitFor(() => {
+    const doc = jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentDocument;
+    return doc?.getElementById('close-dialog-cont').open;
+  }, 'Simulate prompts before closing its managed window');
+  await gui_browser.evaluate(() => {
+    const doc = jslab_web.window_manager.windows.get('simulate-window').iframe.contentDocument;
+    doc.getElementById('close-dialog-cancel').click();
+  });
+  await gui_browser.waitFor(() => !jslab_web.window_manager.windows.get('simulate-window').iframe.contentDocument
+    .getElementById('close-dialog-cont').open, 'Simulate stays open after Cancel');
+  await gui_browser.evaluate(() => {
+    const win = jslab_web.window_manager.windows.get('simulate-window');
+    win.header.querySelector('button.close').click();
+    win.iframe.contentDocument.getElementById('close-dialog-discard').click();
+  });
+  await gui_browser.waitFor(() => !jslab_web.window_manager.windows.has('simulate-window'),
+    'Discard closes the Simulate frame');
+  await gui_browser.evaluate(() => jslab_web.windows._openSimulateWindow());
+  assert.equal(await gui_browser.evaluate(() => {
+    jslab_web.window_manager.windows.get('simulate-window').header.querySelector('button.close').click();
+    return jslab_web.window_manager.windows.has('simulate-window');
+  }), false);
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 45000 });
 
 tests.add('Web Simulate browses concrete nested blocks and hides implementation categories without starting the solver', async function(assert) {
-  await gui_browser.evaluate(() => document.getElementById('simulate-menu').click());
+  await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'base-class browser', 30000);
   await gui_browser.evaluate(() => {
@@ -224,9 +276,11 @@ tests.add('Web 6-DOF playback preserves camera zoom and panning during live rota
     frame.document.getElementById('simulate-animation').click();
   });
   await gui_browser.waitFor(() => Array.from(jslab_web.window_manager.windows.values()).some(win =>
-    win.iframe.contentDocument?.querySelector('input[type=range]')), '6-DOF figure playback controls', 45000);
+    win.title === 'simulate-6dof.jslmo' && win.iframe.contentDocument?.querySelector('input[type=range]')),
+    '6-DOF figure playback controls', 45000);
   const before = await gui_browser.evaluate(() => {
-    const managed = Array.from(jslab_web.window_manager.windows.values()).find(win => win.iframe.contentDocument?.querySelector('input[type=range]'));
+    const managed = Array.from(jslab_web.window_manager.windows.values()).find(win =>
+      win.title === 'simulate-6dof.jslmo' && win.iframe.contentDocument?.querySelector('input[type=range]'));
     globalThis.web_animation_window_id = managed.id;
     jslab_web.window_manager.focus(managed.id);
     const frame = managed.iframe.contentWindow, slider = frame.document.querySelector('input[type=range]');
@@ -355,7 +409,7 @@ tests.add('Closing Web Simulate during initialization settles the owning request
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 15000 });
 
 tests.add('Web Simulate imports an external block, preserves its labels and saves a portable executable project', async function(assert) {
-  await gui_browser.evaluate(() => document.getElementById('simulate-menu').click());
+  await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'external block editor', 30000);
   await gui_browser.evaluate(() => {
@@ -462,7 +516,7 @@ tests.add('Web Simulate imports an external block, preserves its labels and save
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 240000 });
 
 tests.add('Web Simulate imports external folders with inherited blocks and preserves their binary icon resources after reopening', async function(assert) {
-  await gui_browser.evaluate(() => document.getElementById('simulate-menu').click());
+  await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'external folder editor', 30000);
   await gui_browser.evaluate(() => {
@@ -600,7 +654,7 @@ tests.add('Web Simulate reports a real compiler diagnostic with localized severi
 
 tests.add('Web Simulate creates, wires and runs a model entirely through graphical controls', async function(assert) {
   await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
-  await gui_browser.evaluate(() => document.getElementById('simulate-menu').click());
+  await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'graphical model editor', 30000);
   await gui_browser.evaluate(() => {
@@ -720,10 +774,17 @@ tests.add('Web Simulate creates, wires and runs a model entirely through graphic
 tests.add('Web Simulate opens inside a small viewport in every language', async function(assert) {
   await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 800, height: 650, deviceScaleFactor: 1, mobile: false });
   for(const lang of ['en', 'rs', 'rsc']) {
+    await gui_browser.evaluate(() => {
+      if(!jslab_web.window_manager.close('simulate-window')) {
+        jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentDocument
+          .getElementById('close-dialog-discard')?.click();
+      }
+    });
+    await gui_browser.waitFor(() => !jslab_web.window_manager.windows.has('simulate-window'),
+      'previous Simulate window closed');
     await gui_browser.evaluate(lang => {
-      jslab_web.window_manager.close('simulate-window');
       jslab_web.changeLanguage(lang);
-      document.getElementById('simulate-menu').click();
+      void jslab_web.windows._openSimulateWindow();
     }, lang);
     await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
       'small Simulate window', 30000);
@@ -743,6 +804,13 @@ tests.add('Web Simulate opens inside a small viewport in every language', async 
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 90000 });
 
 tests.add('Web native scenes follow arbitrary block dimensions and colors after parameter changes', async function(assert) {
+  await gui_browser.evaluate(() => {
+    for(const win of jslab_web.window_manager.windows.values()) {
+      if(win.iframe.contentDocument?.getElementById('figure-content')) {
+        jslab_web.window_manager.close(win.id);
+      }
+    }
+  });
   const source = 'model NativeScenePlant\n' +
     ' parameter Real beamWidth=0.1; parameter Integer red=11;\n' +
     ' inner Modelica.Mechanics.MultiBody.World world;\n' +
@@ -755,6 +823,7 @@ tests.add('Web native scenes follow arbitrary block dimensions and colors after 
       if(index == 0) {
         jslab_web.fs.writeTextFileSync('/workspace/native-scene.mo', source);
       }
+      globalThis.native_scene_previous_windows = new Set(jslab_web.window_manager.windows.values());
       globalThis.native_scene_check = { running: true };
       const options = { run: true, parameters: { beamWidth: width, red },
         simulation: { stop_time: 0.1, intervals: 10 }, animation: { play: false } };
@@ -766,9 +835,13 @@ tests.add('Web native scenes follow arbitrary block dimensions and colors after 
       });
     }, { source, index, width, red });
     await gui_browser.waitFor(() => !native_scene_check.running, 'native model geometry', 90000);
+    const execution = await gui_browser.evaluate(() => native_scene_check);
+    assert.equal(execution.error, undefined);
+    assert.equal(execution.result.success, true);
     const state = await gui_browser.evaluate(red => {
-      const managed = Array.from(jslab_web.window_manager.windows.values()).filter(win =>
-        win.iframe.contentDocument?.querySelector('input[type=range]')).pop();
+      const figures = Array.from(jslab_web.window_manager.windows.values()).filter(win =>
+        !native_scene_previous_windows.has(win) && win.iframe.contentDocument?.querySelector('input[type=range]'));
+      const managed = figures.find(win => win.title === 'native-scene.jslmo');
       const traces = managed?.iframe.contentWindow.plot.plot_cont.data.filter(trace => trace.color == 'rgb(' + red + ',22,33)') || [];
       const edges = [];
       for(const trace of traces) {
@@ -777,12 +850,12 @@ tests.add('Web native scenes follow arbitrary block dimensions and colors after 
           edges.push([distance(i, i + 3), distance(i, i + 1)]);
         }
       }
-      return { ...native_scene_check, edges, specular: traces[0]?.lighting.specular };
+      const model = jslab_web.window_manager.windows.get('simulate-window').iframe.contentWindow.win_simulate;
+      return { edges, specular: traces[0]?.lighting.specular, figures: figures.map(win => win.title),
+        output: model.output.textContent, model: model.projectFileName() };
     }, red);
-    assert.equal(state.error, undefined);
-    assert.equal(state.result.success, true);
     assert.ok(state.edges.some(pair => Math.abs(pair[0] - width) < 2e-6 && Math.abs(pair[1] - 0.2) < 2e-6),
-      JSON.stringify({ index, width, edges: state.edges.filter(pair => pair[0] || pair[1]).slice(-28) }));
+      JSON.stringify({ ...state, index, width, edges: state.edges.filter(pair => pair[0] || pair[1]).slice(-28) }));
     assert.ok(Math.abs(state.specular - 0.7) < 1e-6);
   }
   assert.equal(gui_requests.filter(url => url.includes('/animation/scene-core_bg.wasm')).length, 1,
@@ -903,7 +976,7 @@ tests.add('Web CAD animation loads portable library meshes and materials and sur
 
 tests.add('Web Simulate imports a standalone source folder with icons and CAD resources through an entry selector', async function(assert) {
   await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
-  await gui_browser.evaluate(() => document.getElementById('simulate-menu').click());
+  await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'standalone folder editor', 30000);
   await gui_browser.evaluate(() => {

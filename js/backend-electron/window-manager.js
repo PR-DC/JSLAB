@@ -21,6 +21,19 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
   }
 
   /**
+   * Opens the local LaTeX Editor on demand.
+   * @param {string} [file] Project folder or TeX source path.
+   * @param {string} [main] Main source file under the project folder.
+   */
+  showLatex(file, main) {
+    if(!this.latex_window) {
+      const { PRDC_JSLAB_LATEX_EDITOR_WINDOW } = require('./latex-editor-window');
+      this.latex_window = new PRDC_JSLAB_LATEX_EDITOR_WINDOW(this.application);
+    }
+    this.latex_window.show(file, main);
+  }
+
+  /**
    * Create all windows
    */
   createWindows() {
@@ -35,9 +48,6 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
 
     // Create the Assistant window
     this.createAssistantWindow();
-
-    // Create the Simulate window
-    this.createSimulateWindow();
 
     // Start inter-instance bridge
     if(!this.application.cli_mode) {
@@ -159,8 +169,10 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     this.application.win_editor.on('close', function(e) {
       if(!obj.application.is_app_quitting) {
         e.preventDefault();
-        obj.fadeWindowOut(obj.application.win_editor, 0.1, 10);
-        setTimeout(function() {
+        clearInterval(obj.editor_hide_fade);
+        clearTimeout(obj.editor_hide_timer);
+        obj.editor_hide_fade = obj.fadeWindowOut(obj.application.win_editor, 0.1, 10);
+        obj.editor_hide_timer = setTimeout(function() {
           obj.application.win_editor.hide();
         }, 100);
       } else if(!obj.application.editor_close_ready) {
@@ -181,14 +193,29 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
   }
 
   /**
-   * Creates the JSLAB Simulate modeling window.
+   * Loads the modeling window on the first request for a project.
+   * @returns {Promise<Object>} Loaded native window.
    */
-  createSimulateWindow() {
-    const win = this._createNativeFeatureWindow('simulate');
-    if(this.application.startup_model_path) {
-      win.webContents.once('did-finish-load', () => this.showSimulate(this.application.startup_model_path));
+  async getSimulateWindow() {
+    const current = this.application.win_simulate;
+    if(!current || current.isDestroyed()) {
+      this._createNativeFeatureWindow('simulate');
     }
-    return win;
+    return this.simulate_ready;
+  }
+
+  /**
+   * Waits for the current Simulate window's answer to a close request.
+   * @param {BrowserWindow} win Simulate window.
+   * @returns {Promise<boolean>} Whether the window may close.
+   */
+  confirmSimulateClose(win) {
+    if(!win || win.isDestroyed()) return Promise.resolve(true);
+    win.simulate_close_confirmation ??= this.simulate_ready.then(() => win.isDestroyed() ||
+      win.webContents.executeJavaScript('win_simulate.confirmProjectClose()')).finally(() => {
+      win.simulate_close_confirmation = null;
+    });
+    return win.simulate_close_confirmation;
   }
 
   /**
@@ -396,17 +423,17 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
   }
 
   /**
-   * Shows the Simulate GUI and optionally opens a model file.
+   * Opens a selected project in Simulate.
+   * @param {string} [file_path] Explicit project path.
+   * @returns {Promise<boolean>} Whether a project was opened.
    */
-  showSimulate(file_path) {
-    if(!this.focusFeatureWindow(this.application.win_simulate)) {
-      return false;
-    }
-    if(file_path) {
-      this.application.win_simulate.send('SimulateWindow', 'open-file', file_path);
-    } else {
-      this.application.win_simulate.send('SimulateWindow', 'focus');
-    }
+  async showSimulate(file_path) {
+    if(this.application.cli_mode) return false;
+    const project = file_path ?? await this.application.files.selectSimulateProject();
+    if(!this.application.files.isSimulateProjectPath(project) || this.application.is_app_quitting) return false;
+    const win = await this.getSimulateWindow();
+    if(!this.focusFeatureWindow(win)) return false;
+    win.send('SimulateWindow', 'open-file', project);
     return true;
   }
 
@@ -605,6 +632,10 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
       if(opacity != 1) {
         // Increase the opacity of the window by `step` every `dt` ms
         interval = setInterval(function() {
+          if(win.isDestroyed()) {
+            clearInterval(interval);
+            return;
+          }
           // Stop fading if window's opacity is 1 or greater.
           if(opacity >= 1) {
             clearInterval(interval);
@@ -678,7 +709,23 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     this.application['win_' + feature] = win;
     this.bindAttentionReset(win);
     win.setMenu(null);
-    win.loadFile(app_path + '/html/' + definition.file);
+    const loading = win.loadFile(app_path + '/html/' + definition.file);
+    if(feature === 'simulate') {
+      this.simulate_ready = loading.then(() => win, error => {
+        if(!win.isDestroyed()) win.destroy();
+        throw error;
+      });
+      win.on('close', event => {
+        if(win.simulate_close_approved || this.application.is_app_quitting) return;
+        event.preventDefault();
+        void this.confirmSimulateClose(win).then(approved => {
+          if(approved && !win.isDestroyed()) {
+            win.simulate_close_approved = true;
+            win.close();
+          }
+        }).catch(console.error);
+      });
+    }
     if(options.maximize) {
       win.maximize();
     }
@@ -688,7 +735,7 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     if(!this.application.cli_mode) {
       this.application.instance_router.trackWindowActivity(win);
     }
-    if(feature !== 'editor') {
+    if(feature === 'assistant') {
       win.on('close', event => {
         if(!this.application.is_app_quitting) {
           event.preventDefault();
@@ -710,6 +757,13 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
  * Shows and focuses a native window with the desktop fade behavior.
  */
   _showWindowSurface(win) {
+    if(win === this.application.win_editor) {
+      clearInterval(this.editor_hide_fade);
+      clearTimeout(this.editor_hide_timer);
+    }
+    if(win.isMinimized()) {
+      win.restore();
+    }
     win.show();
     win.focus();
     this.fadeWindowIn(win, 0.1, 10);

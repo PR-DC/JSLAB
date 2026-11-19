@@ -38,6 +38,30 @@ class PRDC_JSLAB_ELECTRON_FILES {
   }
 
   /**
+   * Checks for an existing Simulate project or an explicitly imported model.
+   * @param {string} file_path Candidate file path.
+   * @param {boolean} [allow_modelica] Whether a .mo source is accepted.
+   * @returns {boolean} Whether the path is a model file.
+   */
+  isSimulateProjectPath(file_path, allow_modelica = false) {
+    if(typeof file_path !== 'string' || !(allow_modelica ? /\.(?:jslmo|mo)$/i : /\.jslmo$/i).test(file_path)) return false;
+    return Boolean(fs.statSync(file_path, { throwIfNoEntry: false })?.isFile());
+  }
+
+  /**
+   * Selects a project before the Simulate window is created.
+   * @returns {Promise<string|undefined>} Selected project path.
+   */
+  async selectSimulateProject() {
+    const { canceled, filePaths } = await dialog.showOpenDialog(this.application.win_main, {
+      title: this.application.currentString(775),
+      properties: ['openFile'],
+      filters: [{ name: this.application.currentString(672), extensions: ['jslmo'] }]
+    });
+    if(!canceled) return filePaths[0];
+  }
+
+  /**
    * Opens scripts in the current editor window.
    * @param {Array<string>} script_paths - Paths to open.
    * @returns {boolean} True if opened immediately.

@@ -183,7 +183,7 @@ class PRDC_JSLAB_WEB_APP_HOST {
         return obj.windows._openEditorWindow(file_path, lineno);
       },
       openSimulate: function(filepath, options, request_id) {
-        return obj.windows._openSimulateWindow(filepath, options, request_id);
+        return obj.windows._openSimulateProject(filepath, options, request_id);
       },
       cancelSimulate: function(request_id) {
         const frame = obj.window_manager.windows.get('simulate-window')?.iframe.contentWindow;

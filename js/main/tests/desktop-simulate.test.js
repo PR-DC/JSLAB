@@ -157,6 +157,60 @@ if(!globalThis.gui_desktop) {
   return;
 }
 
+tests.add('desktop Simulate waits for a .jslmo file before creating its window', async function(assert) {
+  const targets = async () => (await fetch('http://127.0.0.1:' + gui_desktop_port + '/json/list')).json();
+  const simulateTarget = async () => (await targets()).find(item => item.type === 'page' && item.url.endsWith('/simulate.html'));
+  assert.equal(await simulateTarget(), undefined);
+  const project = path.join(gui_desktop_profile, 'on-demand.jslmo');
+  fs.writeFileSync(project, JSON.stringify({ format: 'JSLAB Simulate', version: 1,
+    source: 'model OnDemand\nend OnDemand;' }));
+  await gui_desktop.main.evaluate(project => {
+    const list = document.createElement('ul');
+    win_main.file_browser.addFileBrowserItem(project, { isDirectory: () => false }, list);
+    document.getElementById('file-browser').append(list);
+    list.firstElementChild.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+  }, project);
+  let target;
+  for(let attempt = 0; attempt < 120 && !target; attempt++) {
+    target = await simulateTarget();
+    if(!target) await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert.ok(target, 'Simulate opens after the file browser opens a .jslmo file');
+  const client = new PRDC_JSLAB_GUI_TEST_BROWSER();
+  await client.connect(target.webSocketDebuggerUrl);
+  try {
+    await client.waitFor(project => typeof win_simulate !== 'undefined' && win_simulate.file_path === project,
+      'Simulate opened the selected project', 15000, project);
+    assert.ok(await client.evaluate(() => win_simulate.editor.getValue().includes('model OnDemand')));
+    await client.evaluate(() => {
+      document.getElementById('simulate-stop-time').value = '45';
+      document.getElementById('win-close').click();
+    });
+    await client.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate intercepts its window close');
+    await client.evaluate(() => document.getElementById('close-dialog-cancel').click());
+    await client.waitFor(() => !document.getElementById('close-dialog-cont').open, 'Simulate cancels window close');
+    await gui_desktop.main.evaluate(() => win_main.platform.host.send('MainProcess', 'focus-win'));
+    await gui_desktop.main.waitFor(async () => (await win_main.platform.host.invoke('JSLAB_DESKTOP_GUI_TEST_FOREGROUND'))
+      .endsWith('/main.html'), 'Command Window activation');
+    await gui_desktop.main.evaluate(() => win_main.close());
+    await client.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate intercepts application close');
+    await gui_desktop.main.waitFor(async () => (await win_main.platform.host.invoke('JSLAB_DESKTOP_GUI_TEST_FOREGROUND'))
+      .endsWith('/simulate.html'), 'Simulate requests foreground activation');
+    await client.evaluate(() => document.getElementById('close-dialog-cancel').click());
+    await client.waitFor(() => !document.getElementById('close-dialog-cont').open, 'Simulate cancels application close');
+    assert.equal(await client.evaluate(() => document.getElementById('simulate-stop-time').value), '45');
+    await client.evaluate(() => document.getElementById('win-close').click());
+    await client.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate asks again before discarding edits');
+    await client.evaluate(() => setTimeout(() => document.getElementById('close-dialog-discard').click(), 0));
+    for(let attempt = 0; attempt < 40 && await simulateTarget(); attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    assert.equal(await simulateTarget(), undefined);
+  } finally {
+    await client.close();
+  }
+}, { tags: ['gui', 'electron', 'integration'], timeout_ms: 35000 });
+
 tests.add('desktop Simulate runs the shipped 6-DOF model through real windows and publishes workspace signals', async function(assert) {
   var filename = path.join(app_path, 'examples/resources/simulate-6dof.jslmo');
   await gui_desktop.main.evaluate(filename => {
@@ -404,6 +458,13 @@ tests.add('desktop Simulate resolves inherited components and safely deletes sha
   assert.equal(result.protected_source, true);
   assert.deepEqual(result.names, ['inheritedGain', 'b']);
   assert.equal(result.treeHasB, true);
+  await gui_desktop.simulate.evaluate(() => document.getElementById('win-close').click());
+  await gui_desktop.simulate.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate cleanup prompt');
+  await gui_desktop.simulate.evaluate(() => setTimeout(() => document.getElementById('close-dialog-discard').click(), 0));
+  await gui_desktop.main.waitFor(async port => {
+    const targets = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
+    return !targets.some(target => target.url.endsWith('/simulate.html'));
+  }, 'Simulate window closed before the next test', 15000, gui_desktop_port);
 }, { tags: ['gui', 'electron', 'integration', 'simulate'], timeout_ms: 150000 });
 
 exports.MODULE_TESTS = tests;

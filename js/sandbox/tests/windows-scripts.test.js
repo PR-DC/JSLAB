@@ -87,7 +87,7 @@ tests.add('all js/windows scripts parse (presentation template after config subs
   var files = [
     'mathjax-config.js',
     'plot.js',
-    'presentation-editor.js',
+    '../presentation-editor/presentation-editor.js',
     'presentation-viewer.js',
     'serial-terminal.js',
     'ui.js'
@@ -395,8 +395,8 @@ tests.add('terminal script initializes terminal and updates UI state toggles', f
 
 tests.add('presentation and editor window scripts retain expected runtime markers', function(assert) {
   var presentation_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-viewer.js');
-  var editor_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-editor.js') +
-    PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-editor-notes.js');
+  var editor_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('../presentation-editor/presentation-editor.js') +
+    PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('../presentation-editor/presentation-editor-notes.js');
   var presentation_css = fs.readFileSync(
     path.join(__dirname, '..', '..', '..', 'css', 'presentation.css'),
     'utf8'
@@ -507,8 +507,8 @@ tests.add('presentation and editor window scripts retain expected runtime marker
   assert.ok(presentation_editor_css.includes('#slide-thumbnails::before'));
   assert.ok(presentation_editor_css.includes('#slide-notes'));
   assert.ok(presentation_editor_css.includes('border: 1px dashed #d7d7d7;'));
-  assert.ok(presentation_editor_css.includes('#slide-notes::-webkit-scrollbar-thumb'));
-  assert.ok(presentation_editor_css.includes('#slide-notes-body::-webkit-scrollbar-thumb'));
+  assert.ok(presentation_editor_html.includes('id="slide-notes" class="panel-scroll"'));
+  assert.ok(presentation_editor_html.includes('id="slide-notes-body" class="panel-scroll"'));
   assert.ok(presentation_editor_css.includes('resize: none;'));
   assert.ok(presentation_editor_css.includes('top: 54px;'));
   var presentation_code_css = fs.readFileSync(path.join(__dirname, '..', '..', '..',
@@ -527,7 +527,7 @@ tests.add('language workflow is explicit for editor and presentation-editor wind
     path.join(__dirname, '..', '..', 'backend-electron', 'init-editor.js'),
     'utf8'
   );
-  var presentation_editor_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('presentation-editor.js');
+  var presentation_editor_source = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readWindowScript('../presentation-editor/presentation-editor.js');
   var editor_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('editor.html');
   var presentation_editor_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('presentation-editor.html');
   var presentation_html = PRDC_JSLAB_SANDBOX_TESTS_WINDOWS_SCRIPTS_TEST_HELPER.readHtmlFile('presentation.html');

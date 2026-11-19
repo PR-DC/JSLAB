@@ -138,8 +138,10 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
         }
       });
     } else if(channel == 'MainProcess') {
-      if(data == 'hide-simulate') {
-        this.bridge.hideWindow('simulate-window');
+      if(data == 'close-simulate') {
+        this.bridge.closeFrameWindow(globalThis);
+      } else if(data == 'focus-win') {
+        this.bridge.focusWindow('simulate-window');
       } else if(data == 'minimize-win') {
         this.bridge.minimizeWindow('simulate-window');
       } else if(data == 'toggle-maximize-win') {

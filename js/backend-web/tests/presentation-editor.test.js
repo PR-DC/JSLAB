@@ -57,6 +57,15 @@ webTest(tests, 'web presentation source tabs and notes update the correct docume
   t.ok(c.html_editor.code_editor.getValue().includes('Changed notes'));
   t.click('#tab-save', doc);
   t.ok(t.app.fs.readTextFileSync('/workspace/gui-presentation/index.html').includes('Changed notes'));
+  c.js_editor.show();
+  const source = c.js_editor.code_editor;
+  source.setValue('document.lector');
+  source.setCursor(0, 'document.lector'.length);
+  const suggestions = await w.CodeMirror.hint.javascript(source, source.getOption('hintOptions'));
+  t.ok(suggestions?.list.includes('querySelector'), JSON.stringify(suggestions));
+  w.CodeMirror.commands.autocomplete(source, null, { completeSingle: false });
+  await t.wait(() => [...doc.querySelectorAll('.CodeMirror-hint')]
+    .some(hint => hint.textContent === 'querySelector'), 'fuzzy property autocomplete');
 });
 
 webTest(tests, 'web presentation first/previous/next/last/number and thumbnail controls navigate', async function() {
