@@ -1,0 +1,18 @@
+/**
+ * @file Basic vector and matrix operations
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+var vector_a = vec.new(1, 2, 3);
+var vector_b = vec.new(4, 8, 6);
+var vector_dot = vector_a.dot(vector_b);
+disp('Vector dot product');
+disp(vector_dot);
+
+var matrix_a = mat.new([[1, 2], [3, 4]]);
+var matrix_b = mat.new([[5, 6], [7, 8]]);
+var matrix_sum = matrix_a.add(matrix_b);
+disp('Matrix sum');
+disp(matrix_sum.toArray());

@@ -9,6 +9,7 @@ body {
 
 body {
   --taskbar-offset: 0px;
+  --web-status-height: 24px;
 }
 
 body.has-minimized-windows {
@@ -37,9 +38,75 @@ body.has-minimized-windows {
   background: #ffffff40;
 }
 
-#main-menu-container,
-#status-container {
-  min-width: 1100px;
+#main-menu-container > div {
+  display: flex;
+  align-items: center;
+}
+
+#main-menu-container #app-logo {
+  padding-top: 0;
+}
+
+#main-menu-container > div > .clear {
+  display: none;
+}
+
+#main-menu,
+#web-main-actions {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+#app-title {
+  order: 1;
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#web-main-actions {
+  order: 2;
+}
+
+@media (max-width: 1100px) {
+  #main-menu li str {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  #main-menu li img {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  #app-title {
+    width: 0;
+    padding: 0;
+    border: 0;
+  }
+}
+
+@media (max-width: 540px) {
+  #company-logo {
+    display: none;
+  }
+
+  #main-menu,
+  #web-main-actions {
+    padding-inline: 4px;
+  }
+
+  #main-menu li,
+  #web-main-actions li {
+    padding-inline: 5px;
+  }
 }
 
 #window-controls {
@@ -51,7 +118,7 @@ body.has-minimized-windows {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 25px;
+  bottom: var(--web-status-height);
   height: 32px;
   background: #f8f9fb;
   border-top: 1px solid #dadce0;
@@ -107,9 +174,9 @@ body.has-minimized-windows #taskbar-container {
 
 #window-layer {
   position: absolute;
-  top: 43px;
+  top: 42px;
   right: 0;
-  bottom: calc(25px + var(--taskbar-offset));
+  bottom: calc(var(--web-status-height) + var(--taskbar-offset));
   left: 0;
   overflow: hidden;
   pointer-events: none;
@@ -117,12 +184,13 @@ body.has-minimized-windows #taskbar-container {
 }
 
 #panels-container {
-  top: 78px;
-  bottom: calc(25px + var(--taskbar-offset));
+  bottom: calc(var(--web-status-height) + var(--taskbar-offset));
 }
 
 .web-window {
   position: absolute;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border: 1px solid #dadce0;
   border-radius: 4px;
@@ -150,6 +218,7 @@ body.has-minimized-windows #taskbar-container {
 
 .web-window-header {
   height: 34px;
+  flex: 0 0 34px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -165,6 +234,12 @@ body.has-minimized-windows #taskbar-container {
 
 .web-window-header.static {
   cursor: default;
+}
+
+.web-window-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
 
 .web-window-title {
@@ -216,8 +291,10 @@ body.has-minimized-windows #taskbar-container {
 }
 
 .web-window-frame {
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
-  height: calc(100% - 34px);
   border: 0;
   background: #ffffff;
 }

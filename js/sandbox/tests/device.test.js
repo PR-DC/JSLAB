@@ -70,7 +70,8 @@ class PRDC_JSLAB_SANDBOX_TESTS_DEVICE_TEST_HELPER {
           }
         },
         windows: {
-          openCanvas: async function() {
+          openWindow: () => 1,
+          _prepareCanvas: async function() {
             return false;
           }
         }

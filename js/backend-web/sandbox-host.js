@@ -8,7 +8,6 @@
 const { PRDC_JSLAB_WEB_BROWSER } = require('./browser');
 
 const { PRDC_JSLAB_DEBUGGER_DISPATCHER } = require("../other-shared/debugger-dispatcher");
-const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
 const { isInternalDebugFrame } = require('../other-shared/debugger-frames');
 var { PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT } = require('./worker-debugger-client');
 
@@ -33,11 +32,50 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
         return this._workerDebugState();
       },
       reset: async () => {
-        application.worker_debugger.dispose();
-        await this._startWorkerDebugger();
+        await this._resetSandbox();
         return this._workerDebugState();
       }
     });
+  }
+
+  /**
+   * Handles a reset request from the owning sandbox.
+   * @param {string} action Requested scope.
+   */
+  requestReset(action) {
+    const reset = action === 'sandbox' ? this._resetSandbox(true) :
+      action === 'app' ? this._resetApp() : null;
+    reset?.catch(error => this.application.main.command_window.error(error.message));
+  }
+
+  /**
+   * Replaces the sandbox worker and its children while preserving the application.
+   * @param {boolean} [requested=false] Whether the sandbox requested the reset.
+   */
+  async _resetSandbox(requested = false) {
+    const app = this.application;
+    app.ui_sandbox_api?.stopAnimations();
+    app.worker_debugger?.dispose(requested);
+    app._renderWorkspaceVariables([]);
+    await this._startWorkerDebugger();
+  }
+
+  /**
+   * Reloads the application after open editors resolve unsaved changes.
+   */
+  async _resetApp() {
+    if(this.resetting_app) return;
+    this.resetting_app = true;
+    try {
+      const app = this.application;
+      await app.window_manager.confirmReload(async () => {
+        await app.fs.flushWrites();
+        app.main.command_history.saveHistory();
+        window.location.reload();
+      });
+    } finally {
+      this.resetting_app = false;
+    }
   }
 
   /**
@@ -113,10 +151,10 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
       await this._startWorkerDebugger();
       const shell = this;
       this.application.sandbox_api = {
-        handshake: () => ({ ...shell.application.ui_sandbox_api.handshake(), runtime: 'scientific-worker', workspace: shell.application.worker_debugger?.workspace || [] }),
+        handshake: () => ({ ...shell.application.ui_sandbox_api.handshake(), runtime: 'sandbox-worker', workspace: shell.application.worker_debugger?.workspace || [] }),
         evaluate: async code => {
           await shell._startWorkerDebugger();
-          const result = await shell.application.worker_debugger.evaluate(String(code), { files: shell._workerDebugFiles(), cwd: shell.application.current_path });
+          const result = await shell.application.worker_debugger.evaluate(String(code), shell._workerEvaluationOptions());
           if(!result.success) {
             throw Object.assign(Error(result.error), { error_details: result.error_details, interrupted: result.interrupted });
           }
@@ -147,7 +185,7 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
           return shell.application.worker_debugger.operation('clear');
         },
         setLanguage: lang => shell.application.worker_debugger?.operation('language', { lang }),
-        notifyWindowClosed: wid => shell.application.worker_debugger?.operation('window-closed', { wid }),
+        notifyWindowClosed: wid => shell._notifyWindowClosed(wid),
         resolveSimulateValue: expression => shell.application.worker_debugger.operation('simulate-resolve', { expression }),
         publishSimulation: data => shell.application.worker_debugger.operation('simulate-result', { data }),
         workerUI: operation => shell.application.ui_sandbox_api.workerUI(operation)
@@ -156,6 +194,23 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
     var handshake = this.application.sandbox_api.handshake();
     this.application._setStatus('ready', '', 87);
     this.application._renderWorkspaceVariables(handshake.workspace || []);
+  }
+
+  /**
+   * Delivers a close notification only while its sandbox worker can process it.
+   * @param {number|string} wid Window identifier.
+   * @returns {Promise<boolean>} Whether the worker received the notification.
+   */
+  async _notifyWindowClosed(wid) {
+    const worker = this.application.worker_debugger;
+    if(!worker || ['starting', 'closed', 'unavailable'].includes(worker.state)) return false;
+    try {
+      await worker.operation('window-closed', { wid });
+      return true;
+    } catch(error) {
+      if(worker !== this.application.worker_debugger || ['closed', 'unavailable'].includes(worker.state)) return false;
+      throw error;
+    }
   }
 
   /**
@@ -169,18 +224,6 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
       return;
     }
     return this._evaluateCommand(code);
-  }
-
-  /**
-   * Runs editor text through the shared command worker.
-   * @param {string} code
-   * @param {string} [label]
-   */
-  async runEditorCode(code, label) {
-    if(label) {
-      this.application._appendCommandWindowMessage('system-in', '<span class="log">Running: ' + PRDC_JSLAB_TEXT.escapeHTML(label) + '</span>', 'Running: ' + label);
-    }
-    await this._evaluateCommand(String(code || ''));
   }
 
   /**
@@ -245,8 +288,15 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
         this._updateWorkerEditor();
       },
       targets: () => this._updateWorkerEditor(),
+      resetRuntime: action => this.requestReset(action),
       remoteRoots: () => ({ window: globalThis, document, bridge: this.application.bridge }),
       ui: operation => {
+        if(operation.kind === 'print-window-pdf') {
+          return this.application.bridge.printWindowToPdf(operation.wid, operation.options);
+        }
+        if(operation.kind === 'read-workspace-selection') {
+          return this._workerDebugFiles(operation.paths);
+        }
         if(operation.kind === 'write-bytes') {
           this.application.fs.writeBytesSync(operation.path, operation.bytes);
           return true;
@@ -370,21 +420,21 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
   }
 
   /**
-   * Collects text sources for nested run() calls in the numerical worker.
+   * Collects workspace files for the numerical worker.
+   * @param {Array<string>} [paths] Files and directories to collect.
+   * @returns {Object} File contents keyed by workspace path.
    */
-  _workerDebugFiles() {
+  _workerDebugFiles(paths = ['/workspace/']) {
     const files = {};
-    const visit = directory => {
-      for(const entry of this.application.fs.readDirSync(directory, { withFileTypes: true }) || []) {
-        const path = directory.replace(/\/$/, '') + '/' + entry.name;
-        if(entry.isDirectory()) {
-          visit(path);
-        } else {
-          files[path] = /\.(jsl|js|json|txt|csv)$/i.test(entry.name) ? this.application.fs.readTextFileSync(path) : this.application.fs.readBytesSync(path);
-        }
+    const fs = this.application.fs;
+    const visit = path => {
+      if(fs.existsDirectorySync(path)) {
+        for(const name of fs.readDirSync(path)) visit(fs.join(path, name));
+      } else if(fs.existsFileSync(path)) {
+        files[path] = /\.(jsl|js|json|txt|csv)$/i.test(path) ? fs.readTextFileSync(path) : fs.readBytesSync(path);
       }
     };
-    visit('/workspace/');
+    paths.forEach(visit);
     return files;
   }
 
@@ -430,7 +480,7 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
     this.application._setStatus('busy', '', 88);
     try {
       await this._startWorkerDebugger();
-      const result = await this.application.worker_debugger.evaluate(String(code), { files: this._workerDebugFiles(), cwd: this.application.current_path, path: options.path });
+      const result = await this.application.worker_debugger.evaluate(String(code), this._workerEvaluationOptions(options));
       this.application._renderWorkspaceVariables(result.workspace || []);
       if(!result.success && !result.interrupted) {
         this.application.main.command_window.error(result.error);
@@ -438,10 +488,20 @@ class PRDC_JSLAB_WEB_SANDBOX_HOST {
       return result;
     } finally {
       this.application.main.evaluating = false;
-      if(this._activeWorkerDebugger()?.state !== 'paused') {
+      if(this._activeWorkerDebugger()?.state === 'idle') {
         this.application._setStatus('ready', '', 87);
       }
     }
+  }
+
+  /**
+   * Supplies the current workspace state for worker execution.
+   * @param {Object} [options] Evaluation options supplied by the caller.
+   * @returns {Object} Worker evaluation options.
+   */
+  _workerEvaluationOptions(options = {}) {
+    return { ...options, files: this._workerDebugFiles(), cwd: this.application.current_path,
+      saved_paths: this.application.main.folder_navigation.saved_paths };
   }
 
   /**

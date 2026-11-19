@@ -43,9 +43,11 @@ class PRDC_JSLAB_WEB_RENDERER_HOST {
    * @param {...*} args Event arguments.
    */
   emit(channel, ...args) {
+    let result;
     for(const callback of this._listeners.get(channel) || []) {
-      callback({}, ...args);
+      result = callback({}, ...args);
     }
+    return result;
   }
 
   /**
@@ -108,19 +110,7 @@ class PRDC_JSLAB_WEB_RENDERER_HOST {
     if(['JSLAB_ASSISTANT_CANCEL', 'JSLAB_ASSISTANT_RESET'].includes(channel)) {
       pending = bridge.assistantRequest(channel);
     } else if(channel == 'MainWindow') {
-      if(action == 'run') {
-        const [filename, lines] = data;
-        let code = bridge.readWorkspaceTextSync(filename);
-        if(lines !== undefined) {
-          const range = Array.isArray(lines) ? lines : [lines, lines];
-          code = '\n'.repeat(Math.max(0, range[0] - 1)) + code.split(/\r?\n/).slice(range[0] - 1, range[1]).join('\n');
-        }
-        pending = bridge.runEditorCode(code, filename);
-      } else if(action == 'eval-command' || action == 'eval-command-preserve-input') {
-        pending = bridge.runEditorCode(Array.isArray(data) ? data[0] : data);
-      } else {
-        bridge.appendConsoleMessage(Array.isArray(data) ? data[0] : data, action == 'internal-error' ? 'error' : 'muted');
-      }
+      pending = bridge.sendMainWindow(action, data);
     } else if(channel == 'SandboxWindow' && action == 'interrupt-execution') {
       pending = bridge.debugCommand('interrupt_execution');
     } else if(channel == 'MainProcess') {
@@ -341,12 +331,12 @@ class PRDC_JSLAB_WEB_MAIN_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
     const shell = this.platform.application;
     if(channel == 'SandboxWindow') {
       switch(action) {
-        case 'eval-code': return shell.runtime._executeCode(data[0], { path: data[2] });
+        case 'eval-code': return shell.runtime._executeCode(data[0], { show_output: data[1], path: data[2] });
         case 'interrupt-execution': return shell.worker_debugger?.interrupt();
         case 'set-language': return shell.sandbox_api?.setLanguage(data);
         case 'set-current-path': shell.storage.set('current_path', data); return;
         case 'set-saved-paths': shell.storage.set('saved_paths', data); return;
-        case 'run-last-script': return shell.runtime._executeCode(shell.last_script_code || '');
+        case 'run-last-script': return shell.runtime._executeCode('', { run_last: true });
       }
     }
     if(channel == 'MainProcess') {
@@ -399,6 +389,7 @@ class PRDC_JSLAB_WEB_MAIN_ADAPTER extends PRDC_JSLAB_WEB_RENDERER_ADAPTER {
     this.animation_duration = 0;
     this.host = new PRDC_JSLAB_WEB_MAIN_HOST(this);
     const browser_fs = shell.fs;
+    this.fs.createWriteStream = filename => browser_fs.createAppendTextStream(filename);
     this.fs.readdir = (filename, options, callback) => {
       try {
         const entries = browser_fs.readDirSync(filename, options);

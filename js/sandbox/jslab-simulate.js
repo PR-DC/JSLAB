@@ -11,6 +11,67 @@
 class PRDC_JSLAB_SANDBOX_SIMULATE {
 
   /**
+   * Copies a script's simulation options and converts workspace parameters for transport.
+   * @param {Object} [options] Script options.
+   * @param {Function} sanitize Converts evaluated workspace values to portable values.
+   * @returns {Promise<Object>} Host request options.
+   */
+  static async _requestOptions(options, sanitize) {
+    const request = { ...options };
+    if(request.parameters && typeof request.parameters === 'object') {
+      request.parameters = await sanitize(request.parameters);
+    }
+    return request;
+  }
+
+  /**
+   * Binds an outstanding simulation request to sandbox interruption.
+   * @param {Object} jsl Active JSLAB runtime.
+   * @param {Object} options Script options.
+   * @param {Function} sanitize Converts parameters for the receiving host.
+   * @param {Function} run Starts the host request with an identifier.
+   * @param {Function} cancel Cancels the identified host request.
+   * @returns {Promise<*>} Host response or false if interrupted before sending.
+   */
+  static async _runRequest(jsl, options, sanitize, run, cancel) {
+    const id = crypto.randomUUID();
+    const owner = {};
+    let cancelled = false;
+    let sent = false;
+    jsl.addForCleanup(owner, () => {
+      cancelled = true;
+      if(sent) return cancel(id);
+    });
+    try {
+      const request = await this._requestOptions(options, sanitize);
+      if(cancelled) return false;
+      sent = true;
+      return await run(request, id);
+    } finally {
+      const index = jsl.cleanup_registry.findIndex(entry => entry.obj === owner);
+      if(index >= 0) jsl.cleanup_registry.splice(index, 1);
+    }
+  }
+
+  /**
+   * Evaluates a model binding in the active workspace and converts the result for transport.
+   * @param {Object} jsl Active JSLAB runtime.
+   * @param {string} expression Workspace expression.
+   * @param {Function} getSanitizer Loads the host value conversion function.
+   * @returns {Promise<Object>} Safe value or structured error.
+   */
+  static async _resolveWorkspaceValue(jsl, expression, getSanitizer) {
+    try {
+      const sanitize = await getSanitizer();
+      const value = await jsl.inter.eval.evalString('(' + String(expression || '') + ')');
+      return { success: true, js_value: sanitize(value) };
+    } catch(error) {
+      return { success: false, error: String(error?.message || error),
+        value_code: error?.value_code, value_path: error?.value_path };
+    }
+  }
+
+  /**
    * Creates shared simulation services for the owning environment.
    * @param {Object} env Sandbox platform environment.
    */

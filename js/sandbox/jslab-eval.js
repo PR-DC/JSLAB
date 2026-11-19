@@ -297,6 +297,7 @@ class PRDC_JSLAB_EVAL {
    */
   async evalString(code) {
     const token = this.jsl.inter.execution?.current;
+    if(this.jsl.inter.env._prepareSource) await this.jsl.inter.env._prepareSource(code);
     var rewrite_result = this.rewriteCode(code);
     if(rewrite_result) {
       if(rewrite_result.debug_source && typeof this.jsl.inter.env.registerDebugSource === 'function') {
@@ -391,15 +392,13 @@ class PRDC_JSLAB_EVAL {
 
   /**
    * Re-evaluates the last script file that was executed in the environment.
+   * @returns {Promise<Object>} Evaluation result.
    */
   async runLast() {
-    var cmd;
-    if(this.jsl.last_script_lines !== undefined) {
-      cmd = 'run(' + JSON.stringify(this.jsl.last_script_path) + ', ' + JSON.stringify(this.jsl.last_script_lines) + ', undefined, true)';
-    } else {
-      cmd = 'run(' + JSON.stringify(this.jsl.last_script_path) + ', undefined, false, true)';
-    }
-    await this.evalCodeFromMain(cmd);
+    const path = JSON.stringify(this.jsl.last_script_path);
+    const lines = JSON.stringify(this.jsl.last_script_lines);
+    const silent = JSON.stringify(this.jsl.last_script_silent);
+    return this.evalCodeFromMain('run(' + path + ', ' + lines + ', ' + silent + ', true)');
   }
 
   /**

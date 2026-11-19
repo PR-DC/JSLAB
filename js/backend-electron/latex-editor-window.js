@@ -7,8 +7,12 @@
 
 const path = require('node:path');
 const fs = require('node:fs/promises');
+const { randomUUID } = require('node:crypto');
 const { BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
 const { PRDC_JSLAB_LATEX } = require('./latex');
+const { PRDC_JSLAB_LATEX_EDITOR_SETTINGS } = require('../latex-editor/latex-editor-settings');
+const { PRDC_JSLAB_LATEX_EDITOR_BUILD } = require('../latex-editor/compiler');
+const { latex_document } = require('../other-shared/latex-project-files');
 
 /**
  * Owns the isolated LaTeX Editor window and its desktop requests.
@@ -21,6 +25,8 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
   constructor(application) {
     this.application = application;
     this.store = application.store;
+    this.settings = new PRDC_JSLAB_LATEX_EDITOR_SETTINGS(this.store, id => application.currentString(id));
+    this.wasm_build = new PRDC_JSLAB_LATEX_EDITOR_BUILD(randomUUID);
     ipcMain.handle('JSLAB_LATEX', async (event, action, ...args) => {
       if(event.sender !== this.window?.webContents || event.senderFrame !== event.sender.mainFrame) return null;
       return this.request(action, args);
@@ -47,6 +53,7 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
     this.window = win;
     this.ready = false;
     this.allow_close = false;
+    this.wasm_build.clear();
     const project = new PRDC_JSLAB_LATEX();
     this.project = project;
     win.setMenu(null);
@@ -102,14 +109,22 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
   }
 
   /**
+   * Confirms relaunch while keeping the editor available if another window cancels.
+   * @returns {Promise<boolean>} Whether reloading is approved.
+   */
+  async confirmReload() {
+    if(!this.window || this.window.isDestroyed()) return true;
+    return this.window.webContents.executeJavaScript('window.confirmLatexReload?.() ?? true', true);
+  }
+
+  /**
    * Restores the project's saved main source when no source was specified.
    * @param {Object|null} project Project opened by the host.
    * @returns {Object|null} Project selection.
    */
   restoreMain(project) {
     if(!project) return null;
-    const file = this.store.get('latex-editor-main-files', {})?.[project.root];
-    if(project.files.includes(file)) project.main = file;
+    project.main = this.settings.selectMain(project.root, project.files);
     return project;
   }
 
@@ -141,17 +156,10 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
         this.ready = true;
         this.notifyOpen();
         return;
-      case 'settings': {
-        const strings = {};
-        for(let id = 697; id <= 774; id++) strings[id] = this.application.currentString(id);
-        for(let id = 336; id <= 344; id++) strings[id] = this.application.currentString(id);
-        for(let id = 364; id <= 372; id++) strings[id] = this.application.currentString(id);
-        for(const id of [47, 48, 49, 50, 51, 52, 168, 331, 376, 381, 382, 643, 644, 777]) strings[id] = this.application.currentString(id);
-        const panel_keys = ['panel-latex-editor-columns', 'panel-latex-editor-source', 'panel-latex-editor-sidebar'];
-        const panels = Object.fromEntries(panel_keys.map(key => [key, this.store.get(key)]));
-        return { strings, panels, search_history: this.store.get('editor_search_history'),
-          preferences: PRDC_JSLAB_LATEX.preferences(this.store.get('latex-editor-preferences')) };
-      }
+      case 'settings':
+      case 'panel':
+      case 'preferences':
+      case 'search-history': return this.settings.request(action, first, second);
       case 'bundle':
         this.bundle ||= require('esbuild').build({
           entryPoints: [path.join(__dirname, '../latex-editor/latex-editor.js')],
@@ -161,35 +169,21 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
           throw error;
         });
         return this.bundle;
-      case 'panel':
-        if(['panel-latex-editor-columns', 'panel-latex-editor-source', 'panel-latex-editor-sidebar'].includes(first) &&
-            Array.isArray(second) && second.length === 2 && second.every(size => Number.isFinite(size) && size > 0 && size < 100)) {
-          this.store.set(first, second);
-        }
-        return;
-      case 'preferences':
-        this.store.set('latex-editor-preferences', PRDC_JSLAB_LATEX.preferences(first));
-        return;
-      case 'search-history':
-        if(Array.isArray(first) && first.length <= 100 && first.every(item => typeof item === 'string')) {
-          this.store.set('editor_search_history', first);
-        }
-        return;
       case 'open': {
         const { canceled, filePaths } = await dialog.showOpenDialog(this.window, { properties: ['openDirectory'] });
-        return canceled ? undefined : this.restoreMain(await this.project.open(filePaths[0]));
+        if(canceled) return;
+        this.wasm_build.clear();
+        return this.restoreMain(await this.project.open(filePaths[0]));
       }
       case 'open-path': {
         if(typeof first !== 'string' || !path.isAbsolute(first) || (second != null && typeof second !== 'string')) return null;
+        this.wasm_build.clear();
         const project = await this.project.open(first, second);
         return !second && (await fs.stat(first).catch(() => null))?.isDirectory() ? this.restoreMain(project) : project;
       }
       case 'choose-main': {
         const file = await this.project.resolve(first);
-        if(!file || !/\.tex$/i.test(file)) return false;
-        const choices = this.store.get('latex-editor-main-files', {});
-        this.store.set('latex-editor-main-files', { ...choices, [this.project.root]: first });
-        return true;
+        return Boolean(file) && this.settings.saveMain(this.project.root, first);
       }
       case 'file-menu': {
         const file = await this.project.resolve(first);
@@ -210,7 +204,7 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
         const filename = /\.tex$/i.test(filePath) ? filePath : filePath + '.tex';
         const directory = await this.project.resolvePath(path.dirname(filename));
         if(!directory) return null;
-        await fs.writeFile(path.join(directory, path.basename(filename)), '\\documentclass{article}\n\n\\begin{document}\n\\null\n\\end{document}\n', { flag: 'wx' });
+        await fs.writeFile(path.join(directory, path.basename(filename)), latex_document, { flag: 'wx' });
         return { ...await this.project.scan(), file: path.relative(this.project.root, filename) };
       }
       case 'scan': return this.project.scan();
@@ -222,6 +216,8 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
         return await shell.openPath(directory) === '';
       }
       case 'save': return this.project.save(first, second);
+      case 'wasm-files':
+      case 'wasm-output': return this.wasm_build.request(this.project, action, first, second);
       case 'detect': return this.project.detect(this.store.get('latex-toolchain-bin'), first);
       case 'toolchain': return new PRDC_JSLAB_LATEX().detect(this.store.get('latex-toolchain-bin'), first);
       case 'locate': {

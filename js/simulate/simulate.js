@@ -159,7 +159,7 @@ class PRDC_JSLAB_WIN_SIMULATE {
     obj.diagram_nodes = new Map();
     obj.compiler = null;
     obj.compiler_ready = null;
-    obj.automation_id = null;
+    obj.automation_request = null;
     obj.compiler_activity_started = 0;
     obj.compiler_activity_timer = null;
     obj.compiler_status_text = '';
@@ -285,18 +285,26 @@ class PRDC_JSLAB_WIN_SIMULATE {
       if(action === 'focus') {
         document.getElementById('simulate-diagram-svg').focus();
       }
-      if(action === 'automation-cancel' && obj.automation_id === Number(data && data.id)) {
-        obj.compiler.close(new Error(language.currentString(675)));
-        obj.compiler_ready = null;
+      if(action === 'automation-cancel' && obj.automation_request?.id === Number(data?.id)) {
+        obj.automation_request.cancelled = true;
+        if(obj.automation_request.compiling) obj.cancelCompiler();
       }
       if(action === 'automation') {
+        if(obj.automation_request || obj.busy) {
+          host.send('JSLAB_SIMULATE_AUTOMATION_RESULT', { id: data.id, success: false, error: language.currentString('omjsl-10') });
+          return;
+        }
         (async function() {
-          obj.automation_id = Number(data.id);
+          const request = obj.automation_request = { id: Number(data.id) };
+          const ensureActive = () => {
+            if(request.cancelled) throw Error(language.currentString(675));
+          };
           try {
             var options = data.options || {};
             if(data.filepath && !await obj.openModel(data.filepath)) {
               throw new Error(obj.output.textContent || 'Could not open project.');
             }
+            ensureActive();
             Object.entries(options.parameters || {}).forEach(function(entry) {
               obj.parameter_bindings.set(entry[0], obj.valueToJSLABExpression(entry[1]));
             });
@@ -319,24 +327,19 @@ class PRDC_JSLAB_WIN_SIMULATE {
             }
             var response = { success: true, model: obj.model && obj.model.name };
             if(options.run) {
+              request.compiling = true;
               var compiled = await obj.runCompiler('simulate');
+              ensureActive();
               if(!compiled || !compiled.success) {
                 throw new Error(compiled && compiled.error || obj.output.textContent);
               }
               response.samples = obj.result && obj.result.data && obj.result.data.time ? obj.result.data.time.length : 0;
             }
             if(options.animation) {
-              if(!obj.animation_available) {
-                throw new Error(language.currentString(677));
-              }
-              host.send('JSLAB_SIMULATE_ANIMATION', {
-                file_name: obj.projectFileName(),
-                model_name: obj.model ? obj.model.name : '',
-                components: obj.model ? obj.model.components : [],
-                connections: obj.model ? obj.model.connections : [],
-                visualization: obj.visualization,
-                options: typeof options.animation == 'object' ? options.animation : { loop: true }
-              });
+              const animation_options = typeof options.animation == 'object' ? options.animation : { loop: true };
+              const figure = await obj.openAnimation(animation_options);
+              ensureActive();
+              if(!figure) throw new Error(language.currentString(677));
             }
             host.send('JSLAB_SIMULATE_AUTOMATION_RESULT', Object.assign({ id: data.id }, response));
           } catch(error) {
@@ -345,9 +348,7 @@ class PRDC_JSLAB_WIN_SIMULATE {
             });
           } finally {
             obj.automation_parameter_values.clear();
-            if(obj.automation_id === Number(data.id)) {
-              obj.automation_id = null;
-            }
+            obj.automation_request = null;
           }
         })();
       }

@@ -113,6 +113,15 @@ if(globalThis.gui_desktop) {
       await editor.evaluate(() => document.getElementById('next-slide').click());
       await editor.waitFor(() => presentation_editor.current_slide === 1, 'Presentation Editor navigated to slide 2');
       assert.equal(await editor.evaluate(() => presentation_editor.html_editor.code_editor.getValue().includes('<slide>')), true);
+      const slide_highlight = await editor.evaluate(() => {
+        const html = presentation_editor.html_editor;
+        const source = html.code_editor;
+        html.setSlide(presentation_editor.total_slides - 1);
+        const entered = html.slide_highlight_lines.length > 0;
+        source.setCursor(source.posFromIndex(source.getValue().lastIndexOf('</slide>') + '</slide>'.length));
+        return { entered, exited: html.slide_highlight_lines.length === 0 };
+      });
+      assert.deepEqual(slide_highlight, { entered: true, exited: true });
       const suggestions = await editor.evaluate(async () => {
         presentation_editor.js_editor.show();
         const source = presentation_editor.js_editor.code_editor;
@@ -141,8 +150,16 @@ if(globalThis.gui_desktop) {
   }, { tags, timeout_ms: 50000 });
 
   tests.add('LaTeX Editor opens a real project, inserts TeX symbols and previews project assets and logs', async function(assert) {
-    const { editor } = await PRDC_JSLAB_DESKTOP_PROJECT_EDITORS_TEST_HELPER.openLatex('desktop-latex-assets');
+    const { root, editor } = await PRDC_JSLAB_DESKTOP_PROJECT_EDITORS_TEST_HELPER.openLatex('desktop-latex-assets');
     try {
+      const selection = await editor.evaluate(async (root, chapter) => {
+        const saved = await latexHost.request('choose-main', chapter);
+        const rejected = await latexHost.request('choose-main', 'main.log');
+        const project = await latexHost.request('open-path', root);
+        await latexHost.request('choose-main', 'main.tex');
+        return { saved, rejected, main: project.main };
+      }, root, path.join('sections', 'figures.tex'));
+      assert.deepEqual(selection, { saved: true, rejected: false, main: path.join('sections', 'figures.tex') });
       await editor.evaluate(() => {
         const source = document.querySelector('#code .CodeMirror').CodeMirror;
         source.setSelection({ line: 9, ch: 0 }, { line: 9, ch: 4 });
@@ -229,6 +246,9 @@ if(globalThis.gui_desktop) {
     try {
       const tools = await editor.evaluate(() => latexHost.request('detect', 'pdflatex'));
       if(tools.missing.length) assert.skip('Install a desktop TeX toolchain for this test: ' + tools.missing.join(', '));
+      const script = await gui_desktop.sandbox.evaluate(async source => compileLatex(source), path.join(root, 'main.tex'));
+      assert.equal(script?.ok, true, script?.log);
+      assert.equal(script?.pdf, path.join(root, 'main.pdf'));
       await editor.evaluate(() => document.getElementById('compile').click());
       await editor.waitFor(() => !document.getElementById('compile').disabled &&
         !!document.querySelector('#pdf-scroll .textLayer span'), 'TeX build and PDF.js text layer', 60000);
@@ -248,7 +268,17 @@ if(globalThis.gui_desktop) {
           document.querySelector('#code .CodeMirror').CodeMirror.getCursor().line === line,
         'SyncTeX landed on ' + file, 12000, file, line);
       }
-      await editor.evaluate(() => document.getElementById('forward').click());
+      await editor.waitFor(() => !!document.querySelector('.latex-source-hit'), 'SyncTeX source line is highlighted');
+      await editor.evaluate(() => {
+        const source = document.querySelector('#code .CodeMirror').CodeMirror;
+        source.setCursor(source.getCursor().line + 1, 0);
+      });
+      await editor.waitFor(() => !document.querySelector('.latex-source-hit'), 'source highlight clears when the cursor changes lines');
+      await editor.evaluate(() => {
+        const source = document.querySelector('#code .CodeMirror').CodeMirror;
+        source.setCursor(source.getCursor().line - 1, 0);
+        document.getElementById('forward').click();
+      });
       await editor.waitFor(() => !!document.querySelector('#pdf-scroll .latex-pdf-hit'), 'source position highlighted in PDF');
       await editor.evaluate(() => {
         document.querySelector('#code .CodeMirror').CodeMirror.replaceRange('\\UnknownDesktopTexCommand\n', { line: 0, ch: 0 });
@@ -271,6 +301,54 @@ if(globalThis.gui_desktop) {
       await editor.close();
     }
   }, { tags, timeout_ms: 160000 });
+
+  if(process.env.JSLAB_TEST_TEXLIVE === '1') {
+    tests.add('Desktop sandbox compileLatex uses WebAssembly without opening the editor', async function(assert) {
+      const root = path.join(gui_desktop_profile, 'desktop-latex-script');
+      await fs.mkdir(root, { recursive: true });
+      const source = path.join(root, 'main.tex');
+      await fs.writeFile(source, '\\documentclass{article}\n\\usepackage{graphicx}\n\\begin{document}\n' +
+        'Desktop sandbox LaTeX.\n\\end{document}');
+      const latexTargets = async () => {
+        const targets = await (await fetch('http://127.0.0.1:' + gui_desktop_port + '/json/list')).json();
+        return targets.filter(target => target.type === 'page' && /\/latex-(?:editor|compiler)\.html$/.test(target.url))
+          .map(target => target.id).sort();
+      };
+      const previous = await latexTargets();
+      const result = await gui_desktop.sandbox.evaluate(async source => compileLatex(source), source);
+      assert.equal(result?.ok, true, result?.log);
+      assert.equal(result?.pdf, path.join(root, 'main.pdf'));
+      assert.ok(result?.log.includes('TeX Live 2026'));
+      assert.equal((await fs.readFile(result.pdf)).subarray(0, 5).toString(), '%PDF-');
+      assert.ok((await fs.readFile(path.join(root, 'main.log'), 'utf8')).includes('TeX Live 2026'));
+      assert.deepEqual(await latexTargets(), previous);
+    }, { tags, timeout_ms: 150000 });
+
+    tests.add('LaTeX Editor falls back to WebAssembly and publishes the PDF and log with native TeX unavailable', async function(assert) {
+      const { root, editor } = await PRDC_JSLAB_DESKTOP_PROJECT_EDITORS_TEST_HELPER.openLatex('desktop-latex-wasm');
+      try {
+        await fs.rm(path.join(root, 'main.pdf'), { force: true });
+        await fs.rm(path.join(root, 'main.log'), { force: true });
+        const tools = await editor.evaluate(() => latexHost.request('detect', 'pdflatex'));
+        assert.ok(tools.missing.length);
+        await editor.evaluate(() => document.getElementById('compile').click());
+        await editor.waitFor(() => !document.getElementById('compile').disabled, 'desktop WASM compilation finished', 210000);
+        const output = await editor.evaluate(async () => ({
+          version: document.getElementById('toolchain').textContent,
+          messages: document.getElementById('compiler-messages').textContent.slice(0, 1200),
+          text: document.querySelector('#pdf-scroll .textLayer')?.textContent,
+          cache: (await indexedDB.databases()).some(database => database.name === 'jslab-texlive-2026-1.4.1-local')
+        }));
+        assert.equal(output.version, 'TeX Live 2026 (WebAssembly)');
+        assert.ok(output.text?.includes('JSLAB LaTeX Editor Example'), JSON.stringify(output));
+        assert.equal(output.cache, true);
+        assert.equal((await fs.readFile(path.join(root, 'main.pdf'))).subarray(0, 5).toString(), '%PDF-');
+        assert.ok((await fs.readFile(path.join(root, 'main.log'), 'utf8')).includes('TeX Live 2026'));
+      } finally {
+        await editor.close();
+      }
+    }, { tags, timeout_ms: 250000 });
+  }
 }
 
 exports.MODULE_TESTS = tests;

@@ -20,6 +20,18 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
    * @param {*} args Args.
    */
   static webTest(tests, name, fun, ...args) {
+    return PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTestWithCommandErrors(tests, name, [], fun, ...args);
+  }
+
+  /**
+   * Registers a browser test with exactly the Command Window errors it intentionally produces.
+   * @param {PRDC_JSLAB_TESTS} tests Test collection.
+   * @param {string} name Test name.
+   * @param {Array<string|RegExp>} expected_command_errors Expected error messages.
+   * @param {Function} fun Browser scenario.
+   * @param {...*} args Browser scenario arguments.
+   */
+  static webTestWithCommandErrors(tests, name, expected_command_errors, fun, ...args) {
     tests.add(name, async function(assert) {
       await gui_browser.evaluate(() => {
         globalThis.GUI = {
@@ -88,6 +100,7 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
               managed = this.app.window_manager.windows.get(this.app.editor_window_id);
             }
             await this.wait(() => managed.iframe.contentWindow.__JSLAB_WEB_EDITOR__);
+            this.app.window_manager.focus(managed.id);
             return managed.iframe.contentWindow;
           },
           async presentation() {
@@ -123,7 +136,7 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
         throw new Error(error.message + ' ' + JSON.stringify(state));
       }
       assert.ok(result !== false, name);
-    }, { tags: ['gui', 'web', 'integration'], timeout_ms: 20000 });
+    }, { tags: ['gui', 'web', 'integration'], timeout_ms: 20000, expected_command_errors });
   }
 
   /**
@@ -140,5 +153,6 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
 
 
 exports.webTest = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTest;
+exports.webTestWithCommandErrors = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTestWithCommandErrors;
 
 exports.selectSimulateEntry = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.selectSimulateEntry;

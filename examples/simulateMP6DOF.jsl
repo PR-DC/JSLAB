@@ -8,7 +8,7 @@
 clear; clc;
 disp(' --- ' + jsl_file_name + ' ---');
 
-var project = jsl.app_path + '/examples/resources/simulate-6dof.jslmo';
+var project = pathJoin(getDir(jsl.current_script), 'resources', 'simulate-6dof.jslmo');
 
 // Run the model with its nominal 150 kg platform mass.
 await simulate(project, { run: true });
@@ -33,8 +33,8 @@ title('Motor torque');
 
 figure(2);
 plot([
-  { x: time_150, y: multiplyEl(angle_150, r2d), name: 'm = 150 kg' },
-  { x: time_200, y: multiplyEl(angle_200, r2d), name: 'm = 200 kg' }
+  { x: time_150, y: multiplyEl(angle_150, 180 / Math.PI), name: 'm = 150 kg' },
+  { x: time_200, y: multiplyEl(angle_200, 180 / Math.PI), name: 'm = 200 kg' }
 ]);
 xlabel('t [s]');
 ylabel('phi1 [deg]');

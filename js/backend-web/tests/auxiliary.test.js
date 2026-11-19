@@ -139,4 +139,58 @@ webTest(tests, 'web serial terminal dialogs, settings, toggles and generated UI 
   t.eq(group.querySelectorAll('.tab')[1].style.display, 'block');
   t.app.window_manager.close('gui-serial');
 });
+webTest(tests, 'Web prints a managed window to real PDF bytes', async () => {
+  const output = await GUI.app.sandbox_api.evaluate(`var print_window = openWindow('blank.html');
+    await getWindow(print_window).ready;
+    getWindow(print_window).context.document.body.innerHTML = '<h1>JSLAB window PDF</h1><p>Browser print integration</p>';
+    var window_pdf = await printWindowToPdf(print_window, { pageSize: 'A4' });
+    var signature = new TextDecoder().decode(window_pdf.slice(0, 5));
+    closeWindow(print_window);
+    signature;`);
+  GUI.eq(output.value, '%PDF-');
+});
+
+webTest(tests, 'Web sandbox uses the browser microphone and camera', async () => {
+  const app = GUI.app;
+  const source = `var camera = (await getWebcams())[0]; var microphone = (await getMicrophones())[0];
+    var preview = await webcam(camera.deviceId); await showAudioWaveform(microphone.deviceId, 512);
+    var sample = await new Promise(async resolve => {
+      var capture = await webcamCapture({ id: camera.deviceId }, (bytes, width, height) => {
+        resolve(bytes.byteLength === width * height * 4);
+        capture.stop();
+      });
+    });
+    JSON.stringify([camera.kind, microphone.kind, preview.dom.readyState >= 2, sample]);`;
+  const output = await app.sandbox_api.evaluate(source);
+  GUI.eq(output.value, '["videoinput","audioinput",true,true]');
+  const client = app.worker_debugger;
+  const tracks = [...client.media.streams].flatMap(stream => stream.getTracks());
+  GUI.ok(tracks.some(track => track.kind === 'video' && track.readyState === 'live'));
+  GUI.ok(tracks.some(track => track.kind === 'audio' && track.readyState === 'live'));
+  const choose = app.files._showSaveDialog;
+  const save = app.files._saveLocalFile;
+  let recording;
+  try {
+    app.files._showSaveDialog = async () => ({ filePath: 'capture.webm' });
+    app.files._saveLocalFile = async (_target, blob) => {
+      recording = new Uint8Array(await blob.arrayBuffer());
+      return true;
+    };
+    const started = await app.sandbox_api.evaluate(`var recording_test = await startVideoRecording(camera.deviceId,
+      { type: 'webcam', mimeType: 'video/webm' }); recording_test.state;`);
+    GUI.eq(started.value, 'recording');
+    await GUI.wait(() => [...client.media.recordings.values()].some(item => item.chunks.some(chunk => chunk.size > 0)),
+      'the camera recorder produces video');
+    const stopped = await app.sandbox_api.evaluate('await recording_test.stopRecording(); recording_test.state;');
+    GUI.eq(stopped.value, 'inactive');
+    GUI.ok(recording?.length > 4, 'the saved recording contains video');
+    GUI.eq(Array.from(recording.slice(0, 4)).join(','), '26,69,223,163');
+  } finally {
+    app.files._showSaveDialog = choose;
+    app.files._saveLocalFile = save;
+  }
+  await app.sandbox_api.evaluate('resetSandbox();');
+  GUI.ok(tracks.every(track => track.readyState === 'ended'));
+});
+
 exports.MODULE_TESTS = tests;

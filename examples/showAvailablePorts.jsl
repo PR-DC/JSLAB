@@ -8,11 +8,7 @@
 close('all'); clear; clc; tic;
 disp(' --- ' + jsl_file_name + ' ---');
 
-// Libraries
-// --------------------
-var { SerialPort } = require('serialport');
-
-var ports = await SerialPort.list();
+var ports = await listSerialPorts();
 if(ports.length) {
 ports.forEach(function(p) {
   disp(p);

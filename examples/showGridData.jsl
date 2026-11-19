@@ -8,11 +8,11 @@
 close('all'); clear; clc; tic;
 disp(' --- ' + jsl_file_name + ' ---');
 
-var data = JSON.parse(readFile(jsl.app_path+'/examples/resources/plotdata.json'));
+var data = JSON.parse(readFile(pathJoin(getDir(jsl.current_script), 'resources', 'plotdata.json'), 'utf8'));
 
 var method = ['linear', 'nearest'][0];
 var Ng = 151;
-var xq = linspace(min(data.x), max(data.x), Ng);
+var xq = linspace(Math.min(...data.x), Math.max(...data.x), Ng);
 var yq = linspace(1, 1.6, Ng);
 
 var [xi, yi, zi] = gridData(data.x, data.y, data.z, xq, yq, method, {

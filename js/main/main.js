@@ -93,7 +93,7 @@ class PRDC_JSLAB_MAIN {
           obj.command_window.messageLatex(data);
           break;
         case 'disp-internal':
-          obj.command_window.messageInternal(data);
+          obj.command_window.messageInternal(Array.isArray(data) && typeof data[1] === 'boolean' ? data[0] : data);
           break;
         case 'show-inspector':
           obj.command_window.showInspector(data);
@@ -113,17 +113,17 @@ class PRDC_JSLAB_MAIN {
         case 'run':
           var script_path = data[0];
           var lines = data[1];
-          obj.eval.evalScript(script_path, lines);
+          var script_result = obj.eval.evalScript(script_path, lines);
           host.send('MainProcess', 'focus-win');
-          break;
+          return script_result;
         case 'eval-command':
-          obj.eval.evalCommand(data[0]);
+          var command_result = obj.eval.evalCommand(data[0]);
           host.send('MainProcess', 'focus-win');
-          break;
+          return command_result;
         case 'eval-command-preserve-input':
-          obj.command_window.evalCommandPreserveInput(data[0]);
+          var preserved_result = obj.command_window.evalCommandPreserveInput(data[0]);
           host.send('MainProcess', 'focus-win');
-          break;
+          return preserved_result;
         case 'help':
           obj.gui.help();
           break;
@@ -188,6 +188,7 @@ class PRDC_JSLAB_MAIN {
           store.clear();
           break;
         case 'unknown-script-dir':
+          if(typeof data === 'string') obj.eval.last_script_path = data;
           obj.folder_navigation.unknownScriptDir();
           break;
         case 'set-current-path':

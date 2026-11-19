@@ -212,7 +212,8 @@ class PRDC_JSLAB_PARALLEL {
    */
   async parfor(start, end, step = 1, num_workers, context,
     setup_function, work_function, reset_workers = false) {
-    var setup_function_str = this.jsl.inter.eval.rewriteCode(this.jsl.inter.eval.getFunctionBody(setup_function)).code;
+    var setup_function_str = setup_function ?
+      this.jsl.inter.eval.rewriteCode(this.jsl.inter.eval.getFunctionBody(setup_function)).code : '';
     if(reset_workers) {
       this.terminate();
     }

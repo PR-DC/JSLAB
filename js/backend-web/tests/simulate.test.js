@@ -14,6 +14,42 @@ if(!globalThis.gui_browser) {
   return;
 }
 
+tests.add('Web Ctrl+C cancels the pending Simulate picker request', async function(assert) {
+  await gui_browser.evaluate(() => {
+    const app = jslab_web;
+    const file = '/workspace/cancelled-picker.jslmo';
+    app.fs.writeTextFileSync(file, JSON.stringify({ format: 'JSLAB Simulate', version: 1,
+      source: 'model CancelledPicker\nend CancelledPicker;' }));
+    const original = app.files._showOpenDialog;
+    globalThis.restoreSimulatePicker = () => {
+      app.files._showOpenDialog = original;
+      delete globalThis.finishSimulatePicker;
+      delete globalThis.restoreSimulatePicker;
+    };
+    app.files._showOpenDialog = () => new Promise(resolve => {
+      globalThis.finishSimulatePicker = () => resolve([file]);
+    });
+    void app.sandbox_api.evaluate('await simulate(undefined, {run:true});').catch(() => {});
+  });
+  try {
+    await gui_browser.waitFor(() => typeof finishSimulatePicker === 'function', 'Simulate picker is waiting');
+    await gui_browser.evaluate(() => {
+      getSelection().removeAllRanges();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', ctrlKey: true, bubbles: true, cancelable: true }));
+    });
+    await gui_browser.waitFor(() => Array.from(jslab_web.windows._simulate_requests.requests.values())
+      .some(request => request.cancelled), 'sandbox cancelled its outstanding picker');
+  } finally {
+    await gui_browser.evaluate(() => {
+      globalThis.finishSimulatePicker?.();
+      globalThis.restoreSimulatePicker?.();
+    });
+  }
+  await gui_browser.waitFor(() => !jslab_web.windows._simulate_requests.requests.size && !jslab_web.main.evaluating,
+    'cancelled Simulate request settled');
+  assert.equal(await gui_browser.evaluate(() => jslab_web.window_manager.windows.has('simulate-window')), false);
+}, { tags: ['gui', 'web', 'simulate'], timeout_ms: 25000 });
+
 tests.add('Web Simulate opens the shared editor without downloading the solver or standard library', async function(assert) {
   const canceled = await gui_browser.evaluate(async () => {
     const files = jslab_web.files;
@@ -65,14 +101,14 @@ tests.add('Web Simulate opens the shared editor without downloading the solver o
   });
   await gui_browser.waitFor(() => {
     const doc = jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentDocument;
-    return doc?.getElementById('close-dialog-cont').open;
+    return doc?.getElementById('close-dialog-cont').hidden === false;
   }, 'Simulate prompts before closing its managed window');
   await gui_browser.evaluate(() => {
     const doc = jslab_web.window_manager.windows.get('simulate-window').iframe.contentDocument;
     doc.getElementById('close-dialog-cancel').click();
   });
-  await gui_browser.waitFor(() => !jslab_web.window_manager.windows.get('simulate-window').iframe.contentDocument
-    .getElementById('close-dialog-cont').open, 'Simulate stays open after Cancel');
+  await gui_browser.waitFor(() => jslab_web.window_manager.windows.get('simulate-window').iframe.contentDocument
+    .getElementById('close-dialog-cont').hidden, 'Simulate stays open after Cancel');
   await gui_browser.evaluate(() => {
     const win = jslab_web.window_manager.windows.get('simulate-window');
     win.header.querySelector('button.close').click();
@@ -228,17 +264,16 @@ tests.add('Web Simulate runs the shipped 6-DOF project through its GUI and expor
   const fs = require('fs');
   const path = require('path');
   const project = JSON.parse(fs.readFileSync(path.join(app_path, 'examples/resources/simulate-6dof.jslmo'), 'utf8'));
-  await gui_browser.evaluate(project => {
-    jslab_web.fs.writeTextFileSync('/workspace/simulate-6dof.jslmo', JSON.stringify(project));
+  await gui_browser.evaluate(() => {
     globalThis.web_simulation_check = { running: true };
-    jslab_web.sandbox_api.evaluate('await simulate("/workspace/simulate-6dof.jslmo", {run:true}); simulation.time.length;')
+    jslab_web.sandbox_api.evaluate('await getExamples(); await simulate("/workspace/examples/resources/simulate-6dof.jslmo", {run:true}); simulation.time.length;')
       .then(result => {
         globalThis.web_simulation_check = { running: false, result };
       },
       error => {
         globalThis.web_simulation_check = { running: false, error: String(error.stack || error) };
       });
-  }, project);
+  });
   await gui_browser.waitFor(() => !globalThis.web_simulation_check.running, 'browser 6-DOF simulation', 180000);
   const state = await gui_browser.evaluate(() => {
     const controller = jslab_web.window_manager.windows.get('simulate-window').iframe.contentWindow.win_simulate;
@@ -270,7 +305,7 @@ tests.add('Web Simulate runs the shipped 6-DOF project through its GUI and expor
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 210000 });
 
 tests.add('Web 6-DOF playback preserves camera zoom and panning during live rotation and restarts from the end', async function(assert) {
-  await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await gui_browser.resizeViewport(1440, 1000);
   await gui_browser.evaluate(() => {
     const frame = jslab_web.window_manager.windows.get('simulate-window').iframe.contentWindow;
     frame.document.getElementById('simulate-animation').click();
@@ -653,7 +688,7 @@ tests.add('Web Simulate reports a real compiler diagnostic with localized severi
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 150000 });
 
 tests.add('Web Simulate creates, wires and runs a model entirely through graphical controls', async function(assert) {
-  await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await gui_browser.resizeViewport(1440, 1000);
   await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'graphical model editor', 30000);
@@ -772,7 +807,7 @@ tests.add('Web Simulate creates, wires and runs a model entirely through graphic
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 180000 });
 
 tests.add('Web Simulate opens inside a small viewport in every language', async function(assert) {
-  await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 800, height: 650, deviceScaleFactor: 1, mobile: false });
+  await gui_browser.resizeViewport(800, 650);
   for(const lang of ['en', 'rs', 'rsc']) {
     await gui_browser.evaluate(() => {
       if(!jslab_web.window_manager.close('simulate-window')) {
@@ -800,7 +835,7 @@ tests.add('Web Simulate opens inside a small viewport in every language', async 
     assert.ok(Object.values(state).every(Boolean), lang + ': ' + JSON.stringify(state));
   }
   await gui_browser.evaluate(() => jslab_web.changeLanguage('en'));
-  await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await gui_browser.resizeViewport(1440, 1000);
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 90000 });
 
 tests.add('Web native scenes follow arbitrary block dimensions and colors after parameter changes', async function(assert) {
@@ -863,7 +898,7 @@ tests.add('Web native scenes follow arbitrary block dimensions and colors after 
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 180000 });
 
 tests.add('Web CAD animation loads portable library meshes and materials and survives worker closure', async function(assert) {
-  await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await gui_browser.resizeViewport(1440, 1000);
   const result = await gui_browser.evaluate(async () => {
     const dxf = '0\nSECTION\n2\nENTITIES\n0\n3DFACE\n62\n1\n10\n0\n20\n0\n30\n0\n11\n1\n21\n0\n31\n0\n12\n0\n22\n1\n32\n0\n13\n0\n23\n1\n33\n0\n0\nENDSEC\n0\nEOF\n';
     const obj = 'mtllib colors.mtl\nv 0 0 0\nv 1 0 0\nv 0 1 0\nusemtl yellow\nf 1 2 3\n';
@@ -975,7 +1010,7 @@ tests.add('Web CAD animation loads portable library meshes and materials and sur
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 180000 });
 
 tests.add('Web Simulate imports a standalone source folder with icons and CAD resources through an entry selector', async function(assert) {
-  await gui_browser.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await gui_browser.resizeViewport(1440, 1000);
   await gui_browser.evaluate(() => void jslab_web.windows._openSimulateWindow());
   await gui_browser.waitFor(() => !!jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow.win_simulate,
     'standalone folder editor', 30000);
@@ -1194,6 +1229,26 @@ tests.add('Web Simulate resolves inherited diagrams with the real compiler and k
   assert.equal(result.tree, true);
   assert.equal(result.parameter, true);
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 150000 });
+
+tests.add('Bundled 6-DOF animation opens its graphical playback controls', async function(assert) {
+  const previous = await gui_browser.evaluate(() => Array.from(jslab_web.window_manager.windows.keys()));
+  const result = await gui_browser.evaluate(() => jslab_web.sandbox_api.evaluate(
+    'await getExamples(); await run("/workspace/examples/animateSimulateExample.jsl", undefined, false, true); true;'));
+  assert.equal(result.ok, true, JSON.stringify(result));
+  await gui_browser.waitFor(previous => Array.from(jslab_web.window_manager.windows.values()).some(win => {
+    const controls = win.iframe.contentDocument?.querySelector('.ui-animation');
+    return !previous.includes(win.id) && win.title === 'simulate-6dof.jslmo' &&
+      controls?.getBoundingClientRect().height > 0 && controls.querySelector('.ui-animation-slider');
+  }), '6-DOF playback controls are visible', 30000, previous);
+  const animation = await gui_browser.evaluate(previous => Array.from(jslab_web.window_manager.windows.values())
+    .find(win => !previous.includes(win.id) && win.title === 'simulate-6dof.jslmo' &&
+      win.iframe.contentDocument?.querySelector('.ui-animation-slider')).id, previous);
+  await gui_browser.click('.ui-animation-play', '[data-window-id=' + JSON.stringify(animation) + '] iframe');
+  await gui_browser.evaluate(async id => {
+    await jslab_web.sandbox_api.evaluate('await close(' + JSON.stringify(Number(id)) + ');');
+    jslab_web.window_manager.close('simulate-window');
+  }, animation);
+}, { tags: ['gui', 'web', 'simulate'], timeout_ms: 120000 });
 
 tests.add('Web Simulate unload settles pending requests and removes host listeners', async function(assert) {
   const result = await gui_browser.evaluate(async () => {

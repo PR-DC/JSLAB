@@ -25,20 +25,15 @@ class PRDC_JSLAB_WEB_WORKER_MODULES {
   /**
    * Handles require.
    * @param {string} request Module path.
-   * @param {string} [parent='/workspace/'] Parent directory.
+   * @param {string} [parent] Parent directory or the calling script's directory.
    */
-  require(request, parent = '/workspace/') {
+  require(request, parent) {
     const env = this.jsl.inter.env;
-    let path = env.pathNormalize(request.startsWith('/') ? request : env.pathJoin(parent, request));
-    if(!this.files.has(path) && this.files.has(path + '.js')) {
-      path += '.js';
+    if(!parent) {
+      const script = this.jsl.current_script;
+      parent = typeof script === 'string' && env.pathIsAbsolute(script) ? env.pathDirName(script) : this.jsl.current_path;
     }
-    if(!this.files.has(path) && this.files.has(path + '/index.js')) {
-      path += '/index.js';
-    }
-    if(!this.files.has(path)) {
-      throw Error('Module not found in worker workspace: ' + path);
-    }
+    const path = this.resolve(request, parent);
     if(this.cache.has(path)) {
       return this.cache.get(path).exports;
     }
@@ -65,9 +60,10 @@ class PRDC_JSLAB_WEB_WORKER_MODULES {
         const map = Object.assign({}, printed.map, { mappings: ';' + printed.map.mappings });
         const url = 'jslab://modules/' + (++this.sequence) + '.js';
         this.jsl.inter.eval.debug_sources.set(url, { path, map });
-        const wrapper = this.jsl._eval('(function(eval) { return function(module, exports, require) {\n' + printed.code +
+        const wrapper = this.jsl._eval('(function(eval) { return function(module, exports, require, __filename, __dirname) {\n' + printed.code +
           '\n}; })(' + this.jsl.internal_jsl_identifier + '._eval)\n//# sourceURL=' + url);
-        wrapper.call(module.exports, module, module.exports, request => this.require(request, env.pathDirName(path)));
+        const dirname = env.pathDirName(path);
+        wrapper.call(module.exports, module, module.exports, request => this.require(request, dirname), path, dirname);
       }
       module.loaded = true;
       return module.exports;
@@ -75,6 +71,33 @@ class PRDC_JSLAB_WEB_WORKER_MODULES {
       this.cache.delete(path);
       throw error;
     }
+  }
+
+  /**
+   * Finds a workspace module using script-relative paths and the shared search paths.
+   * @param {string} request Module path.
+   * @param {string} parent Calling directory.
+   * @returns {string} Resolved workspace path.
+   */
+  resolve(request, parent) {
+    const env = this.jsl.inter.env;
+    const candidate = env.pathNormalize(env.pathIsAbsolute(request) ? request : env.pathJoin(parent, request));
+    const direct = [candidate, candidate + '.js', candidate + '/index.js'].find(file => this.files.has(file));
+    if(direct) return direct;
+    const resolved = this.jsl.pathResolve(request);
+    if(this.files.has(resolved)) return resolved;
+    throw Error('Module not found in worker workspace: ' + candidate);
+  }
+
+  /**
+   * Evicts a workspace module so a subsequent require reloads it.
+   * @param {string} request Module path.
+   */
+  unrequire(request) {
+    const env = this.jsl.inter.env;
+    const script = this.jsl.current_script;
+    const parent = typeof script === 'string' && env.pathIsAbsolute(script) ? env.pathDirName(script) : this.jsl.current_path;
+    this.cache.delete(this.resolve(request, parent));
   }
 
   /**

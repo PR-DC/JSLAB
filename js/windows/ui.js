@@ -460,7 +460,11 @@ class PRDC_JSLAB_UI_CLOSE_DIALOG {
     this.file.textContent = file;
     this.element.hidden = false;
     if(was_hidden) {
-      this.element.showModal?.();
+      if(this.element.getAttribute('aria-modal') === 'true') {
+        this.modal_siblings = Array.from(this.element.parentElement.children)
+          .filter(sibling => sibling !== this.element && !sibling.inert);
+        for(const sibling of this.modal_siblings) sibling.inert = true;
+      }
       (this.cancel.hidden ? this.save : this.cancel).focus();
     }
   }
@@ -470,7 +474,8 @@ class PRDC_JSLAB_UI_CLOSE_DIALOG {
    */
   hide() {
     this.element.hidden = true;
-    if(this.element.open) this.element.close();
+    for(const sibling of this.modal_siblings || []) sibling.inert = false;
+    this.modal_siblings = null;
   }
 }
 

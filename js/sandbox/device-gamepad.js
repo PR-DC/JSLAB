@@ -29,7 +29,8 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
     this._checkGamepadFun = function() {
       obj._checkGamepad();
     };
-    this.jsl.context.addEventListener("gamepadconnected", obj._checkGamepadFun);
+    this._release_gamepad_listener = this.jsl.inter.env.onGamepadConnection?.(obj._checkGamepadFun);
+    if(!this._release_gamepad_listener) this.jsl.context.addEventListener("gamepadconnected", obj._checkGamepadFun);
 
     this.jsl.addForCleanup(this, function() {
       obj.close();
@@ -45,6 +46,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
     var gamepad = this._getGamepad();
     if(gamepad) {
       if(!this.active) {
+        this.data = gamepad;
         this._onConnect();
       }
     }
@@ -61,7 +63,7 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
       var gamepad = gamepads[i];
       if(gamepad != null) {
         if(gamepad.id == this.id) {
-          return gamepad.toJSON();
+          return gamepad.toJSON?.() ?? gamepad;
         }
       }
     }
@@ -158,7 +160,8 @@ class PRDC_JSLAB_DEVICE_GAMEPAD {
   close() {
     this.active = false;
     this.read_gamepad_loop = this.jsl.inter.clearIntervalIf(this.read_gamepad_loop);
-    this.jsl.context.removeEventListener("gamepadconnected", this._checkGamepadFun);
+    if(this._release_gamepad_listener) this._release_gamepad_listener();
+    else this.jsl.context.removeEventListener("gamepadconnected", this._checkGamepadFun);
   }
 }
 

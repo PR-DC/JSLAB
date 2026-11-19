@@ -19,7 +19,7 @@ var options = {
   ]
 };
 
-var files = chooseFile(options);
+var files = await chooseFile(options);
 if(typeof files === 'string') files = [files];
 if(!Array.isArray(files)) files = [];
 

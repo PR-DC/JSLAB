@@ -151,7 +151,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
   error(msg) {
     this.win.workspace.updateWorkspace();
     return this.addMessage('data-in', '<span class="error">' +
-      this.prettyPrint(msg) + '<span>');
+      this.prettyPrint(msg) + '<span>', msg instanceof Error ? msg.stack : msg);
   },
 
   /**
@@ -161,7 +161,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
   warn(msg) {
     this.win.workspace.updateWorkspace();
     return this.addMessage('data-in', '<span class="warn">' +
-      this.prettyPrint(msg) + '<span>');
+      this.prettyPrint(msg) + '<span>', msg);
   },
 
   /**
@@ -588,7 +588,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
       }
       return remote_el;
     }
-    return this.addMessage('data-in', this.prettyPrint(msg), raw);
+    return this.addMessage('data-in', this.prettyPrint(msg), raw === undefined ? msg : raw);
   },
 
   /**
@@ -598,7 +598,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   messageMonospaced(msg, raw) {
     this.win.workspace.updateWorkspace();
-    return this.addMessage('data-in', '<div class="monospaced">' + this.prettyPrint(msg) + "</div>", raw);
+    return this.addMessage('data-in', '<div class="monospaced">' + this.prettyPrint(msg) + "</div>", raw === undefined ? msg : raw);
   },
 
   /**
@@ -607,7 +607,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   messageLatex(msg) {
     this.win.workspace.updateWorkspace();
-    var el = this.addMessage('data-in', '\\(' + msg + '\\)');
+    var el = this.addMessage('data-in', '\\(' + msg + '\\)', msg);
     if(this.log.length) {
       this.log[this.log.length - 1].needs_mathjax = true;
     }
@@ -631,7 +631,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    * @param {string} msg The internal message to display.
    */
   messageInternal(msg) {
-    this.addMessage('system-in', this.prettyPrint(msg));
+    this.addMessage('system-in', this.prettyPrint(msg), msg);
   },
 
   /**
@@ -640,7 +640,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   errorInternal(msg) {
     this.addMessage('system-in', '<span class="error">' +
-      this.prettyPrint(msg) + '<span>');
+      this.prettyPrint(msg) + '<span>', msg instanceof Error ? msg.stack : msg);
   },
 
   /**
@@ -649,7 +649,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_MESSAGES.prototype, {
    */
   messageEditor(msg) {
     this.addMessage('system-in', '<span class="log">Editor: ' +
-      this.prettyPrint(msg) + '</span>');
+      this.prettyPrint(msg) + '</span>', 'Editor: ' + msg);
   },
 
   /**

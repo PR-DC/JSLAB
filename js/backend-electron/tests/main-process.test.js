@@ -55,6 +55,9 @@ class PRDC_JSLAB_ELECTRON_TESTS_MAIN_PROCESS_HELPER {
           context.config = { TEST: !!out.test_mode };
           return {};
         }
+        if(module_path === './latex-assets') {
+          return { PRDC_JSLAB_ELECTRON_LATEX_ASSETS: { register() {} } };
+        }
         if(module_path === '../dev/run-app-tests') {
           return { PRDC_JSLAB_DEV_APP_TEST_RUNNER: class {
             /**
@@ -706,5 +709,28 @@ tests.add('openScriptsInEditor queues files when editor is unavailable and flush
   }
 }, { tags: ['unit', 'backend', 'script-opener'] });
 
+
+tests.add('Electron restart waits for document approvals and honors cancellation', async function(assert) {
+  const fixture = {};
+  const Main = PRDC_JSLAB_ELECTRON_TESTS_MAIN_PROCESS_HELPER.loadMainClass(undefined, fixture);
+  const instance = Object.create(Main.prototype);
+  const actions = [];
+  let approve_editor = false;
+  instance.win_editor = { isDestroyed: () => false, webContents: { executeJavaScript: async source => {
+    assert.ok(source.includes('confirmReload'));
+    actions.push('editor');
+    return approve_editor;
+  } } };
+  instance.windows = { confirmSimulateClose: async () => { actions.push('simulate'); return true; },
+    latex_window: { confirmReload: async () => { actions.push('latex'); return true; } } };
+  instance.runtime = { confirmPresentationReload: async () => { actions.push('presentation'); return true; } };
+  fixture.electron.app.relaunch = () => actions.push('relaunch');
+  fixture.electron.app.exit = () => actions.push('exit');
+  await instance._restartApplication();
+  assert.deepEqual(actions, ['editor']);
+  approve_editor = true;
+  await instance._restartApplication();
+  assert.deepEqual(actions, ['editor', 'editor', 'simulate', 'latex', 'presentation', 'relaunch', 'exit']);
+});
 
 exports.MODULE_TESTS = tests;

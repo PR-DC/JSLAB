@@ -150,20 +150,23 @@ class PRDC_JSLAB_LIB_SYSTEM {
    * @param {Object} data - Data from pty.
    */
   _onPtyData(data) {
+    const terminal = this.open_terminals[data.id];
+    if(!terminal) return;
     if(data.type == 'exit') {
-      this.open_terminals[data.id].onExit();
       delete this.open_terminals[data.id];
+      terminal.onExit();
     } else if(data.type == 'data') {
-      this.open_terminals[data.id].onData(data.buffer);
+      terminal.onData(data.buffer);
     }
   }
 
   /**
-   * Closes all terminals
+   * Closes the PTY sessions opened by this sandbox system module.
    */
   _clear() {
+    const terminals = Object.values(this.open_terminals);
     this.open_terminals = {};
-    this.jsl.inter.env.sendPty('killAll');
+    for(const terminal of terminals) terminal.kill();
   }
 }
 

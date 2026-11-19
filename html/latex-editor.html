@@ -2,7 +2,7 @@
 <html lang="en" class="ui-app-window">
   <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; img-src 'self' data: blob:; font-src 'self' data: blob:">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' jslab-tex:; img-src 'self' data: blob:; font-src 'self' data: blob:">
     <title str="697"></title>
     <link rel="stylesheet" href="../lib/codemirror-5.49.2/lib/codemirror.css">
     <link rel="stylesheet" href="../lib/codemirror-5.49.2/addon/dialog/dialog.css">
@@ -32,7 +32,7 @@
     <script defer src="../lib/codemirror-5.49.2/addon/scroll/annotatescrollbar.js"></script>
     <script defer src="../lib/codemirror-5.49.2/addon/search/matchesonscrollbar.js"></script>
     <script defer src="../js/code/dialog-search.js"></script>
-    <script type="module" src="../js/backend-electron/latex-editor-bootstrap.js"></script>
+    <script type="module" src="../js/backend-electron/latex-editor-renderer.js"></script>
   </head>
   <body class="latex-editor">
     <div id="setup" class="latex-controls" hidden>

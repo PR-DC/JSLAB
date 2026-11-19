@@ -23,6 +23,8 @@ class PRDC_JSLAB_WEB_FS {
     this.workspace_dir = null;
     this.memory_files = new Map();
     this.memory_dirs = new Set([WORKSPACE_ROOT]);
+    this.append_jobs = new Map();
+    this.write_jobs = new Map();
   }
 
   /**
@@ -159,6 +161,49 @@ class PRDC_JSLAB_WEB_FS {
   }
 
   /**
+   * Opens a workspace transcript for ordered append writes.
+   * @param {string} virtual_path Transcript path.
+   * @returns {Object} Writable stream used by the Command Window.
+   */
+  createAppendTextStream(virtual_path) {
+    const filename = this._resolveStoredFilePath(virtual_path) || this.normalizePath(virtual_path);
+    if(this.existsDirectorySync(filename) || !this.existsDirectorySync(this.dirname(filename))) {
+      throw new Error('Cannot open diary file: ' + filename);
+    }
+    const encoder = new TextEncoder();
+    let on_error;
+    const stream = {
+      destroyed: false,
+      writableEnded: false,
+      on: (event, callback) => {
+        if(event === 'error') on_error = callback;
+      },
+      write: text => {
+        if(stream.writableEnded || stream.destroyed) return false;
+        const bytes = encoder.encode(text);
+        const job = (this.append_jobs.get(filename) || Promise.resolve()).then(async () => {
+          if(stream.destroyed || (!bytes.length && this.existsFileSync(filename))) return;
+          const old = this.existsFileSync(filename) ? this.readBytesSync(filename) : new Uint8Array();
+          const data = new Uint8Array(old.length + bytes.length);
+          data.set(old);
+          data.set(bytes, old.length);
+          await this.writeBytes(filename, data);
+        }).catch(error => {
+          stream.destroyed = true;
+          on_error?.(error);
+        }).finally(() => {
+          if(this.append_jobs.get(filename) === job) this.append_jobs.delete(filename);
+        });
+        this.append_jobs.set(filename, job);
+        return true;
+      },
+      end: () => { stream.writableEnded = true; }
+    };
+    stream.write('');
+    return stream;
+  }
+
+  /**
    * Reads a text file.
    * @param {string} virtual_path
    * @returns {Promise<string>}
@@ -176,7 +221,7 @@ class PRDC_JSLAB_WEB_FS {
   async writeBytes(virtual_path, bytes) {
     var { path, data } = this._cacheBytes(virtual_path, bytes);
     if(this.mode == 'opfs') {
-      await this._persistBytesToOpfs(path, data);
+      await this._scheduleWrite(path, data);
       return;
     }
   }
@@ -371,7 +416,7 @@ class PRDC_JSLAB_WEB_FS {
   writeBytesSync(virtual_path, bytes) {
     var { path, data } = this._cacheBytes(virtual_path, bytes);
     if(this.mode == 'opfs') {
-      this._persistBytesToOpfs(path, data).catch(function(err) {
+      this._scheduleWrite(path, data).catch(function(err) {
         console.error(err);
       });
     }
@@ -686,6 +731,29 @@ class PRDC_JSLAB_WEB_FS {
         });
       }
     }
+  }
+
+  /**
+   * Waits for data already queued for workspace storage before navigation.
+   * @returns {Promise<void>} Completion of pending writes.
+   */
+  async flushWrites() {
+    await Promise.all([...this.append_jobs.values(), ...this.write_jobs.values()]);
+  }
+
+  /**
+   * Persists writes to the same file in the order in which they were made.
+   * @param {string} path Workspace file path.
+   * @param {Uint8Array} data File bytes.
+   * @returns {Promise<void>} Completion of the write.
+   */
+  _scheduleWrite(path, data) {
+    const previous = this.write_jobs.get(path) || Promise.resolve();
+    const job = previous.catch(() => {}).then(() => this._persistBytesToOpfs(path, data)).finally(() => {
+      if(this.write_jobs.get(path) === job) this.write_jobs.delete(path);
+    });
+    this.write_jobs.set(path, job);
+    return job;
   }
 
   /**
@@ -1611,6 +1679,59 @@ class PRDC_JSLAB_WEB_FILES {
   }
 
   /**
+   * Renders a managed window in page-sized tiles and returns its PDF bytes.
+   * @param {Document} document Managed window document.
+   * @param {Object} options Print page and scaling options.
+   * @returns {Promise<Uint8Array|false>} Generated PDF or false for an empty document.
+   */
+  async _printWindowToPdf(document, options = {}) {
+    if(!document?.body) return false;
+    const assets = globalThis.__JSLAB_WEB_OPTIONAL_ASSETS__;
+    await PRDC_JSLAB_WEB_FILES.loadScripts([
+      { source: assets.pdfkit, available: () => typeof globalThis.PDFDocument === 'function' },
+      { source: assets.html2canvas, available: () => typeof globalThis.html2canvas === 'function' }
+    ]);
+    await document.fonts?.ready;
+    const { pageSize = 'Letter', landscape = false, margins = {}, scale = 1, pageRanges, printBackground } = options;
+    const size = typeof pageSize === 'object' ? [pageSize.width * 72, pageSize.height * 72] : pageSize;
+    const inset = Object.fromEntries(['top', 'right', 'bottom', 'left'].map(side => [side, (margins[side] ?? 0.4) * 72]));
+    const doc = new globalThis.PDFDocument({ size, layout: landscape ? 'landscape' : 'portrait', margins: inset });
+    const width = doc.page.width - inset.left - inset.right;
+    const height = doc.page.height - inset.top - inset.bottom;
+    if(width <= 0 || height <= 0 || scale <= 0 || !Number.isFinite(scale)) throw Error('Invalid PDF page or scale.');
+    const root = document.documentElement;
+    const source_width = Math.max(root.scrollWidth, 1);
+    const ratio = width / source_width * scale;
+    const source_height = Math.max(1, Math.floor(height / ratio));
+    const source_tile_width = Math.max(1, Math.min(source_width, Math.floor(width / ratio)));
+    const ranges = pageRanges?.split(',').map(range => range.trim().split('-').map(Number));
+    const pages = Math.max(1, Math.ceil(root.scrollHeight / source_height));
+    const chunks = [];
+    const finished = new Promise((resolve, reject) => {
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(this._mergeBinaryChunks(chunks)));
+      doc.on('error', reject);
+    });
+    let rendered = 0;
+    for(let page = 1; page <= pages; page++) {
+      if(ranges?.length && !ranges.some(([first, last = first]) => page >= first && page <= last)) continue;
+      if(rendered++) doc.addPage();
+      const offset = (page - 1) * source_height;
+      const tile = await globalThis.html2canvas(root, { y: offset, width: source_tile_width,
+        height: Math.min(source_height, Math.max(1, root.scrollHeight - offset)),
+        scale: Math.min(2, 2048 / source_tile_width), logging: false, useCORS: true,
+        backgroundColor: printBackground === false ? null : '#ffffff' });
+      doc.image(tile.toDataURL('image/png'), inset.left, inset.top, {
+        width: source_tile_width * ratio,
+        height: tile.height / tile.width * source_tile_width * ratio
+      });
+    }
+    doc.end();
+    const bytes = await finished;
+    return rendered ? bytes : false;
+  }
+
+  /**
    * Triggers a file input picker.
    * @param {HTMLInputElement} input
    */
@@ -1674,6 +1795,15 @@ class PRDC_JSLAB_WEB_FILES {
     return new URL(String(source), globalThis.document && globalThis.document.baseURI
       ? globalThis.document.baseURI
       : globalThis.location.href).href;
+  }
+
+  /**
+   * Starts a worker from a browser application asset.
+   * @param {string} source Worker asset path.
+   * @returns {Worker} Asset worker.
+   */
+  createAssetWorker(source) {
+    return new Worker(PRDC_JSLAB_WEB_FILES.resolveAssetUrl(source));
   }
 
   /**

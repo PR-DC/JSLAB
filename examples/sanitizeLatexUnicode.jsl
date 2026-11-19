@@ -312,7 +312,7 @@ var options = {
   ]
 };
 
-var files = chooseFile(options);
+var files = await chooseFile(options);
 if(!Array.isArray(files)) {
   files = [files];
 }

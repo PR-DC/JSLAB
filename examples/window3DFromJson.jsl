@@ -16,7 +16,7 @@ const width = win.innerWidth, height = win.innerHeight;
 const camera = new THREE.PerspectiveCamera( 70, width / height, 0.01, 10 );
 camera.position.z = 1;
 
-const scene = win.sceneFromJSON('./resources/window-3d.json');
+const scene = await win.sceneFromJSON(pathJoin(getDir(jsl.current_script), 'resources', 'window-3d.json'));
 
 const renderer = new THREE.WebGLRenderer( { antialias: true } );
 renderer.setSize( width, height );

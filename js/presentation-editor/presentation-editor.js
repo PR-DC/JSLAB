@@ -7,6 +7,7 @@
 
 const { PRDC_JSLAB_CODE_EDITOR } = require('../code/editor');
 const { PRDC_JSLAB_UI_CLOSE_DIALOG } = require('../windows/ui');
+const { PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES } = require('./presentation-editor-slides');
 
 const { PRDC_PANEL } = require('../../lib/PRDC_PANEL/PRDC_PANEL');
 
@@ -58,25 +59,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
       this.code_editor.setOption("mode", "htmlmixed");
       this.code_editor.setOption("lint", {});
 
-      function collectSlideRanges(source) {
-        const ranges = [];
-        const re = /<\s*slide\b[^>]*>([\s\S]*?)<\/\s*slide\s*>/gi;
-        let m;
-        while((m = re.exec(source))) {
-          ranges.push({ start: m.index, end: re.lastIndex });
-        }
-        return ranges;
-      }
-
-      function cursorSlideIndex(pos, ranges) {
-        for(let i = 0; i < ranges.length; i++) {
-          if(pos >= ranges[i].start && pos <= ranges[i].end) {
-            return i;
-          }
-        }
-        return -1;
-      }
-
       this.slide_highlight_lines = [];
       this.slide_highlight_key = '';
 
@@ -90,9 +72,9 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
 
       this.updateSlideHighlight = function() {
         var txt = obj.code_editor.getValue();
-        var ranges = collectSlideRanges(txt);
+        var ranges = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.collect(txt);
         var pos = obj.code_editor.indexFromPos(obj.code_editor.getCursor());
-        var index = cursorSlideIndex(pos, ranges);
+        var index = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.indexAtOffset(ranges, pos);
         if(index < 0) {
           obj.clearSlideHighlight();
           return;
@@ -122,11 +104,12 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_CODE_TAB {
       this.getSlide = function() {
         var pos = obj.code_editor.indexFromPos(obj.code_editor.getCursor());
         var txt = obj.code_editor.getValue();
-        return cursorSlideIndex(pos, collectSlideRanges(txt));
+        var ranges = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.collect(txt);
+        return PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.indexAtOffset(ranges, pos);
       };
       this.setSlide = function(index) {
         var txt = obj.code_editor.getValue();
-        var rngs = collectSlideRanges(txt);
+        var rngs = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.collect(txt);
         if(index >= 0 && index < rngs.length) {
           var r = rngs[index];
           var gt = txt.indexOf('>', r.start);
@@ -685,10 +668,33 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
   }
 
   /**
+   * Uses the editor's close dialog to approve relaunch without closing its window.
+   * @returns {Promise<boolean>} Whether reloading is approved.
+   */
+  async confirmReload() {
+    if(!this.hasUnsavedChanges()) return true;
+    if(this.close_requested) return false;
+    this.platform.host.send('MainProcess', 'focus-win');
+    const choice = await new Promise(resolve => {
+      this.reload_answer = resolve;
+      this.showCloseDialog();
+    });
+    if(choice === 'save') await this.saveCode(this.current_slide);
+    return choice !== 'cancel';
+  }
+
+  /**
    * Handles close dialog buttons.
    * @param {string} choice Selected dialog action.
    */
   async closeDialogButton(choice) {
+    if(this.reload_answer) {
+      const answer = this.reload_answer;
+      this.reload_answer = null;
+      this.hideCloseDialog();
+      answer(choice);
+      return;
+    }
     if(choice === 'save') {
       try {
         await this.saveCode(this.current_slide);
@@ -791,11 +797,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
       this.cancelThumbnailRenderWork();
     }
 
-    await Promise.all([
-      this.html_editor.save(),
-      this.js_editor.save(),
-      this.css_editor.save()
-    ]);
+    await Promise.all(PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.save(this));
 
     if(js_changed) {
       this.reloadViews(target_slide);
@@ -1844,12 +1846,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
     source = arguments.length ?
       String(source) :
       this.html_editor.code_editor.getValue();
-    var ranges = [];
-    var re = /<\s*slide\b[^>]*>[\s\S]*?<\/\s*slide\s*>/gi;
-    var match;
-    while((match = re.exec(source))) {
-      ranges.push({ start: match.index, end: re.lastIndex });
-    }
+    var ranges = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.collect(source);
     var eol = source.includes('\r\n') ? '\r\n' : '\n';
     var separator = ranges.length > 1 ? source.slice(ranges[0].end, ranges[1].start) : eol + eol;
     if(!separator) {
@@ -1911,8 +1908,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
     if(!Number.isFinite(index) || index < 0 || index >= data.blocks.length) {
       return '';
     }
-    var match = /<\s*notes\b[^>]*>([\s\S]*?)<\/\s*notes\s*>/i.exec(data.blocks[index]);
-    return match ? match[1] : '';
+    return this.getSlideBlockNotes(data.blocks[index]) ?? '';
   }
 
 
@@ -1937,7 +1933,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
     return Number.isFinite(index) &&
       index >= 0 &&
       index < data.blocks.length &&
-      /<\s*notes\b[^>]*>[\s\S]*?<\/\s*notes\s*>/i.test(data.blocks[index]);
+      this.getSlideBlockNotes(data.blocks[index]) !== null;
   }
 
 
@@ -2275,8 +2271,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
   async insertSlideAfter(index) {
     this.cancelThumbnailRenderWork();
     var data = this.getSlideSourceData();
-    var insert_index = Math.max(0, Math.min(index + 1, data.blocks.length));
-    data.blocks.splice(insert_index, 0, this.createSlideBlock(data));
+    var insert_index = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.insert(data.blocks, index, this.createSlideBlock(data));
     this.applySlideBlocks(data, data.blocks, insert_index);
     this.insertThumbnail(insert_index);
     this.markThumbnailDirty([insert_index]);
@@ -2292,11 +2287,8 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
   async duplicateSlide(index) {
     this.cancelThumbnailRenderWork();
     var data = this.getSlideSourceData();
-    if(index < 0 || index >= data.blocks.length) {
-      return;
-    }
-    var insert_index = index + 1;
-    data.blocks.splice(insert_index, 0, data.blocks[index]);
+    var insert_index = PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.duplicate(data.blocks, index);
+    if(insert_index === null) return;
     this.applySlideBlocks(data, data.blocks, insert_index);
     this.duplicateThumbnail(index, insert_index);
     this.markThumbnailDirty([insert_index]);
@@ -2312,12 +2304,10 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
   async deleteSlide(index) {
     this.cancelThumbnailRenderWork();
     var data = this.getSlideSourceData();
-    if(index < 0 || index >= data.blocks.length) {
-      return;
-    }
+    var last = data.blocks.length === 1;
+    if(!PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.remove(data.blocks, index, () => this.createSlideBlock(data))) return;
 
-    if(data.blocks.length == 1) {
-      data.blocks[0] = this.createSlideBlock(data);
+    if(last) {
       this.applySlideBlocks(data, data.blocks, 0);
       this.markThumbnailDirty([0], true);
       await this.syncAllSlidesToViews(0);
@@ -2325,7 +2315,6 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
       return;
     }
 
-    data.blocks.splice(index, 1);
     var active_index = Math.max(0, Math.min(index, data.blocks.length - 1));
     this.applySlideBlocks(data, data.blocks, active_index);
     this.removeThumbnail(index);
@@ -2350,11 +2339,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR extends PRDC_JSLAB_PRESENTATION_EDITOR_NOTE
     if(insert_index > from_index) {
       insert_index -= 1;
     }
-    if(insert_index == from_index) {
-      return;
-    }
-    var block = data.blocks.splice(from_index, 1)[0];
-    data.blocks.splice(insert_index, 0, block);
+    if(!PRDC_JSLAB_PRESENTATION_EDITOR_SLIDES.move(data.blocks, from_index, insert_index)) return;
     this.applySlideBlocks(data, data.blocks, insert_index);
     this.moveThumbnail(from_index, insert_index);
     this.setActiveThumbnail(this.current_slide);

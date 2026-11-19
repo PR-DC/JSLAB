@@ -4,7 +4,7 @@
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
-const { app, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..', '..', '..');
@@ -30,10 +30,9 @@ PRDC_JSLAB_INSTANCE_ROUTER.prototype.forwardScriptsToLastActive = async function
 };
 let focused_window;
 app.on('browser-window-created', function(_event, win) {
-  win.show = function() {};
-  win.showInactive = function() {};
-  win.focus = function() { focused_window = win; };
+  win.on('focus', () => { focused_window = win; });
 });
+require('../../dev/gui-test-window').PRDC_JSLAB_GUI_TEST_WINDOW.install(() => true);
 var parent_arg = process.argv.find(arg => arg.startsWith('--gui-parent-pid='));
 var parent_pid = Number(parent_arg && parent_arg.split('=')[1]);
 if(!Number.isInteger(parent_pid) || parent_pid <= 0) {
@@ -57,4 +56,25 @@ ipcMain.handle('JSLAB_DESKTOP_GUI_TEST_CAPTURE', async function(event) {
 ipcMain.handle('JSLAB_DESKTOP_GUI_TEST_FOREGROUND', function() {
   return focused_window && !focused_window.isDestroyed() ? focused_window.webContents.getURL() : '';
 });
+ipcMain.handle('JSLAB_DESKTOP_GUI_TEST_FINISH', async function(event) {
+  if(!event.sender.getURL().endsWith('/main.html')) throw Error('Expected the test main window.');
+  const outputs = BrowserWindow.getAllWindows().filter(win => !win.isDestroyed() &&
+    /\/(?:figure|plotlyjs|three|d3|leaflet|cesium|mermaid_graph|blank)\.html(?:\?|$)/.test(win.webContents.getURL()));
+  for(const win of outputs) {
+    await new Promise(resolve => {
+      win.once('closed', resolve);
+      win.close();
+    });
+  }
+  for(const win of BrowserWindow.getAllWindows()) {
+    if(/\/(?:editor|assistant|terminal)\.html(?:\?|$)/.test(win.webContents.getURL())) win.hide();
+  }
+  return outputs.length;
+});
+if(process.env.JSLAB_TEST_TEXLIVE === '1') {
+  const { PRDC_JSLAB_LATEX } = require('../../backend-electron/latex');
+  PRDC_JSLAB_LATEX.prototype.detect = async function(_configured, engine) {
+    return { engine, missing: ['latexmk', engine, 'synctex'] };
+  };
+}
 require('../../backend-electron/main-process').PRDC_JSLAB_ELECTRON_MAIN_PROCESS.start();

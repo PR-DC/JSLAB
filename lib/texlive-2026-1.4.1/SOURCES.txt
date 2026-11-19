@@ -1,0 +1,4 @@
+TeXlyre BusyTeX WebAssembly and TeX Live 2026
+https://github.com/TeXlyre/texlyre-busytex-build/tree/f544a51a99e7
+https://github.com/TeXlyre/texlyre-busytex/releases/tag/assets-v1.4.1
+https://tug.org/texlive/copying.html

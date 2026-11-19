@@ -18,7 +18,9 @@ var doms = {};
 var g = getGamepad(id);
 g.setOnConnect(async function() {
   disp('Gamepad ' + id + ' found!');
-  win = await openWindowBlank();
+  var wid = openWindow('blank.html');
+  await getWindow(wid).ready;
+  win = getWindow(wid).context;
   
   win.document.body.innerHTML += '<div id="timestamp-cont" style="margin: 5px 20px; padding: 3px; border: 2px solid #ddd; border-radius: 5px; font-weight:bold; color: #333;">t: <span id="timestamp-value">0</span></div>';
   for(let i = 0; i < g.data.axes.length; i++) {
@@ -37,8 +39,8 @@ g.setOnConnect(async function() {
   }
   win_ready = true;
   
-  win.setSize(400, (1+g.data.axes.length+g.data.buttons.length)*31+10+35);
-  win.setTitle('Gamepad');
+  await setWindowSize(wid, 400, (1+g.data.axes.length+g.data.buttons.length)*31+10+35);
+  await setWindowTitle(wid, 'Gamepad');
 });
 
 g.setOnData(function(data) {

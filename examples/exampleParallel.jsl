@@ -5,14 +5,14 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
-close('all'); clear; clc; t = tic;
+close('all'); clear; clc; var t = tic;
 disp(' --- ' + jsl_file_name + ' ---');
 
 var computeSquare = (i) => i * i;
 
 // Run parallel exectuion 
 var results = await parallel.parfor(0, 20, 1, 
-  parallel.getProcessorsNum(), {}, undefined, computeSquare);
+  Math.min(4, parallel.getProcessorsNum()), {}, undefined, computeSquare);
 disp(results);
 
 disp(' The program was executed successfully... ');

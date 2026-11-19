@@ -3883,5 +3883,15 @@
     "en": "Unsaved changes",
     "rs": "Nesačuvane izmene",
     "rsc": "Несачуване измене"
+  },
+  "778": {
+    "en": "The JSLAB workspace is unavailable.",
+    "rs": "JSLAB radni prostor nije dostupan.",
+    "rsc": "JSLAB радни простор није доступан."
+  },
+  "779": {
+    "en": "The Simulate workspace request timed out.",
+    "rs": "Isteklo je vreme za zahtev simulacije u radnom prostoru.",
+    "rsc": "Истекло је време за захтев симулације у радном простору."
   }
 }

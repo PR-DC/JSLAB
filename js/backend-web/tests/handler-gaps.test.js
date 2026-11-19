@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
-const { webTest } = require('./browser-test-utils');
+const { webTest, webTestWithCommandErrors } = require('./browser-test-utils');
 var tests = new PRDC_JSLAB_TESTS();
 // These scenarios require their isolated GUI runner; ordinary module tests stay headless.
 if(!globalThis.gui_browser) {
@@ -56,7 +56,9 @@ webTest(tests, 'web directory double-click/context menu and workspace double-cli
   span.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 20, clientY: 20 }));
   t.eq(t.visible('#file-browser-context-menu'), true);
   document.body.click();
+  t.input('#workspace-search', '');
   await t.app.runtime._evaluateCommand('gui_double_click = 123');
+  await t.wait(() => document.querySelector('#workspace .row[variable="gui_double_click"]'), 'updated workspace row');
   var row = document.querySelector('#workspace .row[variable="gui_double_click"]');
   t.ok(row);
   row.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
@@ -91,7 +93,10 @@ webTest(tests, 'web documentation hover See More routes main and presentation he
   t.ok(t.app.window_manager.windows.size > 0);
 });
 
-webTest(tests, 'web editor unavailable Arduino actions report their result without losing text', async function() {
+webTestWithCommandErrors(tests, 'web editor unavailable Arduino actions report their result without losing text', [
+  /^Error: @compileArduino: Configuration file for arduino-cli not found\.\n  at eval \(jslcmdwindow:1:1\)/,
+  /^Error: @compileArduino: Configuration file for arduino-cli not found\.\n  at eval \(jslcmdwindow:1:1\)/
+], async function() {
   var t = GUI, w = await t.editor(), doc = w.document;
   var cm = [...doc.querySelectorAll('.CodeMirror')].find(el => w.getComputedStyle(el).display !== 'none').CodeMirror, before = cm.getValue();
   t.click('#compile-dialog-menu', doc);
@@ -162,7 +167,10 @@ webTest(tests, 'web editor identifier hover opens documentation through See More
   doc.querySelector('.jslab-doc-hover-tooltip button').dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, cancelable: true }));
   t.eq(doc.querySelector('.jslab-doc-hover-tooltip'), null);
 });
-webTest(tests, 'Editor reports rejected promises and window errors through the application console', async function() {
+webTestWithCommandErrors(tests, 'Editor reports rejected promises and window errors through the application console', [
+  /^Error: Editor rejection sentinel\n/,
+  /^Error: Editor error sentinel\n/
+], async function() {
   const frame = await GUI.editor();
   for(const message of ['Editor rejection sentinel', 'Editor error sentinel']) {
     const event = message.includes('rejection') ? new frame.PromiseRejectionEvent('unhandledrejection', {

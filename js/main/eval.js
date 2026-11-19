@@ -31,14 +31,9 @@ class PRDC_JSLAB_MAIN_EVAL {
   evalScript(script_path, lines) {
     if(!this.win.evaluating) {
       this.last_script_path = script_path;
-      script_path = script_path.replace(/\\/g, '\\\\');
-      var cmd;
-      if(lines !== undefined) {
-        cmd = 'run("' + script_path + '", ' + JSON.stringify(lines) + ')';
-      } else {
-        cmd = 'run("' + script_path + '")';
-      }
-      this.evalCommand(cmd);
+      const command = 'run(' + JSON.stringify(script_path) +
+        (lines === undefined ? '' : ', ' + JSON.stringify(lines)) + ')';
+      return this.evalCommand(command);
     } else {
       this.win.command_window.message('@evalScript: ' + language.string(347));
     }

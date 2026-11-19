@@ -15,7 +15,7 @@ class PRDC_JSLAB_DEV_GUI_TEST_FIXTURE_HELPER {
 
   /**
    * Loads actual window markup, libraries and controllers in a disposable iframe.
-   * OS services are captured in memory; application bootstraps never run.
+   * OS services are captured in memory; application startup routines never run.
    * @param {string} type Window HTML basename.
    * @returns {Promise<Object>} Fixture with event helpers and captured host calls.
    */
@@ -174,6 +174,12 @@ class PRDC_JSLAB_DEV_GUI_TEST_FIXTURE_HELPER {
               { from: 'source2.y', to: 'sink2.u', points: [[-20, -20], [20, -20]], color: [0, 0, 127], line: 12 }
             ]
           } };
+        }
+        if(args[0] === 'JSLAB_SIMULATE_ANIMATION') {
+          return 1;
+        }
+        if(args[0] === 'JSLAB_SIMULATE_RESULT') {
+          return true;
         }
         if(args[0] === 'JSLAB_SIMULATE_RESOLVE') {
           return data.has('simulate-value:' + args[1]) ?

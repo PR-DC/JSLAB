@@ -23,7 +23,7 @@
         <li id="simulate-check" title-str="omjsl-8417"><img src="../img/compile-dialog.svg" alt=""><str sid="omjsl-8417"></str></li>
         <li id="simulate-build" title-str="omjsl-8418"><img src="../img/simulate-compile.svg" alt=""><str sid="omjsl-8418"></str></li>
         <li id="simulate-simulate" title-str="omjsl-8419"><img src="../img/run.svg" alt=""><str sid="omjsl-8419"></str></li>
-        <li id="simulate-animation" class="disabled" title-str="omjsl-8445" aria-disabled="true"><img src="../img/simulate-3d.svg" alt=""><str sid="omjsl-8445"></str></li>
+        <li id="simulate-animation" class="disabled" title-str="omjsl-8445" aria-label-str="omjsl-8445" aria-disabled="true"><img src="../img/simulate-3d.svg" alt=""><str sid="omjsl-8445"></str></li>
       </ul>
       <ul id="window-controls">
         <li id="win-minimize" title-str="603" aria-label-str="603"><img src="../img/win-minimize.svg" alt=""></li>
@@ -55,7 +55,7 @@
       <progress id="simulate-compiler-progress" max="100" value="0" hidden></progress>
       <pre id="simulate-output"></pre>
     </section>
-    <dialog id="close-dialog-cont" aria-labelledby="close-dialog-header" hidden>
+    <div id="close-dialog-cont" role="dialog" aria-modal="true" aria-labelledby="close-dialog-header" hidden>
       <div id="close-dialog">
         <div id="close-dialog-header"><str sid="47"></str></div>
         <div id="close-dialog-msg">
@@ -67,7 +67,7 @@
           <button id="close-dialog-cancel" type="button"><str sid="52"></str></button>
         </div>
       </div>
-    </dialog>
+    </div>
     <div id="simulate-simulation-dialog" class="simulate-dialog" hidden tabindex="0">
       <div class="simulate-dialog-panel simulate-simulation-panel">
         <div class="simulate-dialog-header"><span><str sid="omjsl-8442"></str></span><img id="simulate-simulation-close" src="../img/close.svg" title-str="24" alt=""></div>

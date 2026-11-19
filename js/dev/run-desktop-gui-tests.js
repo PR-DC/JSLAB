@@ -65,6 +65,7 @@ class PRDC_JSLAB_DEV_RUN_DESKTOP_GUI_TESTS_HELPER {
       }
       stage = 'initializing main window';
       await clients.main.waitFor(() => !!(typeof win_main !== 'undefined' && win_main.command_window && win_main.folder_navigation), 'main window');
+      await clients.main.watchCommandWindowErrors();
       stage = 'initializing editor window';
       await clients.editor.waitFor(() => !!(typeof win_editor !== 'undefined' && win_editor.script_manager), 'editor window');
       stage = 'initializing Assistant window';
@@ -100,11 +101,11 @@ class PRDC_JSLAB_DEV_RUN_DESKTOP_GUI_TESTS_HELPER {
       global.gui_desktop_profile = profile;
       global.app_path = root;
       global.process_arguments = ['desktop-gui-tests', ...process.argv.slice(2).filter(arg => arg.startsWith('--test-'))];
-      const { PRDC_JSLAB_TESTER } = require('../other-shared/tester');
+      const { PRDC_JSLAB_GUI_TESTER } = require('./gui-test-lifecycle');
       /**
        * Class for desktop gui tester.
        */
-      class PRDC_JSLAB_DESKTOP_GUI_TESTER extends PRDC_JSLAB_TESTER {
+      class PRDC_JSLAB_DESKTOP_GUI_TESTER extends PRDC_JSLAB_GUI_TESTER {
         /**
          * Handles scan for test modules.
          * @param {*} folder Folder.
@@ -114,7 +115,19 @@ class PRDC_JSLAB_DEV_RUN_DESKTOP_GUI_TESTS_HELPER {
             ['desktop-gui-integration.test.js', 'desktop-simulate.test.js', 'desktop-project-editors.test.js'].includes(path.basename(filename)));
         }
       }
-      var summary = await new PRDC_JSLAB_DESKTOP_GUI_TESTER('', { include_tags: ['integration'] }).runTests();
+      const tester = new PRDC_JSLAB_DESKTOP_GUI_TESTER('', { include_tags: ['integration'] }, {
+        clients: () => Object.values(clients),
+        command_window: clients.main,
+        after: async () => {
+          for(const client of Object.values(clients)) await client.restoreViewport();
+          await clients.main.waitFor(() => !win_main.evaluating, 'desktop sandbox idle after the scenario', 20000);
+          await clients.sandbox.evaluate(() => { jsl.inter.gui?._stopAnimations(); return true; });
+          await clients.main.evaluate(() => require('electron').ipcRenderer.invoke('JSLAB_DESKTOP_GUI_TEST_FINISH'));
+        }
+      });
+      var summary = await tester.runTests();
+      await clients.main.evaluate(() => true);
+      tester.checkRemainingCommandErrors();
       if(!summary.total || summary.failed) {
         process.exitCode = 1;
         if(diagnostics.trim()) {

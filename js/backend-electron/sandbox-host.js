@@ -326,6 +326,18 @@ class PRDC_JSLAB_ELECTRON_SANDBOX_HOST {
   }
 
   /**
+   * Confirms relaunch in each Presentation Editor without closing any of them.
+   * @returns {Promise<boolean>} Whether all Presentation Editors approved the restart.
+   */
+  async confirmPresentationReload() {
+    for(const win of Object.values(this.application.sandbox_sub_wins || {})) {
+      if(win.isDestroyed() || win.forClose || !win.webContents.getURL().endsWith('/presentation-editor.html')) continue;
+      if(!await win.webContents.executeJavaScript('presentation_editor.confirmReload()', true)) return false;
+    }
+    return true;
+  }
+
+  /**
    * Publishes a frame selection validated by the common runtime coordinator.
    */
   _selectDebugFrame(args, state) {

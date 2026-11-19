@@ -67,7 +67,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     this.settings_submodule;
     this.input_submodule;
     this.inspector;
-    this.diary;
+    this.diary_submodule;
 
     this.message_buffer;
 
@@ -81,7 +81,7 @@ class PRDC_JSLAB_COMMAND_WINDOW {
     this.settings_submodule = new PRDC_JSLAB_COMMAND_WINDOW_SETTINGS(this);
     this.input_submodule = new PRDC_JSLAB_COMMAND_WINDOW_INPUT(this);
     this.inspector = new PRDC_JSLAB_COMMAND_WINDOW_INSPECTOR(this);
-    this.diary = new PRDC_JSLAB_COMMAND_WINDOW_DIARY(this);
+    this.diary_submodule = new PRDC_JSLAB_COMMAND_WINDOW_DIARY(this);
 
     // Load settings
     this.autoscroll = store.get('autoscroll') !== false;

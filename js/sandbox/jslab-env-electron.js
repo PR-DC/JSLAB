@@ -168,24 +168,17 @@ class PRDC_JSLAB_ENV {
             obj.jsl.inter.eval.evalCodeFromMain(...data);
             break;
           case "simulate-result":
-            obj._publishSimulateResult(data);
-            break;
           case "simulate-animation":
-            obj._openSimulateAnimation(data);
+            Promise.resolve().then(() => action === "simulate-result" ?
+              Boolean(obj._publishSimulateResult(data.data)) : obj._openSimulateAnimation(data.data))
+              .then(value => ipcRenderer.send('JSLAB_SIMULATE_WORKSPACE_RESULT', { id: data.id, success: true, value }),
+                error => ipcRenderer.send('JSLAB_SIMULATE_WORKSPACE_RESULT', {
+                  id: data.id, success: false, error: String(error.message || error)
+                }));
             break;
           case "simulate-resolve":
-            obj.jsl.inter.eval.evalString('(' + String(data.expression || '') + ')').then(function(result) {
-              var value = safeWorkspaceValue(result);
-              ipcRenderer.send('JSLAB_SIMULATE_RESOLVE_RESULT', {
-                id: data.id, success: true, js_value: value
-              });
-            }).catch(function(error) {
-              ipcRenderer.send('JSLAB_SIMULATE_RESOLVE_RESULT', {
-                id: data.id, success: false, error: error && error.message ? error.message : String(error),
-                value_code: error && error.value_code, value_path: error && error.value_path
-              });
-            });
-            break;
+            return PRDC_JSLAB_SANDBOX_SIMULATE._resolveWorkspaceValue(obj.jsl, data.expression, () => safeWorkspaceValue)
+              .then(result => ipcRenderer.send('JSLAB_SIMULATE_WORKSPACE_RESULT', { id: data.id, ...result }));
           case "get-completions":
             ipcRenderer.send("completions-" + data.request_id,
               obj.jsl.inter.basic.getCompletions(data.data));
@@ -903,7 +896,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Resolves relative file names against the scientific workspace directory.
+   * Resolves relative file names against the sandbox workspace directory.
    * File descriptors, URLs and Buffer paths retain Node's native behavior.
    * @private
    * @param {*} file_path File name or native filesystem handle.
@@ -1032,7 +1025,7 @@ class PRDC_JSLAB_ENV {
    */
   runInterruptibleTask(id, source, args) {
     if(this.is_worker) {
-      throw Error('Start isolated native processes from the main scientific workspace.');
+      throw Error('Start isolated native processes from the main sandbox workspace.');
     }
     return ipcRenderer.invoke('JSLAB_TASK_START', { id, source, args, cwd: this.jsl.current_path });
   }
@@ -1089,7 +1082,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Sends a LaTeX build request to the desktop toolchain.
+   * Compiles with the selected desktop LaTeX backend.
    * @param {string} file TeX source path.
    * @returns {Promise<Object|boolean>} Build result.
    */
@@ -1133,18 +1126,13 @@ class PRDC_JSLAB_ENV {
   /**
    * Opens the Simulate GUI and optionally loads a model file.
    */
-  simulate(filepath, options) {
+  async simulate(filepath, options) {
     if(this.is_worker) {
-      return Promise.resolve({ success: false, error: 'Simulate requires the desktop runtime.' });
+      return { success: false, error: 'Simulate requires the desktop runtime.' };
     }
-    var request_options = Object.assign({}, options || {});
-    if(request_options.parameters && typeof request_options.parameters == 'object') {
-      request_options.parameters = safeWorkspaceValue(request_options.parameters);
-    }
-    return ipcRenderer.invoke('JSLAB_SIMULATE_AUTOMATION', {
-      filepath: filepath,
-      options: request_options
-    });
+    return PRDC_JSLAB_SANDBOX_SIMULATE._runRequest(this.jsl, options, safeWorkspaceValue,
+      (options, request_id) => ipcRenderer.invoke('JSLAB_SIMULATE_AUTOMATION', { filepath, options, request_id }),
+      id => ipcRenderer.invoke('JSLAB_SIMULATE_AUTOMATION_CANCEL', id));
   }
 
   /**
@@ -1688,7 +1676,7 @@ class PRDC_JSLAB_ENV {
         this.jsl.saved_paths.includes(script_dir)) {
       return false;
     } else {
-      ipcRenderer.send("MainWindow", "unknown-script-dir");
+      ipcRenderer.send("MainWindow", "unknown-script-dir", script_path);
       return true;
     }
   }
@@ -1710,6 +1698,7 @@ class PRDC_JSLAB_ENV {
    * @param {string} new_path The path to set as the current working directory.
    */
   cd(new_path) {
+    this.jsl.setPath(new_path);
     if(!this.is_worker) {
       ipcRenderer.send("MainWindow", "set-current-path", new_path,
         undefined, false);
@@ -1911,7 +1900,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Routes native require through the scientific workspace search paths.
+   * Routes native require through the sandbox workspace search paths.
    * @param {Function} Module Node module constructor.
    */
   _configureModuleRequire(Module) {
@@ -1930,7 +1919,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Builds the initialization source for a child scientific worker.
+   * Builds the initialization source for a child sandbox worker.
    * @returns {string} Worker initialization source.
    */
   _getWorkerInit() {

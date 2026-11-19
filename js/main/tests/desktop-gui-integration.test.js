@@ -43,6 +43,19 @@ tests.add('desktop command button updates actual sandbox workspace and history v
   assert.equal(await gui_desktop.main.evaluate(() => win_main.command_history.history.includes('var gui_desktop_value = 31;')), true);
 }, { tags: ['gui', 'electron', 'integration'], timeout_ms: 30000 });
 
+tests.add('desktop sandbox reports its intentional runtime error and preserves the separate Terminal window', async function(assert) {
+  const terminal = await gui_desktop.terminal.evaluate(() => win_terminal.pty_id);
+  assert.ok(terminal !== null);
+  await gui_desktop.main.evaluate(() => {
+    win_main.command_window.code_input.setValue('throw Error("native sandbox error probe");');
+    document.getElementById('command-window-input-submit-cont').click();
+  });
+  await gui_desktop.main.waitFor(() => !win_main.evaluating &&
+    [...document.querySelectorAll('#command-window-messages .error')]
+      .some(message => message.textContent.includes('native sandbox error probe')), 'sandbox error in Command Window');
+  assert.equal(await gui_desktop.terminal.evaluate(() => win_terminal.pty_id), terminal);
+}, { tags: ['gui', 'electron', 'integration'], expected_command_errors: [/^Error: native sandbox error probe\n/] });
+
 tests.add('desktop editor opens through IPC, saves to disk and runs through the sandbox', async function(assert) {
   var filename = path.join(gui_desktop_profile, 'gui-integration.jsl');
   fs.writeFileSync(filename, '');
@@ -137,6 +150,7 @@ tests.add('desktop Terminal opens from its command and runs a real CMD command',
   var command = await gui_desktop.sandbox.evaluate(() => {
     globalThis.gui_controlled_terminal = terminal('Controlled Terminal');
     gui_controlled_terminal.writeln('echo CONTROLLED_TERMINAL').setName('Renamed Terminal');
+    gui_primary_terminal.focus();
     return {
       id: gui_controlled_terminal.id,
       open: gui_controlled_terminal.isOpen(),

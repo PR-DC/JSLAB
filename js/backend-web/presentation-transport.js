@@ -373,8 +373,8 @@ class PRDC_JSLAB_WEB_PRESENTATION_TRANSPORT {
       '}'
     ].join('\n');
 
-    var bootstrap_script = doc.createElement('script');
-    bootstrap_script.textContent = [
+    var startup_script = doc.createElement('script');
+    startup_script.textContent = [
       '(function(){',
       '  window.__JSLAB_PRESENTATION_RESOURCE_MAP__ = ' + JSON.stringify(resource_urls) + ';',
       '  window.__JSLAB_PRESENTATION_EMBEDDED__ = true;',
@@ -399,7 +399,7 @@ class PRDC_JSLAB_WEB_PRESENTATION_TRANSPORT {
       '  }',
       '})();'
     ].join('\n');
-    doc.head.insertBefore(bootstrap_script, doc.head.firstChild);
+    doc.head.insertBefore(startup_script, doc.head.firstChild);
 
     return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
   }

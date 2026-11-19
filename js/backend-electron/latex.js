@@ -10,34 +10,17 @@ const path = require('node:path');
 const os = require('node:os');
 const { spawn } = require('node:child_process');
 const { randomUUID } = require('node:crypto');
-const { PRDC_JSLAB_LATEX_SYNCTEX } = require('./latex-synctex');
+const { PRDC_JSLAB_LATEX_NATIVE_SYNCTEX } = require('./latex-synctex');
+const { latex_source: source, latex_asset_types: asset_types, PRDC_JSLAB_LATEX_PROJECT_FILES } = require('../other-shared/latex-project-files');
+const { PRDC_JSLAB_LATEX_COMPILER } = require('../other-shared/latex-compiler');
 
 const engines = { pdflatex: '-pdf', xelatex: '-xelatex', lualatex: '-lualatex' };
-const source = /\.(?:tex|bib|sty|cls|ltx|bst|dtx|ins)$/i;
-const asset_types = { '.pdf': 'application/pdf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
-for(const extension of ['.log', '.txt', '.md', '.csv', '.tsv', '.json', '.xml', '.yaml', '.yml', '.ini', '.cfg', '.aux', '.toc', '.bbl', '.blg']) {
-  asset_types[extension] = 'text/plain';
-}
 
 /**
  * Owns the local project and its compiler processes.
  */
 class PRDC_JSLAB_LATEX {
 
-  /**
-   * Normalizes compiler and source settings received from storage or the editor.
-   * @param {Object} [options] Requested build and editor settings.
-   * @returns {Object} Validated preferences.
-   */
-  static preferences(options) {
-    return {
-      engine: Object.hasOwn(engines, options?.engine) ? options.engine : 'pdflatex',
-      draft: options?.draft === true,
-      reuse: options?.reuse === true,
-      halt: options?.halt !== false,
-      wrap: options?.wrap !== false
-    };
-  }
   /**
    * Initializes the compiler service.
    * @param {Function} [onLog] Receives compiler log output.
@@ -50,24 +33,68 @@ class PRDC_JSLAB_LATEX {
    * Compiles a document for the workspace and saves its PDF beside the source.
    * @param {string} file Absolute TeX source path.
    * @param {string} [configured] User-selected toolchain directory.
+   * @param {Function} [fallback] Prepares a WebAssembly build if native TeX is unavailable.
    * @returns {Promise<Object>} Build outcome, log and PDF path on success.
    */
-  static async compileFile(file, configured) {
+  static async compileFile(file, configured, fallback) {
     let log = '';
     const latex = new PRDC_JSLAB_LATEX(value => { log = (log + value).slice(-1000000); });
     const project = await latex.open(file);
     if(!project) return { ok: false, missing: [], log };
-    const { missing } = await latex.detect(configured);
-    if(missing.length) return { ok: false, missing, log };
+    const target = await latex.resolve(project.main);
+    if(!target) return { ok: false, missing: [], log };
+    const native = await latex.detect(configured);
+    const { missing } = native;
+    if(PRDC_JSLAB_LATEX_COMPILER.lookup(native, native.engine).wasm) {
+      return fallback ? fallback(latex, project.main) : { ok: false, missing, log };
+    }
     try {
-      const result = await latex.compile(project.main);
-      if(!result?.ok) return { ok: false, missing, log };
-      const pdf = file.slice(0, -4) + '.pdf';
-      await latex.copyOutput(latex.preview.pdf, pdf);
-      return { ok: true, pdf, missing, log };
+      const result = await latex.compile(project.main, undefined, true);
+      if(!result?.ok) return { ok: false, missing, log: result?.log || log };
+      const pdf = target.slice(0, -4) + '.pdf';
+      return { ok: true, pdf, missing, log: result.log || log };
     } finally {
       await latex.clearPreview();
     }
+  }
+
+  /**
+   * Reads a project's saved files for the WebAssembly compiler.
+   * @param {string} file Main source relative to the project.
+   * @returns {Promise<Object|null>} Project snapshot.
+   */
+  async snapshot(file) {
+    const root = this.root;
+    const target = await this.resolve(file);
+    if(!target || !/\.tex$/i.test(target) || this.root !== root) return null;
+    const relative = path.relative(root, target);
+    return PRDC_JSLAB_LATEX_PROJECT_FILES.snapshot(this, { root, target, main: relative, separator: path.sep }, async name => {
+      const candidate = path.join(root, name);
+      if(this.root !== root || !(await fs.lstat(candidate).catch(() => null))?.isFile()) return null;
+      const absolute = await this.resolvePath(candidate);
+      return absolute ? new Uint8Array(await fs.readFile(absolute)) : null;
+    });
+  }
+
+  /**
+   * Publishes WebAssembly output beside the selected TeX source.
+   * @param {string} target Canonical main source path from the snapshot.
+   * @param {Object} output Compiler log and optional PDF bytes.
+   * @param {boolean} [list] Whether to return the editor project listing.
+   * @returns {Promise<Object|null>} PDF path and optional refreshed listing.
+   */
+  async publish(target, output, list = false) {
+    if(!target || await this.resolve(target) !== target) return null;
+    const result = await PRDC_JSLAB_LATEX_PROJECT_FILES.publish(target, output, async (file, data) => {
+      const temporary = path.join(path.dirname(file), '.jslab-latex-' + randomUUID());
+      try {
+        await fs.writeFile(temporary, data, { flag: 'wx' });
+        await fs.rename(temporary, file);
+      } finally {
+        await fs.rm(temporary, { force: true });
+      }
+    });
+    return result && { ...result, project: list ? await this.scan() : undefined };
   }
 
   /**
@@ -98,8 +125,8 @@ class PRDC_JSLAB_LATEX {
     const root = await fs.realpath(folder ? target : path.dirname(target));
     const { tree, files } = await this.scan(root);
     const requested = main_file ? path.relative(root, path.resolve(root, main_file)) : !folder ? path.basename(target) : null;
-    const main = requested || files.find(file => /^main\.tex$/i.test(file)) || files.find(file => /\.tex$/i.test(file)) || null;
-    if(requested && (!/\.tex$/i.test(requested) || !files.includes(requested))) return null;
+    const main = PRDC_JSLAB_LATEX_PROJECT_FILES.chooseMain(files, requested);
+    if(main === false) return null;
     await this.clearPreview();
     this.root = root;
     this.main = main;
@@ -111,30 +138,9 @@ class PRDC_JSLAB_LATEX {
    * @param {string} root Project directory.
    * @returns {Promise<Object>} File tree and editable paths.
    */
-  async scan(root = this.root) {
-    const files = [];
-    async function visit(dir) {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-      entries.sort((a, b) => Number(b.isDirectory()) - Number(a.isDirectory()) || a.name.localeCompare(b.name));
-      const children = [];
-      for(const entry of entries) {
-        if(entry.name === '.git' || entry.name.startsWith('.jslab-latex-')) continue;
-        const absolute = path.join(dir, entry.name);
-        const file = path.relative(root, absolute);
-        const node = { name: entry.name, file };
-        if(entry.isDirectory()) {
-          node.children = await visit(absolute);
-        } else {
-          node.editable = entry.isFile() && source.test(file);
-          node.preview = entry.isFile() ? asset_types[path.extname(file).toLowerCase()] || null : null;
-          if(node.editable) files.push(file);
-        }
-        children.push(node);
-      }
-      return children;
-    }
-    const tree = await visit(root);
-    return { tree, files };
+  scan(root = this.root) {
+    return PRDC_JSLAB_LATEX_PROJECT_FILES.scan(directory =>
+      fs.readdir(path.join(root, directory), { withFileTypes: true }), path.sep);
   }
 
   /**
@@ -211,7 +217,7 @@ class PRDC_JSLAB_LATEX {
    * @returns {Promise<Object>} Engine version and missing or unusable tools.
    */
   async detect(configured, engine_name = 'pdflatex') {
-    const { engine } = PRDC_JSLAB_LATEX.preferences({ engine: engine_name });
+    const { engine } = PRDC_JSLAB_LATEX_COMPILER.preferences({ engine: engine_name });
     const tools = { latexmk: ['-v'], [engine]: ['--version'], synctex: ['help', 'edit'] };
     const windows = process.platform === 'win32';
     const path_key = Object.keys(process.env).find(key => key.toUpperCase() === 'PATH') || 'PATH';
@@ -331,7 +337,7 @@ class PRDC_JSLAB_LATEX {
       if(this.cancelled) return { ok: false, cancelled: true };
       if(!main || !/\.tex$/i.test(main)) return null;
       const { bin, env, miktex } = this.toolchain;
-      const settings = PRDC_JSLAB_LATEX.preferences(options);
+      const settings = PRDC_JSLAB_LATEX_COMPILER.preferences(options);
       const build_env = { ...env };
       if(process.platform === 'win32') {
         // Keep native paths available to MiKTeX's bibliography tools when
@@ -476,11 +482,11 @@ class PRDC_JSLAB_LATEX {
     if(!Number.isInteger(page) || page < 1 || ![x, y].every(Number.isFinite)) return null;
     const preview = this.preview;
     if(!preview || this.building) return null;
-    preview.text_positions ||= PRDC_JSLAB_LATEX_SYNCTEX.read(preview.pdf.slice(0, -4) + '.synctex.gz', this.root)
+    preview.text_positions ||= PRDC_JSLAB_LATEX_NATIVE_SYNCTEX.read(preview.pdf.slice(0, -4) + '.synctex.gz', this.root)
       .catch(() => null);
     const pages = await preview.text_positions;
     if(this.preview !== preview || this.building) return null;
-    const text = PRDC_JSLAB_LATEX_SYNCTEX.nearest(pages?.get(page), x, y);
+    const text = PRDC_JSLAB_LATEX_NATIVE_SYNCTEX.nearest(pages?.get(page), x, y);
     if(text) {
       const input = await this.resolve(text.file);
       if(input) return { file: path.relative(this.root, input), line: text.line, column: text.column };

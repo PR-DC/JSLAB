@@ -429,11 +429,11 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
    */
   async showSimulate(file_path) {
     if(this.application.cli_mode) return false;
-    const project = file_path ?? await this.application.files.selectSimulateProject();
-    if(!this.application.files.isSimulateProjectPath(project) || this.application.is_app_quitting) return false;
+    const project = await this.application.files.resolveSimulateProject(file_path);
+    if(!project.success || this.application.is_app_quitting) return false;
     const win = await this.getSimulateWindow();
     if(!this.focusFeatureWindow(win)) return false;
-    win.send('SimulateWindow', 'open-file', project);
+    win.send('SimulateWindow', 'open-file', project.file);
     return true;
   }
 

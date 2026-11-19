@@ -16,7 +16,9 @@ try {
   const bundle = await host.request('bundle');
   url = URL.createObjectURL(new Blob([bundle], { type: 'text/javascript' }));
   const { default: { PRDC_JSLAB_LATEX_EDITOR } } = await import(url);
-  new PRDC_JSLAB_LATEX_EDITOR(host, settings, pdfjs);
+  const editor = new PRDC_JSLAB_LATEX_EDITOR(host, settings, pdfjs,
+    () => new Worker(new URL('../other-shared/latex-wasm-worker.js', import.meta.url)));
+  window.confirmLatexReload = () => editor.confirmReload(() => host.request('focus'));
   await host.request('ready');
 } catch(error) {
   document.getElementById('status').textContent = settings.strings[721];

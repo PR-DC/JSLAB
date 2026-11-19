@@ -51,6 +51,73 @@ webTest(tests, 'common folder navigation and saved paths operate on browser work
   GUI.eq(app.storage.get('current_path'), '/workspace/');
 });
 
+webTest(tests, 'Web shares current directory and saved search paths with its scientific runtime', async function() {
+  const app = GUI.app;
+  const folder = '/workspace/path-parity';
+  const filename = folder + '/path-parity.jsl';
+  app.fs.makeDirectorySync(folder);
+  app.fs.writeTextFileSync(filename, 'var parity_selected_line = 1;\nvar parity_selected_line = 2;');
+  const evaluate = async code => (await app.sandbox_api.evaluate(code)).value;
+  app._setCurrentPath('/workspace/');
+  try {
+    await evaluate('cd("path-parity")');
+    GUI.eq(app.current_path, folder + '/');
+    GUI.eq(await evaluate('jsl.current_path'), folder + '/');
+    GUI.eq(await evaluate('JSON.stringify(ls())'), '["path-parity.jsl"]');
+    await evaluate('cd("..")');
+    GUI.eq(app.current_path, '/workspace/');
+    app.main.folder_navigation.savePath(folder);
+    GUI.eq(await evaluate('jsl.pathResolve("path-parity.jsl")'), filename);
+    await evaluate('removePath("path-parity")');
+    GUI.ok(!app.storage.get('saved_paths').includes(folder + '/'));
+    await evaluate('savePath("path-parity")');
+    GUI.eq(await evaluate('jsl.pathResolve("path-parity.jsl")'), filename);
+    app.main.folder_navigation.removePath(folder);
+
+    await app.main.eval.evalScript(filename, 2);
+    GUI.eq(GUI.visible('#script-path-container'), true);
+    GUI.click('#script-path-dialog-run');
+    await GUI.wait(() => app.workspace_state.some(([name, value]) => name === 'parity_selected_line'), 'retried selected line');
+    await GUI.wait(() => !app.main.evaluating && app.worker_debugger.state === 'idle', 'retried evaluation completes');
+    GUI.eq(await evaluate('parity_selected_line'), 2);
+    GUI.eq(app.current_path, '/workspace/');
+  } finally {
+    app.main.folder_navigation.removePath(folder);
+    app._setCurrentPath('/workspace/');
+  }
+});
+
+webTest(tests, 'Web diary appends transcripts, switches files and persists entries', async function() {
+  const app = GUI.app;
+  const folder = '/workspace/diary-parity';
+  const first = folder + '/first.log';
+  const second = folder + '/second.log';
+  const current_path = app.current_path;
+  app.fs.makeDirectorySync(folder);
+  await app.fs.writeTextFile(first, 'existing entry\r\n');
+  app._setCurrentPath(folder);
+  try {
+    await app.main.eval.evalCommand('diary("first.log"); disp("first diary message")');
+    await app.main.eval.evalCommand('diary("second.log"); disp("second diary message")');
+    await app.main.eval.evalCommand('diary("off"); disp("excluded diary message")');
+    await Promise.all(app.fs.append_jobs.values());
+    await app.fs.refresh();
+    const first_text = app.fs.readTextFileSync(first);
+    const second_text = app.fs.readTextFileSync(second);
+    GUI.ok(first_text.startsWith('existing entry\r\n'));
+    const hasMessage = (text, message) => text.split('\r\n').some(line =>
+      line.startsWith('data-in:') && line.endsWith(' ' + message));
+    GUI.ok(hasMessage(first_text, 'first diary message'), first_text);
+    GUI.ok(!hasMessage(first_text, 'second diary message'), first_text);
+    GUI.ok(hasMessage(second_text, 'second diary message'), second_text);
+    GUI.ok(!hasMessage(second_text, 'excluded diary message'), second_text);
+    GUI.eq(app.main.command_window.diary_enabled, false);
+  } finally {
+    app.main.command_window.diary({ action: 'off' });
+    app._setCurrentPath(current_path);
+  }
+});
+
 for(const name of ['help', 'info', 'settings']) {
   webTest(tests, 'web ' + name + ' dialog opens, closes by button and Escape', async function(name) {
     var t = GUI;
@@ -130,6 +197,7 @@ webTest(tests, 'web command submit uses the real evaluator and updates workspace
   t.app.code_input.setValue('var gui_web_value = 17;');
   t.click('#command-window-input-submit-cont');
   await t.wait(() => t.app.workspace_state.some(row => row[0] === 'gui_web_value'), 'real evaluator workspace');
+  await t.wait(() => !t.app.main.evaluating && t.app.worker_debugger.state === 'idle', 'command evaluation completes');
   t.eq(t.app.code_input.getValue(), '');
   t.ok(t.app.history.includes('var gui_web_value = 17;'));
 });

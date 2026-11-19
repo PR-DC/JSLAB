@@ -7,19 +7,20 @@
  */
 
 var N_buffer = 500;
-var t = toc();
+var start_time = tic;
+var t = toc(start_time);
 var x = createFilledArray(N_buffer, null); x[0] = t;
-var y = createFilledArray(N_buffer, null); y[0] = sin(t);
+var y = createFilledArray(N_buffer, null); y[0] = Math.sin(t);
 var p = plot({x: x, y: y});
 xlabel("x");
 ylabel("sin(x)");
 title("Simple 2-D Plot");
 
 await p.ready;
-setInterval(function() {
-  var t1 = toc();
+var plot_timer = setInterval(function() {
+  var t1 = toc(start_time);
   x.push(t1);
-  y.push(sin(t1*2));
+  y.push(Math.sin(t1*2));
   if(x.length > N_buffer) {
     x.shift();
     y.shift();

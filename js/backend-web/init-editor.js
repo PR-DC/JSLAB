@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const editor = new PRDC_JSLAB_WIN_EDITOR(platform);
   globalThis.win_editor = editor;
   editor.onReady();
+  globalThis.__JSLAB_WEB_CONFIRM_RELOAD__ = focus => editor.script_manager.confirmReload(focus);
   globalThis.__JSLAB_WEB_EDITOR__ = {
     openFile: (filename, line, column) => editor.script_manager.openScript([filename, line, column]),
     updateDebugState: (state, frame) => {

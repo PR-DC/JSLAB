@@ -6,9 +6,9 @@
  */
 
 /**
- * Class for jslab bootstrap test fixtures.
+ * Class for jslab startup test fixtures.
  */
-class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER {
+class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_STARTUP_TEST_HELPER {
 
   /**
    * Runs the real core and override constructors with isolated host dependencies.
@@ -17,7 +17,7 @@ class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER {
    * @param {boolean} refresh_during_startup Refresh workspace when a timer is registered.
    * @returns {Object} Runtime and captured global publication events.
    */
-  static createBootstrapHarness(web, count, refresh_during_startup = false) {
+  static createStartupHarness(web, count, refresh_during_startup = false) {
     var timers = [];
     var startup_workspaces = [];
     var publications = [];
@@ -161,7 +161,7 @@ class {} },
       return modules[name];
     };
     // Electron disallows string compilation in some synthetic VM contexts.
-    // Bootstrap uses eval only to hide the host require from browser bundlers.
+    // Startup uses eval only to hide the host require from browser bundlers.
     scope.eval = function(expression) {
       if(expression === 'require') {
         return scope.require;
@@ -191,7 +191,7 @@ var tests = new PRDC_JSLAB_TESTS();
 
 for(const web of [false, true]) {
   tests.add('Workspace refresh is safe during ' + (web ? 'web' : 'desktop') + ' startup', function(assert) {
-    var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER.createBootstrapHarness(web, 1, true);
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_STARTUP_TEST_HELPER.createStartupHarness(web, 1, true);
     assert.equal(harness.jsl.ready, true);
     assert.ok(harness.startup_workspaces.length > 0);
     assert.ok(harness.startup_workspaces.every(rows => rows.length === 0));
@@ -200,7 +200,7 @@ for(const web of [false, true]) {
   }, { tags: ['unit', 'core'] });
 
   tests.add('runtime is published once before submodules in ' + (web ? 'web' : 'desktop') + ' mode', function(assert) {
-    var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER.createBootstrapHarness(web, 2);
+    var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_STARTUP_TEST_HELPER.createStartupHarness(web, 2);
     assert.equal(harness.jsl.ready, true);
     assert.equal(harness.context.jsl, harness.jsl);
     assert.equal(harness.publications.length, 1);
@@ -217,7 +217,7 @@ for(const web of [false, true]) {
 }
 
 tests.add('runtime is published without builtin submodules', function(assert) {
-  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER.createBootstrapHarness(true, 0);
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_STARTUP_TEST_HELPER.createStartupHarness(true, 0);
   assert.equal(harness.context.jsl, harness.jsl);
   assert.equal(harness.publications.length, 1);
   assert.ok(harness.jsl.initial_workspace.includes('jsl'));
@@ -225,7 +225,7 @@ tests.add('runtime is published without builtin submodules', function(assert) {
 
 for(const web of [false, true]) {
   tests.add('Workspace detects shadowed functions in ' + (web ? 'web' : 'desktop'), function(assert) {
-    var { jsl, context, timers } = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER.createBootstrapHarness(web, 1);
+    var { jsl, context, timers } = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_STARTUP_TEST_HELPER.createStartupHarness(web, 1);
     var original = context.parser;
     assert.ok(!jsl.getWorkspaceProperties().includes('parser'));
     /**
@@ -256,7 +256,7 @@ for(const web of [false, true]) {
 }
 
 tests.add('Clear restores shadowed functions and removes user variables', function(assert) {
-  var { jsl, context } = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_BOOTSTRAP_TEST_HELPER.createBootstrapHarness(false, 1);
+  var { jsl, context } = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_STARTUP_TEST_HELPER.createStartupHarness(false, 1);
   var original = context.parser;
   context.parser = { messages: {} };
   context.flight_data = [1, 2];

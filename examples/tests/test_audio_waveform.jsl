@@ -11,4 +11,4 @@ var mic_id = "default";
 
 //getMicrophones();
 
-showAudioWaveform(mic_id);
+await showAudioWaveform(mic_id);

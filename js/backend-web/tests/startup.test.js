@@ -1,5 +1,5 @@
 /**
- * @file Real browser bootstrap and storage integration checks
+ * @file Real browser startup and storage integration checks
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
@@ -19,7 +19,7 @@ tests.add('web loads WASM and Pyodide backends only when their APIs are used', a
   }
   await gui_browser.navigate(gui_base);
   await gui_browser.waitFor(function() {
-    return document.body.dataset.jslabWebReady == 'true' &&
+    return document.body?.dataset.jslabWebReady == 'true' &&
       globalThis.jslab_web && globalThis.jslab_web.sandbox_api;
   }, 'fresh web shell for lazy backend checks');
   var initial = await gui_browser.evaluate(function() {

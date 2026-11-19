@@ -48,8 +48,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       this.jsl.inter.env.error('@openWindow: ' + this.jsl.inter.lang.string(199));
     }
 
-    this._wid += 1;
-    var wid = this._wid;
+    var wid = this.jsl.inter.env.allocateWindowId?.() ?? ++this._wid;
     this.open_windows[wid] = new PRDC_JSLAB_WINDOW(this.jsl, wid);
     this.open_windows[wid].open(file);
     this._setActiveWindow(wid);
@@ -59,10 +58,10 @@ class PRDC_JSLAB_LIB_WINDOWS {
   }
 
   /**
-   * Opens a local project folder or .tex file in the desktop LaTeX Editor.
+   * Opens a project folder or .tex file in the LaTeX Editor.
    * @param {string} [file] Project path, relative to the working directory or absolute.
    * @param {string} [main] Main .tex file when opening a project folder.
-   * @returns {Promise<boolean>} Whether the desktop accepted the request.
+   * @returns {Promise<boolean>} Whether the host opened the editor.
    */
   editLatex(file, main) {
     return this.jsl.inter.env.editLatex(file, main);
@@ -526,7 +525,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
       obj.jsl.inter.env.writeFileSync(file_path, scene_data);
     };
 
-    context.sceneFromJSON = async function(file_path) {
+    const loadScene = async function(file_path) {
       if(!file_path) {
         var options = {
           title: obj.jsl.inter.lang.currentString(247),
@@ -542,15 +541,20 @@ class PRDC_JSLAB_LIB_WINDOWS {
           file_path = file_path[0];
         }
       }
-      if(!obj.jsl.inter.file_system.existFile(obj.jsl.current_path + file_path)) {
+      const env = obj.jsl.inter.env;
+      if(!env.pathIsAbsolute(file_path)) file_path = env.pathJoin(obj.jsl.current_path, file_path);
+      if(!env.checkFile(file_path)) {
         obj.jsl.inter.env.error('@openWindow3D.fromJSON: ' + obj.jsl.inter.lang.string(248));
         return false;
       }
-      var data = JSON.parse(obj.jsl.inter.env.readFileSync(obj.jsl.current_path + file_path).toString());
+      var data = JSON.parse(env.readFileSync(file_path, 'utf8'));
 
       const loader = new context.THREE.ObjectLoader();
       return loader.parse(data);
     };
+    const env = this.jsl.inter.env;
+    if(env._setRemoteMethod) env._setRemoteMethod(context, 'sceneFromJSON', loadScene);
+    else context.sceneFromJSON = loadScene;
     return context;
   }
 
@@ -581,7 +585,15 @@ class PRDC_JSLAB_LIB_WINDOWS {
    * @returns {Promise<Window>} The window object where D3 is loaded and the canvas element is available.
    */
   async openCanvas() {
-    var wid = this.openWindow('d3.html');
+    return this._prepareCanvas(this.openWindow('d3.html'));
+  }
+
+  /**
+   * Waits for the canvas and SVG controls in a D3 window.
+   * @param {number} wid Window identifier.
+   * @returns {Promise<Object>} Window context with canvas and SVG controls.
+   */
+  async _prepareCanvas(wid) {
     await this.open_windows[wid].ready;
     var context = this.open_windows[wid].context;
     context.imports_ready = false;

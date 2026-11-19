@@ -5,7 +5,7 @@
  * info@pr-dc.com
  */
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
-const { webTest } = require('./browser-test-utils');
+const { webTest, webTestWithCommandErrors } = require('./browser-test-utils');
 var tests = new PRDC_JSLAB_TESTS();
 exports.MODULE_TESTS = tests;
 if(!global.gui_browser) {
@@ -166,7 +166,9 @@ webTest(tests, 'worker pause retains function locals, allows edits and stops an 
   return true;
 });
 
-webTest(tests, 'worker breakpoints and nested script errors use original file coordinates', async () => {
+webTestWithCommandErrors(tests, 'worker breakpoints and nested script errors use original file coordinates', [
+  /^Error: web child failure\n  at eval \(\/workspace\/child\.jsl:2:7\)/
+], async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const debuggerClient = GUI.app.worker_debugger;
   try {
@@ -191,7 +193,12 @@ webTest(tests, 'worker breakpoints and nested script errors use original file co
   return true;
 });
 
-webTest(tests, 'worker scripts and CommonJS module chains retain original runtime and syntax errors', async () => {
+webTestWithCommandErrors(tests, 'worker scripts and CommonJS module chains retain original runtime and syntax errors', [
+  /^TypeError: web module failure\n  at leaf \(\/workspace\/inner\.js:2:7\)/,
+  /^SyntaxError: Unexpected token \(2:17\)\n  at \(\/workspace\/bad\.js:2:18\)/,
+  /^RangeError: web async module failure\n  at eval \(\/workspace\/async-module\.js:3:9\)/,
+  /^SyntaxError: Unexpected token \(3:14\)\n  at \(\/workspace\/selected\.jsl:3:15\)/
+], async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const debuggerClient = GUI.app.worker_debugger;
   try {
@@ -274,6 +281,26 @@ webTest(tests, 'web debugger toolbar, paused console, Ctrl+C and reset operate o
   return true;
 });
 
+webTest(tests, 'Web resetSandbox restarts the sandbox and its child workers while preserving the Editor', async () => {
+  const app = GUI.app;
+  const editor = await GUI.editor();
+  const root = await app.runtime._startWorkerDebugger();
+  await app.fs.writeTextFile('/workspace/reset-child.jsl', 'self.onmessage = event => postMessage(event.data);');
+  const initialized = await app.sandbox_api.evaluate('var reset_value = 23; var reset_child = new Worker("/workspace/reset-child.jsl");');
+  GUI.eq(initialized.ok, true);
+  await GUI.wait(() => root.targets.size === 1 && root.selectedClient() === root &&
+    [...root.targets.values()][0].state === 'idle', 'child sandbox ready');
+  const [child] = root.targets.values();
+  const result = await app.runtime._executeCode('resetSandbox(); while(true) {}');
+  GUI.eq(result.success, true);
+  await GUI.wait(() => app.worker_debugger !== root && app.worker_debugger.state === 'idle', 'new sandbox worker');
+  GUI.eq(root.state, 'closed');
+  GUI.eq(child.state, 'closed');
+  GUI.eq((await app.sandbox_api.evaluate('typeof reset_value')).value, 'undefined');
+  GUI.eq((await GUI.editor()) === editor, true);
+  GUI.eq(app.fs.existsFileSync('/workspace/reset-child.jsl'), true);
+});
+
 webTest(tests, 'web caller scopes, object descriptors, mutations and expired handles work', async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const client = GUI.app.worker_debugger;
@@ -310,7 +337,9 @@ webTest(tests, 'web caller scopes, object descriptors, mutations and expired han
   return true;
 });
 
-webTest(tests, 'web conditional and disabled breakpoints and error stops retain source locals', async () => {
+webTestWithCommandErrors(tests, 'web conditional and disabled breakpoints and error stops retain source locals', [
+  /^TypeError: Cannot read properties of null \(reading 'missing'\)\n  at broken \(jslcmdwindow:1:53\)/
+], async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const client = GUI.app.worker_debugger;
   try {
@@ -393,7 +422,9 @@ webTest(tests, 'web interruption cancels awaited timers and idle background infi
   return true;
 });
 
-webTest(tests, 'worker workspace renders real browser figures and persists text without moving variables', async () => {
+webTestWithCommandErrors(tests, 'worker workspace renders real browser figures and persists text without moving variables', [
+  /^Error: Failed to execute 'createElement' on 'Document': The tag name provided \('invalid name'\) is not a valid name\.\n  at eval \(\/workspace\/worker-ui-error\.jsl:2:10\)/
+], async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const client = GUI.app.worker_debugger;
   const originalLog = client.callbacks.log;
@@ -576,7 +607,7 @@ webTest(tests, 'unified workspace survives debugging and browser function edits 
   await GUI.app.runtime._startWorkerDebugger();
   const client = GUI.app.worker_debugger;
   try {
-    GUI.eq(GUI.app.sandbox_api.handshake().runtime, 'scientific-worker');
+    GUI.eq(GUI.app.sandbox_api.handshake().runtime, 'sandbox-worker');
     const original = 'var initialized_once = 1;\nfunction webEdit(value) { return value + 1; }';
     const edited = 'var initialized_once = 999;\nfunction webEdit(value) { return value + 20; }';
     await client.evaluate(original, { path: '/workspace/live-edit.jsl' });
@@ -606,7 +637,11 @@ webTest(tests, 'unified workspace survives debugging and browser function edits 
   return true;
 });
 
-webTest(tests, 'browser child workers pause independently expose locals and return results to the shared workspace', async () => {
+webTestWithCommandErrors(tests, 'browser child workers pause independently expose locals and return results to the shared workspace', [
+  // The child callback throws and the parent rejects its awaited promise with the same error.
+  /^TypeError: child callback failure\n  at eval \(\/workspace\/error-child\.jsl:2:9\)/,
+  /^TypeError: child callback failure\n  at eval \(\/workspace\/error-child\.jsl:2:9\)/
+], async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const root = GUI.app.worker_debugger;
   try {
@@ -654,7 +689,9 @@ webTest(tests, 'browser child workers pause independently expose locals and retu
   return true;
 });
 
-webTest(tests, 'isolated browser native jobs preserve the parent workspace on hard cancellation', async () => {
+webTestWithCommandErrors(tests, 'isolated browser native jobs preserve the parent workspace on hard cancellation', [
+  /^TypeError: isolated failure\n  at eval \(blob:/
+], async () => {
   await GUI.app.runtime._startWorkerDebugger();
   const root = GUI.app.worker_debugger;
   const previous_log = root.callbacks.log;

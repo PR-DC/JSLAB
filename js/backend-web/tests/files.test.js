@@ -83,8 +83,15 @@ tests.add('lazy asset loader respects loaded predicates and dependency order', a
 
 if(globalThis.gui_browser) {
   const { webTest } = require('./browser-test-utils');
-  webTest(tests, 'web file assets report failures and allow failed requests to be retried', async function() {
+  webTest(tests, 'web file assets load successfully and allow failed requests to be retried', async function() {
     const Files = GUI.app.files.constructor;
+    const script = URL.createObjectURL(new Blob(['globalThis.__JSLAB_TEST_ASSET_LOADED__ = true;'], { type: 'text/javascript' }));
+    try {
+      GUI.eq(await Files.loadScript(script, () => globalThis.__JSLAB_TEST_ASSET_LOADED__ === true), script);
+    } finally {
+      delete globalThis.__JSLAB_TEST_ASSET_LOADED__;
+      URL.revokeObjectURL(script);
+    }
     const source = new URL('./lib/missing-file-service-asset.js', document.baseURI).href;
     for(let attempt = 0; attempt < 2; attempt++) {
       let failure;

@@ -20,7 +20,7 @@ guiTest(tests, 'simulate', 'Simulate brings its unsaved project forward and resp
     assert.equal(await controller.confirmProjectClose(), true);
     fixture.input('#simulate-stop-time', '42');
     let closing = controller.confirmProjectClose();
-    assert.equal(dialog.open, true);
+    assert.equal(dialog.hidden, false);
     sent(assert, fixture, 'MainProcess', 'focus-win');
     fixture.click('#close-dialog-cancel');
     assert.equal(await closing, false);

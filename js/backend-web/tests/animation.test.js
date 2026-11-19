@@ -75,6 +75,8 @@ tests.add('Web runs the reusable animation example and configures its controller
 }, { tags: ['gui', 'web', 'animation'], timeout_ms: 45000 });
 
 tests.add('Web interruption pauses reusable playback and allows it to resume', async function(assert) {
+  const source = require('fs').readFileSync(require('path').join(app_path, 'examples/animation-controls.jsl'), 'utf8');
+  await gui_browser.evaluate(code => jslab_web.sandbox_api.evaluate(code), source);
   await gui_browser.evaluate(() => jslab_web.sandbox_api.evaluate('playback.setLoop(true).play();'));
   await gui_browser.waitFor(() => Array.from(jslab_web.window_manager.windows.values()).some(win =>
     win.iframe.contentDocument?.querySelector('.ui-animation-play')?.textContent == '\u275a\u275a'), 'generic playback started');

@@ -8,14 +8,15 @@
 close('all'); clear; clc; tic;
 disp(' --- ' + jsl_file_name + ' ---');
 
-var class_file = pathJoin(jsl.app_path, 'examples', 'resources', 'workspaceSaveLoadClass.jsl');
+var example_dir = getDir(jsl.current_script);
+var class_file = pathJoin(example_dir, 'resources', 'workspaceSaveLoadClass.jsl');
 
 if(!checkFile(class_file)) {
   error('Class definition file not found. Expected: resources/workspaceSaveLoadClass.jsl');
   endPoint;
 }
 
-var out_dir = pathJoin(jsl.app_path, 'examples', 'out');
+var out_dir = pathJoin(example_dir, 'out');
 makeDirectory(out_dir);
 
 var workspace_file = pathJoin(out_dir, 'workspace-save-load-example.json');

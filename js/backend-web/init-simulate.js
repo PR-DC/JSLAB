@@ -29,6 +29,11 @@ globalThis.__JSLAB_WEB_SIMULATE_READY__ = (async function() {
   win_simulate.onReady();
   let close_approved = false;
   let close_pending = false;
+  globalThis.__JSLAB_WEB_CONFIRM_RELOAD__ = focus => {
+    if(close_pending || win_simulate.close_answer) return false;
+    if(win_simulate.hasUnsavedProjectChanges()) focus();
+    return win_simulate.confirmProjectClose();
+  };
   globalThis.__JSLAB_WEB_BEFORE_CLOSE__ = () => {
     if(close_approved || !win_simulate.hasUnsavedProjectChanges()) return true;
     if(!close_pending) {

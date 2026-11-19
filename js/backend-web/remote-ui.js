@@ -254,6 +254,7 @@ class PRDC_JSLAB_REMOTE_UI_CLIENT {
     this.component_callbacks = new Map();
     this.sequence = 0;
     this.promises = new Map();
+    this.local_methods = new WeakMap();
   }
 
   /**
@@ -261,6 +262,17 @@ class PRDC_JSLAB_REMOTE_UI_CLIENT {
    */
   root(name) {
     return this.request({ action: 'root', name });
+  }
+
+  /**
+   * Resolves worker-defined window methods locally so their return values stay usable.
+   * @param {Object} target Remote window reference.
+   * @param {string} name Method name.
+   * @param {Function} method Worker function.
+   */
+  setLocalMethod(target, name, method) {
+    if(!this.local_methods.has(target)) this.local_methods.set(target, new Map());
+    this.local_methods.get(target).set(name, method);
   }
 
   /**
@@ -388,6 +400,7 @@ class PRDC_JSLAB_REMOTE_UI_CLIENT {
         if(key === Symbol.toStringTag) {
           return 'RemoteBrowserObject';
         }
+        if(client.local_methods.get(proxy)?.has(key)) return client.local_methods.get(proxy).get(key);
         const descriptor = Reflect.getOwnPropertyDescriptor(target, key);
         if(descriptor && !descriptor.configurable && !descriptor.writable) {
           return descriptor.value;

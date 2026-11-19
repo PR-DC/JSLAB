@@ -36,6 +36,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
    * @returns {PRDC_JSLAB_ELECTRON_MAIN_PROCESS} Application services.
    */
   static start() {
+    require('./latex-assets').PRDC_JSLAB_ELECTRON_LATEX_ASSETS.register();
     global.app_path = app.getAppPath().replace(/\\js\\?$/, '');
     global.process_arguments = process.argv.slice();
     require('../other-shared/init-config');
@@ -386,7 +387,11 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       }
       if(action === 'compile' && source) {
         const { PRDC_JSLAB_LATEX } = require('./latex');
-        return PRDC_JSLAB_LATEX.compileFile(file, obj.store.get('latex-toolchain-bin'));
+        return PRDC_JSLAB_LATEX.compileFile(file, obj.store.get('latex-toolchain-bin'), (project, main_file) => {
+          const { PRDC_JSLAB_ELECTRON_LATEX_COMPILER } = require('./latex-compiler');
+          obj.latex_compiler ||= new PRDC_JSLAB_ELECTRON_LATEX_COMPILER();
+          return obj.latex_compiler.compile(project, main_file);
+        });
       }
       return false;
     });
@@ -435,71 +440,90 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       }
       return obj._getSimulateProject().saveFile(request);
     });
-    obj.simulate_resolve_pending = new Map();
-    obj.simulate_resolve_id = 0;
-    ipcMain.handle('JSLAB_SIMULATE_RESOLVE', function(event, expression) {
+    const simulate_workspace_pending = new Map();
+    let simulate_workspace_id = 0;
+    const requestSimulateWorkspace = (event, action, data, timeout) => {
       if(event.sender !== obj.win_simulate?.webContents) {
         throw new Error('Expected the Simulate window.');
       }
-      if(!obj.win_sandbox || obj.win_sandbox.isDestroyed()) {
-        throw new Error('The JSLAB workspace is unavailable.');
+      const contents = obj.win_sandbox?.webContents;
+      if(!contents || contents.isDestroyed()) {
+        throw new Error(obj.currentString(778));
       }
-      var id = ++obj.simulate_resolve_id;
-      return new Promise(function(resolve) {
-        var timer = setTimeout(function() {
-          obj.simulate_resolve_pending.delete(id);
-          resolve({ success: false, error: 'JSLAB expression evaluation timed out.' });
-        }, 10000);
-        obj.simulate_resolve_pending.set(id, { resolve: resolve, timer: timer });
-        obj.win_sandbox.send('SandboxWindow', 'simulate-resolve', { id: id, expression: String(expression || '') });
+      const id = ++simulate_workspace_id;
+      return new Promise(resolve => {
+        const finish = response => {
+          clearTimeout(timer);
+          contents.removeListener('destroyed', closed);
+          simulate_workspace_pending.delete(id);
+          resolve(response);
+        };
+        const closed = () => finish({ success: false, error: obj.currentString(778) });
+        const timer = setTimeout(() => finish({ success: false, error: obj.currentString(779) }), timeout);
+        contents.once('destroyed', closed);
+        simulate_workspace_pending.set(id, { contents, finish });
+        contents.send('SandboxWindow', action, { id, ...data });
       });
-    });
-    ipcMain.on('JSLAB_SIMULATE_RESOLVE_RESULT', function(event, response) {
-      if(event.sender !== obj.win_sandbox.webContents || !response) {
-        return;
+    };
+
+    ipcMain.handle('JSLAB_SIMULATE_RESOLVE', (event, expression) =>
+      requestSimulateWorkspace(event, 'simulate-resolve', { expression: String(expression || '') }, 10000));
+    for(const [channel, action] of [
+      ['JSLAB_SIMULATE_RESULT', 'simulate-result'],
+      ['JSLAB_SIMULATE_ANIMATION', 'simulate-animation']
+    ]) {
+      ipcMain.handle(channel, async (event, data) => {
+        const response = await requestSimulateWorkspace(event, action, { data }, 60000);
+        if(!response.success) throw new Error(response.error);
+        return response.value;
+      });
+    }
+    ipcMain.on('JSLAB_SIMULATE_WORKSPACE_RESULT', (event, response) => {
+      const pending = simulate_workspace_pending.get(response?.id);
+      if(pending && event.sender === pending.contents) {
+        pending.finish(response);
       }
-      var pending = obj.simulate_resolve_pending.get(Number(response.id));
-      if(!pending) {
-        return;
-      }
-      clearTimeout(pending.timer);
-      obj.simulate_resolve_pending.delete(Number(response.id));
-      pending.resolve(response);
     });
     obj.simulate_automation_pending = new Map();
     obj.simulate_automation_id = 0;
+    let simulate_requests;
     ipcMain.handle('JSLAB_SIMULATE_AUTOMATION', async function(event, request) {
       if(event.sender !== obj.win_sandbox.webContents) {
         throw new Error('Expected the JSLAB sandbox.');
       }
-      let filepath = request?.filepath;
-      const current = obj.win_simulate;
-      if(filepath || !current || current.isDestroyed()) {
-        filepath ||= await obj.files.selectSimulateProject();
-        if(!obj.files.isSimulateProjectPath(filepath, true)) {
-          return { success: false, error: obj.currentString(filepath ? 674 : 776) };
-        }
+      if(!simulate_requests) {
+        const { PRDC_JSLAB_SIMULATE_AUTOMATION } = require('../simulate/automation');
+        simulate_requests = new PRDC_JSLAB_SIMULATE_AUTOMATION();
       }
-      const win = await obj.windows.getSimulateWindow();
-      if(!obj.windows.focusFeatureWindow(win)) return { success: false, error: obj.currentString(675) };
-      var id = ++obj.simulate_automation_id;
-      return new Promise(function(resolve) {
-        const close = () => {
-          obj.simulate_automation_pending.delete(id);
-          resolve({ success: false, error: obj.currentString(675) });
-        };
-        win.once('closed', close);
-        obj.simulate_automation_pending.set(id, { resolve: response => {
-          win.removeListener('closed', close);
-          resolve(response);
-        } });
-        win.send('SimulateWindow', 'automation', {
-          id: id,
-          filepath,
-          options: request && request.options || {}
+      const unavailable = () => ({ success: false, error: obj.currentString(675) });
+      return simulate_requests.run(request?.request_id, event.sender, async operation => {
+        const current = obj.win_simulate;
+        const project = await obj.files.resolveSimulateProject(request?.filepath,
+          { allow_modelica: true, reuse: Boolean(current && !current.isDestroyed()) });
+        if(operation.cancelled) return unavailable();
+        if(!project.success) return project;
+        const win = await obj.windows.getSimulateWindow();
+        if(operation.cancelled || !obj.windows.focusFeatureWindow(win)) return unavailable();
+        const id = ++obj.simulate_automation_id;
+        return new Promise(resolve => {
+          const close = () => {
+            obj.simulate_automation_pending.delete(id);
+            resolve(unavailable());
+          };
+          win.once('closed', close);
+          obj.simulate_automation_pending.set(id, { resolve: response => {
+            win.removeListener('closed', close);
+            resolve(response);
+          } });
+          operation.stop = () => {
+            if(!win.isDestroyed()) win.send('SimulateWindow', 'automation-cancel', { id });
+          };
+          win.send('SimulateWindow', 'automation', { id, filepath: project.file, options: request?.options || {} });
         });
       });
     });
+    ipcMain.handle('JSLAB_SIMULATE_AUTOMATION_CANCEL', (event, id) =>
+      event.sender === obj.win_sandbox?.webContents && Boolean(simulate_requests?.cancel(id, event.sender)));
     ipcMain.on('JSLAB_SIMULATE_AUTOMATION_RESULT', function(event, response) {
       if(event.sender !== obj.win_simulate?.webContents || !response) {
         return;
@@ -510,22 +534,6 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       }
       obj.simulate_automation_pending.delete(Number(response.id));
       pending.resolve(response);
-    });
-    ipcMain.on('JSLAB_SIMULATE_RESULT', function(event, data) {
-      if(event.sender !== obj.win_simulate?.webContents) {
-        return;
-      }
-      if(obj.win_sandbox && !obj.win_sandbox.isDestroyed()) {
-        obj.win_sandbox.send('SandboxWindow', 'simulate-result', data);
-      }
-    });
-    ipcMain.on('JSLAB_SIMULATE_ANIMATION', function(event, data) {
-      if(event.sender !== obj.win_simulate?.webContents) {
-        return;
-      }
-      if(obj.win_sandbox && !obj.win_sandbox.isDestroyed()) {
-        obj.win_sandbox.send('SandboxWindow', 'simulate-animation', data);
-      }
     });
 
     ipcMain.on('sync-message', function(e, action, data) {
@@ -601,8 +609,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
           }
           break;
         case 'reset-app':
-          app.exit();
-          app.relaunch();
+          if(e.sender === obj.win_sandbox?.webContents) void obj._restartApplication();
           break;
         case 'reset-sandbox':
           if(obj.automation) {
@@ -665,19 +672,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
           }
           break;
         case 'close-app':
-          if(obj.is_app_quitting || obj.app_close_pending) break;
-          obj.app_close_pending = true;
-          try {
-            if(!await obj.windows.confirmSimulateClose(obj.win_simulate)) break;
-            if(obj.windows.latex_window && !await obj.windows.latex_window.close()) break;
-            if(!await obj.runtime.closePresentationEditors()) break;
-            obj.is_app_quitting = true;
-          } catch(error) {
-            console.error(error);
-            break;
-          } finally {
-            obj.app_close_pending = false;
-          }
+          if(!await obj._confirmApplicationClose()) break;
           if(obj.win_main !== undefined && !obj.win_main.isDestroyed()) {
             obj.win_main.destroy();
           }
@@ -847,8 +842,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
           obj.win_main.setSize(data[0], data[1]);
           break;
         case 'app-relaunch':
-          app.exit();
-          app.relaunch();
+          void obj._restartApplication();
           break;
       }
     });
@@ -1106,6 +1100,41 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
   }
 
   /**
+   * Runs document close confirmations before quitting or restarting.
+   * @param {boolean} [restart=false] Whether to confirm script changes before relaunching.
+   * @returns {Promise<boolean>} Whether the application can close.
+   */
+  async _confirmApplicationClose(restart = false) {
+    if(this.is_app_quitting || this.app_close_pending) return false;
+    this.app_close_pending = true;
+    try {
+      const editor = this.win_editor;
+      if(restart && editor && !editor.isDestroyed() && !await editor.webContents.executeJavaScript(
+          'win_editor.script_manager.confirmReload(() => win_editor.platform.host.send("MainProcess", "focus-win"))', true)) return false;
+      if(!await this.windows.confirmSimulateClose(this.win_simulate)) return false;
+      const latex = this.windows.latex_window;
+      if(latex && !await (restart ? latex.confirmReload() : latex.close())) return false;
+      if(!await (restart ? this.runtime.confirmPresentationReload() : this.runtime.closePresentationEditors())) return false;
+      this.is_app_quitting = true;
+      return true;
+    } catch(error) {
+      console.error(error);
+      return false;
+    } finally {
+      this.app_close_pending = false;
+    }
+  }
+
+  /**
+   * Relaunches Electron after the document confirmations succeed.
+   */
+  async _restartApplication() {
+    if(!await this._confirmApplicationClose(true)) return;
+    app.relaunch();
+    app.exit();
+  }
+
+  /**
  * Reads Editor context through the native renderer transport.
  */
   _readEditorAssistantContext() {
@@ -1200,7 +1229,7 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
       this.simulate = new PRDC_JSLAB_SIMULATE_PROJECT({
         store: this.store,
         language: this.language,
-        files: { path, normalizePath: file => path.resolve(String(file)), exists: file => fs.existsSync(file),
+        files: { path, normalizePath: file => path.resolve(String(file)), exists: file => this.files.isSimulateProjectPath(file, true),
           read: file => fs.readFileSync(file, 'utf8'), write: (file, text) => fs.writeFileSync(file, text, 'utf8'),
           showOpenDialog: options => dialog.showOpenDialog(this.win_simulate, options),
           showSaveDialog: options => dialog.showSaveDialog(this.win_simulate, options) }

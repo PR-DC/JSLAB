@@ -12,6 +12,7 @@ const { PRDC_JSLAB_WEB_MAIN_ADAPTER } = require('./renderer');
 var { PRDC_JSLAB_WEB_FS } = require('./files');
 var { PRDC_JSLAB_WEB_WINDOW_MANAGER } = require('./window-manager');
 const { PRDC_JSLAB_WEB_FILES } = require('./files');
+const { PRDC_JSLAB_WEB_EXAMPLES } = require('./examples');
 const { PRDC_JSLAB_WEB_SANDBOX_HOST } = require('./sandbox-host');
 var { PRDC_JSLAB_WEB_STORAGE } = require('./storage');
 var { PRDC_JSLAB_LANGUAGE } = require('../other-shared/language');
@@ -33,6 +34,7 @@ class PRDC_JSLAB_WEB_APP_HOST {
     this.files = new PRDC_JSLAB_WEB_FILES(this);
     this.runtime = new PRDC_JSLAB_WEB_SANDBOX_HOST(this);
     this.fs = new PRDC_JSLAB_WEB_FS();
+    this.examples = new PRDC_JSLAB_WEB_EXAMPLES(this.fs);
     this.storage = new PRDC_JSLAB_WEB_STORAGE('jslab-web');
     this.assistant = new PRDC_JSLAB_ASSISTANT({ storage: this.storage, host: this, credential_status: 678 });
     this.language = new PRDC_JSLAB_LANGUAGE(this.storage);
@@ -118,6 +120,13 @@ class PRDC_JSLAB_WEB_APP_HOST {
       getRuntimeInfo: function() {
         return obj.runtime.getRuntimeInfo();
       },
+      getGamepads: function() {
+        return JSON.stringify(Array.from(navigator.getGamepads?.() || [], gamepad => gamepad && ({
+          id: gamepad.id, index: gamepad.index, connected: gamepad.connected, mapping: gamepad.mapping,
+          timestamp: gamepad.timestamp, axes: Array.from(gamepad.axes),
+          buttons: Array.from(gamepad.buttons, ({ pressed, touched, value }) => ({ pressed, touched, value }))
+        })));
+      },
       getRuntimeCapability: function(name) {
         return obj.runtime.getRuntimeCapability(name);
       },
@@ -141,10 +150,22 @@ class PRDC_JSLAB_WEB_APP_HOST {
         return true;
       },
       debugCommand: (method, args) => obj.runtime._debugCommand(method, args),
+      resetRuntime: action => obj.runtime.requestReset(action),
       getDebugState: () => obj.runtime._workerDebugState(),
       openDebugger: () => obj.windows._openEditorDebugger(),
-      runEditorCode: function(code, label) {
-        return obj.runtime.runEditorCode(code, label);
+      sendMainWindow: function(action, data) {
+        return obj.platform.host.emit('MainWindow', action, data);
+      },
+      changeWorkspaceDirectory: function(path) {
+        if(!obj.fs.existsDirectorySync(path)) return false;
+        obj._setCurrentPath(path);
+        return obj.current_path;
+      },
+      updateWorkspaceSearchPath: function(action, path) {
+        const navigation = obj.main.folder_navigation;
+        if(action === 'add') navigation.savePath(path);
+        else navigation.removePath(path);
+        return [...navigation.saved_paths];
       },
       showDocumentation: function(query) {
         return obj.showDocumentation(query);
@@ -185,9 +206,32 @@ class PRDC_JSLAB_WEB_APP_HOST {
       openSimulate: function(filepath, options, request_id) {
         return obj.windows._openSimulateProject(filepath, options, request_id);
       },
+      openLatexEditor: async function(file, main) {
+        const example = '/workspace/resources/latex-project';
+        if((file === example || file?.startsWith(example + '/')) &&
+            !obj.fs.existsDirectorySync(file) && !obj.fs.existsFileSync(file)) {
+          const examples = await obj.examples.prepare();
+          file = examples + file.slice('/workspace'.length);
+        }
+        return obj.windows._openLatexEditor(file, main);
+      },
+      compileLatex: async function(file) {
+        if(typeof file !== 'string' || !/\.tex$/i.test(file) || !obj.fs.existsFileSync(file)) return false;
+        const { PRDC_JSLAB_WEB_LATEX } = await obj._loadLatex();
+        return PRDC_JSLAB_WEB_LATEX.compileFile(obj, file);
+      },
+      prepareExamples: async function(show) {
+        const folder = await obj.examples.prepare();
+        if(show) obj._setCurrentPath(folder);
+        else await obj._refreshWorkspaceList();
+        return folder;
+      },
+      getLatexEditorHost: function(frame) {
+        const win = obj.window_manager.windows.get('latex-editor-window');
+        return win?.iframe.contentWindow === frame ? win.latex_host : null;
+      },
       cancelSimulate: function(request_id) {
-        const frame = obj.window_manager.windows.get('simulate-window')?.iframe.contentWindow;
-        return frame?.__JSLAB_WEB_SIMULATE_READY__?.then(api => api.host.cancel(request_id)) || false;
+        return obj.windows._cancelSimulateProject(request_id);
       },
       getSimulateLibraryURL: function() {
         return obj.windows._getSimulateLibraryURL();
@@ -198,9 +242,10 @@ class PRDC_JSLAB_WEB_APP_HOST {
         }
         return obj.sandbox_api.resolveSimulateValue(expression);
       },
-      publishSimulation: function(data) {
-        obj._simulation_result = data;
-        return obj.sandbox_api.publishSimulation(data);
+      publishSimulation: async function(data) {
+        const published = await obj.sandbox_api.publishSimulation(data);
+        if(published) obj._simulation_result = data;
+        return published;
       },
       openSimulationAnimation: async function(data) {
         if(!obj._simulation_result) {
@@ -285,11 +330,18 @@ class PRDC_JSLAB_WEB_APP_HOST {
       svgToPdf: function(svg_data, width, height, fonts) {
         return obj.files._svgToPdf(svg_data, width, height, fonts);
       },
+      printWindowToPdf: function(wid, options) {
+        const win = obj.window_manager.windows.get(String(wid));
+        return obj.files._printWindowToPdf(win?.iframe.contentDocument, options);
+      },
       downloadLocalFileSync: function(file_path, data, options) {
         return obj.files._downloadLocalFileSync(file_path, data, options);
       },
       getAppAssetSync: function(asset_path) {
         return obj.windows.getAppAssetSync(asset_path);
+      },
+      allocateWindowId: function() {
+        return obj.windows.allocateWindowId();
       },
       openManagedWindow: function(wid, file) {
         return obj.windows.openManagedWindow(wid, file);
@@ -436,6 +488,14 @@ class PRDC_JSLAB_WEB_APP_HOST {
       preserve_input: true
     });
     return true;
+  }
+
+  /**
+   * Loads the shared Web LaTeX host on its first use in this page.
+   */
+  async _loadLatex() {
+    await PRDC_JSLAB_WEB_FILES.loadScript('js/init-latex-host.js', () => globalThis.__JSLAB_WEB_LATEX__);
+    return globalThis.__JSLAB_WEB_LATEX__;
   }
 
   /**
@@ -796,7 +856,7 @@ class PRDC_JSLAB_WEB_APP_HOST {
   }
 
   /**
- * Runs Assistant code on the existing browser scientific worker.
+ * Runs Assistant code on the existing browser sandbox worker.
  */
   async _evaluateAssistantCode(code) {
     if(this.main.evaluating) {

@@ -376,6 +376,18 @@ if(globalThis.__JSLAB_GUI_COMPONENT__) {
     await f.waitFor(() => calls.filter(call => call[0] === 'forward').length === 2, 'source toolbar jumps to PDF');
     assert.ok(calls.some(call => call[0] === 'jump-menu' && call[1] === 'forward'));
     assert.ok(calls.some(call => call[0] === 'jump-menu' && call[1] === 'reverse'));
+    await f.waitFor(() => f.document.querySelector('.latex-source-hit'), 'source jump highlights the target line');
+    controller.code.setCursor(1, 1);
+    assert.ok(f.document.querySelector('.latex-source-hit'));
+    controller.code.setCursor(0, 1);
+    assert.equal(f.document.querySelector('.latex-source-hit'), null);
+    controller.code.setCursor(1, 1);
+    assert.equal(f.document.querySelector('.latex-source-hit'), null);
+    await controller.jump('chapter.tex', 2, 1);
+    assert.ok(f.document.querySelector('.latex-source-hit'));
+    await controller.select('main.tex');
+    await controller.select('chapter.tex');
+    assert.equal(f.document.querySelector('.latex-source-hit'), null);
     await f.tick();
     f.click('#previous');
     await f.waitFor(() => controller.pdf.number === 1, 'previous page');
@@ -432,6 +444,41 @@ if(globalThis.__JSLAB_GUI_COMPONENT__) {
     f.click('#close-dialog-save');
     await f.waitFor(() => calls.some(call => call[0] === 'close'), 'confirmed close');
   });
+
+  guiTest(tests, 'latex-editor', 'LaTeX WebAssembly adapter forwards window events and handles worker results', [],
+    async function(assert, fixture) {
+      const { PRDC_JSLAB_LATEX_EDITOR_COMPILER } = fixture.load(path.join(root, 'js/latex-editor/compiler.js'));
+      const events = [];
+      const host = {
+        onOpen(listener) { listener('project'); },
+        onClose(listener) { listener(); },
+        async request(action) {
+          if(action === 'wasm-files') return {
+            token: 'build', main: 'main.tex', files: [{ path: 'main.tex', contents: 'source' }]
+          };
+          if(action === 'wasm-output') return { pdf: '/workspace/main.pdf' };
+        }
+      };
+      let reply = 'onmessage';
+      const adapter = PRDC_JSLAB_LATEX_EDITOR_COMPILER.attach(host, true, () => ({
+        postMessage() {
+          this[reply](reply === 'onmessage' ? {
+            data: { ok: true, log: '', output: '', data: new Uint8Array([1]) }
+          } : { message: 'Worker failed' });
+        },
+        terminate() {}
+      }));
+      adapter.onOpen(project => events.push(project));
+      adapter.onClose(() => events.push('close'));
+      assert.deepEqual(events, ['project', 'close']);
+      const settings = { engine: 'pdflatex' };
+      assert.equal((await adapter.request('compile', 'main.tex', settings)).pdf, '/workspace/main.pdf');
+      reply = 'onerror';
+      assert.equal((await adapter.request('compile', 'main.tex', settings)).output, '! Worker failed');
+      reply = 'onmessageerror';
+      assert.equal((await adapter.request('compile', 'main.tex', settings)).output, '! BusyTeX');
+      await adapter.request('close');
+    });
 }
 
 exports.MODULE_TESTS = tests;

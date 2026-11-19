@@ -171,3 +171,7 @@ button:disabled { opacity: .5; cursor: default !important; }
 #simulate-context-menu button:hover, #simulate-context-menu button:focus-visible { background: #dceefb; outline: none; }
 @media (max-width: 900px) { #simulate-browser { width: 230px; } }
 @media (max-width: 1320px) { #simulate-menu li { width: 38px; gap: 0; } #simulate-menu li str { display: none; } }
+@media (min-width: 680px) and (max-width: 1320px) {
+  #simulate-menu #simulate-animation { width: auto; gap: 5px; }
+  #simulate-menu #simulate-animation str { display: inline; }
+}

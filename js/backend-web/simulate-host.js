@@ -22,7 +22,6 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
     super({ bridge });
     this.bridge = bridge;
     this._sequence = 0;
-    this._tasks = [];
     this._automation = null;
   }
 
@@ -34,17 +33,14 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
     if(!this._codec) {
       const { PRDC_JSLAB_SIMULATE_PROJECT } = require('../simulate/project');
       this._codec = new PRDC_JSLAB_SIMULATE_PROJECT({ language: globalThis.language,
-        files: { path, normalizePath: file => String(file), read: file => this.bridge.readWorkspaceText(file),
+        files: { path, normalizePath: file => String(file), exists: file => this.bridge.existsWorkspaceFileSync(file),
+          read: file => this.bridge.readWorkspaceText(file),
           write: (file, text) => this.bridge.writeWorkspaceTextSync(file, text),
           showOpenDialog: options => this.bridge.showOpenDialog(options),
           showSaveDialog: options => this.bridge.showSaveDialog(options) } });
     }
     return this._codec;
   }
-
-
-
-
 
   /**
    * Supplies the shared renderer helper's process argument query.
@@ -78,6 +74,12 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
     if(channel == 'JSLAB_SIMULATE_SAVE') {
       return this._saveProject(data);
     }
+    if(channel == 'JSLAB_SIMULATE_RESULT') {
+      return this.bridge.publishSimulation(data);
+    }
+    if(channel == 'JSLAB_SIMULATE_ANIMATION') {
+      return this.bridge.openSimulationAnimation(data);
+    }
     throw new Error('Unsupported Simulate host operation: ' + channel);
   }
 
@@ -100,43 +102,17 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
   }
 
   /**
-   * Tracks workspace publishing and animation before completing script automation.
-   * @param {Promise<*>} task Asynchronous host operation.
-   */
-  _track(task) {
-    const pending = Promise.resolve(task);
-    if(this._automation) {
-      this._tasks.push(pending);
-    }
-    pending.catch(error => globalThis.win_simulate?.appendOutput(String(error.message || error), true));
-  }
-
-  /**
    * Handles result delivery and the shared controller's window actions.
    * @param {string} channel Host event channel.
    * @param {*} data Host event data.
    */
   send(channel, data) {
-    if(channel == 'JSLAB_SIMULATE_RESULT') {
-      this._track(this.bridge.publishSimulation(data));
-    } else if(channel == 'JSLAB_SIMULATE_ANIMATION') {
-      this._track(this.bridge.openSimulationAnimation(data));
-    } else if(channel == 'JSLAB_SIMULATE_AUTOMATION_RESULT') {
+    if(channel == 'JSLAB_SIMULATE_AUTOMATION_RESULT') {
       const request = this._automation;
-      const tasks = this._tasks.splice(0);
-      Promise.all(tasks).then(() => {
-        if(request && request.id == data.id) {
-          request.resolve(data);
-        }
-      }, error => {
-        if(request) {
-          request.resolve({ success: false, error: String(error.message || error) });
-        }
-      }).finally(() => {
-        if(this._automation === request) {
-          this._automation = null;
-        }
-      });
+      if(request && request.id === data.id) {
+        this._automation = null;
+        request.resolve(data);
+      }
     } else if(channel == 'MainProcess') {
       if(data == 'close-simulate') {
         this.bridge.closeFrameWindow(globalThis);
@@ -158,8 +134,8 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
    * @returns {Promise<Object>} Script operation result.
    */
   run(filepath, options = {}, request_id = '') {
-    if(this._automation || globalThis.win_simulate.busy) {
-      return Promise.resolve({ success: false, error: PRDC_JSLAB_SIMULATE_COMPILER.getText("omjsl-10", language.lang) });
+    if(this._automation) {
+      return Promise.resolve({ success: false, error: PRDC_JSLAB_SIMULATE_COMPILER.getText('omjsl-10', language.lang) });
     }
     const id = ++this._sequence;
     return new Promise(resolve => {
@@ -177,7 +153,7 @@ class PRDC_JSLAB_WEB_SIMULATE_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
     if(!this._automation || this._automation.request_id != request_id) {
       return false;
     }
-    globalThis.win_simulate.cancelCompiler();
+    this.emit('SimulateWindow', 'automation-cancel', { id: this._automation.id });
     return true;
   }
 

@@ -22,6 +22,7 @@ class PRDC_JSLAB_WEB_INIT_WORKER {
       remote = new PRDC_JSLAB_REMOTE_UI_CLIENT(send, new Int32Array(buffer, 0, 8));
       globalThis.window = remote.root('window');
       globalThis.document = remote.root('document');
+      globalThis.__JSLAB_WEB_MEDIA__ = remote.root('media');
     }
     const locateFile = name => new URL('../lib/native-wasm/' + name, location.href).href;
     function lazyWorkerWasmFactory(global_name, entry) {
@@ -81,6 +82,7 @@ class PRDC_JSLAB_WEB_INIT_WORKER {
     jsl.inter.execution.debugger_runtime = debugger_runtime;
     modules = new PRDC_JSLAB_WEB_WORKER_MODULES(jsl, files);
     jsl.context.require = modules.require.bind(modules);
+    jsl._initial_function_descriptors.set('require', Object.getOwnPropertyDescriptor(jsl.context, 'require'));
     jsl.inter.execution.module_cache = modules;
     ui = new PRDC_JSLAB_WEB_WORKER_UI(jsl, files, send);
     jsl.inter.execution.web_ui = ui;
@@ -99,6 +101,26 @@ class PRDC_JSLAB_WEB_INIT_WORKER {
       await ui.flush();
     };
     const bridge = globalThis.__JSLAB_WEB_BRIDGE__;
+    if(remote) {
+      const host = remote.root('bridge');
+      const refreshWorkspaceFiles = async paths => {
+        const imported = await ui.request({ kind: 'read-workspace-selection', paths });
+        for(const [path, data] of Object.entries(imported)) files.set(path, data);
+        modules.clear();
+      };
+      bridge.showOpenDialog = async options => {
+        const selected = await host.showOpenDialog(options);
+        if(!selected) return false;
+        const paths = Array.from(selected);
+        await refreshWorkspaceFiles(paths);
+        return paths;
+      };
+      bridge.prepareExamples = async show => {
+        const folder = await host.prepareExamples(show);
+        await refreshWorkspaceFiles([folder]);
+        return folder;
+      };
+    }
     bridge.writeWorkspaceTextSync = (path, value) => {
       if(!String(path).startsWith('/workspace/')) {
         throw Error('Expected a workspace path.');
@@ -127,7 +149,6 @@ class PRDC_JSLAB_WEB_INIT_WORKER {
       globalThis.postMessage = (data, transfer) => send({ type: 'target-user-message', data }, transfer || []);
       debugger_runtime.begin(options);
       debugger_runtime.active = true;
-      await prepareWasmForCode(options.child_source);
       const result = await jsl.inter.eval.evalCodeFromMain(options.child_source, false, options.path || 'child-worker.jsl');
       debugger_runtime.active = false;
       if(!result.success) {
@@ -148,7 +169,7 @@ globalThis.requestIdleCallback = callback => setTimeout(() => callback({ timeRem
 globalThis.cancelIdleCallback = clearTimeout;
 require("../other-shared/init-config");
 const { PRDC_JSLAB_LIB } = require("../sandbox/jslab");
-const { configureWasm, prepareWasmForCode } = require("../sandbox/jslab-wasm-loader");
+const { configureWasm } = require("../sandbox/jslab-wasm-loader");
 const wasm_manifest = require("../../lib/native-wasm/manifest.json");
 const { PRDC_JSLAB_WEB_DEBUGGER_RUNTIME } = require("./worker-debugger-runtime");
 const { createWorkerClass } = require("./worker-children");
@@ -227,8 +248,7 @@ addEventListener('message', async event => {
         } else if(request.method === 'simulate-resolve') {
           result = await jsl.inter.env._resolveSimulateValue(request.args.expression);
         } else if(request.method === 'simulate-result') {
-          jsl.inter.env._publishSimulateResult(request.args.data);
-          result = true;
+          result = Boolean(jsl.inter.env._publishSimulateResult(request.args.data));
         } else if(request.method === 'language') {
           globalThis.language.lang = request.args.lang;
           jsl.inter.windows._updateLanguage();
@@ -246,7 +266,7 @@ addEventListener('message', async event => {
           }
           result = jsl.getWorkspace();
         } else {
-          throw Error('Unknown scientific workspace operation.');
+          throw Error('Unknown sandbox worker operation.');
         }
         send({ type: 'operation-result', id: request.id, result });
       } catch(error) {
@@ -273,6 +293,7 @@ addEventListener('message', async event => {
       if(request.cwd) {
         jsl.current_path = request.cwd;
       }
+      if(Array.isArray(request.saved_paths)) jsl.setSavedPaths(request.saved_paths);
       for(const [path, text] of Object.entries(request.files || {})) {
         if(files.get(path) !== text) {
           modules.clear();
@@ -282,8 +303,8 @@ addEventListener('message', async event => {
       debugger_runtime.begin({ breakpoints: request.breakpoints, pause_on_exceptions: request.pause_on_exceptions });
       debugger_runtime.active = true;
       ui.tasks = [];
-      await prepareWasmForCode(request.code);
-      const result = await jsl.inter.eval.evalCodeFromMain(request.code, true, request.path || 'jslcmdwindow');
+      const result = request.run_last ? await jsl.inter.eval.runLast() :
+        await jsl.inter.eval.evalCodeFromMain(request.code, request.show_output, request.path || 'jslcmdwindow');
       debugger_runtime.active = false;
       if(result.interrupted) {
         Atomics.store(debugger_runtime.control, 0, 0);

@@ -5,27 +5,28 @@
  * info@pr-dc.com
  * @version 0.0.1
  */
-savePath(jsl.app_path + '/examples/resources/folder1');
-savePath(jsl.app_path + '/examples/resources/folder2');
-savePath(jsl.app_path + '/examples/resources/folder3');
+var resources = pathJoin(getDir(jsl.current_script), '..', 'resources');
+savePath(pathJoin(resources, 'folder1'));
+savePath(pathJoin(resources, 'folder2'));
+savePath(pathJoin(resources, 'folder3'));
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('1');
 sm.disp();
 unrequire('exampleModule.jsl');
 
-removePath(jsl.app_path + '/examples/resources/folder1');
+removePath(pathJoin(resources, 'folder1'));
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('2');
 sm.disp();
 unrequire('exampleModule.jsl');
 
-removePath(jsl.app_path + '/examples/resources/folder2');
+removePath(pathJoin(resources, 'folder2'));
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('3');
 sm.disp();
 unrequire('exampleModule.jsl');
 
-removePath(jsl.app_path + '/examples/resources/folder3');
+removePath(pathJoin(resources, 'folder3'));
 var { SIMPLE_MODULE } = require('exampleModule.jsl');
 var sm = new SIMPLE_MODULE('4');
 sm.disp();

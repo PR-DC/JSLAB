@@ -16,6 +16,7 @@ const { PRDC_JSLAB_LATEX_EDITOR_PREVIEW } = require('./latex-editor-preview');
 const { PRDC_JSLAB_LATEX_EDITOR_PROJECT_TREE } = require('./latex-editor-project-tree');
 const { PRDC_JSLAB_LATEX_EDITOR_SYMBOLS } = require('./latex-editor-symbols');
 const { PRDC_JSLAB_LATEX_EDITOR_SOURCE } = require('./latex-editor-source');
+const { PRDC_JSLAB_LATEX_EDITOR_COMPILER } = require('./compiler');
 
 /**
  * Manages a LaTeX project, its source documents and the compiled PDF.
@@ -23,13 +24,19 @@ const { PRDC_JSLAB_LATEX_EDITOR_SOURCE } = require('./latex-editor-source');
 class PRDC_JSLAB_LATEX_EDITOR {
 
   /**
-   * Initializes the project tree and Presentation Editor controls.
-   * @param {Object} host Desktop request and event adapter.
+   * Initializes the project tree and LaTeX Editor controls.
+   * @param {Object} host Project request and event adapter.
    * @param {Object} settings Translations and stored pane sizes.
    * @param {Object} pdfjs PDF.js rendering services.
+   * @param {Function} [createWorker] Host worker factory for WebAssembly compilation.
    */
-  constructor(host, settings, pdfjs) {
+  constructor(host, settings, pdfjs, createWorker) {
+    if(createWorker) host = PRDC_JSLAB_LATEX_EDITOR_COMPILER.attach(host, settings.browser, createWorker);
     this.host = host;
+    if(settings.browser) {
+      document.getElementById('locate').hidden = true;
+      document.getElementById('install').hidden = true;
+    }
     this.strings = settings.strings;
     this.preferences = { engine: 'pdflatex', draft: false, reuse: false, halt: true, wrap: true, ...settings.preferences };
     this.docs = new Map();
@@ -54,6 +61,12 @@ class PRDC_JSLAB_LATEX_EDITOR {
     this.code.getWrapperElement().hidden = true;
     this.source = new PRDC_JSLAB_LATEX_EDITOR_SOURCE(this);
     this.initSymbols();
+    this.code.on('cursorActivity', () => {
+      const hit = this.source_hit;
+      if(hit && (this.code.getDoc() !== hit.doc || this.code.getCursor().line !== hit.doc.getLineNumber(hit.handle))) {
+        this.clearSourceHit();
+      }
+    });
     this.code.on('change', (_, change) => {
       if(change.origin === 'swapDoc') return;
       this.status = null;
@@ -193,6 +206,7 @@ class PRDC_JSLAB_LATEX_EDITOR {
       }
       if(!this.$('latex-settings').open && (event.ctrlKey || event.metaKey) && ['s', 'Enter'].includes(event.key)) {
         event.preventDefault();
+        event.stopPropagation();
         this.perform(() => this.compile());
       }
     });
@@ -481,7 +495,7 @@ class PRDC_JSLAB_LATEX_EDITOR {
       }
       this.selection = null;
       this.active = null;
-      this.source_hit = null;
+      this.clearSourceHit();
       for(const entry of this.docs.values()) {
         if(entry.url) URL.revokeObjectURL(entry.url);
       }
@@ -590,6 +604,7 @@ class PRDC_JSLAB_LATEX_EDITOR {
       this.docs.set(file, entry);
     }
     const entry = this.docs.get(file);
+    if(this.active !== file) this.clearSourceHit();
     this.active = file;
     this.project_tree.select(file);
     if(entry.doc) this.showSource(entry.doc);
@@ -971,6 +986,17 @@ class PRDC_JSLAB_LATEX_EDITOR {
   }
 
   /**
+   * Removes the highlight left by source navigation.
+   */
+  clearSourceHit() {
+    const hit = this.source_hit;
+    if(hit) {
+      this.source_hit = null;
+      hit.doc.removeLineClass(hit.handle, 'background', 'latex-source-hit');
+    }
+  }
+
+  /**
    * Selects, scrolls to and highlights a location in the project source.
    * @param {string} file Project-relative source path.
    * @param {number} line One-based source line.
@@ -979,7 +1005,7 @@ class PRDC_JSLAB_LATEX_EDITOR {
   async jump(file, line, column) {
     await this.select(file);
     if(this.active !== file || !this.docs.get(file)?.doc) return;
-    if(this.source_hit) this.source_hit.doc.removeLineClass(this.source_hit.handle, 'background', 'latex-source-hit');
+    this.clearSourceHit();
     const position = CodeMirror.Pos(line - 1, column > 0 ? column - 1 : 0);
     this.code.operation(() => {
       this.code.setCursor(position);
@@ -990,6 +1016,17 @@ class PRDC_JSLAB_LATEX_EDITOR {
       this.code.scrollIntoView(cursor, 80);
     });
     this.code.focus();
+  }
+
+  /**
+   * Confirms an application reload using the editor's regular save dialog.
+   * @param {Function} focus Focuses this editor when its sources are dirty.
+   * @returns {Promise<boolean>} Whether reloading is approved.
+   */
+  async confirmReload(focus) {
+    if(this.closing || this.close_answer || (this.busy && !this.compiling)) return false;
+    if(this.dirty) await focus();
+    return this.discardOrSave();
   }
 
   /**

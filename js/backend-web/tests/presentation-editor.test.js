@@ -94,6 +94,13 @@ for(const [action, expected] of [['insert-after', 3], ['duplicate', 3], ['delete
     c.slide_context_menu.querySelector('[data-action="' + action + '"]').click();
     t.eq(c.slide_entries.length, expected);
     t.eq(c.slide_context_menu.style.display, 'none');
+    if(action === 'go-to-code') {
+      const html = c.html_editor;
+      const source = html.code_editor;
+      t.ok(html.slide_highlight_lines.length > 0);
+      source.setCursor(source.posFromIndex(c.slide_entries.at(-1).end));
+      t.eq(html.slide_highlight_lines.length, 0);
+    }
   }, action, expected);
 }
 

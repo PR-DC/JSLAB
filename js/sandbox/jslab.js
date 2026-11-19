@@ -72,7 +72,7 @@ class PRDC_JSLAB_LIB {
     }
     this.context._ = Symbol('_');
     this.eval = new PRDC_JSLAB_EVAL(this);
-    this.inter = this._createBootstrapInter();
+    this.inter = this._createStartupInter();
 
     this.debug = this.env.debug;
     this.includes_path = this.env.getDefaultPath('includes');
@@ -86,7 +86,7 @@ class PRDC_JSLAB_LIB {
 
     this.override = new PRDC_JSLAB_OVERRIDE(this);
     // The formatter is registered by the override loader, so depth metadata
-    // cannot be attached before submodules have finished bootstrapping.
+    // cannot be attached before submodules have finished initializing.
     this.setDepthSafeStringify(this.context, 1);
     this._createInternalReferences();
 
@@ -121,7 +121,7 @@ class PRDC_JSLAB_LIB {
    * immutable inter snapshot is created.
    * @returns {Proxy}
    */
-  _createBootstrapInter() {
+  _createStartupInter() {
     const obj = this;
     return new Proxy(Object.create(null), {
       get(_target, prop) {
@@ -554,7 +554,7 @@ class PRDC_JSLAB_LIB {
    */
   getWorkspaceProperties() {
     var initial_props = this.initial_workspace;
-    // Timer registration can refresh the workspace before bootstrap records
+    // Timer registration can refresh the workspace before startup records
     // the initial globals. There are no user variables to publish yet.
     if(!Array.isArray(initial_props)) {
       return [];
@@ -564,6 +564,7 @@ class PRDC_JSLAB_LIB {
 
     for(var i = 0, l = current_prop_list.length; i < l; ++i) {
       var prop_name = current_prop_list[i];
+      if(this.inter.env._preserveContextGlobal?.(prop_name)) continue;
       const original = this._initial_function_descriptors?.get(prop_name);
       const current = original && Object.getOwnPropertyDescriptor(this.context, prop_name);
       if(initial_props.indexOf(prop_name) === -1 ||

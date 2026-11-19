@@ -343,16 +343,12 @@ tests.add('Simulate resolver transfers record data and reports cyclic values wit
     return value;
   } } } });
   records.block_loads = true;
-  records.handlers.SandboxWindow({}, 'simulate-resolve', { id: 1, expression: 'settings' });
-  await Promise.resolve();
-  await Promise.resolve();
+  await records.handlers.SandboxWindow({}, 'simulate-resolve', { id: 1, expression: 'settings' });
   assert.equal(records.replies[0].data.success, true);
   assert.equal(JSON.stringify(records.replies[0].data.js_value), '{"rate":9,"samples":[1,2]}');
   assert.equal(expressions[0], '(settings)');
   value.self = value;
-  records.handlers.SandboxWindow({}, 'simulate-resolve', { id: 2, expression: 'settings' });
-  await Promise.resolve();
-  await Promise.resolve();
+  await records.handlers.SandboxWindow({}, 'simulate-resolve', { id: 2, expression: 'settings' });
   assert.equal(records.replies[1].data.success, false);
   assert.equal(records.replies[1].data.value_code, 'cycle');
   assert.equal(records.replies[1].data.value_path, 'value.self');
@@ -498,10 +494,13 @@ tests.add('Modelica automation copies evaluated record and array parameters with
   const EnvClass = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_ENV_ELECTRON_TEST_HELPER.loadEnvClass({ is_worker: false }, records);
   const env = Object.create(EnvClass.prototype);
   env.is_worker = false;
+  env.jsl = { cleanup_registry: [], addForCleanup(obj, fun) { this.cleanup_registry.push({ obj, fun }); } };
   await env.simulate('mechanism.jslmo', { run: true,
     parameters: { mass: 200, vector: new Float64Array([1, 2, 3]), settings: { rate: 9 } } });
   assert.equal(records.invocations.length, 1);
   assert.equal(records.invocations[0].channel, 'JSLAB_SIMULATE_AUTOMATION');
+  assert.ok(records.invocations[0].data.request_id);
+  assert.equal(env.jsl.cleanup_registry.length, 0);
   assert.equal(JSON.stringify(records.invocations[0].data.options.parameters),
     JSON.stringify({ mass: 200, vector: [1, 2, 3], settings: { rate: 9 } }));
 }, { tags: ['unit', 'jslab-env-electron', 'modelica', 'automation'] });

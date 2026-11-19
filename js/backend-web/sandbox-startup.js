@@ -9,7 +9,7 @@ const { PRDC_JSLAB_WEB_NODE_COMPATIBILITY } = require("./node-compatibility");
 
 
 /**
- * Class for web sandbox bootstrap.
+ * Class for web sandbox startup.
  */
 class PRDC_JSLAB_WEB_SANDBOX_STARTUP {
 

@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_COMPILE {
   }
 
   /**
-   * Compiles a local .tex file using JSLAB's configured TeX toolchain.
+   * Compiles a .tex file using the LaTeX toolchain available to the current host.
    * @param {string} file TeX source path, relative to the working directory or absolute.
    * @returns {Promise<Object|boolean>} Build status and log, with the PDF path on success.
    */

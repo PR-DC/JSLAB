@@ -1,5 +1,5 @@
 /**
- * @file Browser iframe bootstrap for the shared JSLAB web sandbox
+ * @file Browser iframe startup for the shared JSLAB web sandbox
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
@@ -31,7 +31,7 @@ class PRDC_JSLAB_WEB_INIT_SANDBOX {
    * Initializes the scientific sandbox and its host bridge.
    */
   static async bootSandbox() {
-    const { configureWasm, prepareWasmForCode } = require("../sandbox/jslab-wasm-loader");
+    const { configureWasm } = require("../sandbox/jslab-wasm-loader");
     var wasm_info = globalThis.parent && globalThis.parent.__JSLAB_WEB_NATIVE_WASM__
       ? globalThis.parent.__JSLAB_WEB_NATIVE_WASM__
       : {};
@@ -107,13 +107,13 @@ class PRDC_JSLAB_WEB_INIT_SANDBOX {
       }
     };
 
-    var bootstrap_workspace = new Set(jsl.getWorkspaceProperties());
+    var startup_workspace = new Set(jsl.getWorkspaceProperties());
 
     function snapshotWorkspace() {
       var snapshot = [];
       jsl.getWorkspace().forEach(function(row) {
         if(row && row.length &&
-            !bootstrap_workspace.has(row[0]) &&
+            !startup_workspace.has(row[0]) &&
             typeof row[0] == 'string' &&
             !row[0].startsWith('__JSLAB_') &&
             !row[0].startsWith('__jsl_')) {
@@ -127,7 +127,6 @@ class PRDC_JSLAB_WEB_INIT_SANDBOX {
     }
 
     async function evaluate(code) {
-      await prepareWasmForCode(code);
       const result = await jsl.inter.eval.evalCodeFromMain(String(code || ''), true, 'jslcmdwindow');
       if(!result.success) {
         throw Object.assign(new Error(result.error), { error_details: result.error_details });
@@ -269,10 +268,7 @@ class PRDC_JSLAB_WEB_INIT_SANDBOX {
       workerUI,
       buildPresentationDocument: root_path => jsl.inter.presentation._host._buildPresentationDocument(root_path),
       resolveSimulateValue: expression => jsl.inter.env._resolveSimulateValue(expression),
-      publishSimulation: data => {
-        jsl.inter.env._publishSimulateResult(data);
-        return true;
-      },
+      publishSimulation: data => Boolean(jsl.inter.env._publishSimulateResult(data)),
       openSimulationAnimation: data => jsl.inter.env._openSimulateAnimation(data),
       stopAnimations: () => jsl.inter.gui?._stopAnimations(),
       setLanguage: setLanguage,

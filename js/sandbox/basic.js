@@ -921,7 +921,6 @@ class PRDC_JSLAB_LIB_BASIC {
    * @param {string} new_path The new path to set as the current working directory.
    */
   cd(new_path) {
-    this.jsl.setPath(new_path);
     this.jsl.inter.env.cd(new_path);
     this.jsl.no_ans = true;
     this.jsl.ignore_output = true;
@@ -1225,17 +1224,20 @@ class PRDC_JSLAB_LIB_BASIC {
 
   /**
    * Returns a list of all example scripts available within a predefined directory.
-   * @return {Array<string>} An array of paths to the example scripts.
+   * @returns {Array<string>|Promise<Array<string>>} Paths to the available example scripts.
    */
   getExamples() {
-    var obj = this;
-    return this.jsl.inter.env.readDir(this.jsl.app_path + '/examples')
-      .filter(function(file) {
-        return file.match(new RegExp('\.jsl$'));
-      })
-      .map(function(i) {
-        return obj.jsl.app_path + '\\examples\\' + i;
-      });
+    const env = this.jsl.inter.env;
+    return this._withExamples(folder => Array.from(env.readDir(folder)).filter(file => /\.jsl$/i.test(file))
+      .map(file => env.pathJoin(folder, file)));
+  }
+
+  /**
+   * Returns the host's examples folder and prepares its files in Web.
+   * @returns {string|Promise<string>} Absolute examples folder path.
+   */
+  getExamplesFolder() {
+    return this._withExamples(folder => folder);
   }
 
   /**
@@ -1243,24 +1245,39 @@ class PRDC_JSLAB_LIB_BASIC {
    * @param {string} filename - Name of the example file to open.
    */
   openExample(filename) {
-    if(!this.jsl.inter.env.pathIsAbsolute(filename)) {
-      filename = this.jsl.app_path + '\\examples\\' + filename;
-    }
-    this.edit(filename);
+    const env = this.jsl.inter.env;
+    if(env.pathIsAbsolute(filename)) return this.edit(filename);
+    return this._withExamples(folder => this.edit(env.pathJoin(folder, filename)));
   }
 
   /**
-   * Opens examples folder in File Explorer
+   * Shows the examples in the host file browser.
+   * @returns {Promise<string>|undefined} Workspace examples path in the browser.
    */
   openExamplesFolder() {
-    this.jsl.inter.env.openFolder(this.jsl.app_path + '\\examples');
+    return this._withExamples(folder => this.jsl.inter.env.openFolder(folder), true);
   }
 
   /**
-   * Opens examples folder in File Explorer
+   * Changes the current directory to the examples folder.
+   * @returns {Promise<string>|undefined} Workspace examples path in the browser.
    */
   goToExamplesFolder() {
-    this.jsl.inter.env.cd(this.jsl.app_path + '\\examples');
+    return this._withExamples(folder => this.jsl.inter.env.cd(folder), true);
+  }
+
+  /**
+   * Resolves the host's examples folder before running an examples command.
+   * @param {Function} action Command to run with the resolved folder.
+   * @param {boolean} [show] Whether the browser should show the examples folder.
+   * @returns {*} Command result.
+   */
+  _withExamples(action, show = false) {
+    const env = this.jsl.inter.env;
+    if(typeof env.prepareExamples === 'function') {
+      return env.prepareExamples(show).then(folder => show ? folder : action(folder));
+    }
+    return action(env.pathJoin(this.jsl.app_path, 'examples'));
   }
 
   /**
@@ -2243,6 +2260,9 @@ class PRDC_JSLAB_LIB_BASIC {
    * @param {string} module - The module to unrequire.
    */
   unrequire(module) {
+    if(this.jsl.inter.execution?.module_cache) {
+      return this.jsl.inter.execution.module_cache.unrequire(module);
+    }
     module = this.jsl.pathResolve(module);
     if(this.jsl.required_modules.includes(module)) {
       var name = require.resolve(module);

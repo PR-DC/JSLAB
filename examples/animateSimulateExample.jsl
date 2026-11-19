@@ -1,0 +1,13 @@
+/**
+ * @file Runs the 6-DOF motion platform and opens its 3D playback controls
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+var model_file = pathJoin(getDir(jsl.current_script), 'resources', 'simulate-6dof.jslmo');
+if(!checkFile(model_file)) model_file = pathJoin(await getExamplesFolder(), 'resources', 'simulate-6dof.jslmo');
+await simulate(model_file, {
+  run: true,
+  animation: { loop: true }
+});

@@ -38,7 +38,7 @@ if(process.versions.electron) {
       expression: source, replMode: true, awaitPromise: true, returnByValue: true
     });
   });
-  // Exercise the real application bootstrap, using only this test's data paths.
+  // Exercise the real application startup, using only this test's data paths.
   app.getAppPath = () => root;
   process.argv.push('--cli-runtime', '--mcp');
   require('../backend-electron/main-process').PRDC_JSLAB_ELECTRON_MAIN_PROCESS.start();

@@ -1213,6 +1213,7 @@ class PRDC_JSLAB_TEST {
    * @param {string} name The name of the test.
    * @param {Function} fun The function to execute as the test.
    * @param {Object} [options={}] Test options.
+   * @param {Array<string|RegExp>} [options.expected_command_errors] Expected Command Window errors in a GUI scenario.
    */
   constructor(name, fun, options = {}) {
     this.name = String(name || 'unnamed test');
@@ -1220,6 +1221,7 @@ class PRDC_JSLAB_TEST {
     this.only = !!options.only;
     this.skip = !!options.skip;
     this.skip_reason = String(options.skip_reason || '');
+    this.expected_command_errors = options.expected_command_errors || [];
     this.timeout_ms = Number(options.timeout_ms);
     if(!isFinite(this.timeout_ms) || this.timeout_ms <= 0) {
       this.timeout_ms = undefined;

@@ -1,5 +1,5 @@
 /**
- * @file Browser adapter bootstrap for the common inline Presentation Editor
+ * @file Browser adapter startup for the common inline Presentation Editor
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
@@ -12,4 +12,5 @@ document.addEventListener('DOMContentLoaded', function() {
   globalThis.presentation_editor = new PRDC_JSLAB_PRESENTATION_EDITOR_INLINE(platform);
   globalThis.__JSLAB_WEB_PRESENTATION_EDITOR__ = presentation_editor;
   globalThis.__JSLAB_WEB_BEFORE_CLOSE__ = () => presentation_editor.beforeClose();
+  globalThis.__JSLAB_WEB_CONFIRM_RELOAD__ = focus => presentation_editor.confirmClose(focus);
 });

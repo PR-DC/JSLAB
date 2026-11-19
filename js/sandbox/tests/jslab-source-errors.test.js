@@ -109,7 +109,7 @@ tests.add('a broken map never hides the exception being reported', async functio
   assert.equal(details.location.path, 'broken-map.jsl');
   assert.equal(details.location.line, 9);
 }, { tags: ['unit', 'errors'] });
-tests.add('browser bootstrap bundles stay out of scientific error frames', async function(assert) {
+tests.add('browser startup bundles stay out of scientific error frames', async function(assert) {
   const errors = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_SOURCE_ERRORS_TEST_HELPER.harness();
   const result = await errors.describe({ name: 'Error', message: 'user failure', stack:
     'Error: user failure\n at task (http://localhost/workspace/task.jsl:7:2)\n' +

@@ -24,17 +24,9 @@ html:where(:not(.ui-app-window)) {
   display: none;
 }
 
-dialog#close-dialog-cont {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  border: 0;
-}
-
-dialog#close-dialog-cont::backdrop {
-  background: transparent;
+#close-dialog-cont[aria-modal="true"] {
+  position: fixed;
+  z-index: 40;
 }
 
 #close-dialog {

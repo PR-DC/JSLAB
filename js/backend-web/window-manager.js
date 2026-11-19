@@ -7,6 +7,8 @@
 
 const { PRDC_JSLAB_WINDOW_MANAGER } = require('../windows/window-manager');
 const { PRDC_JSLAB_SIMULATE_ASSETS } = require('./simulate-assets');
+const { PRDC_JSLAB_SIMULATE_PROJECT } = require('../simulate/project');
+const { PRDC_JSLAB_SIMULATE_AUTOMATION } = require('../simulate/automation');
 var { PRDC_APP_CONFIG } = require('../../config/config');
 var app_config = new PRDC_APP_CONFIG();
 
@@ -31,8 +33,17 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
       : function() {};
     this.windows = new Map();
     this._counter = 0;
+    this._sandbox_window_id = 0;
     this._z = 20;
 
+  }
+
+  /**
+   * Reserves a numeric window ID across sandbox contexts.
+   * @returns {number} Managed window ID.
+   */
+  allocateWindowId() {
+    return ++this._sandbox_window_id;
   }
 
   /**
@@ -66,6 +77,13 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
 
     var header = document.createElement('div');
     header.className = 'web-window-header';
+
+    var icon = document.createElement('img');
+    icon.className = 'web-window-icon';
+    icon.src = './img/JSLAB.svg';
+    icon.alt = '';
+    icon.draggable = false;
+    header.appendChild(icon);
 
     var title = document.createElement('div');
     title.className = 'web-window-title';
@@ -145,6 +163,7 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
       aspect_ratio: typeof options.aspect_ratio == 'number' ? options.aspect_ratio : null,
       opacity: typeof options.opacity == 'number' ? options.opacity : 1,
       iframe: iframe,
+      focus_frame: options.focusFrame === true,
       element: element,
       header: header,
       ready: ready,
@@ -190,6 +209,7 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     target.element.classList.remove('minimized');
     target.element.classList.remove('hidden');
     target.element.style.zIndex = String(++this._z);
+    if(target.focus_frame && document.activeElement !== target.iframe) target.iframe.focus();
     this._syncTaskbar();
     this.onStateChange(this.snapshot());
     return true;
@@ -471,7 +491,7 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
    */
   close(id) {
     var target = this.windows.get(id);
-    if(!target) {
+    if(!target || target.confirming_reload) {
       return false;
     }
     try {
@@ -494,6 +514,33 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     this._syncTaskbar();
     this.onStateChange(this.snapshot());
     return true;
+  }
+
+  /**
+   * Checks open editors and runs the reload while approved editors are still inactive.
+   * @param {Function} reload Reload operation after every editor approves.
+   */
+  async confirmReload(reload) {
+    const approved = [];
+    try {
+      for(const target of this.windows.values()) {
+        const confirm = target.iframe.contentWindow?.__JSLAB_WEB_CONFIRM_RELOAD__;
+        if(!confirm) continue;
+        target.confirming_reload = true;
+        try {
+          if(!await confirm(() => this.focus(target.id))) return;
+        } finally {
+          target.confirming_reload = false;
+        }
+        if(!target.element.inert) {
+          target.element.inert = true;
+          approved.push(target.element);
+        }
+      }
+      await reload();
+    } finally {
+      for(const element of approved) element.inert = false;
+    }
   }
 
   /**
@@ -821,8 +868,8 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     win.element.classList.add('maximized');
     win.element.style.left = '0px';
     win.element.style.top = '0px';
-    win.element.style.width = this.container.clientWidth + 'px';
-    win.element.style.height = this.container.clientHeight + 'px';
+    win.element.style.width = '100%';
+    win.element.style.height = '100%';
   }
 
   /**
@@ -885,22 +932,64 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
    * @returns {Promise<Object>} Completed operation response.
    */
   async _openSimulateProject(filepath, options, request_id) {
-    if(!filepath && options && this.application.window_manager.windows.has('simulate-window')) {
-      return this._openSimulateWindow(filepath, options, request_id);
+    const app = this.application;
+    const automation = Boolean(options);
+    this._simulate_requests ||= new PRDC_JSLAB_SIMULATE_AUTOMATION();
+    return this._simulate_requests.run(request_id, app, async operation => {
+      const project = await PRDC_JSLAB_SIMULATE_PROJECT.resolveProject(filepath, {
+        choose: async settings => (await app.files._showOpenDialog(settings))?.[0],
+        existsFile: file => app.fs.existsFile(file),
+        currentString: id => app.language.currentString(id)
+      }, { allow_modelica: automation, reuse: automation && app.window_manager.windows.has('simulate-window') });
+      if(operation.cancelled) return { success: false, error: app.language.currentString(675) };
+      if(!project.success) return project;
+      return this._openSimulateWindow(project.file, options, request_id, operation);
+    });
+  }
+
+  /**
+   * Cancels a pending simulation owned by this browser workspace.
+   */
+  _cancelSimulateProject(request_id) {
+    return this._simulate_requests?.cancel(request_id, this.application) || false;
+  }
+
+  /**
+   * Opens the shared LaTeX editor for a workspace project or source file.
+   * @param {string} [file] Workspace directory or source path.
+   * @param {string} [main] Main document relative to the project.
+   * @returns {Promise<boolean>} Whether the editor opened.
+   */
+  async _openLatexEditor(file, main) {
+    const app = this.application;
+    const directory = file && app.fs.existsDirectorySync(file);
+    if(file && !directory && (!/\.tex$/i.test(file) || !app.fs.existsFileSync(file))) return false;
+    if(main !== undefined && (!directory || typeof main !== 'string' || !/\.tex$/i.test(main) ||
+        main.split(/[\\/]/).includes('..') || !app.fs.existsFileSync(app.fs.join(file, main)))) return false;
+    const id = 'latex-editor-window';
+    let win = app.window_manager.windows.get(id);
+    let EditorHost;
+    if(!win) {
+      ({ PRDC_JSLAB_WEB_LATEX_EDITOR_HOST: EditorHost } = await app._loadLatex());
+      win = app.window_manager.windows.get(id);
     }
-    if(!filepath) {
-      const selected = await this.application.files._showOpenDialog({
-        title: this.application.language.currentString(775),
-        properties: ['openFile'],
-        filters: [{ name: this.application.language.currentString(672), extensions: ['jslmo'] }]
-      });
-      filepath = selected?.[0];
+    if(!win) {
+      const width = Math.min(1280, Math.max(1, app.window_manager.container.clientWidth - 24));
+      const height = Math.min(820, Math.max(1, app.window_manager.container.clientHeight - 24));
+      win = app.window_manager.createWindow({ id, title: app.language.currentString(697),
+        width, height, minWidth: Math.min(760, width), minHeight: Math.min(460, height),
+        left: 12, top: 12, focusFrame: true, src: new URL('./html/latex-editor-web.html', document.baseURI).href });
+      win.latex_host = new EditorHost(app, win);
     }
-    const supported = options ? /\.(?:jslmo|mo)$/i : /\.jslmo$/i;
-    if(typeof filepath !== 'string' || !supported.test(filepath) || !await this.application.fs.existsFile(filepath)) {
-      return { success: false, error: this.application.language.currentString(filepath ? 674 : 776) };
-    }
-    return this._openSimulateWindow(filepath, options, request_id);
+    this.focusFeatureWindow(win);
+    if(file) win.latex_host.queue({ file, main });
+    await win.ready;
+    if(app.window_manager.windows.get(id) !== win) return false;
+    const frame = win.iframe.contentWindow;
+    frame.__JSLAB_WEB_BEFORE_CLOSE__ = () => win.latex_host.beforeClose();
+    const editor = await frame.__JSLAB_WEB_LATEX_READY__;
+    if(editor && win.focused && document.activeElement !== win.iframe) win.iframe.focus();
+    return Boolean(editor);
   }
 
   /**
@@ -910,7 +999,7 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
    * @param {string} request_id Owning script request identity.
    * @returns {Promise<Object>} Completed operation response.
    */
-  async _openSimulateWindow(filepath, options, request_id) {
+  async _openSimulateWindow(filepath, options, request_id, operation = {}) {
     const definition = this.getFeatureDefinition('simulate');
     const id = 'simulate-window';
     let win = this.application.window_manager.windows.get(id);
@@ -935,13 +1024,14 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
     return Promise.race([win.simulate_closed, (async () => {
       await win.ready;
       const api = await win.iframe.contentWindow.__JSLAB_WEB_SIMULATE_READY__;
-      if(this.application.window_manager.windows.get(id) !== win) {
+      if(operation.cancelled || this.application.window_manager.windows.get(id) !== win) {
         return { success: false, error: this.application.language.currentString(675) };
       }
       if(!api) {
         throw new Error('The Simulate window is unavailable.');
       }
       if(filepath || options) {
+        operation.stop = () => api.host.cancel(request_id);
         return api.host.run(filepath, options || {}, request_id || '');
       }
       return { success: true };
@@ -968,15 +1058,16 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
    * Opens an editor window for a workspace file.
    * @param {string} file_path
    * @param {number} [lineno]
+   * @param {number} [column]
    */
-  async _openEditorWindow(file_path, lineno) {
+  async _openEditorWindow(file_path, lineno, column) {
     var win = this._ensureEditorWindow();
     this.application.window_manager.show(this.application.editor_window_id);
     this.application.window_manager.focus(this.application.editor_window_id);
 
     if(typeof file_path == 'string' && file_path.length) {
       var editor_api = await this._getEditorWindowApi(win);
-      await editor_api.openFile(String(file_path), Number.isFinite(lineno) ? Number(lineno) : 0);
+      await editor_api.openFile(file_path, lineno, column);
     }
     return win;
   }
@@ -1114,7 +1205,7 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
       srcdoc: template,
       onClose: () => {
         if(this.application.sandbox_api && typeof this.application.sandbox_api.notifyWindowClosed == 'function') {
-          this.application.sandbox_api.notifyWindowClosed(wid);
+          Promise.resolve(this.application.sandbox_api.notifyWindowClosed(wid)).catch(console.error);
         }
       }
     });
@@ -1146,14 +1237,6 @@ class PRDC_JSLAB_WEB_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
    */
   closeManagedWindow(wid, options) {
     var opts = options || {};
-    if(wid == 'all') {
-      var ids = [...this.application.window_manager.windows.keys()];
-      ids.forEach((id) => {
-        this.closeManagedWindow(id, opts);
-      });
-      return true;
-    }
-
     var target = this.application.window_manager.windows.get(String(wid));
     if(!target) {
       return false;

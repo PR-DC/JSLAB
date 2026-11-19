@@ -85,7 +85,7 @@ class PRDC_JSLAB_WEB_WORKER_UI {
   /**
    * Enqueues a structured operation, retaining its original caller stack for failures.
    */
-  request(operation) {
+  request(operation, track = true) {
     const id = ++this.sequence;
     const origin = new Error();
     const NativePromise = this.jsl._Promise || Promise;
@@ -100,8 +100,7 @@ class PRDC_JSLAB_WEB_WORKER_UI {
     });
     // Attach a rejection handler immediately: flush reports failures through the
     // normal evaluator even when a script does not explicitly await a setter.
-    const task = pending.then(value => ({ value }), error => ({ error }));
-    this.tasks.push(task);
+    if(track) this.tasks.push(pending.then(value => ({ value }), error => ({ error })));
     return pending;
   }
 

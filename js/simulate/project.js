@@ -6,17 +6,41 @@
  */
 
 const { PRDC_JSLAB_SIMULATE_COMPILER } = require('./compiler');
-const {
-  parser: modelica_parser, componentModifiers, modelicaValueToJSLAB,
-  normalizeWorkspaceExpression, isLiteralModelicaValue,
-  sourceNodeText, sourceNodeRange, parseAnnotation, _sourceTokens,
-  modelicaStringValue: simulateStringValue
-} = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
 
 /**
  * Class for Simulate projects and imported Modelica source.
  */
 class PRDC_JSLAB_SIMULATE_PROJECT {
+
+  /**
+   * Checks the file types accepted by a project or automation request.
+   * @param {string} file Candidate path.
+   * @param {boolean} [allow_modelica=false] Whether raw Modelica source can be imported.
+   * @returns {boolean} Whether the path has a supported extension.
+   */
+  static acceptsProjectPath(file, allow_modelica = false) {
+    return typeof file === 'string' && (allow_modelica ? /\.(?:jslmo|mo)$/i : /\.jslmo$/i).test(file);
+  }
+
+  /**
+   * Resolves an explicit path, selects a project, or reuses the open document.
+   * @param {string} [file] Explicit project or source path.
+   * @param {Object} host Picker, file existence and translation services.
+   * @param {Object} [options] Supported input types and open-document policy.
+   * @returns {Promise<Object>} Selected path or localized error.
+   */
+  static async resolveProject(file, host, { allow_modelica = false, reuse = false } = {}) {
+    if(!file && reuse) return { success: true };
+    if(!file) {
+      file = await host.choose({ title: host.currentString(775), properties: ['openFile'],
+        filters: [{ name: host.currentString(672), extensions: ['jslmo'] }] });
+    }
+    if(!this.acceptsProjectPath(file, allow_modelica) || !await host.existsFile(file)) {
+      return { success: false, error: host.currentString(file ? 674 : 776) };
+    }
+    return { success: true, file };
+  }
+
   /**
    * Creates the project codec with localized messages and optional file services.
    * @param {Object} options Application language and host file adapters.
@@ -46,7 +70,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
       }
       file_path = this._files.normalizePath(file_path);
       const extension = this._files.path.extname(file_path).toLowerCase();
-      if(!['.jslmo', '.mo'].includes(extension) || this._files.exists && !this._files.exists(file_path)) {
+      if(!PRDC_JSLAB_SIMULATE_PROJECT.acceptsProjectPath(file_path, true) || this._files.exists && !this._files.exists(file_path)) {
         return { canceled: false, error: this.language.currentString(674) };
       }
       const source = await this._files.read(file_path);
@@ -97,6 +121,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Normalizes degree conversion calls in workspace expressions.
    */
   _translateDegreeCalls(expression) {
+    const { normalizeWorkspaceExpression } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     return normalizeWorkspaceExpression(expression);
   }
 
@@ -104,6 +129,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Removes stored bindings that duplicate literal block property values.
    */
   _removeRedundantComponentBindings(bindings, model) {
+    const { isLiteralModelicaValue } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     var components = new Map((model.components || []).map(function(component) {
       return [component.name, component];
     }));
@@ -140,6 +166,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Removes stored bindings that duplicate literal parameter definitions.
    */
   _removeRedundantParameterBindings(bindings, model) {
+    const { isLiteralModelicaValue } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     var parameters = new Map((model.parameters || []).map(function(parameter) {
       return [parameter.name, parameter];
     }));
@@ -160,6 +187,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Converts a Modelica literal into its JSLAB-facing expression form.
    */
   modelicaValueToJSLAB(value, initialization = false) {
+    const { modelicaValueToJSLAB } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     return modelicaValueToJSLAB(value, initialization);
   }
 
@@ -261,6 +289,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Parses Modelica into the reduced MoiJS AST and a renderer-safe summary.
    */
   parse(source) {
+    const { parser: modelica_parser } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     source = String(source || '');
     try {
       var ast = modelica_parser.parse(source);
@@ -280,6 +309,8 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Reduces parser prototypes to the data required by the GUI.
    */
   _summarize(ast, source) {
+    const { sourceNodeText, sourceNodeRange, parseAnnotation, _sourceTokens,
+      modelicaStringValue: simulateStringValue } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     var line_starts = [0];
     var newline_pattern = /\r?\n/g;
     var newline;
@@ -435,6 +466,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Locates a complete component statement without crossing adjacent declarations.
    */
   _statementRange(type, source, line_starts, tokens) {
+    const { sourceNodeRange } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     var range = sourceNodeRange(type, source, line_starts);
     var index = tokens.findIndex(token => token.offset >= range.start);
     var prefixes = new Set(['PARAMETER', 'CONSTANT', 'DISCRETE', 'INPUT', 'OUTPUT',
@@ -466,6 +498,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Extracts editable top-level component modifiers and their source ranges.
    */
   _componentModifiers(text, name) {
+    const { componentModifiers } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     return componentModifiers(text, name);
   }
 
@@ -546,6 +579,7 @@ class PRDC_JSLAB_SIMULATE_PROJECT {
    * Extracts a standard Placement transformation from source text.
    */
   _placement(annotation, source, line_starts) {
+    const { sourceNodeText, sourceNodeRange, parseAnnotation } = PRDC_JSLAB_SIMULATE_COMPILER.getLibrary();
     var fields = function(list) {
       return new Map(Array.from({ length: Number(list && list.length || 0) }, (_, index) =>
         [Array.from(list[index].name && list[index].name.identList || []).join('.'), list[index].modification]));

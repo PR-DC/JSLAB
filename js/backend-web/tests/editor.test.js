@@ -105,14 +105,50 @@ webTest(tests, 'web editor clipboard actions handle read/write permissions and e
 webTest(tests, 'web editor runs document, current line and current section through the real sandbox', async function() {
   var t = GUI, w = await t.editor(), doc = w.document;
   var cm = [...doc.querySelectorAll('.CodeMirror')].find(el => w.getComputedStyle(el).display !== 'none').CodeMirror;
-  cm.setValue('/// section\nvar gui_editor_value = 29;');
-  cm.setCursor(1, 0);
-  for(var selector of ['#run-menu', '#editor-context-run-line', '#editor-context-run-section']) {
+  cm.setValue('/// section\nvar gui_editor_path = jsl.current_script;\nvar gui_editor_value = 29;');
+  const file = doc.querySelector('.tab[active]').title;
+  const run = 'run(' + JSON.stringify(file);
+  for(const [selector, command] of [
+    ['#run-menu', run + ')'],
+    ['#editor-context-run-line', run + ', 3)'],
+    ['#editor-context-run-section', run + ', [2,3])']
+  ]) {
+    cm.setCursor(2, 0);
     t.click(selector, doc);
+    await t.wait(() => t.app.history.at(-1) === command, 'Command Window shows ' + command);
     await t.wait(() => t.app.workspace_state.some(row => row[0] === 'gui_editor_value'), 'execution from ' + selector);
     await t.wait(() => !t.app.main.evaluating && t.app.worker_debugger?.state === 'idle', 'execution completion from ' + selector);
   }
+  t.eq((await t.app.sandbox_api.evaluate('gui_editor_path')).value, file);
   t.ok(t.app.workspace_state.some(row => row[0] === 'gui_editor_value'));
+});
+
+webTest(tests, 'Web Editor opens the source column and uses the shared console message types', async function() {
+  const app = GUI.app;
+  const file = '/workspace/editor-parity.jsl';
+  await app.fs.writeTextFile(file, '// fixture\nvar parity = 42;');
+  await app.platform.host.send('EditorWindow', 'open-script', [file, 2, 10]);
+  const editor = app._getAssistantEditor();
+  const [script] = editor.script_manager.getScriptByPath(file);
+  const cursor = script.code_editor.getCursor();
+  GUI.eq(cursor.line, 1);
+  GUI.eq(cursor.ch, 9);
+
+  const terminal = app.main.command_window;
+  const calls = [];
+  const methods = ['messageEditor', 'messageInternal', 'errorInternal'];
+  const original = methods.map(method => terminal[method]);
+  try {
+    methods.forEach(method => { terminal[method] = value => calls.push([method, value]); });
+    editor.editor.disp('editor message', false);
+    editor.editor.dispInternal('internal message', false);
+    editor.editor.errorInternal('internal error');
+    GUI.eq(JSON.stringify(calls), JSON.stringify([
+      ['messageEditor', 'editor message'], ['messageInternal', 'internal message'], ['errorInternal', 'internal error']
+    ]));
+  } finally {
+    methods.forEach((method, index) => { terminal[method] = original[index]; });
+  }
 });
 
 webTest(tests, 'web editor search, replace, case/regex options and symbol buttons work', async function() {

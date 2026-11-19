@@ -116,15 +116,16 @@ tests.add('pty exit event removes terminal and calls onExit', function(assert) {
   assert.equal(setup.system.open_terminals.hasOwnProperty(7), false);
 }, { tags: ['unit', 'system'] });
 
-tests.add('clear kills all terminals through pty bridge', function(assert) {
+tests.add('clear kills only tracked terminals and ignores their queued events', function(assert) {
   var setup = PRDC_JSLAB_SANDBOX_TESTS_SYSTEM_TEST_HELPER.createSystemMock();
-  setup.system.spawnTerminal(['cmd.exe'], function() {}, function() {});
+  var exits = 0;
+  setup.system.spawnTerminal(['cmd.exe'], function() {}, function() { exits++; });
   setup.system._clear();
+  setup.system._clear();
+  setup.system._onPtyData({ type: 'exit', id: 7 });
   assert.deepEqual(setup.system.open_terminals, {});
-  var kill_all_call = setup.calls.find(function(call) {
-    return call.action === 'killAll';
-  });
-  assert.ok(!!kill_all_call);
+  assert.equal(exits, 0);
+  assert.deepEqual(setup.calls.slice(1), [{ action: 'kill', data: { id: 7 } }]);
 }, { tags: ['unit', 'system'] });
 
 exports.MODULE_TESTS = tests;

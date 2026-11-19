@@ -19,6 +19,11 @@ class PRDC_JSLAB_WEB_DEBUG_INSTRUMENT {
     const function_sources = new WeakMap();
     let sequence = 0;
     recast.types.visit(ast, {
+      visitCatchClause(path) {
+        // The scope analyser expects a pattern even for an optional catch binding.
+        if(!path.node.param) path.node.param = b.identifier('__jslab_caught_' + (++sequence) + '__');
+        this.traverse(path);
+      },
       visitFunction(path) {
         if(path.node.loc) {
           function_ids.set(path.node, b.identifier('__jslab_frame_' + (++sequence) + '__'));

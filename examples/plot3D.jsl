@@ -1,0 +1,13 @@
+/**
+ * @file Simple 3D helix plot
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+var angle = linspace(0, 4 * Math.PI, 251);
+plot({ type: 'scatter3d', mode: 'lines', x: angle.map(Math.cos), y: angle.map(Math.sin), z: angle });
+xlabel('x');
+ylabel('y');
+zlabel('z');
+title('3D helix');

@@ -7,6 +7,7 @@
 
 const { PRDC_JSLAB_DEBUGGER_STATE } = require("../other-shared/debugger-state");
 const { PRDC_JSLAB_REMOTE_UI_HOST } = require("./remote-ui");
+const { PRDC_JSLAB_WEB_MEDIA } = require('./media');
 
 /**
  * Communicates with a paused worker without depending on its event loop.
@@ -25,7 +26,7 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
   }
 
   /**
-   * Starts the scientific workspace; shared memory requires isolated hosting.
+   * Starts the sandbox worker with shared memory on an isolated host.
    */
   async start(options = {}) {
     if(!globalThis.crossOriginIsolated || typeof SharedArrayBuffer !== 'function') {
@@ -54,7 +55,10 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
       this._state('unavailable');
     });
     if(this.callbacks.remoteRoots) {
-      this.remote = new PRDC_JSLAB_REMOTE_UI_HOST(this.callbacks.remoteRoots(), message => this.worker.postMessage(message));
+      const roots = this.callbacks.remoteRoots();
+      this.media = new PRDC_JSLAB_WEB_MEDIA(roots.bridge?.saveLocalFile);
+      this.remote = new PRDC_JSLAB_REMOTE_UI_HOST({ ...roots, media: this.media },
+        message => this.worker.postMessage(message));
     }
     this.worker.postMessage({ type: 'initialize', buffer: this.buffer, ...options, remote_ui: !!this.remote });
     await ready;
@@ -77,9 +81,11 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
     Atomics.store(this.control, 0, 0);
     this._state('running');
     const id = ++this.sequence;
-    const result = new Promise((resolve, reject) => this.pending.set(id, { resolve, reject }));
+    const result = new Promise((resolve, reject) => this.pending.set(id, { resolve, reject, evaluation: true }));
     this.worker.postMessage({ type: 'evaluate', id, code, path: options.path,
-      files: options.files, cwd: options.cwd, breakpoints: Array.from(this.breakpoints.values()), pause_on_exceptions: this.pause_on_exceptions });
+      files: options.files, cwd: options.cwd, saved_paths: options.saved_paths,
+      run_last: options.run_last, show_output: options.show_output,
+      breakpoints: Array.from(this.breakpoints.values()), pause_on_exceptions: this.pause_on_exceptions });
     return result;
   }
 
@@ -178,7 +184,7 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
    */
   operation(method, args = {}) {
     if(this.state === 'closed' || this.state === 'unavailable') {
-      return Promise.reject(Error('Scientific workspace is unavailable.'));
+      return Promise.reject(Error('Sandbox worker is unavailable.'));
     }
     const id = ++this.sequence;
     return new Promise((resolve, reject) => {
@@ -372,17 +378,23 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
 
   /**
    * Hard stop for native blocking calls; this deliberately discards the worker workspace.
+   * @param {boolean} [requested=false] Whether the sandbox requested its own reset.
    */
-  dispose() {
+  dispose(requested = false) {
     this.ready_reject?.(new Error('Worker reset before initialization completed.'));
     for(const target of this.targets.values()) {
       target.dispose();
     }
     this.targets.clear();
+    this.media?.dispose();
     this.remote?.dispose();
     this.worker?.terminate();
     for(const pending of this.pending.values()) {
-      pending.reject(new Error('Worker reset; its live workspace was discarded.'));
+      if(requested && pending.evaluation) {
+        pending.resolve({ success: true, workspace: [] });
+      } else {
+        pending.reject(new Error('Worker reset; its live workspace was discarded.'));
+      }
     }
     this.pending.clear();
     this._state('closed');
@@ -415,6 +427,10 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
     }
     if(message?.type === 'target-create') {
       this._spawnTarget(message).catch(error => this.callbacks.log?.({ level: 'error', message: error.message }));
+      return;
+    }
+    if(message?.type === 'runtime-reset') {
+      this.callbacks.resetRuntime?.(message.action);
       return;
     }
     if(message?.type === 'target-post') {
@@ -462,13 +478,16 @@ class PRDC_JSLAB_WEB_WORKER_DEBUGGER_CLIENT extends PRDC_JSLAB_DEBUGGER_STATE {
       this.callbacks.settings?.(this.settings());
     } else if(message.type === 'ui-request') {
       this.ui_queue = (this.ui_queue || Promise.resolve()).then(async () => {
+        if(this.state === 'closed') return;
         try {
-          if(!this.callbacks.ui) {
+          if(!this.callbacks.ui && message.operation.kind !== 'media-frame') {
             throw Error('Browser UI bridge is not connected.');
           }
-          const value = await this.callbacks.ui(message.operation);
+          const { kind, reader } = message.operation;
+          const value = await (kind === 'media-frame' ? this.media.readVideoFrame(reader) : this.callbacks.ui(message.operation));
           if(this.state !== 'closed') {
-            this.worker.postMessage({ type: 'ui-response', id: message.id, value });
+            const transfer = kind === 'media-frame' && value.value ? [value.value] : [];
+            this.worker.postMessage({ type: 'ui-response', id: message.id, value }, transfer);
           }
         } catch(error) {
           if(this.state !== 'closed') {

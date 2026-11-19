@@ -20,16 +20,35 @@ class PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER {
   }
 
   /**
-   * Reads simulation and monotonic times together for a playback speed check.
-   * @returns {Object} Current sample time, loop duration and clock time.
+   * Samples actual playback ticks so a slow render between samples does not skew timing.
+   * @param {number} minimum_ms Minimum elapsed time between samples.
+   * @returns {Promise<Object[]>} Simulation and monotonic times for two ticks.
    */
-  static animationTime() {
-    var figure = Object.values(jsl.inter.figures.open_figures).find(item =>
-      item.dom && item.dom.querySelector('input[type="range"]'));
-    var index = Number(figure.dom.querySelector('input[type="range"]').value);
-    var time = jsl.context.simulation.time;
-    return { time: time[index], duration: time[time.length - 1] - time[0],
-      wall: figure.dom.defaultView.performance.now() };
+  static playbackSamples(minimum_ms) {
+    const figure = Object.values(jsl.inter.figures.open_figures).find(item => item._animation_controls);
+    const controls = figure._animation_controls;
+    const clock = figure.context.performance;
+    const time = jsl.context.simulation.time;
+    const duration = time[time.length - 1] - time[0];
+    const tick = controls._tick;
+    return new Promise((resolve, reject) => {
+      let first;
+      const timer = setTimeout(() => {
+        controls._tick = tick;
+        reject(Error('The animation did not produce enough playback samples.'));
+      }, 8000);
+      controls._tick = function() {
+        const wall = clock.now();
+        tick.call(this);
+        const sample = { time: time[this.index], duration, wall };
+        if(!first) first = sample;
+        else if(wall - first.wall >= minimum_ms) {
+          clearTimeout(timer);
+          controls._tick = tick;
+          resolve([first, sample]);
+        }
+      };
+    });
   }
 
   /**
@@ -186,21 +205,21 @@ tests.add('desktop Simulate waits for a .jslmo file before creating its window',
       document.getElementById('simulate-stop-time').value = '45';
       document.getElementById('win-close').click();
     });
-    await client.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate intercepts its window close');
+    await client.waitFor(() => !document.getElementById('close-dialog-cont').hidden, 'Simulate intercepts its window close');
     await client.evaluate(() => document.getElementById('close-dialog-cancel').click());
-    await client.waitFor(() => !document.getElementById('close-dialog-cont').open, 'Simulate cancels window close');
+    await client.waitFor(() => document.getElementById('close-dialog-cont').hidden, 'Simulate cancels window close');
     await gui_desktop.main.evaluate(() => win_main.platform.host.send('MainProcess', 'focus-win'));
     await gui_desktop.main.waitFor(async () => (await win_main.platform.host.invoke('JSLAB_DESKTOP_GUI_TEST_FOREGROUND'))
       .endsWith('/main.html'), 'Command Window activation');
     await gui_desktop.main.evaluate(() => win_main.close());
-    await client.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate intercepts application close');
+    await client.waitFor(() => !document.getElementById('close-dialog-cont').hidden, 'Simulate intercepts application close');
     await gui_desktop.main.waitFor(async () => (await win_main.platform.host.invoke('JSLAB_DESKTOP_GUI_TEST_FOREGROUND'))
       .endsWith('/simulate.html'), 'Simulate requests foreground activation');
     await client.evaluate(() => document.getElementById('close-dialog-cancel').click());
-    await client.waitFor(() => !document.getElementById('close-dialog-cont').open, 'Simulate cancels application close');
+    await client.waitFor(() => document.getElementById('close-dialog-cont').hidden, 'Simulate cancels application close');
     assert.equal(await client.evaluate(() => document.getElementById('simulate-stop-time').value), '45');
     await client.evaluate(() => document.getElementById('win-close').click());
-    await client.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate asks again before discarding edits');
+    await client.waitFor(() => !document.getElementById('close-dialog-cont').hidden, 'Simulate asks again before discarding edits');
     await client.evaluate(() => setTimeout(() => document.getElementById('close-dialog-discard').click(), 0));
     for(let attempt = 0; attempt < 40 && await simulateTarget(); attempt++) {
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -281,9 +300,7 @@ tests.add('desktop Simulate runs the shipped 6-DOF model through real windows an
 
 tests.add('desktop Simulate translates dialogs and centers toolbar icons in every interface language', async function(assert) {
   for(const width of [900, 1600]) {
-    await gui_desktop.simulate.send('Emulation.setDeviceMetricsOverride', {
-      width: width, height: 900, deviceScaleFactor: 1, mobile: false
-    });
+    await gui_desktop.simulate.resizeViewport(width, 900);
     var findings = await gui_desktop.simulate.evaluate(() => {
       var findings = [];
       var previous = language.lang;
@@ -313,15 +330,41 @@ tests.add('desktop Simulate translates dialogs and centers toolbar icons in ever
       require('electron').ipcRenderer.invoke('JSLAB_DESKTOP_GUI_TEST_CAPTURE'));
     fs.writeFileSync(path.join(app_path, 'temp/simulate-toolbar-' + width + '.png'), Buffer.from(capture, 'base64'));
   }
-  await gui_desktop.simulate.send('Emulation.clearDeviceMetricsOverride');
+  await gui_desktop.simulate.restoreViewport();
 }, { tags: ['gui', 'electron', 'integration', 'simulate'], timeout_ms: 30000 });
 
 tests.add('desktop 6-DOF example changes mass, plots results and stops looped animation with Ctrl+C', async function(assert) {
   var filename = path.join(app_path, 'examples/simulateMP6DOF.jsl');
-  await gui_desktop.main.evaluate(filename => {
-    win_main.command_window.code_input.setValue('await run(' + JSON.stringify(filename) + ', undefined, false, true);');
-    document.getElementById('command-window-input-submit-cont').click();
-  }, filename);
+  await gui_desktop.sandbox.evaluate(() => {
+    const env = jsl.inter.env;
+    const openAnimation = env._openSimulateAnimation;
+    const gate = jsl.inter.env.desktop_animation_gate = {};
+    const ready = new Promise(resolve => { gate.release = resolve; });
+    gate.restore = () => { env._openSimulateAnimation = openAnimation; };
+    env._openSimulateAnimation = async data => {
+      gate.restore();
+      gate.requested = true;
+      await ready;
+      return openAnimation.call(env, data);
+    };
+  });
+  try {
+    await gui_desktop.main.evaluate(filename => {
+      win_main.command_window.code_input.setValue('await run(' + JSON.stringify(filename) + ', undefined, false, true);');
+      document.getElementById('command-window-input-submit-cont').click();
+    }, filename);
+    await gui_desktop.sandbox.waitFor(() => jsl.inter.env.desktop_animation_gate?.requested,
+      'animation request reached the sandbox', 180000);
+    assert.equal(await gui_desktop.main.evaluate(() => win_main.evaluating), true,
+      'The workspace command must wait while the animation opens.');
+  } finally {
+    await gui_desktop.sandbox.evaluate(() => {
+      const gate = jsl.inter.env.desktop_animation_gate;
+      gate?.restore();
+      gate?.release();
+      delete jsl.inter.env.desktop_animation_gate;
+    });
+  }
   await gui_desktop.sandbox.waitFor(() => jsl.context.torque_200 &&
     Object.values(jsl.inter.figures.open_figures).some(figure =>
       figure.dom && figure.dom.querySelector('input[type="range"]')),
@@ -347,9 +390,7 @@ tests.add('desktop 6-DOF example changes mass, plots results and stops looped an
   await new Promise(resolve => setTimeout(resolve, 160));
   var next = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.animationIndex);
   assert.notEqual(next, result.index);
-  var before = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.animationTime);
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  var after = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.animationTime);
+  var [before, after] = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.playbackSamples, 1000);
   var elapsed = (after.wall - before.wall) / 1000;
   var simulated = (after.time - before.time + before.duration) % before.duration;
   var difference = Math.abs(simulated - elapsed % before.duration);
@@ -368,9 +409,8 @@ tests.add('desktop 6-DOF example changes mass, plots results and stops looped an
     }, rate);
     assert.equal(selection.before, selection.after, 'Changing speed must preserve the current frame.');
     assert.ok(selection.title.trim());
-    before = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.animationTime);
-    await new Promise(resolve => setTimeout(resolve, rate == 2 ? 350 : 600));
-    after = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.animationTime);
+    [before, after] = await gui_desktop.sandbox.evaluate(PRDC_JSLAB_DESKTOP_SIMULATE_TEST_HELPER.playbackSamples,
+      rate === 2 ? 500 : 750);
     elapsed = (after.wall - before.wall) / 1000;
     simulated = (after.time - before.time + before.duration) % before.duration;
     difference = Math.abs(simulated - elapsed * rate % before.duration);
@@ -459,12 +499,64 @@ tests.add('desktop Simulate resolves inherited components and safely deletes sha
   assert.deepEqual(result.names, ['inheritedGain', 'b']);
   assert.equal(result.treeHasB, true);
   await gui_desktop.simulate.evaluate(() => document.getElementById('win-close').click());
-  await gui_desktop.simulate.waitFor(() => document.getElementById('close-dialog-cont').open, 'Simulate cleanup prompt');
+  await gui_desktop.simulate.waitFor(() => !document.getElementById('close-dialog-cont').hidden, 'Simulate cleanup prompt');
   await gui_desktop.simulate.evaluate(() => setTimeout(() => document.getElementById('close-dialog-discard').click(), 0));
   await gui_desktop.main.waitFor(async port => {
     const targets = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
     return !targets.some(target => target.url.endsWith('/simulate.html'));
   }, 'Simulate window closed before the next test', 15000, gui_desktop_port);
 }, { tags: ['gui', 'electron', 'integration', 'simulate'], timeout_ms: 150000 });
+
+tests.add('desktop Ctrl+C cancels its pending Simulate request before the solver starts', async function(assert) {
+  const project = path.join(gui_desktop_profile, 'cancel-automation.jslmo');
+  fs.writeFileSync(project, JSON.stringify({ format: 'JSLAB Simulate', version: 1,
+    source: 'model CancelAutomation\n Real x(start=1);\n equation\n der(x) = -x;\nend CancelAutomation;' }));
+  await gui_desktop.main.evaluate(project => {
+    win_main.platform.host.send('MainProcess', 'show-simulate', project);
+  }, project);
+  await gui_desktop.main.waitFor(async port => (await (await fetch('http://127.0.0.1:' + port + '/json/list')).json())
+    .some(item => item.url.endsWith('/simulate.html')), 'Simulate opened', 15000, gui_desktop_port);
+  const target = (await (await fetch('http://127.0.0.1:' + gui_desktop_port + '/json/list')).json())
+    .find(item => item.url.endsWith('/simulate.html'));
+  const client = new PRDC_JSLAB_GUI_TEST_BROWSER();
+  await client.connect(target.webSocketDebuggerUrl);
+  try {
+    await client.waitFor(project => globalThis.win_simulate?.file_path === project, 'cancellation model opened', 15000, project);
+    await client.evaluate(() => {
+      const controller = win_simulate;
+      let resume;
+      controller.resolvedCompilerSource = () => new Promise(resolve => { resume = resolve; });
+      const cancel = controller.cancelCompiler.bind(controller);
+      controller.cancelCompiler = () => {
+        globalThis.sandbox_cancel_observed = true;
+        cancel();
+        resume(controller.editor.getValue());
+      };
+      const compile = controller.compiler.compile.bind(controller.compiler);
+      controller.compiler.compile = request => {
+        globalThis.cancelled_solver_started = true;
+        return compile(request);
+      };
+    });
+    await gui_desktop.main.evaluate(() => { win_main.eval.evalCommand('await simulate(undefined, {run:true});'); });
+    await client.waitFor(() => win_simulate.busy && win_simulate.automation_request?.compiling,
+      'sandbox request waiting for Simulate');
+    await gui_desktop.main.evaluate(() => win_main.platform.host.send('MainProcess', 'focus-win'));
+    await gui_desktop.main.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'c', code: 'KeyC', windowsVirtualKeyCode: 67, modifiers: 2 });
+    await gui_desktop.main.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'c', code: 'KeyC', windowsVirtualKeyCode: 67, modifiers: 2 });
+    await client.waitFor(() => globalThis.sandbox_cancel_observed && !win_simulate.automation_request && !win_simulate.busy,
+      'Simulate settled after sandbox interruption');
+    assert.equal(await client.evaluate(() => Boolean(globalThis.cancelled_solver_started)), false);
+    await gui_desktop.main.waitFor(() => !win_main.evaluating, 'sandbox idle after cancellation');
+  } finally {
+    await client.evaluate(() => {
+      setTimeout(() => {
+        document.getElementById('win-close').click();
+        if(!document.getElementById('close-dialog-cont').hidden) document.getElementById('close-dialog-discard').click();
+      }, 0);
+    });
+    await client.close();
+  }
+}, { tags: ['gui', 'electron', 'integration', 'simulate'], timeout_ms: 55000 });
 
 exports.MODULE_TESTS = tests;

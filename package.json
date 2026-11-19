@@ -13,6 +13,7 @@
   "scripts": {
     "postinstall": "node js/dev/prepare-libs.js && node js/dev/build-configure.js && node js/dev/build-native-wasm.js && node js/dev/make-doc.js && electron .",
     "start": "electron .",
+    "start-web": "electron js/dev/start-web.js",
     "cli": "node js/cli/cli.js",
     "test:cli": "node js/dev/run-cli-tests.js",
     "mcp": "node js/mcp/server.js",
@@ -176,6 +177,7 @@
     "geo-tz": "8.1.4",
     "geotiff": "2.1.4-beta.1",
     "glob": "11.0.3",
+    "html2canvas": "1.4.1",
     "jsdoc-api": "9.3.4",
     "ml-regression-polynomial": "3.0.2",
     "node-7z": "^3.0.0",

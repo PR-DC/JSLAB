@@ -402,10 +402,41 @@ class PRDC_JSLAB_EDITOR_SCRIPT_MANAGER {
   }
 
   /**
+   * Prompts for modified scripts before an application reload.
+   * @param {Function} focus Focuses the owning window.
+   * @returns {Promise<boolean>} Whether the reload can proceed.
+   */
+  async confirmReload(focus) {
+    if(!this.close_dialog.element.hidden) return false;
+    for(const script of this.scripts) {
+      if(script.code_editor.getValue().replace(/\r/g, '') === script.saved_code.replace(/\r/g, '')) continue;
+      focus();
+      script.activate();
+      this.close_dialog.cancel.hidden = false;
+      let choice;
+      try {
+        choice = await new Promise(resolve => {
+          this.reload_answer = resolve;
+          this.close_dialog.show(script.name);
+        });
+      } finally {
+        this.reload_answer = null;
+        this.close_dialog.hide();
+      }
+      if(choice === 'cancel' || (choice === 'save' && !await script.save())) return false;
+    }
+    return true;
+  }
+
+  /**
    * Handles user interaction with the script closing dialog, determining whether to save changes, discard them, or cancel the closure.
    * @param {string} choice Selected dialog action.
    */
   async closingDialogButton(choice) {
+    if(this.reload_answer) {
+      this.reload_answer(choice);
+      return;
+    }
     var [script, i] = this.getScriptByTab(this.active_tab);
     var tab = this.scripts[i].tab;
     var script_path = this.scripts[i].path;

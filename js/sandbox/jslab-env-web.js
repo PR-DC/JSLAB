@@ -13,18 +13,21 @@ const { getWebSubmoduleConstructor, getWebUnavailableSubmodule } = require('../b
 const { instrumentWebDebug } = require('../backend-web/debug-instrument');
 
 const { PRDC_JSLAB_WEB_BROWSER } = require('../backend-web/browser');
+const { PRDC_JSLAB_WEB_NODE_PATH } = require('../backend-web/node-compatibility');
 
 const { PRDC_JSLAB_SIMULATE_ASSETS } = require('../backend-web/simulate-assets');
 const { PRDC_JSLAB_SANDBOX_SIMULATE } = require('./jslab-simulate');
 var recast = require('recast');
 var babel_parser = require('@babel/parser');
+var math = require('../../lib/math-11.8.2/math-11.8.2.min.js');
+var fmin = require('fmin/index.js');
 var seedrandom = require('seedrandom');
 var { PolynomialRegression } = require('ml-regression-polynomial');
 var egm96 = require('egm96-universal');
 var { PRDC_JSLAB_WEB_SERIAL_PORT } = require('../backend-web/serial-port');
 var { createLazyNativeModule } = require('./jslab-wasm-native');
 var { createLazyAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
-var { getWasmModule } = require('./jslab-wasm-loader');
+var { getWasmModule, prepareWasmForCode } = require('./jslab-wasm-loader');
 
 const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
 /**
@@ -82,8 +85,8 @@ class PRDC_JSLAB_ENV {
     this.recast = recast;
     this.babel_parser = babel_parser;
     this.SourceMapConsumer = PRDC_JSLAB_WEB_SOURCE_MAP;
-    this.math = null;
-    this.fmin = null;
+    this.math = math;
+    this.fmin = fmin;
     this.exports = ['debug', 'version', 'platform', 'web', 'buildShareLink', 'loadPyodide'];
     this._pyodide_loader = null;
     this._pyodide_factory = null;
@@ -100,6 +103,25 @@ class PRDC_JSLAB_ENV {
       } catch{}
     }
     this.runtime_info = this._getRuntimeInfo();
+    const media = this.is_worker && globalThis.__JSLAB_WEB_MEDIA__;
+    this.navigator = media ? { getGamepads: () => JSON.parse(this.bridge.getGamepads()), mediaDevices: {
+      enumerateDevices: async () => JSON.parse(await media.enumerateDevices()),
+      getUserMedia: constraints => media.getUserMedia(constraints)
+    } } : globalThis.navigator;
+    if(media) {
+      this.onGamepadConnection = callback => this._bindUIEvent(globalThis.window, 'gamepadconnected', callback);
+      this.createAudioContext = () => media.createAudioContext();
+      this.drawAudioWaveform = (analyser, context, width, height) => media.drawWaveform(analyser, context, width, height);
+      this.createVideoReader = async track => {
+        const reader = await media.openVideoReader(track);
+        return { read: () => this.jsl.inter.execution.web_ui.request({ kind: 'media-frame', reader }, false),
+          cancel: () => media.closeVideoReader(reader), releaseLock: () => media.closeVideoReader(reader) };
+      };
+      this.isRecordingTypeSupported = type => media.isRecordingTypeSupported(type);
+      this.createMediaRecorder = (stream, options) => media.createRecorder(stream, options);
+      this.stopMediaRecorder = recorder => media.stopRecorder(recorder.jslab_recording_id);
+      this.saveMediaRecording = (recorder, target, options) => media.saveRecording(recorder.jslab_recording_id, target, options);
+    }
     this.web = Object.freeze(Object.assign({}, this.runtime_info));
     this.native_module = createLazyNativeModule(function() {
       return getWasmModule('native');
@@ -204,22 +226,10 @@ class PRDC_JSLAB_ENV {
    */
   async simulate(filepath, options) {
     if(this.bridge && typeof this.bridge.openSimulate == 'function') {
-      const request_options = Object.assign({}, options || {});
-      if(request_options.parameters) {
+      return PRDC_JSLAB_SANDBOX_SIMULATE._runRequest(this.jsl, options, async parameters => {
         const library = await this._getSimulateValues();
-        request_options.parameters = library.safeWorkspaceValue(request_options.parameters);
-      }
-      const owner = {};
-      const request_id = 'simulate-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-      this.jsl.addForCleanup(owner, () => this.bridge.cancelSimulate(request_id));
-      try {
-        return await this.bridge.openSimulate(filepath, request_options, request_id);
-      } finally {
-        const index = this.jsl.cleanup_registry.findIndex(entry => entry.obj === owner);
-        if(index >= 0) {
-          this.jsl.cleanup_registry.splice(index, 1);
-        }
-      }
+        return library.safeWorkspaceValue(parameters);
+      }, (options, id) => this.bridge.openSimulate(filepath, options, id), id => this.bridge.cancelSimulate(id));
     }
     return false;
   }
@@ -247,15 +257,9 @@ class PRDC_JSLAB_ENV {
    * @param {string} expression Workspace expression.
    * @returns {Promise<Object>} Safe value or structured expression error.
    */
-  async _resolveSimulateValue(expression) {
-    try {
-      const library = await this._getSimulateValues();
-      const value = await this.jsl.inter.eval.evalString('(' + String(expression || '') + ')');
-      return { success: true, js_value: library.safeWorkspaceValue(value) };
-    } catch(error) {
-      return { success: false, error: String(error.message || error),
-        value_code: error.value_code, value_path: error.value_path };
-    }
+  _resolveSimulateValue(expression) {
+    return PRDC_JSLAB_SANDBOX_SIMULATE._resolveWorkspaceValue(this.jsl, expression,
+      async () => (await this._getSimulateValues()).safeWorkspaceValue);
   }
 
   /**
@@ -268,7 +272,7 @@ class PRDC_JSLAB_ENV {
    */
   async _createSimulateScene(xml, time, variables, resources = {}) {
     const module = await import(new URL('scene.js', PRDC_JSLAB_SIMULATE_ASSETS.getCodeRoot()).href);
-    // The scientific workspace removes browser globals, including caches.
+    // The sandbox workspace removes browser globals, including caches.
     // Keep persistence in the owning application rather than exposing it as a
     // workspace variable or downloading the same scene core in another worker.
     var owner = globalThis.parent && globalThis.parent.__JSLAB_WEB_BRIDGE__ ? globalThis.parent : globalThis;
@@ -358,7 +362,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Loads the Pyodide bootstrap only when symbolic math is requested.
+   * Loads the Pyodide startup only when symbolic math is requested.
    * @param {Object} [options] Pyodide initialization options.
    * @returns {Promise<Object>} Initialized Pyodide runtime.
    */
@@ -679,6 +683,32 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Requests a restart of the browser sandbox worker.
+   */
+  resetSandbox() {
+    this._requestReset('sandbox');
+  }
+
+  /**
+   * Requests a reload of the browser application.
+   */
+  resetApp() {
+    this._requestReset('app');
+  }
+
+  /**
+   * Routes a reset command to the browser host.
+   * @param {string} action Requested reset scope.
+   */
+  _requestReset(action) {
+    if(this.is_worker) {
+      this.jsl.inter.execution._send?.({ type: 'runtime-reset', action });
+    } else {
+      this.bridge?.resetRuntime(action);
+    }
+  }
+
+  /**
    * Handles path is absolute.
    * @param {*} path_in Path in.
    */
@@ -737,31 +767,30 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Handles path base name.
-   * @param {*} path_in Path in.
+   * Returns the final path component, including its extension.
+   * @param {string} path_in Input path.
+   * @returns {string} Final path component.
    */
   pathBaseName(path_in) {
-    var normalized = this.pathNormalize(path_in);
-    var idx = normalized.lastIndexOf('/');
-    return idx >= 0 ? normalized.slice(idx + 1) : normalized;
+    return PRDC_JSLAB_WEB_NODE_PATH.basename(path_in);
   }
 
   /**
-   * Handles path file name.
-   * @param {*} path_in Path in.
+   * Returns the final filename without its extension.
+   * @param {string} path_in Input path.
+   * @returns {string} Filename without its extension.
    */
   pathFileName(path_in) {
-    return this.pathBaseName(path_in);
+    return PRDC_JSLAB_WEB_NODE_PATH.basename(path_in, this.pathExtName(path_in));
   }
 
   /**
-   * Handles path ext name.
-   * @param {*} path_in Path in.
+   * Returns the final filename extension, including the leading dot.
+   * @param {string} path_in Input path.
+   * @returns {string} Filename extension.
    */
   pathExtName(path_in) {
-    var name = this.pathBaseName(path_in);
-    var idx = name.lastIndexOf('.');
-    return idx >= 0 ? name.slice(idx) : '';
+    return PRDC_JSLAB_WEB_NODE_PATH.extname(path_in);
   }
 
   /**
@@ -788,25 +817,34 @@ class PRDC_JSLAB_ENV {
    * @param {*} to_path To path.
    */
   pathRelative(from_path, to_path) {
-    var from_parts = this.pathResolve(from_path).split('/').filter(Boolean);
-    var to_parts = this.pathResolve(to_path).split('/').filter(Boolean);
-    while(from_parts.length && to_parts.length && from_parts[0] == to_parts[0]) {
-      from_parts.shift();
-      to_parts.shift();
-    }
-    return this.pathNormalize(
-      [].concat(
-        new Array(Math.max(0, from_parts.length)).fill('..'),
-        to_parts
-      ).join('/')
-    ) || '.';
+    return PRDC_JSLAB_WEB_NODE_PATH.relative(this.pathResolve(from_path), this.pathResolve(to_path));
   }
 
   /**
-   * Saves path.
+   * Saves a directory in the application search paths.
+   * @param {string} path Directory to save.
    */
-  savePath() {
-    return true;
+  savePath(path) {
+    const saved_paths = this.bridge?.updateWorkspaceSearchPath?.('add', this.pathResolve(path));
+    if(saved_paths) this.jsl.setSavedPaths(Array.from(saved_paths));
+  }
+
+  /**
+   * Removes a directory from the application search paths.
+   * @param {string} path Directory to remove.
+   */
+  removePath(path) {
+    const saved_paths = this.bridge?.updateWorkspaceSearchPath?.('remove', this.pathResolve(path));
+    if(saved_paths) this.jsl.setSavedPaths(Array.from(saved_paths));
+  }
+
+  /**
+   * Sends diary control to the common Command Window.
+   * @param {string} action Diary mode.
+   * @param {string} [file_path] Workspace transcript path.
+   */
+  diary(action, file_path) {
+    this.bridge?.sendMainWindow?.('diary', { action, file_path });
   }
 
   /**
@@ -847,10 +885,15 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Checks script dir.
+   * Opens the shared directory prompt for a script outside the active search paths.
+   * @param {string} script_path Script path.
+   * @returns {boolean} Whether execution is waiting for a directory choice.
    */
-  checkScriptDir() {
-    return false;
+  checkScriptDir(script_path) {
+    const dir = this.addPathSep(this.pathDirName(script_path));
+    if(!this.bridge?.sendMainWindow || dir === this.jsl.current_path || this.jsl.saved_paths.includes(dir)) return false;
+    this.bridge.sendMainWindow('unknown-script-dir', script_path);
+    return true;
   }
 
   /**
@@ -859,10 +902,23 @@ class PRDC_JSLAB_ENV {
    */
   cd(new_path) {
     if(this.jsl && typeof this.jsl.setPath == 'function') {
-      this.jsl.setPath(this.pathResolve(new_path));
-      return true;
+      new_path = this.pathResolve(new_path);
+      const selected = this.bridge?.changeWorkspaceDirectory ? this.bridge.changeWorkspaceDirectory(new_path) : new_path;
+      if(selected) this.jsl.setPath(selected);
+      return Boolean(selected);
     }
     return false;
+  }
+
+  /**
+   * Provides the bundled examples in the workspace and optionally navigates to them.
+   * @param {boolean} show Whether to show the examples in the file browser.
+   * @returns {Promise<string>} Virtual examples path.
+   */
+  async prepareExamples(show) {
+    const folder = await this.bridge.prepareExamples(show);
+    if(show) this.cd(folder);
+    return folder;
   }
 
   /**
@@ -875,14 +931,26 @@ class PRDC_JSLAB_ENV {
     return this.reportUnavailable('Desktop editor integration');
   }
 
-  /** Reports the desktop compiler requirement in browser sessions. */
-  compileLatex() {
-    return this.reportUnavailable('compileLatex');
+  /**
+   * Compiles a TeX source through the browser host.
+   * @param {string} file Workspace source path.
+   * @returns {Promise<Object|boolean>} Build result.
+   */
+  compileLatex(file) {
+    if(typeof file !== 'string' || !file.trim()) return Promise.resolve(false);
+    return this.bridge?.compileLatex?.(this.pathResolve(file)) ?? this.reportUnavailable('compileLatex');
   }
 
-  /** Reports the desktop editor requirement in browser sessions. */
-  editLatex() {
-    return this.reportUnavailable('editLatex');
+  /**
+   * Opens the browser LaTeX Editor with a path in the workspace.
+   * @param {string} [file] Workspace folder or source document.
+   * @param {string} [main] Main source relative to the project.
+   * @returns {Promise<boolean>} Whether the editor opened.
+   */
+  editLatex(file, main) {
+    if(file != null && (typeof file !== 'string' || !file.trim())) return Promise.resolve(false);
+    return this.bridge?.openLatexEditor?.(file == null ? undefined : this.pathResolve(file), main) ??
+      this.reportUnavailable('editLatex');
   }
 
   /**
@@ -975,7 +1043,7 @@ class PRDC_JSLAB_ENV {
    */
   readFileSync() {
     var file_path = this.pathNormalize(this.pathResolve(arguments[0]));
-    var encoding = arguments[1];
+    var encoding = typeof arguments[1] === 'object' ? arguments[1]?.encoding : arguments[1];
 
     if(this._isAppAssetPath(file_path)) {
       var asset_data = this._getAppAssetSync(file_path);
@@ -1083,6 +1151,28 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Lists the current workspace directory for the shared shell commands.
+   * @returns {Array<string>} Entries in the current directory.
+   */
+  listFolderContents() {
+    return Array.from(this.readDir(this.jsl.current_path) || []);
+  }
+
+  /**
+   * Refreshes the shared file browser after workspace changes.
+   */
+  updateFileBrowser() {
+    this.bridge?.sendMainWindow?.('update-file-browser');
+  }
+
+  /**
+   * Refreshes the shared workspace view.
+   */
+  updateWorkspace() {
+    this.bridge?.sendMainWindow?.('update-workspace');
+  }
+
+  /**
    * Checks file.
    */
   checkFile() {
@@ -1098,13 +1188,25 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Shows open dialog.
+   * Selects workspace paths using the host picker.
+   * @param {Object} options Picker options.
+   * @returns {Promise<Array<string>|false>} Selected paths or cancellation.
    */
-  showOpenDialog() {
+  async showOpenDialog(options) {
     if(this.bridge && typeof this.bridge.showOpenDialog == 'function') {
-      return this.bridge.showOpenDialog(arguments[0]);
+      const paths = await this.bridge.showOpenDialog(options);
+      return paths ? Array.from(paths) : false;
     }
     return false;
+  }
+
+  /**
+   * Lazily prepares the backends used by the source about to run.
+   * @param {string} code Command or script source.
+   * @returns {Promise<void>} Preparation completion.
+   */
+  _prepareSource(code) {
+    return prepareWasmForCode(code);
   }
 
   /**
@@ -1238,6 +1340,14 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Reserves a window ID shared by the browser sandbox and its workers.
+   * @returns {number|undefined} Managed window ID when a browser host is available.
+   */
+  allocateWindowId() {
+    return this.bridge?.allocateWindowId?.();
+  }
+
+  /**
    * Opens window.
    * @param {*} wid Wid.
    * @param {*} [file] File.
@@ -1254,14 +1364,27 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Closes window.
-   * @param {*} wid Wid.
+   * Registers a window method that returns its result to the sandbox worker.
+   */
+  _setRemoteMethod(target, name, method) {
+    target[name] = method;
+    this.jsl.inter.execution.remote_ui?.setLocalMethod(target, name, method);
+  }
+
+  /**
+   * Closes windows belonging to this scientific runtime.
+   * @param {number|string} wid Window identifier or 'all'.
+   * @returns {boolean} Whether the window or group was closed.
    */
   closeWindow(wid) {
-    if(!this.bridge || typeof this.bridge.closeManagedWindow != 'function') {
+    if(wid === 'all') {
+      Object.keys(this.jsl.inter.windows.open_windows).forEach(id => this.closeWindow(id));
+      return true;
+    }
+    if(!Object.hasOwn(this.jsl.inter.windows.open_windows, wid) || !this.bridge) {
       return false;
     }
-    const closed = this.bridge.closeManagedWindow(wid, { notifySandbox: false });
+    const closed = this.bridge.closeManagedWindow?.(wid, { notifySandbox: false });
     if(closed) {
       this.jsl.inter.windows._closedWindow(wid);
     }
@@ -1463,8 +1586,10 @@ class PRDC_JSLAB_ENV {
   /**
    * Prints window to pdf.
    */
-  printWindowToPdf() {
-    return this.reportUnavailable('Window PDF printing', false);
+  printWindowToPdf(wid, options) {
+    const ui = this.jsl.inter.execution.web_ui;
+    if(ui) return ui.request({ kind: 'print-window-pdf', wid, options });
+    return this.bridge?.printWindowToPdf(wid, options) ?? false;
   }
 
   /**
@@ -1602,12 +1727,13 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Keeps worker message dispatchers installed during workspace cleanup.
+   * Keeps worker dispatchers and lazily loaded libraries during workspace cleanup.
    * @param {string} name Global name.
    * @returns {boolean} Whether the host owns this global.
    */
   _preserveContextGlobal(name) {
-    return this.is_worker && ['onmessage', 'onmessageerror'].includes(name);
+    return this.is_worker && ['onmessage', 'onmessageerror', 'PRDC_JSLAB_NATIVE_MODULE_FACTORY',
+      'PRDC_JSLAB_ALPHA_SHAPE_3D_FACTORY'].includes(name);
   }
 
   /**
@@ -1649,7 +1775,7 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Builds the initialization source for a child scientific worker.
+   * Builds the initialization source for a child sandbox worker.
    * @returns {string} Worker initialization source.
    */
   _getWorkerInit() {

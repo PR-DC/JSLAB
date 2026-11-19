@@ -45,7 +45,9 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
       }
     });
 
-    document.getElementById('simulate-animation').addEventListener('click', obj.openAnimation.bind(obj));
+    document.getElementById('simulate-animation').addEventListener('click', function() {
+      obj.openAnimation().catch(error => obj.appendOutput(obj.simpleCompilerError(error), true));
+    });
 
     document.getElementById('simulate-output-clear').addEventListener('click', function() {
       obj.setOutput('');
@@ -249,6 +251,7 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
     if(!obj.busy) {
       return;
     }
+    if(obj.compiler_request) obj.compiler_request.cancelled = true;
     var error = new Error(language.currentString(675));
     obj.compiler.close(error);
     obj.compiler_ready = null;
@@ -257,13 +260,13 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
   /**
    * Publishes the completed simulation data to the persistent workspace.
    */
-  publishResult() {
+  async publishResult() {
     const { host } = this.platform;
     var obj = this;
     if(!obj.result) {
       return;
     }
-    host.send('JSLAB_SIMULATE_RESULT', {
+    const published = await host.invoke('JSLAB_SIMULATE_RESULT', {
       file_name: obj.projectFileName(),
       model_name: obj.model ? obj.model.name : '',
       result: obj.result,
@@ -271,6 +274,7 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
       connections: obj.model ? obj.model.connections : [],
       visualization: obj.visualization
     });
+    if(!published) throw new Error(language.currentString('omjsl-19'));
     obj.setBusy(obj.busy);
   }
 
@@ -283,19 +287,22 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
 
   /**
    * Opens the mechanism animation with the current simulation results.
+   * @param {Object} [options] Playback settings.
+   * @returns {Promise<number|false|undefined>} Figure ID when the host opens the animation.
    */
-  openAnimation() {
+  async openAnimation(options) {
     const { host } = this.platform;
     var obj = this;
     if(!obj.result || !obj.animation_available || obj.busy) {
       return;
     }
-    host.send('JSLAB_SIMULATE_ANIMATION', {
+    return host.invoke('JSLAB_SIMULATE_ANIMATION', {
       file_name: obj.projectFileName(),
       model_name: obj.model ? obj.model.name : '',
       components: obj.model ? obj.model.components : [],
       connections: obj.model ? obj.model.connections : [],
-      visualization: obj.visualization
+      visualization: obj.visualization,
+      options
     });
   }
 
@@ -428,6 +435,10 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
     if(obj.busy) {
       return;
     }
+    const job = obj.compiler_request = {};
+    const ensureActive = () => {
+      if(job.cancelled) throw Error(language.currentString(675));
+    };
     obj.setBusy(true);
     obj.setConsoleExpanded(true);
     obj.setOutput('');
@@ -445,6 +456,7 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
         }
       }
       var compiler_source = await obj.resolvedCompilerSource();
+      ensureActive();
       var request = {
         action: action,
         source: compiler_source,
@@ -465,12 +477,15 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
         });
       }
       await obj.compiler_ready;
+      ensureActive();
       var response = await obj.compiler.compile(request);
+      ensureActive();
       outcome = response;
       if(response.result) {
         obj.result = response.result;
         obj.animation_available = obj.hasAnimationData(obj.result);
-        obj.publishResult();
+        await obj.publishResult();
+        ensureActive();
         var time = obj.result.data && obj.result.data.time ? obj.result.data.time :
           (obj.result.rows || []).map(function(row) {
             return Number(row[0]);
@@ -494,6 +509,7 @@ class PRDC_JSLAB_SIMULATE_COMPILATION {
       obj.appendOutput(obj.simpleCompilerError(error), true);
       outcome = { success: false, error: obj.simpleCompilerError(error) };
     } finally {
+      obj.compiler_request = null;
       obj.stopCompilerActivity();
       obj.setBusy(false);
     }

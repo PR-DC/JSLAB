@@ -89,7 +89,7 @@ class PRDC_JSLAB_WEB_NODE_PATH {
   static extname(value) {
     var base = PRDC_JSLAB_WEB_NODE_PATH.basename(value);
     var index = base.lastIndexOf('.');
-    return index <= 0 ? '' : base.slice(index);
+    return index <= 0 || base === '..' ? '' : base.slice(index);
   }
 
   /**

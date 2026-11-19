@@ -13,6 +13,15 @@ const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
 class PRDC_JSLAB_PRESENTATION_EDITOR_NOTES {
 
   /**
+   * Reads the notes element from one slide block.
+   * @param {string} block Slide source.
+   * @returns {string|null} Notes HTML or null when the element is absent.
+   */
+  getSlideBlockNotes(block) {
+    return /<\s*notes\b[^>]*>([\s\S]*?)<\/\s*notes\s*>/i.exec(block || '')?.[1] ?? null;
+  }
+
+  /**
    * Decodes notes HTML to plain editable text.
    * @param {String} notes_html
    * @returns {String}
@@ -71,7 +80,7 @@ class PRDC_JSLAB_PRESENTATION_EDITOR_NOTES {
       .replace(/\r\n|\r|\n/g, eol);
     var notes_re = /(<\s*notes\b[^>]*>)([\s\S]*?)(<\/\s*notes\s*>)/i;
     if(notes_re.test(block)) {
-      return block.replace(notes_re, '$1' + notes_html + '$3');
+      return block.replace(notes_re, (_match, open, _previous, close) => open + notes_html + close);
     }
     var close_match = /<\/\s*slide\s*>/i.exec(block);
     if(!close_match) {

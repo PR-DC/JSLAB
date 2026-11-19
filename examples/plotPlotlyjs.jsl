@@ -7,7 +7,6 @@
  */
 
 var win = await openPlotlyjs();
-win.setTitle("Example plot");
 
 var plot_config = {
   responsive: true,
@@ -15,7 +14,7 @@ var plot_config = {
 };
 
 var plot_layout = {
-  title: {},
+  title: { text: "Example plot" },
   autosize: true,
   plot_bgcolor: "#fff",
   paper_bgcolor: "#fff",
@@ -109,4 +108,4 @@ var trace2 = {
   type: 'scatter'
 };
 
-win.Plotly.newPlot(win.plot_cont, [trace1, trace2], plot_layout, plot_config);
+await win.Plotly.newPlot(win.plot_cont, [trace1, trace2], plot_layout, plot_config);

@@ -81,7 +81,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype, {
     }
 
     var obj = this;
-    this.diary_stream.on('error', function(err) {
+    const stream = this.diary_stream;
+    stream.on('error', function(err) {
+      if(obj.diary_stream !== stream) return;
       obj.diary_enabled = false;
       obj.closeDiaryStream();
       obj.errorInternal('@diary: ' + err);
@@ -104,10 +106,6 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype, {
       payload.action.toLowerCase() : 'toggle';
     var file_path = typeof payload.file_path === 'string' ?
       payload.file_path.trim() : '';
-    if(file_path.length) {
-      this.diary_path = file_path;
-    }
-
     if(action === 'off') {
       this.diary_enabled = false;
       this.closeDiaryStream();
@@ -125,11 +123,7 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_DIARY.prototype, {
       return false;
     }
 
-    if(!this.diary_path) {
-      this.diary_path = this.getDiaryDefaultPath();
-    }
-
-    if(this.openDiaryStream(this.diary_path)) {
+    if(this.openDiaryStream(file_path || this.diary_path || this.getDiaryDefaultPath())) {
       this.diary_enabled = true;
       return true;
     }

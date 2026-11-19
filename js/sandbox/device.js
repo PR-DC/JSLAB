@@ -14,6 +14,27 @@ var { PRDC_JSLAB_DEVICE_GAMEPAD } = require('./device-gamepad');
 class PRDC_JSLAB_LIB_DEVICE {
 
   /**
+   * Reads and draws an audio sample in the realm that owns the analyser and canvas.
+   * @param {AnalyserNode} analyser Audio analyser.
+   * @param {Uint8Array} data Reusable sample buffer.
+   * @param {CanvasRenderingContext2D} context Canvas drawing context.
+   * @param {number} width Canvas width.
+   * @param {number} height Canvas height.
+   */
+  static drawAudioWaveform(analyser, data, context, width, height) {
+    analyser.getByteTimeDomainData(data);
+    context.clearRect(0, 0, width, height);
+    context.beginPath();
+    const step = width / data.length;
+    context.moveTo(0, data[0] * height / 256);
+    for(let index = 1; index < data.length; index++) {
+      context.lineTo(step * index, data[index] * height / 256);
+    }
+    context.lineTo(width, height / 2);
+    context.stroke();
+  }
+
+  /**
    * Constructs a device submodule object with access to JSLAB's device functions.
    * @constructor
    * @param {Object} jsl - Reference to the main JSLAB object.
@@ -215,7 +236,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
   getGamepads() {
     return this.jsl.inter.env.navigator.getGamepads()
       .filter((g) => !this.jsl.inter.isNull(g))
-      .map(g => g.toJSON());
+      .map(g => g.toJSON?.() ?? g);
   }
 
   /**
@@ -262,7 +283,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var devices = await this.jsl.inter.env.navigator.mediaDevices.enumerateDevices();
     return devices
       .filter(device => device.kind === 'videoinput')
-      .map(device => device.toJSON());
+      .map(device => device.toJSON?.() ?? device);
   }
 
   /**
@@ -273,7 +294,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var devices = await this.jsl.inter.env.navigator.mediaDevices.enumerateDevices();
     return devices
       .filter(device => device.kind === 'audioinput')
-      .map(device => device.toJSON());
+      .map(device => device.toJSON?.() ?? device);
   }
 
   /**
@@ -284,7 +305,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var devices = await this.jsl.inter.env.navigator.mediaDevices.enumerateDevices();
     return devices
       .filter(device => device.kind === 'audiooutput')
-      .map(device => device.toJSON());
+      .map(device => device.toJSON?.() ?? device);
   }
 
   /**
@@ -293,10 +314,14 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
    * @returns {Promise<WebcamResult>} An object containing the window instance, video element, and media stream.
    */
   async webcam(device_id) {
-    var win = await this.jsl.inter.windows.openWindowBlank();
-    win.setTitle(this.jsl.inter.lang.currentString(529));
+    const windows = this.jsl.inter.windows;
+    const wid = windows.openWindow('blank.html');
+    const preview = windows.getWindow(wid);
+    await preview.setTitle(this.jsl.inter.lang.currentString(529));
+    var win = preview.context;
     win.document.body.innerHTML += '<video id="video"></video>';
     var dom = win.document.getElementById('video');
+    dom.muted = true;
     Object.assign(dom.style, {
       position: 'absolute',
       top: '50%',
@@ -317,11 +342,13 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       this.jsl.inter.env.error('@capture: ' + this.jsl.inter.lang.string(222));
     }
     dom.srcObject = stream;
-    dom.play();
-    this.jsl.addForCleanup(this, function() {
-      stream.getTracks().forEach(track => track.stop());
+    const stop = () => {
+      for(const track of stream.getTracks()) track.stop();
       dom.srcObject = null;
-    });
+    };
+    preview.onClosed = stop;
+    this.jsl.addForCleanup(this, stop);
+    await dom.play();
     return { win, dom, stream };
   }
 
@@ -334,7 +361,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
    */
   webcamCapture(opts, frameCallback, editCallback) {
     opts.type = 'webcam';
-    this.capture(opts, frameCallback, editCallback);
+    return this.capture(opts, frameCallback, editCallback);
   }
 
   /**
@@ -441,6 +468,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
      */
     function stop() {
       active = false;
+      void Promise.resolve(reader.cancel()).catch(() => {});
     }
 
     /**
@@ -468,12 +496,13 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       // Cleanup after capturing frames
       videoTrack.stop();
       reader.releaseLock();
-      stream.getTracks().forEach(track => track.stop());
+      for(const track of stream.getTracks()) track.stop();
     }
 
     // Initialize MediaStreamTrackProcessor and reader
-    var trackProcessor = new this.jsl.inter.MediaStreamTrackProcessor({ track: videoTrack });
-    var reader = trackProcessor.readable.getReader();
+    const env = this.jsl.inter.env;
+    var trackProcessor = env.createVideoReader ? null : new this.jsl.inter.MediaStreamTrackProcessor({ track: videoTrack });
+    var reader = trackProcessor ? trackProcessor.readable.getReader() : await env.createVideoReader(videoTrack);
 
     this.jsl.addForCleanup(this, stop);
 
@@ -502,7 +531,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       };
       try {
         const stream = await this.jsl.inter.env.navigator.mediaDevices.getUserMedia(constraints);
-        stream.getTracks().forEach(track => track.stop());
+        for(const track of stream.getTracks()) track.stop();
         resolutions.push(resolution);
       } catch(err) {
         this.jsl._console.log(err);
@@ -521,13 +550,16 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
   async showAudioWaveform(device_id, fftSize =  2048) {
     var obj = this;
 
-    var win = await this.jsl.inter.windows.openCanvas();
+    const windows = this.jsl.inter.windows;
+    const wid = windows.openWindow('d3.html');
+    var win = await windows._prepareCanvas(wid);
     if(!win) {
       return false;
     }
-    win.setTitle(this.jsl.inter.lang.currentString(530));
+    await windows.setWindowTitle(wid, this.jsl.inter.lang.currentString(530));
     var draw_loop;
-    var audio_ctx = new this.jsl.inter.AudioContext();
+    const env = this.jsl.inter.env;
+    var audio_ctx = env.createAudioContext?.() ?? new this.jsl.inter.AudioContext();
     var analyser = audio_ctx.createAnalyser();
     analyser.fftSize = fftSize;
     var buffer_length = analyser.frequencyBinCount;
@@ -544,7 +576,6 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
 
     canvas_ctx.lineWidth = 1;
     canvas_ctx.strokeStyle = "#000";
-    var slice_width = canvas_width / buffer_length;
     reset();
 
     var constraints = {
@@ -563,32 +594,17 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
         _update();
       });
 
-      analyser.getByteTimeDomainData(data);
-
-      canvas_ctx.clearRect(0, 0, canvas_width, canvas_height);
-      canvas_ctx.beginPath();
-
-      let x = 0;
-      for(let i = 0; i < buffer_length; i++) {
-        const v = data[i] / 128.0;
-        const y = v * (canvas_height / 2);
-
-        if(i === 0) {
-          canvas_ctx.moveTo(x, y);
-        } else {
-          canvas_ctx.lineTo(x, y);
-        }
-
-        x += slice_width;
-      }
-
-      canvas_ctx.lineTo(canvas_width, canvas_height / 2);
-      canvas_ctx.stroke();
+      if(env.drawAudioWaveform) env.drawAudioWaveform(analyser, canvas_ctx, canvas_width, canvas_height);
+      else PRDC_JSLAB_LIB_DEVICE.drawAudioWaveform(analyser, data, canvas_ctx, canvas_width, canvas_height);
     }
 
-    function stop() {
+    function stop(reset_view = true) {
+      if(draw_loop === undefined) return;
       obj.jsl.context.cancelAnimationFrame(draw_loop);
-      reset();
+      draw_loop = undefined;
+      for(const track of stream.getTracks()) track.stop();
+      void audio_ctx.close().catch(() => {});
+      if(reset_view) reset();
     }
 
     function reset() {
@@ -600,6 +616,7 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     }
 
     this.jsl.addForCleanup(this, stop);
+    windows.getWindow(wid).onClosed = () => stop(false);
 
     return { win, stop, reset };
   }
@@ -615,7 +632,8 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
     var preferredMime = 'video/mp4;codecs="avc1.640028"';
     var fallbackMime  = 'video/webm;codecs=vp9,opus';
 
-    var standardMimeType = MediaRecorder.isTypeSupported(preferredMime) ?
+    const env = this.jsl.inter.env;
+    var standardMimeType = (env.isRecordingTypeSupported?.(preferredMime) ?? MediaRecorder.isTypeSupported(preferredMime)) ?
       preferredMime : fallbackMime;
 
     var stream;
@@ -654,19 +672,17 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
 
     var mimeType = opts.mimeType || standardMimeType;
     var ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-    var recorder = new MediaRecorder(stream, {
+    const recorder_options = {
       mimeType: mimeType,
       videoBitsPerSecond: opts.videoBitsPerSecond || 8_000_000
-    });
+    };
+    var recorder = env.createMediaRecorder?.(stream, recorder_options) ?? new MediaRecorder(stream, recorder_options);
 
     var chunks = [];
-    recorder.ondataavailable = function(e) {
-      chunks.push(e.data);
-    };
+    if(!env.saveMediaRecording) recorder.ondataavailable = e => chunks.push(e.data);
 
-    recorder.onstop = async function() {
-      var blob = new Blob(chunks, { type: mimeType });
-      var buffer = Buffer.from(await blob.arrayBuffer());
+    const saveRecording = async function() {
+      for(const track of stream.getTracks()) track.stop();
 
       var options = {
         title: obj.jsl.inter.lang.currentString(236),
@@ -676,7 +692,12 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
         ]
       };
       var save_target = await obj.jsl.inter.file_system._chooseSaveTarget(options);
+      if(env.saveMediaRecording) {
+        await env.saveMediaRecording(recorder, save_target, { mimeType });
+        return;
+      }
       if(save_target) {
+        const buffer = Buffer.from(await new Blob(chunks, { type: mimeType }).arrayBuffer());
         var video_path = typeof save_target == 'object' ? save_target.filePath : save_target;
         if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
             save_target && typeof save_target == 'object') {
@@ -689,16 +710,24 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
         obj.jsl.inter.env.writeFileSync(video_path, buffer);
       }
     };
+    if(!env.stopMediaRecorder) recorder.onstop = saveRecording;
 
     var recording = true;
     recorder.start(1000);
 
-    recorder.stopRecording = async function() {
+    const stop = async function() {
       if(recording) {
         recording = false;
-        recorder.stop();
+        if(env.stopMediaRecorder) {
+          await env.stopMediaRecorder(recorder);
+          await saveRecording();
+        } else {
+          recorder.stop();
+        }
       }
     };
+    if(env._setRemoteMethod) env._setRemoteMethod(recorder, 'stopRecording', stop);
+    else recorder.stopRecording = stop;
     return recorder;
   }
 

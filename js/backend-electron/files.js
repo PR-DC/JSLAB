@@ -44,21 +44,27 @@ class PRDC_JSLAB_ELECTRON_FILES {
    * @returns {boolean} Whether the path is a model file.
    */
   isSimulateProjectPath(file_path, allow_modelica = false) {
-    if(typeof file_path !== 'string' || !(allow_modelica ? /\.(?:jslmo|mo)$/i : /\.jslmo$/i).test(file_path)) return false;
+    const { PRDC_JSLAB_SIMULATE_PROJECT } = require('../simulate/project');
+    if(!PRDC_JSLAB_SIMULATE_PROJECT.acceptsProjectPath(file_path, allow_modelica)) return false;
     return Boolean(fs.statSync(file_path, { throwIfNoEntry: false })?.isFile());
   }
 
   /**
-   * Selects a project before the Simulate window is created.
-   * @returns {Promise<string|undefined>} Selected project path.
+   * Resolves a project using native file and picker services.
+   * @param {string} [file] Explicit project path.
+   * @param {Object} [options] Supported input types and open-document policy.
+   * @returns {Promise<Object>} Selected path or localized error.
    */
-  async selectSimulateProject() {
-    const { canceled, filePaths } = await dialog.showOpenDialog(this.application.win_main, {
-      title: this.application.currentString(775),
-      properties: ['openFile'],
-      filters: [{ name: this.application.currentString(672), extensions: ['jslmo'] }]
-    });
-    if(!canceled) return filePaths[0];
+  resolveSimulateProject(file, options) {
+    const { PRDC_JSLAB_SIMULATE_PROJECT } = require('../simulate/project');
+    return PRDC_JSLAB_SIMULATE_PROJECT.resolveProject(file, {
+      choose: async settings => {
+        const { canceled, filePaths } = await dialog.showOpenDialog(this.application.win_main, settings);
+        if(!canceled) return filePaths[0];
+      },
+      existsFile: file => Boolean(fs.statSync(file, { throwIfNoEntry: false })?.isFile()),
+      currentString: id => this.application.currentString(id)
+    }, options);
   }
 
   /**
