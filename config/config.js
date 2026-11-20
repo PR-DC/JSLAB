@@ -31,6 +31,7 @@ class PRDC_APP_CONFIG {
     this.DEBUG_NEW_FUN = false;
     this.DEBUG_RENDER_GONE_ERROR = true;
     this.DEBUG_SYM_PYTHON_EVAL_CODE = false;
+    this.SYMBOLIC_MATH_BACKEND = 'giac'; // 'giac' or 'sympy'
     this.DEBUG_PRE_TRANSFORMED_CODE = false;
     this.DEBUG_TRANSFORMED_CODE = false;
     this.DEBUG_PARALLEL_WORKER_SETUP_FUN = false;
@@ -82,14 +83,15 @@ class PRDC_APP_CONFIG {
         {name: 'parallel', file: 'parallel', class_name: 'PRDC_JSLAB_PARALLEL'},
         {name: 'mat', file: 'matrix-math', class_name: 'PRDC_JSLAB_MATRIX_MATH'},
         {name: 'vec', file: 'vector-math', class_name: 'PRDC_JSLAB_VECTOR_MATH'},
-        {name: 'sym', file: 'sym-math', class_name: 'PRDC_JSLAB_SYMBOLIC_MATH'},
+        {name: 'sym', file: 'sym-math', class_name: 'PRDC_JSLAB_SYMBOLIC_MATH',
+          doc_file: 'sym-math-sympy', doc_class_name: 'PRDC_JSLAB_SYMBOLIC_MATH_SYMPY'},
       ]
     };
     
     this.DOC_SUBMODULES_ADDITIONAL = [
       {name: 'Matrix', file: 'matrix-math', class_name: 'PRDC_JSLAB_MATRIX'},
       {name: 'Vector', file: 'vector-math', class_name: 'PRDC_JSLAB_VECTOR'},
-      {name: 'Symbolic', file: 'sym-math', class_name: 'PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL'},
+      {name: 'Symbolic', file: 'sym-math-sympy', class_name: 'PRDC_JSLAB_SYMBOLIC_MATH_SYMBOL'},
       {name: 'Table', file: 'table', class_name: 'PRDC_JSLAB_TABLE'},
       {name: 'Timetable', file: 'table', class_name: 'PRDC_JSLAB_TIMETABLE'},
       {name: 'Window', file: 'windows', class_name: 'PRDC_JSLAB_WINDOW'},

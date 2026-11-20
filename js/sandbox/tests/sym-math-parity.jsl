@@ -1,0 +1,78 @@
+/**
+ * @file Real-runtime parity checks for the Giac and SymPy symbolic backends
+ * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
+ * PR-DC, Republic of Serbia
+ * info@pr-dc.com
+ */
+
+var parityAssert = require('node:assert/strict');
+var symbolicRoot = jsl.inter.app_path + '/js/sandbox/';
+var SymPyBackend = require(symbolicRoot + 'sym-math-sympy.js').PRDC_JSLAB_SYMBOLIC_MATH_SYMPY;
+var GiacBackend = require(symbolicRoot + 'sym-math-giac.js').PRDC_JSLAB_SYMBOLIC_MATH_GIAC;
+var sympyParity = new SymPyBackend(jsl);
+var giacParity = new GiacBackend(jsl);
+
+await Promise.all([sympyParity.load(), giacParity.load()]);
+
+/**
+ * Reproduces the shape functions and stiffness integrals in the supplied
+ * tension and XY/XZ bending scripts.
+ */
+class SymbolicParityChecks {
+  static shape(backend, direction) {
+    backend.clear();
+    const [le, x, E, inertia] = backend.syms(['le', 'x', 'E', direction < 0 ? 'Iy' : 'Iz']);
+    const bending = direction !== 0;
+    const P = backend.mat(bending ? [
+      [1, 0, 0, 0],
+      [0, direction, 0, 0],
+      [1, le, backend.pow(le, 2), backend.pow(le, 3)],
+      [0, direction, backend.mul(2 * direction, le), backend.mul(3 * direction, backend.pow(le, 2))]
+    ] : [[1, 0], [1, le]]);
+    const p = backend.mat([bending ? [1, x, backend.pow(x, 2), backend.pow(x, 3)] : [1, x]]);
+    const N = backend.mul(p, backend.inv(P));
+    const B = backend.diff(N, 'x', bending ? 2 : 1);
+    const K = backend.mul(E, inertia, backend.intg(backend.mul(backend.transp(B), B), x, [0, le]));
+    const sampled = backend.subs(backend.subs(N, le, 1), x, [0, 0.125, 0.5, 0.75, 1]).toNumeric();
+    return { sampled, K, le };
+  }
+
+  static stiffnessError(backend, K, le, direction) {
+    const expected = direction === 0 ? backend.mat([
+      ['E*Iz/le', '-E*Iz/le'],
+      ['-E*Iz/le', 'E*Iz/le']
+    ]) : backend.mul(direction < 0 ? 'E*Iy/le**3' : 'E*Iz/le**3', backend.mat([
+      [12, backend.mul(6 * direction, le), -12, backend.mul(6 * direction, le)],
+      [backend.mul(6 * direction, le), backend.mul(4, backend.pow(le, 2)), backend.mul(-6 * direction, le), backend.mul(2, backend.pow(le, 2))],
+      [-12, backend.mul(-6 * direction, le), 12, backend.mul(-6 * direction, le)],
+      [backend.mul(6 * direction, le), backend.mul(2, backend.pow(le, 2)), backend.mul(-6 * direction, le), backend.mul(4, backend.pow(le, 2))]
+    ]));
+    return backend.simplify(backend.minus(K, expected)).toNumeric();
+  }
+}
+
+for(var directionParity of [0, 1, -1]) {
+  var expectedParity = SymbolicParityChecks.shape(sympyParity, directionParity);
+  var actualParity = SymbolicParityChecks.shape(giacParity, directionParity);
+  parityAssert.deepEqual(actualParity.sampled, expectedParity.sampled);
+  var sizeParity = directionParity === 0 ? 2 : 4;
+  var zeroParity = Array.from({length: sizeParity}, () => Array(sizeParity).fill(0));
+  for(var [backendParity, resultParity] of [[sympyParity, expectedParity], [giacParity, actualParity]]) {
+    parityAssert.deepEqual(
+      SymbolicParityChecks.stiffnessError(backendParity, resultParity.K, resultParity.le, directionParity), zeroParity);
+  }
+}
+
+for(var checkBackend of [sympyParity, giacParity]) {
+  var [px] = checkBackend.syms(['x']);
+  var antiderivative = checkBackend.intg('sin(x)', px);
+  var matrixCheck = checkBackend.mat([[checkBackend.diff(antiderivative, px), 0], [0, 2]]);
+  var combinedCheck = checkBackend.div(checkBackend.plus(matrixCheck, matrixCheck), 2);
+  var determinantCheck = checkBackend.det(combinedCheck);
+  var checkValue = checkBackend.mat([[determinantCheck]]);
+  parityAssert.deepEqual(checkBackend.subs(checkValue, px, 0).toNumeric(), [[0]]);
+  parityAssert.deepEqual(checkBackend.subs(checkValue, px, [0]).toNumeric(), [[[0]]]);
+  parityAssert.deepEqual(checkBackend.subs(checkValue, px, 'pi/2').toNumeric(), [[2]]);
+  parityAssert.equal(checkBackend.subs(determinantCheck, px, 'pi/2').toNumeric(), 2);
+  checkBackend.dispLatex(combinedCheck);
+}

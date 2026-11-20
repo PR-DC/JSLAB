@@ -29,12 +29,12 @@ class PRDC_JSLAB_DEV_MAKE_DOC_HELPER {
     } else {
       docs_out = {};
     }
-    var docs = await jsdoc.explain({ files: sourceFiles('js/sandbox/' + module.file + '.js') });
+    var docs = await jsdoc.explain({ files: sourceFiles('js/sandbox/' + (module.doc_file || module.file) + '.js') });
     docs.forEach(function(doc) {
       if(config.OUTPUT_COMPLETE_JSDOC) {
         docs_out.push(doc);
       } else if((doc.kind == 'function' || doc.kind == 'member') &&
-          doc.memberof == module.class_name &&
+          doc.memberof == (module.doc_class_name || module.class_name) &&
           !doc.name.startsWith('_') &&
           !doc.name.startsWith('#') &&
           doc.name != 'jsl' &&

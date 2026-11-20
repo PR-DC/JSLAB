@@ -7,7 +7,7 @@
 
 const { createNativeModule } = require('../jslab-wasm-native');
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
-const factory = require('../../../lib/native-wasm/native_module.js');
+const factory = require('../../../build/wasm/native/native_module.js');
 var tests = new PRDC_JSLAB_TESTS();
 var backend = factory().then(createNativeModule);
 

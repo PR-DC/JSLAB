@@ -110,8 +110,8 @@ ipcRenderer.on('SandboxWindow', PRDC_JSLAB_ELECTRON_INIT_SANDBOX.queueStartupMes
 
 Promise.resolve().then(function() {
   return initializeWasm(
-    require(sandbox_app_path + '/lib/native-wasm/native_module.js'),
-    require(sandbox_app_path + '/lib/native-wasm/alpha_shape_3d.js'));
+    require(sandbox_app_path + '/build/wasm/native/native_module.js'),
+    require(sandbox_app_path + '/build/wasm/native/alpha_shape_3d.js'));
 }).then(PRDC_JSLAB_ELECTRON_INIT_SANDBOX.startSandbox).catch(function(err) {
   ipcRenderer.removeListener('SandboxWindow', PRDC_JSLAB_ELECTRON_INIT_SANDBOX.queueStartupMessage);
   PRDC_JSLAB_ELECTRON_INIT_SANDBOX.logSandboxTestError(err);

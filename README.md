@@ -575,6 +575,16 @@ In order to download necessary tools, clone the repository, and install dependen
     ```
 5. Check examples from: [https://github.com/PR-DC/JSLAB/tree/master/examples](https://github.com/PR-DC/JSLAB/tree/master/examples)
 
+### Symbolic math backends
+
+`sym` uses Giac by default and loads the prebuilt bundle selected in `config/giac.json`. The selected engine initializes on the first `await sym.load()`. To use SymPy, set `SYMBOLIC_MATH_BACKEND` to `'sympy'` in `config/config.js` and restart the desktop app or rebuild the web app.
+
+To update the bundled Giac release, activate the Emscripten SDK and run `node js/dev/build-giac-wasm.js`. The compiler checks out the pinned [GeoGebra Giac sources](https://github.com/geogebra/giac/tree/19a710aea9d528afa272ea582f3283f242e17af3), links the upstream WASM builds of GMP and MPFR, and writes `giac.js` and `giac.wasm` to `build/wasm/giac`. Verify the build before copying the release files into a versioned folder under `lib` and updating `config/giac.json` and the bundle?s source record.
+
+The structured `sym` methods are shared. `sym.eval()` uses Python with SymPy and Giac syntax with Giac. The engines can differ in symbol names, simplification, printed forms, and which integrals they can solve. Run `js/sandbox/tests/sym-math-parity.jsl` in an isolated development session to compare the engineering workflows with both engines.
+
+The LaTeX compiler uses the BusyTeX and TeX Live assets committed under the versioned folder selected in `config/texlive.json`. The bundle's `SOURCES.txt` records its upstream release and build revision.
+
 ## Contributing
 
 ### Setting Up the Development Environment

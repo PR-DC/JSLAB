@@ -35,6 +35,9 @@ const net = require('net');
 const udp = require('dgram');
 const cp = require("child_process");
 const path = require("path");
+const { pathToFileURL } = require('url');
+const { PRDC_JSLAB_SYMBOLIC_MATH } = require('./sym-math');
+const { folder: giac_folder } = require('../../config/giac.json');
 const window_timers = require('timers');
 const tcpPortUsed = require('tcp-port-used');
 const { pathEqual } = require('path-equal');
@@ -145,6 +148,7 @@ class PRDC_JSLAB_ENV {
     });
     this.SerialPort = SerialPort;
     this.jsdoc = jsdoc;
+    this.loadPyodide = this._loadPyodide.bind(this);
 
     this.context.freecad_link = new PRDC_JSLAB_FREECAD_LINK(this.jsl);
     this.context.om_link = new PRDC_JSLAB_OPENMODELICA_LINK(this.jsl);
@@ -228,7 +232,7 @@ class PRDC_JSLAB_ENV {
     this.Writable = Writable;
 
     // Which properties and methods to export to context
-    this.exports = ['debug', 'version', 'platform', 'buildShareLink'];
+    this.exports = ['debug', 'version', 'platform', 'buildShareLink', 'loadPyodide'];
   }
 
   /**
@@ -1900,6 +1904,25 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
+   * Initializes the bundled Python runtime when symbolic math requests it.
+   */
+  async _loadPyodide(options = {}) {
+    const folder = path.join(this.jsl.app_path, 'lib', 'sympy-0.26.2');
+    const factory = await PRDC_JSLAB_SYMBOLIC_MATH._loadSymbolicFactory(pathToFileURL(path.join(folder, 'pyodide.js')), 'loadPyodide');
+    return factory(options);
+  }
+
+  /**
+   * Loads Giac's factory and WebAssembly bytes from the application resources.
+   */
+  async _loadGiac() {
+    const folder = path.join(this.jsl.app_path, 'lib', giac_folder);
+    const wasm_binary = await fs.promises.readFile(path.join(folder, 'giac.wasm'));
+    const factory = await PRDC_JSLAB_SYMBOLIC_MATH._loadSymbolicFactory(pathToFileURL(path.join(folder, 'giac.js')), 'createJslabGiac');
+    return factory({ wasmBinary: wasm_binary });
+  }
+
+  /**
    * Routes native require through the sandbox workspace search paths.
    * @param {Function} Module Node module constructor.
    */
@@ -1939,14 +1962,13 @@ class PRDC_JSLAB_ENV {
       importScripts(internal_app_path + '/lib/luxon-3.4.4/luxon-3.4.4.min.js');
       importScripts(internal_app_path + '/lib/math-11.8.2/math-11.8.2.min.js');
       importScripts(internal_app_path + '/lib/sprintf-1.1.3/sprintf-1.1.3.min.js');
-      importScripts(internal_app_path + '/lib/sympy-0.26.2/pyodide.js');
 
       const { PRDC_JSLAB_LIB } = require(internal_app_path + '/js/sandbox/jslab');
       const { PRDC_JSLAB_ENV } = require(internal_app_path + '/js/sandbox/jslab-env-electron');
       const { initializeWasm } = require(internal_app_path + '/js/sandbox/jslab-wasm-loader');
       await initializeWasm(
-        require(internal_app_path + '/lib/native-wasm/native_module.js'),
-        require(internal_app_path + '/lib/native-wasm/alpha_shape_3d.js'));
+        require(internal_app_path + '/build/wasm/native/native_module.js'),
+        require(internal_app_path + '/build/wasm/native/alpha_shape_3d.js'));
 
       // Global variables
       var jsl = new PRDC_JSLAB_LIB(internal_app_path, internal_packed, PRDC_JSLAB_ENV);

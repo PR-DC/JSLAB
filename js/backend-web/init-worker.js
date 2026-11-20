@@ -24,12 +24,12 @@ class PRDC_JSLAB_WEB_INIT_WORKER {
       globalThis.document = remote.root('document');
       globalThis.__JSLAB_WEB_MEDIA__ = remote.root('media');
     }
-    const locateFile = name => new URL('../lib/native-wasm/' + name, location.href).href;
+    const locateFile = name => new URL('../wasm/native/' + name, location.href).href;
     function lazyWorkerWasmFactory(global_name, entry) {
       return function() {
         if(typeof globalThis[global_name] != 'function') {
           var version = wasm_manifest.version ? '?v=' + encodeURIComponent(wasm_manifest.version) : '';
-          importScripts(new URL('../lib/native-wasm/' + entry + version, location.href).href);
+          importScripts(new URL('../wasm/native/' + entry + version, location.href).href);
         }
         return globalThis[global_name]({ locateFile });
       };
@@ -170,7 +170,7 @@ globalThis.cancelIdleCallback = clearTimeout;
 require("../other-shared/init-config");
 const { PRDC_JSLAB_LIB } = require("../sandbox/jslab");
 const { configureWasm } = require("../sandbox/jslab-wasm-loader");
-const wasm_manifest = require("../../lib/native-wasm/manifest.json");
+const wasm_manifest = require("../../build/wasm/native/manifest.json");
 const { PRDC_JSLAB_WEB_DEBUGGER_RUNTIME } = require("./worker-debugger-runtime");
 const { createWorkerClass } = require("./worker-children");
 const { PRDC_JSLAB_REMOTE_UI_CLIENT } = require("./remote-ui");

@@ -7,7 +7,7 @@
 
 const { createAlphaShape3DClass } = require('../jslab-wasm-alpha-shape');
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
-const factory = require('../../../lib/native-wasm/alpha_shape_3d.js');
+const factory = require('../../../build/wasm/native/alpha_shape_3d.js');
 var tests = new PRDC_JSLAB_TESTS();
 var compiled = factory();
 var corners = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1], [1, 1, 1]];

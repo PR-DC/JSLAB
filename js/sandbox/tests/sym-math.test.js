@@ -31,15 +31,19 @@ class PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER {
     var jsl = {
       app_path: 'C:/Electron/JSLAB',
       inter: {
-        loadPyodide: async function(options) {
-          pyodide.indexURL = options.indexURL;
-          return pyodide;
-        },
         env: {
           error: function(message) {
             errors.push(message);
           },
-          disp: function() {}
+          disp: function() {},
+          _loadGiac: async function() {
+            load_calls.push('giac');
+            return { cwrap: () => () => '' };
+          }
+        },
+        loadPyodide: async function(options) {
+          pyodide.indexURL = options.indexURL;
+          return pyodide;
         },
         lang: {
           string: function(id) {
@@ -73,7 +77,8 @@ var tests = new PRDC_JSLAB_TESTS();
 
 tests.add('load initializes pyodide once and imports sympy/numpy', async function(assert) {
   var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
-  await harness.sym.load();
+  assert.deepEqual(harness.load_calls, []);
+  await Promise.all([harness.sym.load(), harness.sym.load()]);
   await harness.sym.load();
 
   assert.equal(harness.sym.loaded, true);
@@ -83,6 +88,18 @@ tests.add('load initializes pyodide once and imports sympy/numpy', async functio
   assert.ok(harness.pyodide_run_calls.some(function(code) {
     return code.includes('from sympy import *');
   }));
+}, { tags: ['unit', 'sym'] });
+
+tests.add('Giac selection initializes only Giac on concurrent first use', async function(assert) {
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_SYM_MATH_TEST_HELPER.createSymHarness();
+  harness.jsl.inter.config.SYMBOLIC_MATH_BACKEND = 'giac';
+  var sym = new PRDC_JSLAB_SYMBOLIC_MATH(harness.jsl);
+  assert.equal(sym.loaded, false);
+  assert.deepEqual(harness.load_calls, []);
+  await Promise.all([sym.load(), sym.load()]);
+  assert.equal(sym.loaded, true);
+  assert.deepEqual(harness.load_calls, ['giac']);
+  assert.equal(harness.pyodide.indexURL, undefined);
 }, { tags: ['unit', 'sym'] });
 
 tests.add('symbol naming helpers generate sequential internal names', function(assert) {

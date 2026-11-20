@@ -1,0 +1,19 @@
+Giac 1.23.69823 by Bernard Parisse and contributors
+License: GPL-3.0-or-later (LICENSE-GPL-3.0.txt)
+Source: https://github.com/geogebra/giac/tree/19a710aea9d528afa272ea582f3283f242e17af3
+Source archive: https://github.com/geogebra/giac/archive/19a710aea9d528afa272ea582f3283f242e17af3.tar.gz
+
+The build links the GMP and MPFR WebAssembly archives in the pinned
+checkout under src/giac.js/prebuilt. Its build.gradle specifies these versions:
+GMP 6.3.0: https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz
+MPFR 4.2.1: https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz
+The GNU licenses are included alongside these files.
+
+JSLAB build recipe: js/dev/build-giac-wasm.js
+Toolchain: Emscripten 5.0.6
+Toolchain source: https://github.com/emscripten-core/emscripten/tree/5.0.6
+Toolchain license notices: LICENSE-Emscripten.txt
+
+SHA-256
+c22aad7e402e3b530f127a38d6c0164cd459ee7a3bbcbab2ed61a5e0f40bc355  giac.js
+e0ddf2ebdfc802bbcd230c8a02ef823aab648f8d573328995512b2ea1158f4c0  giac.wasm

@@ -463,7 +463,7 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
       '}',
       'function libraryRoot(url) {',
       '  var relative = relativePath(url);',
-      "  if(!relative || !relative.startsWith('lib/')) return null;",
+      "  if(!relative || (!relative.startsWith('lib/') && !relative.startsWith('wasm/'))) return null;",
       "  return relative.split('/').slice(0, 2).join('/');",
       '}',
       "self.addEventListener('install', function(event) { event.waitUntil(self.skipWaiting()); });",
@@ -765,6 +765,8 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
     ].forEach(function(folder_name) {
       PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFolder(path.join(app_root, 'lib', folder_name), path.join(dist_root, 'lib', folder_name));
     });
+    const { folder: giac } = require('../../config/giac.json');
+    PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFolder(path.join(app_root, 'lib', giac), path.join(dist_root, 'lib', giac));
 
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'code', 'dialog-search.js'), path.join(js_code_root, 'dialog-search.js'));
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'code', 'custom-javascript-hint.js'), path.join(js_code_root, 'custom-javascript-hint.js'));
@@ -773,7 +775,7 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
       throw new Error('Required WebAssembly bundles are missing. Run npm run build-native-wasm before building the web application.');
     }
     if(native_wasm_info.native_module.available || native_wasm_info.alpha_shape_3d.available) {
-      PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFolder(native_wasm_root, path.join(dist_root, 'lib', 'native-wasm'));
+      PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFolder(native_wasm_root, path.join(dist_root, 'wasm', 'native'));
     }
     const { packWebLibrary } = require(path.join(openmodelica_wasm_root, 'dev/build-web'));
     await packWebLibrary(openmodelica_wasm_root, path.join(dist_root, 'lib', openmodelica_wasm_folder));
@@ -947,11 +949,11 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
     var versioned_library_roots = fs.readdirSync(path.join(dist_root, 'lib'), {
       withFileTypes: true
     }).filter(function(entry) {
-      return entry.isDirectory() && (entry.name == 'native-wasm' ||
-        /-(?:v|r)?\d/i.test(entry.name));
+      return entry.isDirectory() && /-(?:v|r)?\d/i.test(entry.name);
     }).map(function(entry) {
       return 'lib/' + entry.name;
     }).sort();
+    versioned_library_roots.push('wasm/native');
     fs.writeFileSync(path.join(dist_root, 'service-worker.js'),
       PRDC_JSLAB_DEV_BUILD_WEB_HELPER.buildWebServiceWorker(versioned_library_roots), 'utf8');
     // Static hosts supporting _headers can enable the isolated worker debugger.
@@ -995,8 +997,10 @@ var css_root = path.join(dist_root, 'css');
 var font_root = path.join(dist_root, 'font');
 var html_root = path.join(dist_root, 'html');
 var img_root = path.join(dist_root, 'img');
-var native_wasm_root = path.join(app_root, 'lib', 'native-wasm');
-var openmodelica_wasm_folder = new (require('../../config/config').PRDC_APP_CONFIG)().SIMULATE_BUNDLE;
+var wasm_root = path.join(app_root, 'build', 'wasm');
+var native_wasm_root = path.join(wasm_root, 'native');
+var config = new (require('../../config/config').PRDC_APP_CONFIG)();
+var openmodelica_wasm_folder = config.SIMULATE_BUNDLE;
 var openmodelica_wasm_root = path.join(app_root, 'lib', openmodelica_wasm_folder);
 
 

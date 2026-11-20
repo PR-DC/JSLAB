@@ -28,6 +28,8 @@ var { PRDC_JSLAB_WEB_SERIAL_PORT } = require('../backend-web/serial-port');
 var { createLazyNativeModule } = require('./jslab-wasm-native');
 var { createLazyAlphaShape3DClass } = require('./jslab-wasm-alpha-shape');
 var { getWasmModule, prepareWasmForCode } = require('./jslab-wasm-loader');
+const { PRDC_JSLAB_SYMBOLIC_MATH } = require('./sym-math');
+const { folder: giac_folder } = require('../../config/giac.json');
 
 const { TraceMap, originalPositionFor } = require('@jridgewell/trace-mapping');
 /**
@@ -88,8 +90,6 @@ class PRDC_JSLAB_ENV {
     this.math = math;
     this.fmin = fmin;
     this.exports = ['debug', 'version', 'platform', 'web', 'buildShareLink', 'loadPyodide'];
-    this._pyodide_loader = null;
-    this._pyodide_factory = null;
     this.loadPyodide = this._loadPyodide.bind(this);
     this.bridge = this.is_worker ? globalThis.__JSLAB_WEB_BRIDGE__ || null : null;
     if(!this.is_worker) {
@@ -368,6 +368,24 @@ class PRDC_JSLAB_ENV {
    */
   async _loadPyodide(options = {}) {
     var normalized_options = Object.assign({}, options);
+    var app_location = this._getAppLocation();
+    var index_url = String(normalized_options.indexURL || './lib/sympy-0.26.2/');
+    if(index_url.startsWith('/lib/')) {
+      index_url = '.' + index_url;
+    }
+    index_url = new URL(index_url, app_location).href;
+    if(!index_url.endsWith('/')) {
+      index_url += '/';
+    }
+    normalized_options.indexURL = index_url;
+    const factory = await PRDC_JSLAB_SYMBOLIC_MATH._loadSymbolicFactory(new URL('pyodide.js', index_url), 'loadPyodide');
+    return factory(normalized_options);
+  }
+
+  /**
+   * Resolves the application URL when running in a sandbox frame or worker.
+   */
+  _getAppLocation() {
     var app_location;
     try {
       app_location = typeof globalThis.importScripts == 'function'
@@ -378,55 +396,16 @@ class PRDC_JSLAB_ENV {
     } catch{
       app_location = globalThis.location.href;
     }
-    var index_url = String(normalized_options.indexURL || './lib/sympy-0.26.2/');
-    if(index_url.startsWith('/lib/')) {
-      index_url = '.' + index_url;
-    }
-    index_url = new URL(index_url, app_location).href;
-    if(!index_url.endsWith('/')) {
-      index_url += '/';
-    }
-    normalized_options.indexURL = index_url;
+    return app_location;
+  }
 
-    if(!this._pyodide_factory) {
-      if(!this._pyodide_loader) {
-        this._pyodide_loader = new Promise((resolve, reject) => {
-          if(typeof globalThis.importScripts == 'function') {
-            try {
-              globalThis.importScripts(new URL('pyodide.js', index_url).href);
-              var worker_factory = globalThis.loadPyodide;
-              if(typeof worker_factory != 'function' || worker_factory === this.loadPyodide) {
-                throw new Error('Pyodide loaded without exposing its runtime factory.');
-              }
-              this._pyodide_factory = worker_factory;
-              resolve(worker_factory);
-            } catch(error) {
-              reject(error);
-            }
-            return;
-          }
-          var script = globalThis.document.createElement('script');
-          script.src = new URL('pyodide.js', index_url).href;
-          script.async = true;
-          script.onload = () => {
-            var factory = globalThis.loadPyodide;
-            if(typeof factory != 'function' || factory === this.loadPyodide) {
-              reject(new Error('Pyodide loaded without exposing its runtime factory.'));
-              return;
-            }
-            this._pyodide_factory = factory;
-            resolve(factory);
-          };
-          script.onerror = () => reject(new Error('Unable to load Pyodide from ' + index_url));
-          (globalThis.document.head || globalThis.document.documentElement).appendChild(script);
-        }).catch((error) => {
-          this._pyodide_loader = null;
-          throw error;
-        });
-      }
-      await this._pyodide_loader;
-    }
-    return await this._pyodide_factory(normalized_options);
+  /**
+   * Initializes Giac from the web distribution on first use.
+   */
+  async _loadGiac() {
+    const folder = new URL('lib/' + giac_folder + '/', this._getAppLocation());
+    const factory = await PRDC_JSLAB_SYMBOLIC_MATH._loadSymbolicFactory(new URL('giac.js', folder), 'createJslabGiac');
+    return factory({ locateFile: file => new URL(file, folder).href });
   }
 
   /**

@@ -42,7 +42,7 @@ class PRDC_JSLAB_WEB_INIT_SANDBOX {
             ? globalThis.parent.location.href
             : globalThis.document.baseURI;
           var version = wasm_info.version ? '?v=' + encodeURIComponent(wasm_info.version) : '';
-          var url = new URL('./lib/native-wasm/' + entry + version, base_url).href;
+          var url = new URL('./wasm/native/' + entry + version, base_url).href;
           await new Promise(function(resolve, reject) {
             var script = document.createElement('script');
             script.src = url;

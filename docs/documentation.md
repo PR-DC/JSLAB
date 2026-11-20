@@ -806,7 +806,7 @@ The installation script extracts the bundled C++ libraries and builds both WASM 
 npm run build-native-wasm
 ```
 
-Generated bundles and their manifest are written to lib/native-wasm. They are generated build artifacts, excluded from Git and included in packaged applications. End users of packaged releases do not need Emscripten. Build, packaging and web-distribution scripts compile these modules before preparing their output.
+The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.
 
 ### Runtime organization
 
@@ -13956,8 +13956,7 @@ Creates a vector from spherical coordinates.
 
 ##### `load()`
 
-Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
-Initializes the Python environment for symbolic computations.
+Initializes the configured symbolic engine on first use.
 
 **Returns:** `Promise.<void>` A promise that resolves when the libraries are loaded.
 
@@ -13977,11 +13976,11 @@ Checks if the symbolic libraries are loaded. Throws an error if not.
 
 ##### `eval(code)`
 
-Evaluates a Python code string within the symbolic math environment.
+Evaluates backend-specific code within the symbolic math environment.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `code` | `string` | The Python code to evaluate. |
+| `code` | `string` | Python for SymPy, or Giac syntax for Giac. |
 
 **Returns:** `*` The result of the evaluated code.
 

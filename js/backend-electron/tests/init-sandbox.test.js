@@ -137,8 +137,8 @@ class {
             return Promise.resolve();
           } };
         }
-        if(module_path.endsWith('/lib/native-wasm/native_module.js') ||
-            module_path.endsWith('/lib/native-wasm/alpha_shape_3d.js')) {
+        if(module_path.endsWith('/build/wasm/native/native_module.js') ||
+            module_path.endsWith('/build/wasm/native/alpha_shape_3d.js')) {
           return function() {};
         }
         if(module_path === '../js/other-shared/tester.js' ||

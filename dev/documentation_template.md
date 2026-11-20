@@ -806,7 +806,7 @@ The installation script extracts the bundled C++ libraries and builds both WASM 
 npm run build-native-wasm
 ```
 
-Generated bundles and their manifest are written to lib/native-wasm. They are generated build artifacts, excluded from Git and included in packaged applications. End users of packaged releases do not need Emscripten. Build, packaging and web-distribution scripts compile these modules before preparing their output.
+The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.
 
 ### Runtime organization
 

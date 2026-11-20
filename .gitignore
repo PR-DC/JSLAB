@@ -15,5 +15,8 @@
 /dist-web/
 /temp/
 /node_modules/
-/lib/native-wasm/
 package-lock.json
+
+# Legacy WASM output directories from older checkouts
+/lib/native-wasm/
+/lib/giac-wasm/

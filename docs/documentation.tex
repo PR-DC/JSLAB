@@ -1201,7 +1201,7 @@ The installation script extracts the bundled C++ libraries and builds both WASM 
 npm run build-native-wasm
 \end{lstlisting}
 
-Generated bundles and their manifest are written to lib/native-wasm. They are generated build artifacts, excluded from Git and included in packaged applications. End users of packaged releases do not need Emscripten. Build, packaging and web-distribution scripts compile these modules before preparing their output.
+The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.
 
 
 \subsection{Runtime organization}
@@ -18371,8 +18371,7 @@ This will update the internal state and adjust the Leaflet map if it is ready.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<void>>}: A promise that resolves when the libraries are loaded.
 
-\noindent Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.
-Initializes the Python environment for symbolic computations.
+\noindent Initializes the configured symbolic engine on first use.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getSymbolName(symbol)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -18399,12 +18398,12 @@ Initializes the Python environment for symbolic computations.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{code} \texttt{<string>}: The Python code to evaluate.
+  \item \texttt{code} \texttt{<string>}: Python for SymPy, or Giac syntax for Giac.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<*>}: The result of the evaluated code.
 
-\noindent Evaluates a Python code string within the symbolic math environment.
+\noindent Evaluates backend-specific code within the symbolic math environment.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{sym(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}

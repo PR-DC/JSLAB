@@ -5,13 +5,15 @@
  * info@pr-dc.com
  */
 const { PRDC_JSLAB_TESTS } = require('../../other-shared/tester');
+const { folder: giac_folder } = require('../../../config/giac.json');
+const giac_url = '/lib/' + giac_folder + '/';
 var tests = new PRDC_JSLAB_TESTS();
 // These scenarios require their isolated GUI runner; ordinary module tests stay headless.
 if(!globalThis.gui_browser) {
   exports.MODULE_TESTS = tests;
   return;
 }
-tests.add('web loads WASM and Pyodide backends only when their APIs are used', async function(assert) {
+tests.add('web loads WASM and the selected symbolic backend only when used', async function(assert) {
   if(Array.isArray(globalThis.gui_hit_archive)) {
     gui_hit_archive.push(...await gui_browser.evaluate(function() {
       return globalThis.__JSLAB_GUI_HITS__ || [];
@@ -38,7 +40,7 @@ tests.add('web loads WASM and Pyodide backends only when their APIs are used', a
   assert.equal(initial.native, 'undefined');
   assert.equal(initial.alpha, 'undefined');
   assert.equal(initial.requests.some(function(url) {
-    return url.includes('sympy-0.26.2/');
+    return url.includes('sympy-0.26.2/') || url.includes(giac_url);
   }), false);
   assert.equal(initial.requests.some(function(url) {
     return url.includes('native_module.js');
@@ -109,6 +111,11 @@ tests.add('web loads WASM and Pyodide backends only when their APIs are used', a
     return await jslab_web.sandbox_api.evaluate('await sym.load(); sym.loaded');
   });
   assert.equal(symbolic.value, true);
+  var { PRDC_APP_CONFIG } = require('../../../config/config');
+  var use_giac = new PRDC_APP_CONFIG().SYMBOLIC_MATH_BACKEND === 'giac';
+  assert.equal(gui_requests.some(function(url) {
+    return url.includes(use_giac ? '/sympy-0.26.2/' : giac_url);
+  }), false);
   var cached = await gui_browser.evaluate(async function() {
     var names = await caches.keys();
     var library_cache = names.find(function(name) {
@@ -123,8 +130,11 @@ tests.add('web loads WASM and Pyodide backends only when their APIs are used', a
     });
   });
   assert.equal(cached.some(function(url) {
-    return url.includes('sympy-0.26.2/pyodide.js');
+    return url.includes(use_giac ? giac_url + 'giac.js' : '/sympy-0.26.2/pyodide.js');
   }), true);
+  if(use_giac) {
+    assert.ok(cached.some(url => url.includes(giac_url + 'giac.wasm')));
+  }
   assert.equal(cached.some(function(url) {
     return url.includes('native_module.js');
   }), true);

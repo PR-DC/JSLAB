@@ -62,6 +62,8 @@
       "!dist",
       "!dist-web",
       "!build",
+      "!lib/native-wasm",
+      "!lib/giac-wasm",
       "!bin",
       "!config/installer.nsh",
       "!temp",
@@ -94,6 +96,15 @@
       }
     ],
     "extraResources": [
+      {
+        "from": "./build/wasm/",
+        "to": "./app/build/wasm/",
+        "filter": [
+          "native/native_module.js",
+          "native/alpha_shape_3d.js",
+          "native/manifest.json"
+        ]
+      },
       {
         "from": "./node_modules/npm/",
         "to": "./app/node_modules/npm/"

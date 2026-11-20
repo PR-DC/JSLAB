@@ -26865,11 +26865,11 @@
             "name": "value"
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 533,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 494,
         "source_range": [
-          15889,
-          16024
+          14396,
+          14520
         ]
       },
       "toString": {
@@ -26887,11 +26887,11 @@
             "description": "The string representation in the format 'Vector(x:, y:, z:)'."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 542,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 544,
         "source_range": [
-          16177,
-          16280
+          15922,
+          16025
         ]
       },
       "toNumeric": {
@@ -26909,11 +26909,11 @@
             "description": "The numeric representation of the symbolic value."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 550,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 552,
         "source_range": [
-          16417,
-          16464
+          16162,
+          16209
         ]
       },
       "toJSON": {
@@ -26931,11 +26931,11 @@
             "description": "The JSON string representation of the symbolic value."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 558,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 560,
         "source_range": [
-          16608,
-          16733
+          16353,
+          16478
         ]
       },
       "toSafeJSON": {
@@ -26953,11 +26953,11 @@
             "description": "The safe JSON representation of the object."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 569,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 571,
         "source_range": [
-          16872,
-          16916
+          16617,
+          16661
         ]
       },
       "toPrettyString": {
@@ -26975,11 +26975,11 @@
             "description": "The pretty string representation of the object."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 577,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 579,
         "source_range": [
-          17063,
-          17113
+          16808,
+          16858
         ]
       }
     },
@@ -45620,7 +45620,7 @@
       "load": {
         "name": "load",
         "kind": "function",
-        "description": "Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.\nInitializes the Python environment for symbolic computations.",
+        "description": "Initializes the configured symbolic engine on first use.",
         "params": [],
         "returns": [
           {
@@ -45633,11 +45633,11 @@
           }
         ],
         "async": true,
-        "source_filename": "sym-math.js",
-        "source_lineno": 78,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 125,
         "source_range": [
-          2454,
-          2887
+          3653,
+          3779
         ]
       },
       "getSymbolName": {
@@ -45666,11 +45666,11 @@
             "description": "The name of the symbolic variable."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 122,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 83,
         "source_range": [
-          3932,
-          4126
+          2402,
+          2596
         ]
       },
       "checkLoaded": {
@@ -45678,17 +45678,17 @@
         "kind": "function",
         "description": "Checks if the symbolic libraries are loaded. Throws an error if not.",
         "params": [],
-        "source_filename": "sym-math.js",
-        "source_lineno": 134,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 95,
         "source_range": [
-          4279,
-          4403
+          2749,
+          2873
         ]
       },
       "eval": {
         "name": "eval",
         "kind": "function",
-        "description": "Evaluates a Python code string within the symbolic math environment.",
+        "description": "Evaluates backend-specific code within the symbolic math environment.",
         "params": [
           {
             "type": {
@@ -45710,11 +45710,11 @@
             "description": "The result of the evaluated code."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 146,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 107,
         "source_range": [
-          4668,
-          4969
+          3153,
+          3454
         ]
       },
       "sym": {
@@ -45742,11 +45742,11 @@
             "description": "The created symbolic variable."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 164,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 125,
         "source_range": [
-          5168,
-          5294
+          3653,
+          3779
         ]
       },
       "syms": {
@@ -45774,11 +45774,11 @@
             "description": "An array of created symbolic variables."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 176,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 137,
         "source_range": [
-          5519,
-          5785
+          4004,
+          4270
         ]
       },
       "mat": {
@@ -45806,11 +45806,11 @@
             "description": "The symbolic matrix."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 194,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 155,
         "source_range": [
-          6056,
-          6356
+          4541,
+          4841
         ]
       },
       "mul": {
@@ -45841,11 +45841,11 @@
             "description": "The resulting symbolic expression after multiplication."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 212,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 173,
         "source_range": [
-          6631,
-          6953
+          5116,
+          5438
         ]
       },
       "div": {
@@ -45876,11 +45876,11 @@
             "description": "The resulting symbolic expression after division."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 234,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 195,
         "source_range": [
-          7217,
-          7539
+          5702,
+          6024
         ]
       },
       "plus": {
@@ -45911,11 +45911,11 @@
             "description": "The resulting symbolic expression after addition."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 256,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 217,
         "source_range": [
-          7797,
-          8120
+          6282,
+          6605
         ]
       },
       "minus": {
@@ -45946,11 +45946,11 @@
             "description": "The resulting symbolic expression after subtraction."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 278,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 239,
         "source_range": [
-          8391,
-          8715
+          6876,
+          7200
         ]
       },
       "pow": {
@@ -45991,11 +45991,11 @@
             "description": "The resulting symbolic expression after exponentiation."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 301,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 262,
         "source_range": [
-          9047,
-          9313
+          7532,
+          7798
         ]
       },
       "transp": {
@@ -46024,11 +46024,11 @@
             "description": "The transposed matrix expression."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 320,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 281,
         "source_range": [
-          9553,
-          9784
+          8038,
+          8269
         ]
       },
       "inv": {
@@ -46057,11 +46057,11 @@
             "description": "The inverse of the matrix expression."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 338,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 299,
         "source_range": [
-          10038,
-          10270
+          8523,
+          8755
         ]
       },
       "det": {
@@ -46090,11 +46090,11 @@
             "description": "The determinant of the matrix expression."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 356,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 317,
         "source_range": [
-          10558,
-          10790
+          9043,
+          9275
         ]
       },
       "diff": {
@@ -46144,11 +46144,11 @@
             "description": "The differentiated expression."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 376,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 337,
         "source_range": [
-          11229,
-          11484
+          9714,
+          10000
         ]
       },
       "intg": {
@@ -46197,11 +46197,11 @@
             "description": "The integrated expression."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 396,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 358,
         "source_range": [
-          12021,
-          12581
+          10537,
+          11076
         ]
       },
       "subs": {
@@ -46252,11 +46252,11 @@
             "description": "The expression after substitution."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 426,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 387,
         "source_range": [
-          13033,
-          13797
+          11528,
+          12292
         ]
       },
       "simplify": {
@@ -46285,11 +46285,11 @@
             "description": "The simplified expression."
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 461,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 422,
         "source_range": [
-          14015,
-          14256
+          12510,
+          12751
         ]
       },
       "showLatex": {
@@ -46308,11 +46308,11 @@
             "name": "expr"
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 478,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 439,
         "source_range": [
-          14440,
-          14561
+          12935,
+          13056
         ]
       },
       "dispLatex": {
@@ -46331,11 +46331,11 @@
             "name": "expr"
           }
         ],
-        "source_filename": "sym-math.js",
-        "source_lineno": 487,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 448,
         "source_range": [
-          14739,
-          14855
+          13234,
+          13350
         ]
       },
       "clear": {
@@ -46343,11 +46343,11 @@
         "kind": "function",
         "description": "Clears all symbolic variables and resets the symbolic math environment.",
         "params": [],
-        "source_filename": "sym-math.js",
-        "source_lineno": 495,
+        "source_filename": "sym-math-sympy.js",
+        "source_lineno": 456,
         "source_range": [
-          14948,
-          15191
+          13443,
+          13686
         ]
       }
     }

@@ -203,21 +203,21 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
       generated_at: new Date().toISOString(),
       targets: {
         native_module: {
-          available: fs.existsSync(path.join(lib_root, 'native_module.js')),
+          available: fs.existsSync(path.join(bundle_root, 'native_module.js')),
           entry: 'native_module.js',
           format: 'emscripten-single-file'
         },
         alpha_shape_3d: {
-          available: fs.existsSync(path.join(lib_root, 'alpha_shape_3d.js')),
+          available: fs.existsSync(path.join(bundle_root, 'alpha_shape_3d.js')),
           entry: 'alpha_shape_3d.js',
           format: 'emscripten-single-file'
         }
       }
     };
 
-    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(lib_root);
+    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(bundle_root);
     fs.writeFileSync(
-      path.join(lib_root, 'manifest.json'),
+      path.join(bundle_root, 'manifest.json'),
       JSON.stringify(manifest, null, 2),
       'utf8'
     );
@@ -246,7 +246,7 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
     }
 
     PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(build_root);
-    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(lib_root);
+    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(bundle_root);
 
     if(!target || target === true || target === 'all' || target === 'native_module') {
       PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.buildNativeModuleWasm();
@@ -256,8 +256,9 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
     }
     PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.writeManifest();
 
-    console.log('Built native wasm bundles in ' + lib_root);
+    console.log('Built native wasm bundles in ' + bundle_root);
   }
+
   /**
    * Compiles a configured WebAssembly target and copies its successful output.
    * @param {Array<string>} args Compiler arguments.
@@ -278,7 +279,7 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
       throw new Error('Failed to build ' + bundle_name + ' wasm bundle.\n' + err_msg.trim());
     }
 
-    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.copyFile(output_file, path.join(lib_root, bundle_name + '.js'));
+    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.copyFile(output_file, path.join(bundle_root, bundle_name + '.js'));
   }
 
 }
@@ -290,7 +291,7 @@ var cp = require('child_process');
 
 var app_root = path.resolve(__dirname, '..', '..');
 var build_root = path.join(app_root, 'build', 'native-wasm');
-var lib_root = path.join(app_root, 'lib', 'native-wasm');
+var bundle_root = path.join(app_root, 'build', 'wasm', 'native');
 var package_json = JSON.parse(fs.readFileSync(path.join(app_root, 'package.json'), 'utf8'));
 
 

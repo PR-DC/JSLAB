@@ -1248,7 +1248,7 @@ await om_link.close();
       },
       'wasm': {
         'title': 'WebAssembly backend',
-        'data': "<h2>WebAssembly backend</h2>\n<p>Desktop and browser JSLAB use the same compiled C++ numerical and AlphaShape implementations through WebAssembly. The numerical backend provides roots, trapz and cumtrapz. The geometry backend provides shape construction, alpha selection, boundary facets, triangulation, point classification, nearest-neighbor queries and mesh simplification.</p>\n<p>There are no application-owned Node-API computational addons or JavaScript numerical fallback implementations. Required compiled bundles must be present before the workspace starts. Missing or incompatible bundles produce a startup error.</p>\n<h3>Build the compiled modules</h3>\n<p>Install Node.js, npm, Git and an activated Emscripten SDK before installing JSLAB from source. Emscripten 7.0.0 was used to validate this backend. The build script checks EMSDK, then bin/emsdk inside the repository, and also accepts EMCC and EMXX overrides.</p>\n<p>For a repository-local SDK:</p>\n<pre><code class=\"language-sh\">git clone https://github.com/emscripten-core/emsdk.git bin/emsdk\npython bin/emsdk/emsdk.py install 7.0.0\npython bin/emsdk/emsdk.py activate 7.0.0\nnpm install\n</code></pre>\n<p>The installation script extracts the bundled C++ libraries and builds both WASM modules. To rebuild them after changing C++ code:</p>\n<pre><code class=\"language-sh\">npm run build-native-wasm\n</code></pre>\n<p>Generated bundles and their manifest are written to lib/native-wasm. They are generated build artifacts, excluded from Git and included in packaged applications. End users of packaged releases do not need Emscripten. Build, packaging and web-distribution scripts compile these modules before preparing their output.</p>\n<h3>Runtime organization</h3>\n<ul>\n<li>cpp/native-module-core.h and cpp/alpha-shape-3d-core.h contain the computational implementations.</li>\n<li>cpp/native-module-wasm.cpp and cpp/alpha-shape-3d-wasm.cpp expose the compiled operations.</li>\n<li>js/sandbox/jslab-wasm-loader.js initializes one pair of modules per sandbox or worker.</li>\n<li>js/sandbox/jslab-wasm-native.js validates numeric inputs and owns temporary WASM buffers.</li>\n<li>js/sandbox/jslab-wasm-alpha-shape.js owns shape instances and routes file exports through the host environment.</li>\n<li>Desktop and browser environments provide host services. Subprocess enumeration stays in the desktop environment.</li>\n</ul>\n<p>The public numerical and geometry function names remain unchanged. The workspace starts only after both compiled modules have initialized. Early desktop IPC messages are replayed after initialization, and parallel workers initialize their own compiled modules before accepting tasks.</p>\n<h3>Resource ownership and numerical behavior</h3>\n<p>Temporary numerical buffers are freed even when a calculation fails. Geometry helpers release their shape objects in finally blocks. Code that directly creates a low-level AlphaShape instance must call dispose() or delete() when finished; finalization is only a backup.</p>\n<p>Geometry errors are reported as JavaScript errors. Coplanar input is rejected for three-dimensional shape construction. OFF exports use the environment file API so desktop files and browser storage follow their normal host behavior.</p>\n<p>The build enables WASM SIMD. CGAL uses conservative interval arithmetic under round-to-nearest with an exact arithmetic backend that does not require the desktop GMP/MPFR DLLs. Numerical result and geometry regression tests run against the compiled modules.</p>\n<p>WASM and native speed depend on input size, binding overhead and the algorithm. Integration benchmarks can benefit from bulk array transfer; geometry may be slower than an optimized native build. Treat development timings as workload-specific measurements.</p>\n<h3>Native dependencies and extension support</h3>\n<p>Serial, USB and terminal dependencies may still use third-party native addons. The compile module and its local node-gyp dependency remain available for users building their own extensions. Replacing the application computational backend does not remove those capabilities.</p>\n"
+        'data': "<h2>WebAssembly backend</h2>\n<p>Desktop and browser JSLAB use the same compiled C++ numerical and AlphaShape implementations through WebAssembly. The numerical backend provides roots, trapz and cumtrapz. The geometry backend provides shape construction, alpha selection, boundary facets, triangulation, point classification, nearest-neighbor queries and mesh simplification.</p>\n<p>There are no application-owned Node-API computational addons or JavaScript numerical fallback implementations. Required compiled bundles must be present before the workspace starts. Missing or incompatible bundles produce a startup error.</p>\n<h3>Build the compiled modules</h3>\n<p>Install Node.js, npm, Git and an activated Emscripten SDK before installing JSLAB from source. Emscripten 7.0.0 was used to validate this backend. The build script checks EMSDK, then bin/emsdk inside the repository, and also accepts EMCC and EMXX overrides.</p>\n<p>For a repository-local SDK:</p>\n<pre><code class=\"language-sh\">git clone https://github.com/emscripten-core/emsdk.git bin/emsdk\npython bin/emsdk/emsdk.py install 7.0.0\npython bin/emsdk/emsdk.py activate 7.0.0\nnpm install\n</code></pre>\n<p>The installation script extracts the bundled C++ libraries and builds both WASM modules. To rebuild them after changing C++ code:</p>\n<pre><code class=\"language-sh\">npm run build-native-wasm\n</code></pre>\n<p>The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.</p>\n<h3>Runtime organization</h3>\n<ul>\n<li>cpp/native-module-core.h and cpp/alpha-shape-3d-core.h contain the computational implementations.</li>\n<li>cpp/native-module-wasm.cpp and cpp/alpha-shape-3d-wasm.cpp expose the compiled operations.</li>\n<li>js/sandbox/jslab-wasm-loader.js initializes one pair of modules per sandbox or worker.</li>\n<li>js/sandbox/jslab-wasm-native.js validates numeric inputs and owns temporary WASM buffers.</li>\n<li>js/sandbox/jslab-wasm-alpha-shape.js owns shape instances and routes file exports through the host environment.</li>\n<li>Desktop and browser environments provide host services. Subprocess enumeration stays in the desktop environment.</li>\n</ul>\n<p>The public numerical and geometry function names remain unchanged. The workspace starts only after both compiled modules have initialized. Early desktop IPC messages are replayed after initialization, and parallel workers initialize their own compiled modules before accepting tasks.</p>\n<h3>Resource ownership and numerical behavior</h3>\n<p>Temporary numerical buffers are freed even when a calculation fails. Geometry helpers release their shape objects in finally blocks. Code that directly creates a low-level AlphaShape instance must call dispose() or delete() when finished; finalization is only a backup.</p>\n<p>Geometry errors are reported as JavaScript errors. Coplanar input is rejected for three-dimensional shape construction. OFF exports use the environment file API so desktop files and browser storage follow their normal host behavior.</p>\n<p>The build enables WASM SIMD. CGAL uses conservative interval arithmetic under round-to-nearest with an exact arithmetic backend that does not require the desktop GMP/MPFR DLLs. Numerical result and geometry regression tests run against the compiled modules.</p>\n<p>WASM and native speed depend on input size, binding overhead and the algorithm. Integration benchmarks can benefit from bulk array transfer; geometry may be slower than an optimized native build. Treat development timings as workload-specific measurements.</p>\n<h3>Native dependencies and extension support</h3>\n<p>Serial, USB and terminal dependencies may still use third-party native addons. The compile module and its local node-gyp dependency remain available for users building their own extensions. Replacing the application computational backend does not remove those capabilities.</p>\n"
       },
       'mcp': {
         'title': 'MCP server',
@@ -28169,11 +28169,11 @@ await om_link.close();
           "name": "value"
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 533,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 579,
       "source_range": [
-        15889,
-        16024
+        16808,
+        16858
       ]
     },
     "toString": {
@@ -28191,11 +28191,11 @@ await om_link.close();
           "description": "The string representation in the format 'Vector(x:, y:, z:)'."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 542,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 544,
       "source_range": [
-        16177,
-        16280
+        15922,
+        16025
       ]
     },
     "toNumeric": {
@@ -28213,11 +28213,11 @@ await om_link.close();
           "description": "The numeric representation of the symbolic value."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 550,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 552,
       "source_range": [
-        16417,
-        16464
+        16162,
+        16209
       ]
     },
     "toJSON": {
@@ -28235,11 +28235,11 @@ await om_link.close();
           "description": "The JSON string representation of the symbolic value."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 558,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 560,
       "source_range": [
-        16608,
-        16733
+        16353,
+        16478
       ]
     },
     "toSafeJSON": {
@@ -28257,11 +28257,11 @@ await om_link.close();
           "description": "The safe JSON representation of the object."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 569,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 571,
       "source_range": [
-        16872,
-        16916
+        16617,
+        16661
       ]
     },
     "toPrettyString": {
@@ -28279,11 +28279,11 @@ await om_link.close();
           "description": "The pretty string representation of the object."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 577,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 579,
       "source_range": [
-        17063,
-        17113
+        16808,
+        16858
       ]
     }
   },
@@ -46922,7 +46922,7 @@ await om_link.close();
     "load": {
       "name": "load",
       "kind": "function",
-      "description": "Loads the symbolic math libraries (SymPy and NumPy) using Pyodide.\nInitializes the Python environment for symbolic computations.",
+      "description": "Initializes the configured symbolic engine on first use.",
       "params": [],
       "returns": [
         {
@@ -46935,11 +46935,11 @@ await om_link.close();
         }
       ],
       "async": true,
-      "source_filename": "sym-math.js",
-      "source_lineno": 78,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 579,
       "source_range": [
-        2454,
-        2887
+        16808,
+        16858
       ]
     },
     "getSymbolName": {
@@ -46968,11 +46968,11 @@ await om_link.close();
           "description": "The name of the symbolic variable."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 122,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 83,
       "source_range": [
-        3932,
-        4126
+        2402,
+        2596
       ]
     },
     "checkLoaded": {
@@ -46980,17 +46980,17 @@ await om_link.close();
       "kind": "function",
       "description": "Checks if the symbolic libraries are loaded. Throws an error if not.",
       "params": [],
-      "source_filename": "sym-math.js",
-      "source_lineno": 134,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 95,
       "source_range": [
-        4279,
-        4403
+        2749,
+        2873
       ]
     },
     "eval": {
       "name": "eval",
       "kind": "function",
-      "description": "Evaluates a Python code string within the symbolic math environment.",
+      "description": "Evaluates backend-specific code within the symbolic math environment.",
       "params": [
         {
           "type": {
@@ -47012,11 +47012,11 @@ await om_link.close();
           "description": "The result of the evaluated code."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 146,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 107,
       "source_range": [
-        4668,
-        4969
+        3153,
+        3454
       ]
     },
     "sym": {
@@ -47044,11 +47044,11 @@ await om_link.close();
           "description": "The created symbolic variable."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 164,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 125,
       "source_range": [
-        5168,
-        5294
+        3653,
+        3779
       ]
     },
     "syms": {
@@ -47076,11 +47076,11 @@ await om_link.close();
           "description": "An array of created symbolic variables."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 176,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 137,
       "source_range": [
-        5519,
-        5785
+        4004,
+        4270
       ]
     },
     "mat": {
@@ -47108,11 +47108,11 @@ await om_link.close();
           "description": "The symbolic matrix."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 194,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 155,
       "source_range": [
-        6056,
-        6356
+        4541,
+        4841
       ]
     },
     "mul": {
@@ -47143,11 +47143,11 @@ await om_link.close();
           "description": "The resulting symbolic expression after multiplication."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 212,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 173,
       "source_range": [
-        6631,
-        6953
+        5116,
+        5438
       ]
     },
     "div": {
@@ -47178,11 +47178,11 @@ await om_link.close();
           "description": "The resulting symbolic expression after division."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 234,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 195,
       "source_range": [
-        7217,
-        7539
+        5702,
+        6024
       ]
     },
     "plus": {
@@ -47213,11 +47213,11 @@ await om_link.close();
           "description": "The resulting symbolic expression after addition."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 256,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 217,
       "source_range": [
-        7797,
-        8120
+        6282,
+        6605
       ]
     },
     "minus": {
@@ -47248,11 +47248,11 @@ await om_link.close();
           "description": "The resulting symbolic expression after subtraction."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 278,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 239,
       "source_range": [
-        8391,
-        8715
+        6876,
+        7200
       ]
     },
     "pow": {
@@ -47293,11 +47293,11 @@ await om_link.close();
           "description": "The resulting symbolic expression after exponentiation."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 301,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 262,
       "source_range": [
-        9047,
-        9313
+        7532,
+        7798
       ]
     },
     "transp": {
@@ -47326,11 +47326,11 @@ await om_link.close();
           "description": "The transposed matrix expression."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 320,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 281,
       "source_range": [
-        9553,
-        9784
+        8038,
+        8269
       ]
     },
     "inv": {
@@ -47359,11 +47359,11 @@ await om_link.close();
           "description": "The inverse of the matrix expression."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 338,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 299,
       "source_range": [
-        10038,
-        10270
+        8523,
+        8755
       ]
     },
     "det": {
@@ -47392,11 +47392,11 @@ await om_link.close();
           "description": "The determinant of the matrix expression."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 356,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 317,
       "source_range": [
-        10558,
-        10790
+        9043,
+        9275
       ]
     },
     "diff": {
@@ -47446,11 +47446,11 @@ await om_link.close();
           "description": "The differentiated expression."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 376,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 337,
       "source_range": [
-        11229,
-        11484
+        9714,
+        10000
       ]
     },
     "intg": {
@@ -47499,11 +47499,11 @@ await om_link.close();
           "description": "The integrated expression."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 396,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 358,
       "source_range": [
-        12021,
-        12581
+        10537,
+        11076
       ]
     },
     "subs": {
@@ -47554,11 +47554,11 @@ await om_link.close();
           "description": "The expression after substitution."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 426,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 387,
       "source_range": [
-        13033,
-        13797
+        11528,
+        12292
       ]
     },
     "simplify": {
@@ -47587,11 +47587,11 @@ await om_link.close();
           "description": "The simplified expression."
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 461,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 422,
       "source_range": [
-        14015,
-        14256
+        12510,
+        12751
       ]
     },
     "showLatex": {
@@ -47610,11 +47610,11 @@ await om_link.close();
           "name": "expr"
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 478,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 439,
       "source_range": [
-        14440,
-        14561
+        12935,
+        13056
       ]
     },
     "dispLatex": {
@@ -47633,11 +47633,11 @@ await om_link.close();
           "name": "expr"
         }
       ],
-      "source_filename": "sym-math.js",
-      "source_lineno": 487,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 448,
       "source_range": [
-        14739,
-        14855
+        13234,
+        13350
       ]
     },
     "clear": {
@@ -47645,11 +47645,11 @@ await om_link.close();
       "kind": "function",
       "description": "Clears all symbolic variables and resets the symbolic math environment.",
       "params": [],
-      "source_filename": "sym-math.js",
-      "source_lineno": 495,
+      "source_filename": "sym-math-sympy.js",
+      "source_lineno": 456,
       "source_range": [
-        14948,
-        15191
+        13443,
+        13686
       ]
     }
   }
