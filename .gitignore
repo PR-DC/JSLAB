@@ -20,3 +20,7 @@ package-lock.json
 # Legacy WASM output directories from older checkouts
 /lib/native-wasm/
 /lib/giac-wasm/
+
+# Generated output from the LaTeX example
+/examples/resources/latex-project/main.log
+/examples/resources/latex-project/main.pdf
