@@ -51,7 +51,7 @@ class PRDC_JSLAB_DEV_RUN_TEST_SUITE_HELPER {
     if(!isFinite(failed)) {
       failed = 0;
     }
-    process.exit(failed > 0 ? 1 : 0);
+    process.exitCode = failed > 0 ? 1 : 0;
   }
 }
 

@@ -806,6 +806,8 @@ The installation script extracts the bundled C++ libraries and builds both WASM 
 npm run build-native-wasm
 ```
 
+The Control module uses Eigen for state-space conversion, discretization, simulation, and transfer-function fitting. The same WASM bundle includes the versioned SLICOT routines for series, parallel, and feedback interconnections.
+
 The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.
 
 ### Runtime organization
@@ -1378,7 +1380,13 @@ Opens an independently controllable PTY-backed system Terminal window.
 
 Returns a list of all example scripts available within a predefined directory.
 
-**Returns:** `Array.<string>` An array of paths to the example scripts.
+**Returns:** `Array.<string> | Promise.<Array.<string>>` Paths to the available example scripts.
+
+##### `getExamplesFolder()`
+
+Returns the host's examples folder and prepares its files in Web.
+
+**Returns:** `string | Promise.<string>` Absolute examples folder path.
 
 ##### `openExample(filename)`
 
@@ -1390,11 +1398,15 @@ Opens a specified example script in the editor window.
 
 ##### `openExamplesFolder()`
 
-Opens examples folder in File Explorer
+Shows the examples in the host file browser.
+
+**Returns:** `Promise.<string> | undefined` Workspace examples path in the browser.
 
 ##### `goToExamplesFolder()`
 
-Opens examples folder in File Explorer
+Changes the current directory to the examples folder.
+
+**Returns:** `Promise.<string> | undefined` Workspace examples path in the browser.
 
 ##### `showMessageBox(options)`
 
@@ -1612,6 +1624,16 @@ Registers an object for cleanup with a specified cleanup function.
 | `fun` | `function` | The function to execute during cleanup. |
 
 #### compile
+
+##### `compileLatex(file)`
+
+Compiles a .tex file using the LaTeX toolchain available to the current host.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file` | `string` | TeX source path, relative to the working directory or absolute. |
+
+**Returns:** `Promise.<(Object|boolean)>` Build status and log, with the PDF path on success.
 
 ##### `compileNapi(path, [show_output])`
 
@@ -2578,6 +2600,17 @@ Opens a new window with the specified file.
 | `file` | `string` | The path to the HTML file to open in the new window. |
 
 **Returns:** `number` The identifier (wid) of the newly opened window.
+
+##### `editLatex([file], [main])`
+
+Opens a project folder or .tex file in the LaTeX Editor.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `file` | `string` | Project path, relative to the working directory or absolute. Optional. |
+| `main` | `string` | Main .tex file when opening a project folder. Optional. |
+
+**Returns:** `Promise.<boolean>` Whether the host opened the editor.
 
 ##### `openWindowDevTools(wid)`
 
@@ -4950,6 +4983,18 @@ Converts a subset of LaTeX/TeX math syntax into HTML/Unicode.
 
 #### device
 
+##### `drawAudioWaveform(analyser, data, context, width, height)`
+
+Reads and draws an audio sample in the realm that owns the analyser and canvas.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `analyser` | `AnalyserNode` | Audio analyser. |
+| `data` | `Uint8Array` | Reusable sample buffer. |
+| `context` | `CanvasRenderingContext2D` | Canvas drawing context. |
+| `width` | `number` | Canvas width. |
+| `height` | `number` | Canvas height. |
+
 ##### `checkDriver(driver_name)`
 
 Checks if a specific driver is installed on the system.
@@ -7254,102 +7299,433 @@ Reads an OFF file and returns the vertices and faces.
 
 ##### `tf(num, den, [Ts])`
 
-Create a transfer function representation.
+Creates a transfer function model.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `num` | `Array.<number>` | Numerator coefficients of the transfer function. |
-| `den` | `Array.<number>` | Denominator coefficients of the transfer function. |
-| `Ts` | `number` | Sampling time, defaults to 0 for continuous-time systems. Optional. Default: `0`. |
+| `num` | `Array.<number>` | Numerator coefficients in descending powers. |
+| `den` | `Array.<number>` | Denominator coefficients in descending powers. |
+| `Ts` | `number` | Sample time. Zero denotes continuous time. Optional. Default: `0`. |
 
-**Returns:** `object` An object representing the transfer function { num, den, Ts }.
+**Returns:** `Object` Transfer function model.
 
 ##### `ss(A, B, C, D, [Ts])`
 
-Create a state-space representation.
+Creates a state-space model.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `A` | `Array.<Array.<number>>` | System matrix. |
-| `B` | `Array.<Array.<number>>` | Input matrix. |
-| `C` | `Array.<Array.<number>>` | Output matrix. |
-| `D` | `Array.<Array.<number>>` | Feedthrough matrix. |
-| `Ts` | `number` | Sampling time, defaults to 0 for continuous-time systems. Optional. Default: `0`. |
+| `A` | `number \| Array.<Array.<number>>` | State matrix. |
+| `B` | `number \| Array` | Input matrix. |
+| `C` | `number \| Array` | Output matrix. |
+| `D` | `number \| Array.<Array.<number>>` | Feedthrough matrix. |
+| `Ts` | `number` | Sample time. Zero denotes continuous time. Optional. Default: `0`. |
 
-**Returns:** `object` An object representing the state-space system { A, B, C, D, Ts }.
+**Returns:** `Object` State-space model.
 
 ##### `tf2ss(num, den)`
 
-Convert a transfer function to a state-space representation.
+Converts a proper SISO transfer function to companion-form state space.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `num` | `Array.<number>` | Numerator coefficients of the transfer function. |
-| `den` | `Array.<number>` | Denominator coefficients of the transfer function. |
+| `num` | `Array.<number>` | Numerator coefficients. |
+| `den` | `Array.<number>` | Denominator coefficients. |
 
-**Returns:** `object` State-space representation of the system.
+**Returns:** `Object` State-space realization.
 
 ##### `ss2tf(sys)`
 
-Convert a state-space representation to a transfer function.
+Converts a SISO state-space model to transfer coefficients.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `sys` | `object` | State-space system { A, B, C, D }. |
+| `sys` | `Object` | State-space model. |
 
-**Returns:** `object` Transfer function representation { num, den }.
+**Returns:** `Object` Numerator and denominator coefficients.
 
-##### `c2d(numc, denc, Ts)`
+##### `ssdata(sys)`
 
-Convert a continuous-time transfer function to discrete-time.
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `numc` | `Array.<number>` | Continuous-time numerator coefficients. |
-| `denc` | `Array.<number>` | Continuous-time denominator coefficients. |
-| `Ts` | `number` | Sampling time. |
-
-**Returns:** `object` Discrete-time transfer function representation { num, den }.
-
-##### `lsim(sys, u, t)`
-
-Simulate the time response of a discrete-time linear system.
+Extracts normalized state-space matrices and sample time.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `sys` | `Array.<number>` | transfer function of system. |
-| `u` | `Array.<number>` | Input signal array. |
-| `t` | `Array.<number>` | Time vector array. |
+| `sys` | `Object` | Transfer function or state-space model. |
 
-**Returns:** `object` An object containing the response:
-- y: Output signal array.
-- t: Time vector array (same as input).
+**Returns:** `Object` Matrices A, B, C, D and sample time Ts.
 
-##### `step(sys, Tfinal)`
+##### `tfdata(sys)`
 
-Simulates the system response over a specified time period.
+Extracts SISO transfer coefficients and sample time.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `sys` | `Object` | The system to simulate. |
-| `Tfinal` | `number` | The final time for the simulation. |
+| `sys` | `Object` | Transfer function or state-space model. |
 
-**Returns:** `Object` The simulation result.
+**Returns:** `Object` Numerator, denominator, and sample time.
+
+##### `c2d(numc, denc, [Ts])`
+
+Discretizes a continuous-time model using a zero-order hold.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `numc` | `Array.<number> \| Object` | Numerator coefficients or a continuous model. |
+| `denc` | `Array.<number> \| number` | Denominator coefficients, or sample time when passing a model. |
+| `Ts` | `number` | Sample time for the coefficient form. Optional. |
+
+**Returns:** `Object` Discrete model or its transfer coefficients.
+
+##### `lsim(sys, u, [t], [Ts], [x0])`
+
+Simulates a discrete model or a continuous model with zero-order-held input.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Transfer function or state-space model. |
+| `u` | `Array` | Input samples in time order, with one column per input. |
+| `t` | `Array.<number>` | Uniform sample times. Optional. |
+| `Ts` | `number` | Sample interval for a continuous model. Optional. |
+| `x0` | `number \| Array.<number>` | Initial state in the supplied or realized coordinates. Optional. |
+
+**Returns:** `Object` Output samples y, sample times t, and state trajectory x.
+
+##### `step(sys, [Tfinal])`
+
+Simulates the unit step response of a single-input system.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Transfer function or state-space model. |
+| `Tfinal` | `number \| Array.<number>` | Final time or explicit sample grid. Optional. Default: `10`. |
+
+**Returns:** `Object` Output samples, times, and state trajectory.
+
+##### `initial(sys, x0, [time])`
+
+Simulates the free response from a nonzero initial state.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | State-space model. |
+| `x0` | `number \| Array.<number>` | Initial state. |
+| `time` | `number \| Array.<number>` | Final time or uniform grid. Optional. Default: `10`. |
+
+**Returns:** `Object` Output, time, and state samples.
+
+##### `impulse(sys, [time])`
+
+Computes the unit-area impulse response of a single-input system.
+Continuous-time direct feedthrough is an impulse and is omitted from sampled output.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Transfer function or state-space model. |
+| `time` | `number \| Array.<number>` | Final time or uniform grid. Optional. Default: `10`. |
+
+**Returns:** `Object` Output, time, and state samples.
+
+##### `lsimplot(sys, u, [t])`
+
+Plots the simulated output using the workspace figure API.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Transfer function or state-space model. |
+| `u` | `Array` | Input samples. |
+| `t` | `Array.<number>` | Sample times. Optional. |
+
+**Returns:** `Object` Plot handle.
+
+##### `stepplot(sys, [time])`
+
+Plots the unit step response using the workspace figure API.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Single-input model. |
+| `time` | `number \| Array.<number>` | Final time or sample grid. Optional. Default: `10`. |
+
+**Returns:** `Object` Plot handle.
+
+##### `freqresp(sys, [w])`
+
+Evaluates the complex frequency response of a SISO model.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Transfer function or state-space model. |
+| `w` | `number \| Array.<number> \| Object` | Angular frequencies, or bounds { wmin, wmax }. Optional. |
+
+**Returns:** `Object` Frequencies and response components.
+
+##### `bode(sys, [w])`
+
+Computes linear magnitude and unwrapped phase in degrees.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+| `w` | `number \| Array.<number> \| Object` | Angular frequencies or bounds. Optional. |
+
+**Returns:** `Object` Bode response.
+
+##### `margin(sys, [tolerance])`
+
+Computes SISO gain and phase margins from polynomial crossover equations.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Continuous or discrete open-loop model. |
+| `tolerance` | `number` | Relative tolerance for crossover roots. Optional. |
+
+**Returns:** `Object` Gain factor, principal phase margin in degrees,
+and the respective angular frequencies. Absent crossover frequencies are NaN.
+
+##### `nyquist(sys, [w])`
+
+Computes positive-frequency Nyquist response data.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+| `w` | `number \| Array.<number> \| Object` | Angular frequencies or bounds. Optional. |
+
+**Returns:** `Object` Nyquist response.
+
+##### `bodeplot(sys, [w])`
+
+Plots Bode magnitude and phase on a shared logarithmic frequency axis.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+| `w` | `number \| Array.<number> \| Object` | Angular frequencies or bounds. Optional. |
+
+**Returns:** `Object` Plot handle.
+
+##### `nyquistplot(sys, [w])`
+
+Plots the positive-frequency Nyquist branch and its conjugate.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+| `w` | `number \| Array.<number> \| Object` | Angular frequencies or bounds. Optional. |
+
+**Returns:** `Object` Plot handle.
+
+##### `pole(sys)`
+
+Returns poles of a transfer function or eigenvalues of a state-space model.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Linear model. |
+
+**Returns:** `Array` Real numbers or complex values with real and imag fields.
+
+##### `zero(sys)`
+
+Returns the zeros of a SISO transfer function or state-space model.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+
+**Returns:** `Array` Real or complex zeros.
+
+##### `dcgain(sys)`
+
+Computes the gain at s=0 or z=1. State-space models require a nonsingular equilibrium.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Transfer function or state-space model. |
+
+**Returns:** `number | Array.<Array.<number>>` Scalar SISO gain or matrix of gains.
+
+##### `isstable(sys)`
+
+Tests whether all poles lie in the open left half-plane or inside the unit circle.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | Linear model. |
+
+**Returns:** `boolean` Stability flag.
+
+##### `ctrb(sys, [B])`
+
+Returns the controllability matrix [B, AB, …].
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object \| Array \| number` | State-space model or state matrix. |
+| `B` | `number \| Array \| Object` | Input matrix when passing A directly. Optional. |
+
+**Returns:** `Array.<Array.<number>>` Controllability matrix.
+
+##### `obsv(sys, [C])`
+
+Returns the observability matrix with rows C, CA, and higher powers.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object \| Array \| number` | State-space model or state matrix. |
+| `C` | `number \| Array \| Object` | Output matrix when passing A directly. Optional. |
+
+**Returns:** `Array.<Array.<number>>` Observability matrix.
+
+##### `isctrb(sys, [B])`
+
+Tests whether the controllability matrix has full numerical rank.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object \| Array \| number` | State-space model or state matrix. |
+| `B` | `number \| Array \| Object` | Input matrix when passing A directly. Optional. |
+
+**Returns:** `boolean` Controllability flag.
+
+##### `isobsv(sys, [C])`
+
+Tests whether the observability matrix has full numerical rank.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object \| Array \| number` | State-space model or state matrix. |
+| `C` | `number \| Array \| Object` | Output matrix when passing A directly. Optional. |
+
+**Returns:** `boolean` Observability flag.
+
+##### `pzmap(sys)`
+
+Returns pole-zero map data for a SISO model.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+
+**Returns:** `Object` Pole and zero locations.
+
+##### `pzplot(sys)`
+
+Draws a pole-zero map using the shared figure API.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO model. |
+
+**Returns:** `Object` Plot handle.
+
+##### `rlocus(sys, [gains])`
+
+Computes the negative-feedback closed-loop poles for a sequence of gains.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO open-loop model. |
+| `gains` | `number \| Array.<number>` | Scalar or vector of gains. Optional. |
+
+**Returns:** `Object` Gains and pole trajectories, one trajectory per branch.
+
+##### `rlocusplot(sys, [gains])`
+
+Draws the root locus using the existing figure API.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `sys` | `Object` | SISO open-loop model. |
+| `gains` | `number \| Array.<number>` | Feedback gains to plot. Optional. |
+
+**Returns:** `Object` Plot handle.
+
+##### `pid([Kp], [Ki], [Kd], [Tf], [Ts])`
+
+Builds a parallel-form PID with optional first-order derivative roll-off.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `Kp` | `number` | Proportional gain. Optional. Default: `1`. |
+| `Ki` | `number` | Integral gain. Optional. Default: `0`. |
+| `Kd` | `number` | Derivative gain. Optional. Default: `0`. |
+| `Tf` | `number` | Derivative filter time constant. Use a positive value for a proper derivative controller. Optional. Default: `0`. |
+| `Ts` | `number` | Sample time of the returned transfer function. Optional. Default: `0`. |
+
+**Returns:** `Object` Controller transfer function.
+
+##### `place(A, B, [poles])`
+
+Assigns the poles of A - B*K for a controllable state-space pair.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `A` | `Object \| Array \| number` | State matrix or linear model. |
+| `B` | `Array \| number` | Input matrix, or desired poles when passing a model. |
+| `poles` | `Array` | Desired real or conjugate-paired complex poles. Optional. |
+
+**Returns:** `Array.<Array.<number>>` State-feedback gain K.
+
+##### `lqr(A, args)`
+
+Designs a linear-quadratic regulator. A discrete model selects the discrete Riccati equation.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `A` | `Object \| Array \| number` | State matrix or linear model. |
+| `args` | `*` | B, Q, R, and optional S for matrices, or Q, R, and optional S for a model. |
+
+**Returns:** `Object` Feedback gain, Riccati solution, and closed-loop poles.
 
 ##### `tfest(t, u, y, np, nz, [method])`
 
-Estimates a transfer function model using numerical optimization.
+Estimates a continuous SISO transfer function using native least squares and a zero-order-held input.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| `t` | `Array.<number>` | Time vector. |
-| `u` | `Array.<number>` | Input signal vector. |
-| `y` | `Array.<number>` | Output signal vector. |
+| `t` | `Array.<number>` | Uniform sample times. |
+| `u` | `Array.<number>` | Input samples. |
+| `y` | `Array.<number>` | Output samples. |
 | `np` | `number` | Number of poles. |
 | `nz` | `number` | Number of zeros. |
-| `method` | `string` | Optimization method ('NelderMead' or 'Powell'). Optional. Default: `'NelderMead'`. |
+| `method` | `string` | Native least squares or the legacy 'Powell' and 'NelderMead' methods. Optional. Default: `'LeastSquares'`. |
 
-**Returns:** `Object` Estimated transfer function and mean squared error.
+**Returns:** `Object` Estimated model and mean squared error.
+
+##### `series(first, second)`
+
+Cascades models so the output of the first drives the second.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `first` | `Object \| number` | First model or scalar gain. |
+| `second` | `Object \| number` | Second model or scalar gain. |
+
+**Returns:** `Object` State-space realization of the cascade.
+
+##### `parallelConnect(first, second)`
+
+Adds two models with matching input and output channels.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `first` | `Object \| number` | First model or scalar gain. |
+| `second` | `Object \| number` | Second model or scalar gain. |
+
+**Returns:** `Object` State-space realization of the sum.
+
+##### `feedback(first, [second], [sign])`
+
+Closes a feedback loop around a model.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `first` | `Object \| number` | Forward model or scalar gain. |
+| `second` | `Object \| number` | Feedback model or scalar gain. Optional. Default: `1`. |
+| `sign` | `number` | Feedback sign, either -1 or 1. Optional. Default: `-1`. |
+
+**Returns:** `Object` Closed-loop state-space model.
 
 #### optim
 
@@ -7361,7 +7737,7 @@ Minimizes an unconstrained function using a coordinate descent-like Powell algor
 | --- | --- | --- |
 | `fnc` | `function` | Function to be minimized. Accepts an array of size N and returns a scalar. |
 | `x0` | `Array` | Initial guess for the parameters as an array of size N. |
-| `options` | `Object` | Optional parameters: - eps: Convergence threshold (default: 1e-6) - alpha: Initial step size scaling factor (default: 0.001) - stepSize: Finite difference step size for gradient estimation (default: 1e-6) - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000) Optional. |
+| `options` | `Object` | Optional parameters: - eps: Convergence threshold (default: 1e-6) - alpha: Initial step size scaling factor (default: 0.001) - stepSize: Finite difference step size for gradient estimation (default: 1e-6) - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000) - functionTolerance: Optional stopping tolerance for the loss change over one sweep. - parameterTolerance: Optional stopping tolerance for the largest parameter change over one sweep. Optional. |
 
 **Returns:** `Object` An object with two fields:
 - argument: The parameter array that minimizes the function.

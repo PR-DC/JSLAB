@@ -1201,6 +1201,8 @@ The installation script extracts the bundled C++ libraries and builds both WASM 
 npm run build-native-wasm
 \end{lstlisting}
 
+The Control module uses Eigen for state-space conversion, discretization, simulation, and transfer-function fitting. The same WASM bundle includes the versioned SLICOT routines for series, parallel, and feedback interconnections.
+
 The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.
 
 
@@ -1942,9 +1944,17 @@ and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the spe
 \noindent \codeBlock{\texttt{getExamples()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent \textbf{Returns:} \texttt{<Array.<string>>}: An array of paths to the example scripts.
+\noindent \textbf{Returns:} \texttt{<Array.<string>>}: Paths to the available example scripts.
 
 \noindent Returns a list of all example scripts available within a predefined directory.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{getExamplesFolder()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Returns:} \texttt{<string>}: Absolute examples folder path.
+
+\noindent Returns the host's examples folder and prepares its files in Web.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openExample(filename)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1961,13 +1971,17 @@ and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the spe
 \noindent \codeBlock{\texttt{openExamplesFolder()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Opens examples folder in File Explorer
+\noindent \textbf{Returns:} \texttt{<Promise.<string>>}: Workspace examples path in the browser.
+
+\noindent Shows the examples in the host file browser.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{goToExamplesFolder()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Opens examples folder in File Explorer
+\noindent \textbf{Returns:} \texttt{<Promise.<string>>}: Workspace examples path in the browser.
+
+\noindent Changes the current directory to the examples folder.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{showMessageBox(options)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2262,6 +2276,19 @@ Supports current JSLAB workspace format and legacy plain JSON object files.
 
 
 \subsection{compile}
+\vspace{5mm}
+\noindent \codeBlock{\texttt{compileLatex(file)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file} \texttt{<string>}: TeX source path, relative to the working directory or absolute.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<(Object|boolean)>>}: Build status and log, with the PDF path on success.
+
+\noindent Compiles a .tex file using the LaTeX toolchain available to the current host.
+
 \vspace{5mm}
 \noindent \codeBlock{\texttt{compileNapi(path, [show\_output])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
@@ -3506,6 +3533,20 @@ The function receives copied arguments and must not depend on caller closures.
 \noindent \textbf{Returns:} \texttt{<number>}: The identifier (wid) of the newly opened window.
 
 \noindent Opens a new window with the specified file.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{editLatex([file], [main])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{file} \texttt{<string>}: Project path, relative to the working directory or absolute.
+  \item \texttt{main} \texttt{<string>}: Main .tex file when opening a project folder.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Promise.<boolean>>}: Whether the host opened the editor.
+
+\noindent Opens a project folder or .tex file in the LaTeX Editor.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openWindowDevTools(wid)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6568,6 +6609,21 @@ Each key in the object represents a column in the CSV. This function handles une
 
 \subsection{device}
 \vspace{5mm}
+\noindent \codeBlock{\texttt{drawAudioWaveform(analyser, data, context, width, height)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{analyser} \texttt{<AnalyserNode>}: Audio analyser.
+  \item \texttt{data} \texttt{<Uint8Array>}: Reusable sample buffer.
+  \item \texttt{context} \texttt{<CanvasRenderingContext2D>}: Canvas drawing context.
+  \item \texttt{width} \texttt{<number>}: Canvas width.
+  \item \texttt{height} \texttt{<number>}: Canvas height.
+\end{itemize}
+
+\noindent Reads and draws an audio sample in the realm that owns the analyser and canvas.
+
+\vspace{5mm}
 \noindent \codeBlock{\texttt{checkDriver(driver\_name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
@@ -9497,14 +9553,14 @@ P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{num} \texttt{<Array.<number>>}: Numerator coefficients of the transfer function.
-  \item \texttt{den} \texttt{<Array.<number>>}: Denominator coefficients of the transfer function.
-  \item \texttt{Ts} \texttt{<number>}: Sampling time, defaults to 0 for continuous-time systems.
+  \item \texttt{num} \texttt{<Array.<number>>}: Numerator coefficients in descending powers.
+  \item \texttt{den} \texttt{<Array.<number>>}: Denominator coefficients in descending powers.
+  \item \texttt{Ts} \texttt{<number>}: Sample time. Zero denotes continuous time.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: An object representing the transfer function \{ num, den, Ts \}.
+\noindent \textbf{Returns:} \texttt{<Object>}: Transfer function model.
 
-\noindent Create a transfer function representation.
+\noindent Creates a transfer function model.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ss(A, B, C, D, [Ts])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9512,16 +9568,16 @@ P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{A} \texttt{<Array.<Array.<number>>>}: System matrix.
-  \item \texttt{B} \texttt{<Array.<Array.<number>>>}: Input matrix.
-  \item \texttt{C} \texttt{<Array.<Array.<number>>>}: Output matrix.
-  \item \texttt{D} \texttt{<Array.<Array.<number>>>}: Feedthrough matrix.
-  \item \texttt{Ts} \texttt{<number>}: Sampling time, defaults to 0 for continuous-time systems.
+  \item \texttt{A} \texttt{<number>}: State matrix.
+  \item \texttt{B} \texttt{<number>}: Input matrix.
+  \item \texttt{C} \texttt{<number>}: Output matrix.
+  \item \texttt{D} \texttt{<number>}: Feedthrough matrix.
+  \item \texttt{Ts} \texttt{<number>}: Sample time. Zero denotes continuous time.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: An object representing the state-space system \{ A, B, C, D, Ts \}.
+\noindent \textbf{Returns:} \texttt{<Object>}: State-space model.
 
-\noindent Create a state-space representation.
+\noindent Creates a state-space model.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{tf2ss(num, den)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9529,13 +9585,13 @@ P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{num} \texttt{<Array.<number>>}: Numerator coefficients of the transfer function.
-  \item \texttt{den} \texttt{<Array.<number>>}: Denominator coefficients of the transfer function.
+  \item \texttt{num} \texttt{<Array.<number>>}: Numerator coefficients.
+  \item \texttt{den} \texttt{<Array.<number>>}: Denominator coefficients.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: State-space representation of the system.
+\noindent \textbf{Returns:} \texttt{<Object>}: State-space realization.
 
-\noindent Convert a transfer function to a state-space representation.
+\noindent Converts a proper SISO transfer function to companion-form state space.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ss2tf(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9543,58 +9599,436 @@ P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{sys} \texttt{<object>}: State-space system \{ A, B, C, D \}.
+  \item \texttt{sys} \texttt{<Object>}: State-space model.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: Transfer function representation \{ num, den \}.
+\noindent \textbf{Returns:} \texttt{<Object>}: Numerator and denominator coefficients.
 
-\noindent Convert a state-space representation to a transfer function.
+\noindent Converts a SISO state-space model to transfer coefficients.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{c2d(numc, denc, Ts)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{ssdata(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{numc} \texttt{<Array.<number>>}: Continuous-time numerator coefficients.
-  \item \texttt{denc} \texttt{<Array.<number>>}: Continuous-time denominator coefficients.
-  \item \texttt{Ts} \texttt{<number>}: Sampling time.
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: Discrete-time transfer function representation \{ num, den \}.
+\noindent \textbf{Returns:} \texttt{<Object>}: Matrices A, B, C, D and sample time Ts.
 
-\noindent Convert a continuous-time transfer function to discrete-time.
+\noindent Extracts normalized state-space matrices and sample time.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{lsim(sys, u, t)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{tfdata(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{sys} \texttt{<Array.<number>>}: transfer function of system.
-  \item \texttt{u} \texttt{<Array.<number>>}: Input signal array.
-  \item \texttt{t} \texttt{<Array.<number>>}: Time vector array.
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<object>}: An object containing the response:
-- y: Output signal array.
-- t: Time vector array (same as input).
+\noindent \textbf{Returns:} \texttt{<Object>}: Numerator, denominator, and sample time.
 
-\noindent Simulate the time response of a discrete-time linear system.
+\noindent Extracts SISO transfer coefficients and sample time.
 
 \vspace{5mm}
-\noindent \codeBlock{\texttt{step(sys, Tfinal)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+\noindent \codeBlock{\texttt{c2d(numc, denc, [Ts])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{sys} \texttt{<Object>}: The system to simulate.
-  \item \texttt{Tfinal} \texttt{<number>}: The final time for the simulation.
+  \item \texttt{numc} \texttt{<Array.<number>>}: Numerator coefficients or a continuous model.
+  \item \texttt{denc} \texttt{<Array.<number>>}: Denominator coefficients, or sample time when passing a model.
+  \item \texttt{Ts} \texttt{<number>}: Sample time for the coefficient form.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: The simulation result.
+\noindent \textbf{Returns:} \texttt{<Object>}: Discrete model or its transfer coefficients.
 
-\noindent Simulates the system response over a specified time period.
+\noindent Discretizes a continuous-time model using a zero-order hold.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{lsim(sys, u, [t], [Ts], [x0])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
+  \item \texttt{u} \texttt{<Array>}: Input samples in time order, with one column per input.
+  \item \texttt{t} \texttt{<Array.<number>>}: Uniform sample times.
+  \item \texttt{Ts} \texttt{<number>}: Sample interval for a continuous model.
+  \item \texttt{x0} \texttt{<number>}: Initial state in the supplied or realized coordinates.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Output samples y, sample times t, and state trajectory x.
+
+\noindent Simulates a discrete model or a continuous model with zero-order-held input.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{step(sys, [Tfinal])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
+  \item \texttt{Tfinal} \texttt{<number>}: Final time or explicit sample grid.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Output samples, times, and state trajectory.
+
+\noindent Simulates the unit step response of a single-input system.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{initial(sys, x0, [time])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: State-space model.
+  \item \texttt{x0} \texttt{<number>}: Initial state.
+  \item \texttt{time} \texttt{<number>}: Final time or uniform grid.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Output, time, and state samples.
+
+\noindent Simulates the free response from a nonzero initial state.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{impulse(sys, [time])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
+  \item \texttt{time} \texttt{<number>}: Final time or uniform grid.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Output, time, and state samples.
+
+\noindent Computes the unit-area impulse response of a single-input system.
+Continuous-time direct feedthrough is an impulse and is omitted from sampled output.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{lsimplot(sys, u, [t])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
+  \item \texttt{u} \texttt{<Array>}: Input samples.
+  \item \texttt{t} \texttt{<Array.<number>>}: Sample times.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Plot handle.
+
+\noindent Plots the simulated output using the workspace figure API.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{stepplot(sys, [time])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Single-input model.
+  \item \texttt{time} \texttt{<number>}: Final time or sample grid.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Plot handle.
+
+\noindent Plots the unit step response using the workspace figure API.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{freqresp(sys, [w])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
+  \item \texttt{w} \texttt{<number>}: Angular frequencies, or bounds \{ wmin, wmax \}.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Frequencies and response components.
+
+\noindent Evaluates the complex frequency response of a SISO model.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{bode(sys, [w])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+  \item \texttt{w} \texttt{<number>}: Angular frequencies or bounds.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Bode response.
+
+\noindent Computes linear magnitude and unwrapped phase in degrees.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{margin(sys, [tolerance])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Continuous or discrete open-loop model.
+  \item \texttt{tolerance} \texttt{<number>}: Relative tolerance for crossover roots.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Gain factor, principal phase margin in degrees,
+and the respective angular frequencies. Absent crossover frequencies are NaN.
+
+\noindent Computes SISO gain and phase margins from polynomial crossover equations.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{nyquist(sys, [w])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+  \item \texttt{w} \texttt{<number>}: Angular frequencies or bounds.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Nyquist response.
+
+\noindent Computes positive-frequency Nyquist response data.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{bodeplot(sys, [w])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+  \item \texttt{w} \texttt{<number>}: Angular frequencies or bounds.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Plot handle.
+
+\noindent Plots Bode magnitude and phase on a shared logarithmic frequency axis.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{nyquistplot(sys, [w])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+  \item \texttt{w} \texttt{<number>}: Angular frequencies or bounds.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Plot handle.
+
+\noindent Plots the positive-frequency Nyquist branch and its conjugate.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{pole(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Linear model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array>}: Real numbers or complex values with real and imag fields.
+
+\noindent Returns poles of a transfer function or eigenvalues of a state-space model.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{zero(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array>}: Real or complex zeros.
+
+\noindent Returns the zeros of a SISO transfer function or state-space model.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{dcgain(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Transfer function or state-space model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<number>}: Scalar SISO gain or matrix of gains.
+
+\noindent Computes the gain at s=0 or z=1. State-space models require a nonsingular equilibrium.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isstable(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: Linear model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: Stability flag.
+
+\noindent Tests whether all poles lie in the open left half-plane or inside the unit circle.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{ctrb(sys, [B])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: State-space model or state matrix.
+  \item \texttt{B} \texttt{<number>}: Input matrix when passing A directly.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: Controllability matrix.
+
+\noindent Returns the controllability matrix [B, AB, …].
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{obsv(sys, [C])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: State-space model or state matrix.
+  \item \texttt{C} \texttt{<number>}: Output matrix when passing A directly.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: Observability matrix.
+
+\noindent Returns the observability matrix with rows C, CA, and higher powers.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isctrb(sys, [B])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: State-space model or state matrix.
+  \item \texttt{B} \texttt{<number>}: Input matrix when passing A directly.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: Controllability flag.
+
+\noindent Tests whether the controllability matrix has full numerical rank.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{isobsv(sys, [C])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: State-space model or state matrix.
+  \item \texttt{C} \texttt{<number>}: Output matrix when passing A directly.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<boolean>}: Observability flag.
+
+\noindent Tests whether the observability matrix has full numerical rank.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{pzmap(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Pole and zero locations.
+
+\noindent Returns pole-zero map data for a SISO model.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{pzplot(sys)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Plot handle.
+
+\noindent Draws a pole-zero map using the shared figure API.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{rlocus(sys, [gains])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO open-loop model.
+  \item \texttt{gains} \texttt{<number>}: Scalar or vector of gains.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Gains and pole trajectories, one trajectory per branch.
+
+\noindent Computes the negative-feedback closed-loop poles for a sequence of gains.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{rlocusplot(sys, [gains])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{sys} \texttt{<Object>}: SISO open-loop model.
+  \item \texttt{gains} \texttt{<number>}: Feedback gains to plot.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Plot handle.
+
+\noindent Draws the root locus using the existing figure API.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{pid([Kp], [Ki], [Kd], [Tf], [Ts])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{Kp} \texttt{<number>}: Proportional gain.
+  \item \texttt{Ki} \texttt{<number>}: Integral gain.
+  \item \texttt{Kd} \texttt{<number>}: Derivative gain.
+  \item \texttt{Tf} \texttt{<number>}: Derivative filter time constant. Use a positive value for a proper derivative controller.
+  \item \texttt{Ts} \texttt{<number>}: Sample time of the returned transfer function.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Controller transfer function.
+
+\noindent Builds a parallel-form PID with optional first-order derivative roll-off.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{place(A, B, [poles])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{A} \texttt{<Object>}: State matrix or linear model.
+  \item \texttt{B} \texttt{<Array>}: Input matrix, or desired poles when passing a model.
+  \item \texttt{poles} \texttt{<Array>}: Desired real or conjugate-paired complex poles.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Array.<Array.<number>>>}: State-feedback gain K.
+
+\noindent Assigns the poles of A - B*K for a controllable state-space pair.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{lqr(A, args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{A} \texttt{<Object>}: State matrix or linear model.
+  \item \texttt{args} \texttt{<*>}: B, Q, R, and optional S for matrices, or Q, R, and optional S for a model.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Feedback gain, Riccati solution, and closed-loop poles.
+
+\noindent Designs a linear-quadratic regulator. A discrete model selects the discrete Riccati equation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{tfest(t, u, y, np, nz, [method])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9602,17 +10036,60 @@ P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{t} \texttt{<Array.<number>>}: Time vector.
-  \item \texttt{u} \texttt{<Array.<number>>}: Input signal vector.
-  \item \texttt{y} \texttt{<Array.<number>>}: Output signal vector.
+  \item \texttt{t} \texttt{<Array.<number>>}: Uniform sample times.
+  \item \texttt{u} \texttt{<Array.<number>>}: Input samples.
+  \item \texttt{y} \texttt{<Array.<number>>}: Output samples.
   \item \texttt{np} \texttt{<number>}: Number of poles.
   \item \texttt{nz} \texttt{<number>}: Number of zeros.
-  \item \texttt{method} \texttt{<string>}: Optimization method ('NelderMead' or 'Powell').
+  \item \texttt{method} \texttt{<string>}: Native least squares or the legacy 'Powell' and 'NelderMead' methods.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: Estimated transfer function and mean squared error.
+\noindent \textbf{Returns:} \texttt{<Object>}: Estimated model and mean squared error.
 
-\noindent Estimates a transfer function model using numerical optimization.
+\noindent Estimates a continuous SISO transfer function using native least squares and a zero-order-held input.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{series(first, second)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{first} \texttt{<Object>}: First model or scalar gain.
+  \item \texttt{second} \texttt{<Object>}: Second model or scalar gain.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: State-space realization of the cascade.
+
+\noindent Cascades models so the output of the first drives the second.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{parallelConnect(first, second)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{first} \texttt{<Object>}: First model or scalar gain.
+  \item \texttt{second} \texttt{<Object>}: Second model or scalar gain.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: State-space realization of the sum.
+
+\noindent Adds two models with matching input and output channels.
+
+\vspace{5mm}
+\noindent \codeBlock{\texttt{feedback(first, [second], [sign])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
+
+
+\noindent \textbf{Parameters:}
+\begin{itemize}
+  \item \texttt{first} \texttt{<Object>}: Forward model or scalar gain.
+  \item \texttt{second} \texttt{<Object>}: Feedback model or scalar gain.
+  \item \texttt{sign} \texttt{<number>}: Feedback sign, either -1 or 1.
+\end{itemize}
+
+\noindent \textbf{Returns:} \texttt{<Object>}: Closed-loop state-space model.
+
+\noindent Closes a feedback loop around a model.
 
 
 \subsection{optim}
@@ -9629,6 +10106,8 @@ P2 - The point in P2i corresponding to the minimal distance.
 - alpha: Initial step size scaling factor (default: 0.001)
 - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
 - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
+- functionTolerance: Optional stopping tolerance for the loss change over one sweep.
+- parameterTolerance: Optional stopping tolerance for the largest parameter change over one sweep.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:

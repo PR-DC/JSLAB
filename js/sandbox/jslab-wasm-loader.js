@@ -83,7 +83,7 @@ class PRDC_JSLAB_WASM_LOADER {
   static async prepareWasmForCode(code) {
     var source = String(code || '');
     var requested = [];
-    if(/\b(?:roots|cumtrapz|trapz|minDisksDistance3D)\b/.test(source)) {
+    if(/\b(?:roots|cumtrapz|trapz|minDisksDistance3D|lsim|step|initial|impulse|lsimplot|stepplot|c2d|tfest|ss2tf|tfdata|series|parallelConnect|feedback|freqresp|bode|bodeplot|nyquist|nyquistplot|pole|zero|dcgain|isstable|pzmap|pzplot|ctrb|obsv|isctrb|isobsv|margin|rlocus|rlocusplot|place|lqr)\b/.test(source)) {
       requested.push('native');
     }
     if(/\b(?:boundary3D|writeOff|AlphaShape3D)\b/.test(source)) {

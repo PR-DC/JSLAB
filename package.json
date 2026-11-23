@@ -62,8 +62,6 @@
       "!dist",
       "!dist-web",
       "!build",
-      "!lib/native-wasm",
-      "!lib/giac-wasm",
       "!bin",
       "!config/installer.nsh",
       "!temp",

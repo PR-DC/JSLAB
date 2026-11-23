@@ -30,6 +30,8 @@ class PRDC_JSLAB_LIB_OPTIM {
    * - alpha: Initial step size scaling factor (default: 0.001)
    * - stepSize: Finite difference step size for gradient estimation (default: 1e-6)
    * - maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
+   * - functionTolerance: Optional stopping tolerance for the loss change over one sweep.
+   * - parameterTolerance: Optional stopping tolerance for the largest parameter change over one sweep.
    * @return {Object} An object with two fields:
    * - argument: The parameter array that minimizes the function.
    * - fncvalue: The function value at the minimized parameters.
@@ -39,7 +41,9 @@ class PRDC_JSLAB_LIB_OPTIM {
       eps = 1e-6,
       alpha = 0.001,
       stepSize = 1e-6,
-      maxIterations = 1000
+      maxIterations = 1000,
+      functionTolerance,
+      parameterTolerance
     } = options;
 
     let convergence = false;
@@ -54,6 +58,8 @@ class PRDC_JSLAB_LIB_OPTIM {
 
     while(!convergence && iteration < maxIterations) {
       iteration++;
+      const previous_loss = fx;
+      const previous_parameters = parameterTolerance === undefined ? undefined : x.slice();
       const indices = this.jsl.inter.array.shuffleIndices(x);
       convergence = true; // Assume convergence until a significant update is found
 
@@ -86,6 +92,13 @@ class PRDC_JSLAB_LIB_OPTIM {
         currentAlpha *= 0.7; // Decrease step size if no improvement
       }
       pfx = fx;
+      if(Number.isFinite(fx) && functionTolerance !== undefined && Math.abs(fx - previous_loss) <= functionTolerance) {
+        convergence = true;
+      }
+      if(Number.isFinite(fx) && previous_parameters &&
+          x.every((value, i) => Math.abs(value - previous_parameters[i]) <= parameterTolerance)) {
+        convergence = true;
+      }
 
       // Optional: Log progress every 100 iterations
       if(options.disp && iteration % 100 === 0) {

@@ -183,10 +183,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1008,
+        "source_lineno": 1007,
         "source_range": [
-          30427,
-          30559
+          30395,
+          30527
         ]
       },
       "version": {
@@ -823,7 +823,7 @@
         "source_lineno": 923,
         "source_range": [
           28590,
-          28740
+          28708
         ]
       },
       "workspace": {
@@ -842,10 +842,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 966,
+        "source_lineno": 965,
         "source_range": [
-          29596,
-          29649
+          29564,
+          29617
         ]
       },
       "updateWorkspace": {
@@ -854,10 +854,10 @@
         "description": "Updates the workspace display based on the current state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 973,
+        "source_lineno": 972,
         "source_range": [
-          29728,
-          29856
+          29696,
+          29824
         ]
       },
       "updateFileBrowser": {
@@ -866,10 +866,10 @@
         "description": "Updates the file browser display based on the current state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 982,
+        "source_lineno": 981,
         "source_range": [
-          29938,
-          30070
+          29906,
+          30038
         ]
       },
       "diary": {
@@ -900,10 +900,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1022,
+        "source_lineno": 1021,
         "source_range": [
-          30915,
-          32212
+          30883,
+          32180
         ]
       },
       "error": {
@@ -922,10 +922,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1068,
+        "source_lineno": 1067,
         "source_range": [
-          32315,
-          32429
+          32283,
+          32397
         ]
       },
       "disp": {
@@ -944,10 +944,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1078,
+        "source_lineno": 1077,
         "source_range": [
-          32527,
-          32662
+          32495,
+          32630
         ]
       },
       "dispMonospaced": {
@@ -966,10 +966,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1089,
+        "source_lineno": 1088,
         "source_range": [
-          32781,
-          32936
+          32749,
+          32904
         ]
       },
       "warn": {
@@ -988,10 +988,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1100,
+        "source_lineno": 1099,
         "source_range": [
-          33042,
-          33154
+          33010,
+          33122
         ]
       },
       "edit": {
@@ -1011,10 +1011,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1170,
+        "source_lineno": 1169,
         "source_range": [
-          34599,
-          34647
+          34567,
+          34615
         ]
       },
       "assistant": {
@@ -1023,10 +1023,10 @@
         "description": "Opens the Assistant chat window.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1177,
+        "source_lineno": 1176,
         "source_range": [
-          34701,
-          34817
+          34669,
+          34785
         ]
       },
       "simulate": {
@@ -1067,10 +1067,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1189,
+        "source_lineno": 1188,
         "source_range": [
-          35149,
-          35576
+          35117,
+          35544
         ]
       },
       "terminal": {
@@ -1112,10 +1112,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1208,
+        "source_lineno": 1207,
         "source_range": [
-          35892,
-          36410
+          35860,
+          36378
         ]
       },
       "getExamples": {
@@ -1127,17 +1127,41 @@
           {
             "type": {
               "names": [
-                "Array.<string>"
+                "Array.<string>",
+                "Promise.<Array.<string>>"
               ]
             },
-            "description": "An array of paths to the example scripts."
+            "description": "Paths to the available example scripts."
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1230,
+        "source_lineno": 1229,
         "source_range": [
-          36581,
-          36869
+          36571,
+          36784
+        ]
+      },
+      "getExamplesFolder": {
+        "name": "getExamplesFolder",
+        "kind": "function",
+        "description": "Returns the host's examples folder and prepares its files in Web.",
+        "params": [],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "string",
+                "Promise.<string>"
+              ]
+            },
+            "description": "Absolute examples folder path."
+          }
+        ],
+        "source_filename": "basic.js",
+        "source_lineno": 1239,
+        "source_range": [
+          36941,
+          37015
         ]
       },
       "openExample": {
@@ -1156,34 +1180,56 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1245,
+        "source_lineno": 1247,
         "source_range": [
-          37011,
-          37188
+          37157,
+          37369
         ]
       },
       "openExamplesFolder": {
         "name": "openExamplesFolder",
         "kind": "function",
-        "description": "Opens examples folder in File Explorer",
+        "description": "Shows the examples in the host file browser.",
         "params": [],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<string>",
+                "undefined"
+              ]
+            },
+            "description": "Workspace examples path in the browser."
+          }
+        ],
         "source_filename": "basic.js",
-        "source_lineno": 1255,
+        "source_lineno": 1257,
         "source_range": [
-          37248,
-          37343
+          37517,
+          37629
         ]
       },
       "goToExamplesFolder": {
         "name": "goToExamplesFolder",
         "kind": "function",
-        "description": "Opens examples folder in File Explorer",
+        "description": "Changes the current directory to the examples folder.",
         "params": [],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<string>",
+                "undefined"
+              ]
+            },
+            "description": "Workspace examples path in the browser."
+          }
+        ],
         "source_filename": "basic.js",
-        "source_lineno": 1262,
+        "source_lineno": 1265,
         "source_range": [
-          37403,
-          37490
+          37786,
+          37890
         ]
       },
       "showMessageBox": {
@@ -1212,10 +1258,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1271,
+        "source_lineno": 1288,
         "source_range": [
-          37729,
-          37813
+          38695,
+          38779
         ]
       },
       "saveObject": {
@@ -1255,10 +1301,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1281,
+        "source_lineno": 1298,
         "source_range": [
-          38037,
-          38145
+          39003,
+          39111
         ]
       },
       "loadObject": {
@@ -1299,10 +1345,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1291,
+        "source_lineno": 1308,
         "source_range": [
-          38372,
-          38663
+          39338,
+          39629
         ]
       },
       "loadClass": {
@@ -1341,10 +1387,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1305,
+        "source_lineno": 1322,
         "source_range": [
-          38898,
-          39324
+          39864,
+          40290
         ]
       },
       "save": {
@@ -1373,10 +1419,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1327,
+        "source_lineno": 1344,
         "source_range": [
-          39580,
-          40681
+          40546,
+          41647
         ]
       },
       "load": {
@@ -1397,10 +1443,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1362,
+        "source_lineno": 1379,
         "source_range": [
-          40985,
-          42617
+          41951,
+          43583
         ]
       },
       "getCompletions": {
@@ -1429,10 +1475,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 1417,
+        "source_lineno": 1434,
         "source_range": [
-          42879,
-          48196
+          43845,
+          49989
         ]
       },
       "keys": {
@@ -1441,10 +1487,10 @@
         "description": "Returns enumerable own property names, matching the DevTools helper.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1580,
+        "source_lineno": 1616,
         "source_range": [
-          48286,
-          48344
+          50079,
+          50137
         ]
       },
       "values": {
@@ -1453,10 +1499,10 @@
         "description": "Returns enumerable own property values, matching the DevTools helper.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1587,
+        "source_lineno": 1623,
         "source_range": [
-          48435,
-          48497
+          50228,
+          50290
         ]
       },
       "copy": {
@@ -1466,10 +1512,10 @@
         "params": [],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 1594,
+        "source_lineno": 1630,
         "source_range": [
-          48583,
-          48846
+          50376,
+          50639
         ]
       },
       "inspect": {
@@ -1478,10 +1524,10 @@
         "description": "Displays a value as an expandable console object.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1605,
+        "source_lineno": 1641,
         "source_range": [
-          48917,
-          49184
+          50710,
+          50977
         ]
       },
       "queryObjects": {
@@ -1490,10 +1536,10 @@
         "description": "Finds reachable workspace objects constructed by the supplied class.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1617,
+        "source_lineno": 1653,
         "source_range": [
-          49274,
-          50325
+          51067,
+          52118
         ]
       },
       "getEventListeners": {
@@ -1502,10 +1548,10 @@
         "description": "Returns listeners installed through monitorEvents().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1655,
+        "source_lineno": 1691,
         "source_range": [
-          50399,
-          50713
+          52192,
+          52506
         ]
       },
       "monitorEvents": {
@@ -1514,10 +1560,10 @@
         "description": "Logs selected EventTarget events until unmonitorEvents() is called.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1667,
+        "source_lineno": 1703,
         "source_range": [
-          50802,
-          51882
+          52595,
+          53675
         ]
       },
       "unmonitorEvents": {
@@ -1526,10 +1572,10 @@
         "description": "Stops event logging installed by monitorEvents().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1695,
+        "source_lineno": 1731,
         "source_range": [
-          51953,
-          52520
+          53746,
+          54313
         ]
       },
       "dirxml": {
@@ -1538,10 +1584,10 @@
         "description": "Displays XML/HTML markup when available.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1716,
+        "source_lineno": 1752,
         "source_range": [
-          52582,
-          52683
+          54375,
+          54476
         ]
       },
       "monitor": {
@@ -1550,10 +1596,10 @@
         "description": "Logs calls to a function referenced directly by a workspace variable.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1723,
+        "source_lineno": 1759,
         "source_range": [
-          52774,
-          52843
+          54567,
+          54636
         ]
       },
       "unmonitor": {
@@ -1562,10 +1608,10 @@
         "description": "Stops call logging installed by monitor().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1730,
+        "source_lineno": 1766,
         "source_range": [
-          52907,
-          52974
+          54700,
+          54767
         ]
       },
       "debugFunction": {
@@ -1574,10 +1620,10 @@
         "description": "Breaks when a workspace function is called; `debug` remains JSLAB's debug flag.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1737,
+        "source_lineno": 1773,
         "source_range": [
-          53075,
-          53149
+          54868,
+          54942
         ]
       },
       "undebug": {
@@ -1586,10 +1632,10 @@
         "description": "Removes a breakpoint wrapper installed by debugFunction().",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 1744,
+        "source_lineno": 1780,
         "source_range": [
-          53229,
-          53294
+          55022,
+          55087
         ]
       },
       "getObjectByProp": {
@@ -1637,10 +1683,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2124,
+        "source_lineno": 2160,
         "source_range": [
-          67670,
-          67856
+          69463,
+          69649
         ]
       },
       "getObjectsByProp": {
@@ -1687,10 +1733,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2138,
+        "source_lineno": 2174,
         "source_range": [
-          68220,
-          68394
+          70013,
+          70187
         ]
       },
       "strcmp": {
@@ -1728,10 +1774,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2151,
+        "source_lineno": 2187,
         "source_range": [
-          68594,
-          68666
+          70387,
+          70459
         ]
       },
       "compareVersions": {
@@ -1769,10 +1815,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2161,
+        "source_lineno": 2197,
         "source_range": [
-          68885,
-          69321
+          70678,
+          71114
         ]
       },
       "checkForUpdate": {
@@ -1792,10 +1838,10 @@
         ],
         "async": true,
         "source_filename": "basic.js",
-        "source_lineno": 2186,
+        "source_lineno": 2222,
         "source_range": [
-          69455,
-          70895
+          71248,
+          72688
         ]
       },
       "unrequire": {
@@ -1814,10 +1860,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2226,
+        "source_lineno": 2262,
         "source_range": [
-          71024,
-          71336
+          72817,
+          73254
         ]
       },
       "resetApp": {
@@ -1826,10 +1872,10 @@
         "description": "Resets app.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 2240,
+        "source_lineno": 2279,
         "source_range": [
-          71369,
-          71420
+          73287,
+          73338
         ]
       },
       "resetSandbox": {
@@ -1838,10 +1884,10 @@
         "description": "Resets the sandbox environment to its initial state.",
         "params": [],
         "source_filename": "basic.js",
-        "source_lineno": 2247,
+        "source_lineno": 2286,
         "source_range": [
-          71494,
-          71553
+          73412,
+          73471
         ]
       },
       "openDevTools": {
@@ -1859,10 +1905,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2255,
+        "source_lineno": 2294,
         "source_range": [
-          71673,
-          71739
+          73591,
+          73657
         ]
       },
       "installModule": {
@@ -1892,10 +1938,10 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2264,
+        "source_lineno": 2303,
         "source_range": [
-          71950,
-          73680
+          73868,
+          75598
         ]
       },
       "addForCleanup": {
@@ -1923,14 +1969,46 @@
           }
         ],
         "source_filename": "basic.js",
-        "source_lineno": 2321,
+        "source_lineno": 2360,
         "source_range": [
-          73905,
-          73970
+          75823,
+          75888
         ]
       }
     },
     "compile": {
+      "compileLatex": {
+        "name": "compileLatex",
+        "kind": "function",
+        "description": "Compiles a .tex file using the LaTeX toolchain available to the current host.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "string"
+              ]
+            },
+            "description": "TeX source path, relative to the working directory or absolute.",
+            "name": "file"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<(Object|boolean)>"
+              ]
+            },
+            "description": "Build status and log, with the PDF path on success."
+          }
+        ],
+        "source_filename": "compile.js",
+        "source_lineno": 26,
+        "source_range": [
+          720,
+          794
+        ]
+      },
       "compileNapi": {
         "name": "compileNapi",
         "kind": "function",
@@ -1968,10 +2046,10 @@
           }
         ],
         "source_filename": "compile.js",
-        "source_lineno": 27,
+        "source_lineno": 36,
         "source_range": [
-          746,
-          3273
+          1101,
+          3628
         ]
       },
       "compileWasm": {
@@ -2011,10 +2089,10 @@
           }
         ],
         "source_filename": "compile.js",
-        "source_lineno": 90,
+        "source_lineno": 99,
         "source_range": [
-          3721,
-          8630
+          4076,
+          8985
         ]
       }
     },
@@ -5490,7 +5568,50 @@
         "source_lineno": 42,
         "source_range": [
           966,
-          1511
+          1535
+        ]
+      },
+      "editLatex": {
+        "name": "editLatex",
+        "kind": "function",
+        "description": "Opens a project folder or .tex file in the LaTeX Editor.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "string"
+              ]
+            },
+            "optional": true,
+            "description": "Project path, relative to the working directory or absolute.",
+            "name": "file"
+          },
+          {
+            "type": {
+              "names": [
+                "string"
+              ]
+            },
+            "optional": true,
+            "description": "Main .tex file when opening a project folder.",
+            "name": "main"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Promise.<boolean>"
+              ]
+            },
+            "description": "Whether the host opened the editor."
+          }
+        ],
+        "source_filename": "windows.js",
+        "source_lineno": 66,
+        "source_range": [
+          1853,
+          1935
         ]
       },
       "openWindowDevTools": {
@@ -5519,10 +5640,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 66,
+        "source_lineno": 75,
         "source_range": [
-          1733,
-          1907
+          2157,
+          2331
         ]
       },
       "getWindowMediaSourceId": {
@@ -5552,10 +5673,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 79,
+        "source_lineno": 88,
         "source_range": [
-          2134,
-          2316
+          2558,
+          2740
         ]
       },
       "startWindowVideoRecording": {
@@ -5594,10 +5715,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 93,
+        "source_lineno": 102,
         "source_range": [
-          2562,
-          2760
+          2986,
+          3184
         ]
       },
       "closeWindows": {
@@ -5616,10 +5737,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 105,
+        "source_lineno": 114,
         "source_range": [
-          2879,
-          3010
+          3303,
+          3434
         ]
       },
       "closeWindow": {
@@ -5638,10 +5759,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 115,
+        "source_lineno": 124,
         "source_range": [
-          3129,
-          3289
+          3553,
+          3713
         ]
       },
       "getWindow": {
@@ -5671,10 +5792,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 128,
+        "source_lineno": 137,
         "source_range": [
-          3495,
-          3645
+          3919,
+          4069
         ]
       },
       "getCurrentWindow": {
@@ -5694,10 +5815,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 140,
+        "source_lineno": 149,
         "source_range": [
-          3790,
-          3974
+          4214,
+          4398
         ]
       },
       "gcw": {
@@ -5717,10 +5838,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 152,
+        "source_lineno": 161,
         "source_range": [
-          4119,
-          4168
+          4543,
+          4592
         ]
       },
       "showWindow": {
@@ -5750,10 +5871,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 161,
+        "source_lineno": 170,
         "source_range": [
-          4403,
-          4561
+          4827,
+          4985
         ]
       },
       "hideWindow": {
@@ -5783,10 +5904,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 174,
+        "source_lineno": 183,
         "source_range": [
-          4796,
-          4954
+          5220,
+          5378
         ]
       },
       "focusWindow": {
@@ -5816,10 +5937,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 187,
+        "source_lineno": 196,
         "source_range": [
-          5166,
-          5326
+          5590,
+          5750
         ]
       },
       "minimizeWindow": {
@@ -5849,10 +5970,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 200,
+        "source_lineno": 209,
         "source_range": [
-          5573,
-          5739
+          5997,
+          6163
         ]
       },
       "centerWindow": {
@@ -5882,10 +6003,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 213,
+        "source_lineno": 222,
         "source_range": [
-          5994,
-          6156
+          6418,
+          6580
         ]
       },
       "moveTopWindow": {
@@ -5915,10 +6036,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 226,
+        "source_lineno": 235,
         "source_range": [
-          6436,
-          6600
+          6860,
+          7024
         ]
       },
       "setWindowSize": {
@@ -5966,10 +6087,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 241,
+        "source_lineno": 250,
         "source_range": [
-          6915,
-          7107
+          7339,
+          7531
         ]
       },
       "setWindowPos": {
@@ -6017,10 +6138,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 256,
+        "source_lineno": 265,
         "source_range": [
-          7436,
-          7618
+          7860,
+          8042
         ]
       },
       "setWindowResizable": {
@@ -6059,10 +6180,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 270,
+        "source_lineno": 279,
         "source_range": [
-          7946,
-          8132
+          8370,
+          8556
         ]
       },
       "setWindowMovable": {
@@ -6101,10 +6222,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 284,
+        "source_lineno": 293,
         "source_range": [
-          8454,
-          8654
+          8878,
+          9078
         ]
       },
       "setWindowAspectRatio": {
@@ -6143,10 +6264,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 298,
+        "source_lineno": 307,
         "source_range": [
-          8987,
-          9209
+          9411,
+          9633
         ]
       },
       "setWindowOpacity": {
@@ -6185,10 +6306,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 312,
+        "source_lineno": 321,
         "source_range": [
-          9524,
-          9728
+          9948,
+          10152
         ]
       },
       "setWindowFullscreen": {
@@ -6227,10 +6348,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 326,
+        "source_lineno": 335,
         "source_range": [
-          10038,
-          10244
+          10462,
+          10668
         ]
       },
       "setWindowTitle": {
@@ -6278,10 +6399,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 341,
+        "source_lineno": 350,
         "source_range": [
-          10573,
-          10751
+          10997,
+          11175
         ]
       },
       "getWindowSize": {
@@ -6311,10 +6432,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 354,
+        "source_lineno": 363,
         "source_range": [
-          10968,
-          11132
+          11392,
+          11556
         ]
       },
       "getWindowPos": {
@@ -6344,10 +6465,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 367,
+        "source_lineno": 376,
         "source_range": [
-          11349,
-          11511
+          11773,
+          11935
         ]
       },
       "printWindowToPdf": {
@@ -6385,10 +6506,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 381,
+        "source_lineno": 390,
         "source_range": [
-          11706,
-          11892
+          12130,
+          12316
         ]
       },
       "openDocumentation": {
@@ -6398,10 +6519,10 @@
         "params": [],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 392,
+        "source_lineno": 401,
         "source_range": [
-          11950,
-          12246
+          12374,
+          12670
         ]
       },
       "openDoc": {
@@ -6411,10 +6532,10 @@
         "params": [],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 405,
+        "source_lineno": 414,
         "source_range": [
-          12304,
-          12373
+          12728,
+          12797
         ]
       },
       "openDiscourse": {
@@ -6424,10 +6545,10 @@
         "params": [],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 412,
+        "source_lineno": 421,
         "source_range": [
-          12427,
-          12640
+          12851,
+          13064
         ]
       },
       "openWebpage": {
@@ -6458,10 +6579,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 423,
+        "source_lineno": 432,
         "source_range": [
-          12818,
-          12969
+          13242,
+          13393
         ]
       },
       "openWindow3D": {
@@ -6493,10 +6614,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 434,
+        "source_lineno": 443,
         "source_range": [
-          13251,
-          17608
+          13675,
+          18251
         ]
       },
       "openPlotlyjs": {
@@ -6516,10 +6637,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 551,
+        "source_lineno": 565,
         "source_range": [
-          17809,
-          18436
+          18452,
+          19079
         ]
       },
       "openCanvas": {
@@ -6539,10 +6660,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 573,
+        "source_lineno": 587,
         "source_range": [
-          18639,
-          19388
+          19282,
+          19368
         ]
       },
       "openWindowBlank": {
@@ -6562,10 +6683,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 597,
+        "source_lineno": 619,
         "source_range": [
-          19536,
-          19811
+          20432,
+          20707
         ]
       },
       "showMermaidGraph": {
@@ -6595,10 +6716,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 610,
+        "source_lineno": 632,
         "source_range": [
-          20058,
-          21037
+          20954,
+          21933
         ]
       }
     },
@@ -6610,8 +6731,8 @@
         "source_filename": "figures.js",
         "source_lineno": 33,
         "source_range": [
-          858,
-          880
+          826,
+          848
         ]
       },
       "active_figure": {
@@ -6621,8 +6742,8 @@
         "source_filename": "figures.js",
         "source_lineno": 39,
         "source_range": [
-          964,
-          987
+          926,
+          949
         ]
       },
       "figure": {
@@ -6653,8 +6774,8 @@
         "source_filename": "figures.js",
         "source_lineno": 47,
         "source_range": [
-          1193,
-          1644
+          1147,
+          1583
         ]
       },
       "getFigure": {
@@ -6686,8 +6807,8 @@
         "source_filename": "figures.js",
         "source_lineno": 69,
         "source_range": [
-          1890,
-          2040
+          1822,
+          1966
         ]
       },
       "getFigureWindow": {
@@ -6719,8 +6840,8 @@
         "source_filename": "figures.js",
         "source_lineno": 82,
         "source_range": [
-          2300,
-          2460
+          2219,
+          2373
         ]
       },
       "getCurrentFigure": {
@@ -6742,8 +6863,8 @@
         "source_filename": "figures.js",
         "source_lineno": 94,
         "source_range": [
-          2607,
-          2791
+          2514,
+          2692
         ]
       },
       "gcf": {
@@ -6765,8 +6886,8 @@
         "source_filename": "figures.js",
         "source_lineno": 106,
         "source_range": [
-          2938,
-          2987
+          2833,
+          2880
         ]
       },
       "getPlot": {
@@ -6798,8 +6919,8 @@
         "source_filename": "figures.js",
         "source_lineno": 115,
         "source_range": [
-          3232,
-          3416
+          3118,
+          3296
         ]
       },
       "getAxes": {
@@ -6831,8 +6952,8 @@
         "source_filename": "figures.js",
         "source_lineno": 128,
         "source_range": [
-          3661,
-          3711
+          3534,
+          3582
         ]
       },
       "getCurrentPlot": {
@@ -6854,8 +6975,8 @@
         "source_filename": "figures.js",
         "source_lineno": 136,
         "source_range": [
-          3868,
-          4055
+          3733,
+          3914
         ]
       },
       "gcp": {
@@ -6877,8 +6998,8 @@
         "source_filename": "figures.js",
         "source_lineno": 148,
         "source_range": [
-          4212,
-          4259
+          4065,
+          4110
         ]
       },
       "getCurrentAxes": {
@@ -6900,8 +7021,8 @@
         "source_filename": "figures.js",
         "source_lineno": 156,
         "source_range": [
-          4416,
-          4474
+          4261,
+          4317
         ]
       },
       "gca": {
@@ -6923,8 +7044,8 @@
         "source_filename": "figures.js",
         "source_lineno": 164,
         "source_range": [
-          4631,
-          4678
+          4468,
+          4513
         ]
       },
       "focusFigure": {
@@ -6956,8 +7077,8 @@
         "source_filename": "figures.js",
         "source_lineno": 173,
         "source_range": [
-          4890,
-          5050
+          4718,
+          4872
         ]
       },
       "setFigureSize": {
@@ -7007,8 +7128,8 @@
         "source_filename": "figures.js",
         "source_lineno": 188,
         "source_range": [
-          5363,
-          5555
+          5176,
+          5362
         ]
       },
       "setFigurePos": {
@@ -7058,8 +7179,8 @@
         "source_filename": "figures.js",
         "source_lineno": 203,
         "source_range": [
-          5882,
-          6064
+          5680,
+          5856
         ]
       },
       "setFigureTitle": {
@@ -7100,8 +7221,8 @@
         "source_filename": "figures.js",
         "source_lineno": 217,
         "source_range": [
-          6332,
-          6510
+          6116,
+          6288
         ]
       },
       "getFigureSize": {
@@ -7133,8 +7254,8 @@
         "source_filename": "figures.js",
         "source_lineno": 230,
         "source_range": [
-          6732,
-          6896
+          6503,
+          6661
         ]
       },
       "getFigurePos": {
@@ -7166,8 +7287,8 @@
         "source_filename": "figures.js",
         "source_lineno": 243,
         "source_range": [
-          7118,
-          7280
+          6876,
+          7032
         ]
       },
       "getFigureMediaSourceId": {
@@ -7199,8 +7320,8 @@
         "source_filename": "figures.js",
         "source_lineno": 256,
         "source_range": [
-          7505,
-          7687
+          7250,
+          7426
         ]
       },
       "startFigureVideoRecording": {
@@ -7241,8 +7362,8 @@
         "source_filename": "figures.js",
         "source_lineno": 270,
         "source_range": [
-          7948,
-          8146
+          7679,
+          7871
         ]
       },
       "closeFigure": {
@@ -7274,8 +7395,8 @@
         "source_filename": "figures.js",
         "source_lineno": 283,
         "source_range": [
-          8338,
-          8498
+          8056,
+          8210
         ]
       },
       "close": {
@@ -7308,8 +7429,8 @@
         "source_filename": "figures.js",
         "source_lineno": 296,
         "source_range": [
-          8768,
-          9236
+          8473,
+          8926
         ]
       },
       "saveFigureDialog": {
@@ -7331,8 +7452,8 @@
         "source_filename": "figures.js",
         "source_lineno": 317,
         "source_range": [
-          9368,
-          10577
+          9052,
+          10231
         ]
       },
       "saveFigure": {
@@ -7372,8 +7493,8 @@
         "source_filename": "figures.js",
         "source_lineno": 355,
         "source_range": [
-          10879,
-          14540
+          10525,
+          14099
         ]
       },
       "legend": {
@@ -7394,8 +7515,8 @@
         "source_filename": "figures.js",
         "source_lineno": 461,
         "source_range": [
-          15097,
-          15335
+          14637,
+          14869
         ]
       },
       "xlabel": {
@@ -7416,8 +7537,8 @@
         "source_filename": "figures.js",
         "source_lineno": 473,
         "source_range": [
-          15469,
-          15707
+          14997,
+          15229
         ]
       },
       "ylabel": {
@@ -7438,8 +7559,8 @@
         "source_filename": "figures.js",
         "source_lineno": 485,
         "source_range": [
-          15841,
-          16079
+          15357,
+          15589
         ]
       },
       "zlabel": {
@@ -7460,8 +7581,8 @@
         "source_filename": "figures.js",
         "source_lineno": 497,
         "source_range": [
-          16213,
-          16451
+          15717,
+          15949
         ]
       },
       "title": {
@@ -7482,8 +7603,8 @@
         "source_filename": "figures.js",
         "source_lineno": 509,
         "source_range": [
-          16560,
-          16796
+          16052,
+          16282
         ]
       },
       "xlim": {
@@ -7504,8 +7625,8 @@
         "source_filename": "figures.js",
         "source_lineno": 521,
         "source_range": [
-          16896,
-          17126
+          16376,
+          16600
         ]
       },
       "ylim": {
@@ -7526,8 +7647,8 @@
         "source_filename": "figures.js",
         "source_lineno": 533,
         "source_range": [
-          17226,
-          17456
+          16694,
+          16918
         ]
       },
       "zlim": {
@@ -7548,8 +7669,8 @@
         "source_filename": "figures.js",
         "source_lineno": 545,
         "source_range": [
-          17556,
-          17786
+          17012,
+          17236
         ]
       },
       "view": {
@@ -7579,8 +7700,8 @@
         "source_filename": "figures.js",
         "source_lineno": 559,
         "source_range": [
-          17976,
-          18236
+          17418,
+          17672
         ]
       },
       "zoom": {
@@ -7601,8 +7722,8 @@
         "source_filename": "figures.js",
         "source_lineno": 571,
         "source_range": [
-          18349,
-          18585
+          17779,
+          18009
         ]
       },
       "axis": {
@@ -7623,8 +7744,8 @@
         "source_filename": "figures.js",
         "source_lineno": 583,
         "source_range": [
-          18749,
-          18983
+          18167,
+          18395
         ]
       },
       "printFigure": {
@@ -7655,8 +7776,8 @@
         "source_filename": "figures.js",
         "source_lineno": 596,
         "source_range": [
-          19195,
-          19473
+          18600,
+          18872
         ]
       },
       "plot": {
@@ -7696,8 +7817,8 @@
         "source_filename": "figures.js",
         "source_lineno": 610,
         "source_range": [
-          19696,
-          20155
+          19087,
+          19528
         ]
       },
       "updatePlot": {
@@ -7727,8 +7848,8 @@
         "source_filename": "figures.js",
         "source_lineno": 635,
         "source_range": [
-          20384,
-          20631
+          19750,
+          19991
         ]
       },
       "updatePlotById": {
@@ -7750,8 +7871,8 @@
         "source_filename": "figures.js",
         "source_lineno": 647,
         "source_range": [
-          20813,
-          21061
+          20167,
+          20409
         ]
       },
       "hideFigureMenu": {
@@ -7762,8 +7883,8 @@
         "source_filename": "figures.js",
         "source_lineno": 658,
         "source_range": [
-          21106,
-          21293
+          20449,
+          20630
         ]
       },
       "showFigureMenu": {
@@ -7774,8 +7895,8 @@
         "source_filename": "figures.js",
         "source_lineno": 670,
         "source_range": [
-          21340,
-          21527
+          20671,
+          20852
         ]
       },
       "loadJsonFigure": {
@@ -7816,8 +7937,8 @@
         "source_filename": "figures.js",
         "source_lineno": 684,
         "source_range": [
-          21793,
-          22832
+          21110,
+          22050
         ]
       }
     },
@@ -14195,6 +14316,64 @@
       }
     },
     "device": {
+      "drawAudioWaveform": {
+        "name": "drawAudioWaveform",
+        "kind": "function",
+        "description": "Reads and draws an audio sample in the realm that owns the analyser and canvas.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "AnalyserNode"
+              ]
+            },
+            "description": "Audio analyser.",
+            "name": "analyser"
+          },
+          {
+            "type": {
+              "names": [
+                "Uint8Array"
+              ]
+            },
+            "description": "Reusable sample buffer.",
+            "name": "data"
+          },
+          {
+            "type": {
+              "names": [
+                "CanvasRenderingContext2D"
+              ]
+            },
+            "description": "Canvas drawing context.",
+            "name": "context"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "description": "Canvas width.",
+            "name": "width"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "description": "Canvas height.",
+            "name": "height"
+          }
+        ],
+        "source_filename": "device.js",
+        "source_lineno": 24,
+        "source_range": [
+          655,
+          1107
+        ]
+      },
       "checkDriver": {
         "name": "checkDriver",
         "kind": "function",
@@ -14221,10 +14400,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 41,
+        "source_lineno": 62,
         "source_range": [
-          1343,
-          2525
+          2157,
+          3339
         ]
       },
       "checkDriverFTDI": {
@@ -14243,10 +14422,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 89,
+        "source_lineno": 110,
         "source_range": [
-          2672,
-          2748
+          3486,
+          3562
         ]
       },
       "checkDriverCP210x": {
@@ -14265,10 +14444,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 97,
+        "source_lineno": 118,
         "source_range": [
-          2921,
-          2987
+          3735,
+          3801
         ]
       },
       "checkDriverCH340": {
@@ -14287,10 +14466,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 105,
+        "source_lineno": 126,
         "source_range": [
-          3151,
-          3220
+          3965,
+          4034
         ]
       },
       "checkArduino": {
@@ -14309,10 +14488,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 113,
+        "source_lineno": 134,
         "source_range": [
-          3319,
-          3563
+          4133,
+          4377
         ]
       },
       "compileArduino": {
@@ -14342,10 +14521,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 127,
+        "source_lineno": 148,
         "source_range": [
-          3724,
-          4672
+          4538,
+          5486
         ]
       },
       "uploadArduino": {
@@ -14385,10 +14564,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 158,
+        "source_lineno": 179,
         "source_range": [
-          4872,
-          6015
+          5686,
+          6829
         ]
       },
       "parseArduinoOutput": {
@@ -14415,10 +14594,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 194,
+        "source_lineno": 215,
         "source_range": [
-          6132,
-          6628
+          6946,
+          7442
         ]
       },
       "getGamepads": {
@@ -14437,10 +14616,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 215,
+        "source_lineno": 236,
         "source_range": [
-          6768,
-          6918
+          7582,
+          7739
         ]
       },
       "onGamepadConnected": {
@@ -14459,10 +14638,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 225,
+        "source_lineno": 246,
         "source_range": [
-          7094,
-          7429
+          7915,
+          8250
         ]
       },
       "onGamepadDisconnected": {
@@ -14481,10 +14660,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 238,
+        "source_lineno": 259,
         "source_range": [
-          7611,
-          7955
+          8432,
+          8776
         ]
       },
       "getGamepad": {
@@ -14522,10 +14701,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 253,
+        "source_lineno": 274,
         "source_range": [
-          8221,
-          8305
+          9042,
+          9126
         ]
       },
       "getWebcams": {
@@ -14545,10 +14724,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 261,
+        "source_lineno": 282,
         "source_range": [
-          8471,
-          8693
+          9292,
+          9526
         ]
       },
       "getMicrophones": {
@@ -14568,10 +14747,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 272,
+        "source_lineno": 293,
         "source_range": [
-          8863,
-          9089
+          9696,
+          9934
         ]
       },
       "getAudioOutputs": {
@@ -14591,10 +14770,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 283,
+        "source_lineno": 304,
         "source_range": [
-          9248,
-          9476
+          10093,
+          10333
         ]
       },
       "webcam": {
@@ -14624,10 +14803,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 295,
+        "source_lineno": 316,
         "source_range": [
-          9767,
-          10828
+          10624,
+          11879
         ]
       },
       "webcamCapture": {
@@ -14665,10 +14844,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 335,
+        "source_lineno": 362,
         "source_range": [
-          11141,
-          11274
+          12192,
+          12332
         ]
       },
       "getDesktopSources": {
@@ -14687,10 +14866,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 344,
+        "source_lineno": 371,
         "source_range": [
-          11412,
-          11488
+          12470,
+          12546
         ]
       },
       "showDesktopSources": {
@@ -14708,10 +14887,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 352,
+        "source_lineno": 379,
         "source_range": [
-          11628,
-          12239
+          12686,
+          13297
         ]
       },
       "desktopCapture": {
@@ -14749,10 +14928,10 @@
           }
         ],
         "source_filename": "device.js",
-        "source_lineno": 368,
+        "source_lineno": 395,
         "source_range": [
-          12554,
-          12689
+          13612,
+          13747
         ]
       },
       "capture": {
@@ -14867,10 +15046,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 388,
+        "source_lineno": 415,
         "source_range": [
-          13802,
-          16581
+          14860,
+          17828
         ]
       },
       "getCameraResolutions": {
@@ -14900,10 +15079,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 492,
+        "source_lineno": 521,
         "source_range": [
-          16776,
-          17432
+          18023,
+          18681
         ]
       },
       "showAudioWaveform": {
@@ -14944,10 +15123,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 521,
+        "source_lineno": 550,
         "source_range": [
-          17678,
-          19941
+          18927,
+          21266
         ]
       },
       "startVideoRecording": {
@@ -14989,10 +15168,10 @@
         ],
         "async": true,
         "source_filename": "device.js",
-        "source_lineno": 613,
+        "source_lineno": 630,
         "source_range": [
-          20508,
-          23248
+          21833,
+          25269
         ]
       }
     },
@@ -22687,7 +22866,7 @@
       "tf": {
         "name": "tf",
         "kind": "function",
-        "description": "Create a transfer function representation.",
+        "description": "Creates a transfer function model.",
         "params": [
           {
             "type": {
@@ -22695,7 +22874,7 @@
                 "Array.<number>"
               ]
             },
-            "description": "Numerator coefficients of the transfer function.",
+            "description": "Numerator coefficients in descending powers.",
             "name": "num"
           },
           {
@@ -22704,7 +22883,7 @@
                 "Array.<number>"
               ]
             },
-            "description": "Denominator coefficients of the transfer function.",
+            "description": "Denominator coefficients in descending powers.",
             "name": "den"
           },
           {
@@ -22715,7 +22894,7 @@
             },
             "optional": true,
             "defaultvalue": 0,
-            "description": "Sampling time, defaults to 0 for continuous-time systems.",
+            "description": "Sample time. Zero denotes continuous time.",
             "name": "Ts"
           }
         ],
@@ -22723,37 +22902,39 @@
           {
             "type": {
               "names": [
-                "object"
+                "Object"
               ]
             },
-            "description": "An object representing the transfer function { num, den, Ts }."
+            "description": "Transfer function model."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 29,
+        "source_lineno": 46,
         "source_range": [
-          804,
-          859
+          1781,
+          1849
         ]
       },
       "ss": {
         "name": "ss",
         "kind": "function",
-        "description": "Create a state-space representation.",
+        "description": "Creates a state-space model.",
         "params": [
           {
             "type": {
               "names": [
+                "number",
                 "Array.<Array.<number>>"
               ]
             },
-            "description": "System matrix.",
+            "description": "State matrix.",
             "name": "A"
           },
           {
             "type": {
               "names": [
-                "Array.<Array.<number>>"
+                "number",
+                "Array"
               ]
             },
             "description": "Input matrix.",
@@ -22762,7 +22943,8 @@
           {
             "type": {
               "names": [
-                "Array.<Array.<number>>"
+                "number",
+                "Array"
               ]
             },
             "description": "Output matrix.",
@@ -22771,6 +22953,7 @@
           {
             "type": {
               "names": [
+                "number",
                 "Array.<Array.<number>>"
               ]
             },
@@ -22785,7 +22968,7 @@
             },
             "optional": true,
             "defaultvalue": 0,
-            "description": "Sampling time, defaults to 0 for continuous-time systems.",
+            "description": "Sample time. Zero denotes continuous time.",
             "name": "Ts"
           }
         ],
@@ -22793,23 +22976,23 @@
           {
             "type": {
               "names": [
-                "object"
+                "Object"
               ]
             },
-            "description": "An object representing the state-space system { A, B, C, D, Ts }."
+            "description": "State-space model."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 42,
+        "source_lineno": 60,
         "source_range": [
-          1274,
-          1333
+          2214,
+          2284
         ]
       },
       "tf2ss": {
         "name": "tf2ss",
         "kind": "function",
-        "description": "Convert a transfer function to a state-space representation.",
+        "description": "Converts a proper SISO transfer function to companion-form state space.",
         "params": [
           {
             "type": {
@@ -22817,7 +23000,7 @@
                 "Array.<number>"
               ]
             },
-            "description": "Numerator coefficients of the transfer function.",
+            "description": "Numerator coefficients.",
             "name": "num"
           },
           {
@@ -22826,7 +23009,7 @@
                 "Array.<number>"
               ]
             },
-            "description": "Denominator coefficients of the transfer function.",
+            "description": "Denominator coefficients.",
             "name": "den"
           }
         ],
@@ -22834,31 +23017,31 @@
           {
             "type": {
               "names": [
-                "object"
+                "Object"
               ]
             },
-            "description": "State-space representation of the system."
+            "description": "State-space realization."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 52,
+        "source_lineno": 71,
         "source_range": [
-          1638,
-          2135
+          2542,
+          2608
         ]
       },
       "ss2tf": {
         "name": "ss2tf",
         "kind": "function",
-        "description": "Convert a state-space representation to a transfer function.",
+        "description": "Converts a SISO state-space model to transfer coefficients.",
         "params": [
           {
             "type": {
               "names": [
-                "object"
+                "Object"
               ]
             },
-            "description": "State-space system { A, B, C, D }.",
+            "description": "State-space model.",
             "name": "sys"
           }
         ],
@@ -22866,40 +23049,106 @@
           {
             "type": {
               "names": [
-                "object"
+                "Object"
               ]
             },
-            "description": "Transfer function representation { num, den }."
+            "description": "Numerator and denominator coefficients."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 75,
+        "source_lineno": 81,
         "source_range": [
-          2349,
-          2724
+          2830,
+          2891
+        ]
+      },
+      "ssdata": {
+        "name": "ssdata",
+        "kind": "function",
+        "description": "Extracts normalized state-space matrices and sample time.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Matrices A, B, C, D and sample time Ts."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 91,
+        "source_range": [
+          3111,
+          3174
+        ]
+      },
+      "tfdata": {
+        "name": "tfdata",
+        "kind": "function",
+        "description": "Extracts SISO transfer coefficients and sample time.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Numerator, denominator, and sample time."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 101,
+        "source_range": [
+          3390,
+          3453
         ]
       },
       "c2d": {
         "name": "c2d",
         "kind": "function",
-        "description": "Convert a continuous-time transfer function to discrete-time.",
+        "description": "Discretizes a continuous-time model using a zero-order hold.",
         "params": [
           {
             "type": {
               "names": [
-                "Array.<number>"
+                "Array.<number>",
+                "Object"
               ]
             },
-            "description": "Continuous-time numerator coefficients.",
+            "description": "Numerator coefficients or a continuous model.",
             "name": "numc"
           },
           {
             "type": {
               "names": [
-                "Array.<number>"
+                "Array.<number>",
+                "number"
               ]
             },
-            "description": "Continuous-time denominator coefficients.",
+            "description": "Denominator coefficients, or sample time when passing a model.",
             "name": "denc"
           },
           {
@@ -22908,7 +23157,8 @@
                 "number"
               ]
             },
-            "description": "Sampling time.",
+            "optional": true,
+            "description": "Sample time for the coefficient form.",
             "name": "Ts"
           }
         ],
@@ -22916,40 +23166,40 @@
           {
             "type": {
               "names": [
-                "object"
+                "Object"
               ]
             },
-            "description": "Discrete-time transfer function representation { num, den }."
+            "description": "Discrete model or its transfer coefficients."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 97,
+        "source_lineno": 113,
         "source_range": [
-          3074,
-          3210
+          3859,
+          3927
         ]
       },
       "lsim": {
         "name": "lsim",
         "kind": "function",
-        "description": "Simulate the time response of a discrete-time linear system.",
+        "description": "Simulates a discrete model or a continuous model with zero-order-held input.",
         "params": [
           {
             "type": {
               "names": [
-                "Array.<number>"
+                "Object"
               ]
             },
-            "description": "transfer function of system.",
+            "description": "Transfer function or state-space model.",
             "name": "sys"
           },
           {
             "type": {
               "names": [
-                "Array.<number>"
+                "Array"
               ]
             },
-            "description": "Input signal array.",
+            "description": "Input samples in time order, with one column per input.",
             "name": "u"
           },
           {
@@ -22958,40 +23208,9 @@
                 "Array.<number>"
               ]
             },
-            "description": "Time vector array.",
+            "optional": true,
+            "description": "Uniform sample times.",
             "name": "t"
-          }
-        ],
-        "returns": [
-          {
-            "type": {
-              "names": [
-                "object"
-              ]
-            },
-            "description": "An object containing the response:\n- y: Output signal array.\n- t: Time vector array (same as input)."
-          }
-        ],
-        "source_filename": "control.js",
-        "source_lineno": 133,
-        "source_range": [
-          4319,
-          5579
-        ]
-      },
-      "step": {
-        "name": "step",
-        "kind": "function",
-        "description": "Simulates the system response over a specified time period.",
-        "params": [
-          {
-            "type": {
-              "names": [
-                "Object"
-              ]
-            },
-            "description": "The system to simulate.",
-            "name": "sys"
           },
           {
             "type": {
@@ -22999,7 +23218,63 @@
                 "number"
               ]
             },
-            "description": "The final time for the simulation.",
+            "optional": true,
+            "description": "Sample interval for a continuous model.",
+            "name": "Ts"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "description": "Initial state in the supplied or realized coordinates.",
+            "name": "x0"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Output samples y, sample times t, and state trajectory x."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 127,
+        "source_range": [
+          4467,
+          4542
+        ]
+      },
+      "step": {
+        "name": "step",
+        "kind": "function",
+        "description": "Simulates the unit step response of a single-input system.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 10,
+            "description": "Final time or explicit sample grid.",
             "name": "Tfinal"
           }
         ],
@@ -23010,37 +23285,135 @@
                 "Object"
               ]
             },
-            "description": "The simulation result."
+            "description": "Output samples, times, and state trajectory."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 189,
+        "source_lineno": 138,
         "source_range": [
-          5822,
-          6016
+          4846,
+          4920
         ]
       },
-      "tfest": {
-        "name": "tfest",
+      "initial": {
+        "name": "initial",
         "kind": "function",
-        "description": "Estimates a transfer function model using numerical optimization.",
+        "description": "Simulates the free response from a nonzero initial state.",
         "params": [
           {
             "type": {
               "names": [
-                "Array.<number>"
+                "Object"
               ]
             },
-            "description": "Time vector.",
-            "name": "t"
+            "description": "State-space model.",
+            "name": "sys"
           },
           {
             "type": {
               "names": [
+                "number",
                 "Array.<number>"
               ]
             },
-            "description": "Input signal vector.",
+            "description": "Initial state.",
+            "name": "x0"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 10,
+            "description": "Final time or uniform grid.",
+            "name": "time"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Output, time, and state samples."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 150,
+        "source_range": [
+          5228,
+          5310
+        ]
+      },
+      "impulse": {
+        "name": "impulse",
+        "kind": "function",
+        "description": "Computes the unit-area impulse response of a single-input system.\nContinuous-time direct feedthrough is an impulse and is omitted from sampled output.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 10,
+            "description": "Final time or uniform grid.",
+            "name": "time"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Output, time, and state samples."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 162,
+        "source_range": [
+          5689,
+          5767
+        ]
+      },
+      "lsimplot": {
+        "name": "lsimplot",
+        "kind": "function",
+        "description": "Plots the simulated output using the workspace figure API.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "Array"
+              ]
+            },
+            "description": "Input samples.",
             "name": "u"
           },
           {
@@ -23049,7 +23422,1003 @@
                 "Array.<number>"
               ]
             },
-            "description": "Output signal vector.",
+            "optional": true,
+            "description": "Sample times.",
+            "name": "t"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Plot handle."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 174,
+        "source_range": [
+          6039,
+          6114
+        ]
+      },
+      "stepplot": {
+        "name": "stepplot",
+        "kind": "function",
+        "description": "Plots the unit step response using the workspace figure API.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Single-input model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 10,
+            "description": "Final time or sample grid.",
+            "name": "time"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Plot handle."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 185,
+        "source_range": [
+          6357,
+          6432
+        ]
+      },
+      "freqresp": {
+        "name": "freqresp",
+        "kind": "function",
+        "description": "Evaluates the complex frequency response of a SISO model.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Angular frequencies, or bounds { wmin, wmax }.",
+            "name": "w"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Frequencies and response components."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 196,
+        "source_range": [
+          6771,
+          6844
+        ]
+      },
+      "bode": {
+        "name": "bode",
+        "kind": "function",
+        "description": "Computes linear magnitude and unwrapped phase in degrees.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Angular frequencies or bounds.",
+            "name": "w"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Bode response."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 207,
+        "source_range": [
+          7117,
+          7182
+        ]
+      },
+      "margin": {
+        "name": "margin",
+        "kind": "function",
+        "description": "Computes SISO gain and phase margins from polynomial crossover equations.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Continuous or discrete open-loop model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "description": "Relative tolerance for crossover roots.",
+            "name": "tolerance"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Gain factor, principal phase margin in degrees,\nand the respective angular frequencies. Absent crossover frequencies are NaN."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 219,
+        "source_range": [
+          7619,
+          7724
+        ]
+      },
+      "nyquist": {
+        "name": "nyquist",
+        "kind": "function",
+        "description": "Computes positive-frequency Nyquist response data.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Angular frequencies or bounds.",
+            "name": "w"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Nyquist response."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 230,
+        "source_range": [
+          7993,
+          8064
+        ]
+      },
+      "bodeplot": {
+        "name": "bodeplot",
+        "kind": "function",
+        "description": "Plots Bode magnitude and phase on a shared logarithmic frequency axis.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Angular frequencies or bounds.",
+            "name": "w"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Plot handle."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 241,
+        "source_range": [
+          8314,
+          8387
+        ]
+      },
+      "nyquistplot": {
+        "name": "nyquistplot",
+        "kind": "function",
+        "description": "Plots the positive-frequency Nyquist branch and its conjugate.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Angular frequencies or bounds.",
+            "name": "w"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Plot handle."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 252,
+        "source_range": [
+          8629,
+          8708
+        ]
+      },
+      "pole": {
+        "name": "pole",
+        "kind": "function",
+        "description": "Returns poles of a transfer function or eigenvalues of a state-space model.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Linear model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Array"
+              ]
+            },
+            "description": "Real numbers or complex values with real and imag fields."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 262,
+        "source_range": [
+          8937,
+          8998
+        ]
+      },
+      "zero": {
+        "name": "zero",
+        "kind": "function",
+        "description": "Returns the zeros of a SISO transfer function or state-space model.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Array"
+              ]
+            },
+            "description": "Real or complex zeros."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 272,
+        "source_range": [
+          9182,
+          9243
+        ]
+      },
+      "dcgain": {
+        "name": "dcgain",
+        "kind": "function",
+        "description": "Computes the gain at s=0 or z=1. State-space models require a nonsingular equilibrium.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Transfer function or state-space model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<Array.<number>>"
+              ]
+            },
+            "description": "Scalar SISO gain or matrix of gains."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 282,
+        "source_range": [
+          9500,
+          9565
+        ]
+      },
+      "isstable": {
+        "name": "isstable",
+        "kind": "function",
+        "description": "Tests whether all poles lie in the open left half-plane or inside the unit circle.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Linear model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "boolean"
+              ]
+            },
+            "description": "Stability flag."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 292,
+        "source_range": [
+          9761,
+          9830
+        ]
+      },
+      "ctrb": {
+        "name": "ctrb",
+        "kind": "function",
+        "description": "Returns the controllability matrix [B, AB, …].",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "Array",
+                "number"
+              ]
+            },
+            "description": "State-space model or state matrix.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Input matrix when passing A directly.",
+            "name": "B"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Array.<Array.<number>>"
+              ]
+            },
+            "description": "Controllability matrix."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 303,
+        "source_range": [
+          10111,
+          10175
+        ]
+      },
+      "obsv": {
+        "name": "obsv",
+        "kind": "function",
+        "description": "Returns the observability matrix with rows C, CA, and higher powers.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "Array",
+                "number"
+              ]
+            },
+            "description": "State-space model or state matrix.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Output matrix when passing A directly.",
+            "name": "C"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Array.<Array.<number>>"
+              ]
+            },
+            "description": "Observability matrix."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 314,
+        "source_range": [
+          10477,
+          10541
+        ]
+      },
+      "isctrb": {
+        "name": "isctrb",
+        "kind": "function",
+        "description": "Tests whether the controllability matrix has full numerical rank.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "Array",
+                "number"
+              ]
+            },
+            "description": "State-space model or state matrix.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Input matrix when passing A directly.",
+            "name": "B"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "boolean"
+              ]
+            },
+            "description": "Controllability flag."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 325,
+        "source_range": [
+          10836,
+          10904
+        ]
+      },
+      "isobsv": {
+        "name": "isobsv",
+        "kind": "function",
+        "description": "Tests whether the observability matrix has full numerical rank.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "Array",
+                "number"
+              ]
+            },
+            "description": "State-space model or state matrix.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array",
+                "Object"
+              ]
+            },
+            "optional": true,
+            "description": "Output matrix when passing A directly.",
+            "name": "C"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "boolean"
+              ]
+            },
+            "description": "Observability flag."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 336,
+        "source_range": [
+          11196,
+          11264
+        ]
+      },
+      "pzmap": {
+        "name": "pzmap",
+        "kind": "function",
+        "description": "Returns pole-zero map data for a SISO model.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Pole and zero locations."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 346,
+        "source_range": [
+          11447,
+          11510
+        ]
+      },
+      "pzplot": {
+        "name": "pzplot",
+        "kind": "function",
+        "description": "Draws a pole-zero map using the shared figure API.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO model.",
+            "name": "sys"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Plot handle."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 356,
+        "source_range": [
+          11668,
+          11733
+        ]
+      },
+      "rlocus": {
+        "name": "rlocus",
+        "kind": "function",
+        "description": "Computes the negative-feedback closed-loop poles for a sequence of gains.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO open-loop model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "description": "Scalar or vector of gains.",
+            "name": "gains"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Gains and pole trajectories, one trajectory per branch."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 367,
+        "source_range": [
+          12048,
+          12118
+        ]
+      },
+      "rlocusplot": {
+        "name": "rlocusplot",
+        "kind": "function",
+        "description": "Draws the root locus using the existing figure API.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "SISO open-loop model.",
+            "name": "sys"
+          },
+          {
+            "type": {
+              "names": [
+                "number",
+                "Array.<number>"
+              ]
+            },
+            "optional": true,
+            "description": "Feedback gains to plot.",
+            "name": "gains"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Plot handle."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 378,
+        "source_range": [
+          12349,
+          12427
+        ]
+      },
+      "pid": {
+        "name": "pid",
+        "kind": "function",
+        "description": "Builds a parallel-form PID with optional first-order derivative roll-off.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 1,
+            "description": "Proportional gain.",
+            "name": "Kp"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 0,
+            "description": "Integral gain.",
+            "name": "Ki"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 0,
+            "description": "Derivative gain.",
+            "name": "Kd"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 0,
+            "description": "Derivative filter time constant. Use a positive value for a proper derivative controller.",
+            "name": "Tf"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 0,
+            "description": "Sample time of the returned transfer function.",
+            "name": "Ts"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Controller transfer function."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 392,
+        "source_range": [
+          12916,
+          13008
+        ]
+      },
+      "place": {
+        "name": "place",
+        "kind": "function",
+        "description": "Assigns the poles of A - B*K for a controllable state-space pair.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "Array",
+                "number"
+              ]
+            },
+            "description": "State matrix or linear model.",
+            "name": "A"
+          },
+          {
+            "type": {
+              "names": [
+                "Array",
+                "number"
+              ]
+            },
+            "description": "Input matrix, or desired poles when passing a model.",
+            "name": "B"
+          },
+          {
+            "type": {
+              "names": [
+                "Array"
+              ]
+            },
+            "optional": true,
+            "description": "Desired real or conjugate-paired complex poles.",
+            "name": "poles"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Array.<Array.<number>>"
+              ]
+            },
+            "description": "State-feedback gain K."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 404,
+        "source_range": [
+          13382,
+          13451
+        ]
+      },
+      "lqr": {
+        "name": "lqr",
+        "kind": "function",
+        "description": "Designs a linear-quadratic regulator. A discrete model selects the discrete Riccati equation.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "Array",
+                "number"
+              ]
+            },
+            "description": "State matrix or linear model.",
+            "name": "A"
+          },
+          {
+            "type": {
+              "names": [
+                "*"
+              ]
+            },
+            "variable": true,
+            "description": "B, Q, R, and optional S for matrices, or Q, R, and optional S for a model.",
+            "name": "args"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Feedback gain, Riccati solution, and closed-loop poles."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 415,
+        "source_range": [
+          13856,
+          13920
+        ]
+      },
+      "tfest": {
+        "name": "tfest",
+        "kind": "function",
+        "description": "Estimates a continuous SISO transfer function using native least squares and a zero-order-held input.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Array.<number>"
+              ]
+            },
+            "description": "Uniform sample times.",
+            "name": "t"
+          },
+          {
+            "type": {
+              "names": [
+                "Array.<number>"
+              ]
+            },
+            "description": "Input samples.",
+            "name": "u"
+          },
+          {
+            "type": {
+              "names": [
+                "Array.<number>"
+              ]
+            },
+            "description": "Output samples.",
             "name": "y"
           },
           {
@@ -23077,8 +24446,8 @@
               ]
             },
             "optional": true,
-            "defaultvalue": "'NelderMead'",
-            "description": "Optimization method ('NelderMead' or 'Powell').",
+            "defaultvalue": "'LeastSquares'",
+            "description": "Native least squares or the legacy 'Powell' and 'NelderMead' methods.",
             "name": "method"
           }
         ],
@@ -23089,14 +24458,156 @@
                 "Object"
               ]
             },
-            "description": "Estimated transfer function and mean squared error."
+            "description": "Estimated model and mean squared error."
           }
         ],
         "source_filename": "control.js",
-        "source_lineno": 207,
+        "source_lineno": 430,
         "source_range": [
-          6531,
-          7381
+          14466,
+          14572
+        ]
+      },
+      "series": {
+        "name": "series",
+        "kind": "function",
+        "description": "Cascades models so the output of the first drives the second.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "number"
+              ]
+            },
+            "description": "First model or scalar gain.",
+            "name": "first"
+          },
+          {
+            "type": {
+              "names": [
+                "Object",
+                "number"
+              ]
+            },
+            "description": "Second model or scalar gain.",
+            "name": "second"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "State-space realization of the cascade."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 441,
+        "source_range": [
+          14857,
+          14940
+        ]
+      },
+      "parallelConnect": {
+        "name": "parallelConnect",
+        "kind": "function",
+        "description": "Adds two models with matching input and output channels.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "number"
+              ]
+            },
+            "description": "First model or scalar gain.",
+            "name": "first"
+          },
+          {
+            "type": {
+              "names": [
+                "Object",
+                "number"
+              ]
+            },
+            "description": "Second model or scalar gain.",
+            "name": "second"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "State-space realization of the sum."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 452,
+        "source_range": [
+          15216,
+          15317
+        ]
+      },
+      "feedback": {
+        "name": "feedback",
+        "kind": "function",
+        "description": "Closes a feedback loop around a model.",
+        "params": [
+          {
+            "type": {
+              "names": [
+                "Object",
+                "number"
+              ]
+            },
+            "description": "Forward model or scalar gain.",
+            "name": "first"
+          },
+          {
+            "type": {
+              "names": [
+                "Object",
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": 1,
+            "description": "Feedback model or scalar gain.",
+            "name": "second"
+          },
+          {
+            "type": {
+              "names": [
+                "number"
+              ]
+            },
+            "optional": true,
+            "defaultvalue": -1,
+            "description": "Feedback sign, either -1 or 1.",
+            "name": "sign"
+          }
+        ],
+        "returns": [
+          {
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "description": "Closed-loop state-space model."
+          }
+        ],
+        "source_filename": "control.js",
+        "source_lineno": 464,
+        "source_range": [
+          15640,
+          15742
         ]
       }
     },
@@ -23131,7 +24642,7 @@
               ]
             },
             "optional": true,
-            "description": "Optional parameters:\n- eps: Convergence threshold (default: 1e-6)\n- alpha: Initial step size scaling factor (default: 0.001)\n- stepSize: Finite difference step size for gradient estimation (default: 1e-6)\n- maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)",
+            "description": "Optional parameters:\n- eps: Convergence threshold (default: 1e-6)\n- alpha: Initial step size scaling factor (default: 0.001)\n- stepSize: Finite difference step size for gradient estimation (default: 1e-6)\n- maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)\n- functionTolerance: Optional stopping tolerance for the loss change over one sweep.\n- parameterTolerance: Optional stopping tolerance for the largest parameter change over one sweep.",
             "name": "options"
           }
         ],
@@ -23146,10 +24657,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 37,
+        "source_lineno": 39,
         "source_range": [
-          1274,
-          3069
+          1468,
+          3784
         ]
       },
       "optimNelderMead": {
@@ -23306,10 +24817,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 119,
+        "source_lineno": 132,
         "source_range": [
-          4580,
-          4666
+          5295,
+          5381
         ]
       },
       "optimConjugateGradient": {
@@ -23378,10 +24889,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 136,
+        "source_lineno": 149,
         "source_range": [
-          5570,
-          5670
+          6285,
+          6385
         ]
       },
       "optimGradientDescent": {
@@ -23461,10 +24972,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 154,
+        "source_lineno": 167,
         "source_range": [
-          6668,
-          6764
+          7383,
+          7479
         ]
       },
       "optimGradientDescentLineSearch": {
@@ -23566,10 +25077,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 173,
+        "source_lineno": 186,
         "source_range": [
-          8012,
-          8128
+          8727,
+          8843
         ]
       },
       "optimBisect": {
@@ -23648,10 +25159,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 187,
+        "source_lineno": 200,
         "source_range": [
-          8905,
-          8983
+          9620,
+          9698
         ]
       },
       "fminsearch": {
@@ -23808,10 +25319,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 211,
+        "source_lineno": 224,
         "source_range": [
-          10488,
-          10569
+          11203,
+          11284
         ]
       },
       "fminbnd": {
@@ -23869,10 +25380,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 225,
+        "source_lineno": 238,
         "source_range": [
-          11177,
-          13145
+          11892,
+          13860
         ]
       },
       "rcmiga": {
@@ -23900,10 +25411,10 @@
           }
         ],
         "source_filename": "optim.js",
-        "source_lineno": 320,
+        "source_lineno": 333,
         "source_range": [
-          13355,
-          13435
+          14070,
+          14150
         ]
       }
     },
@@ -29427,10 +30938,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 720,
+        "source_lineno": 742,
         "source_range": [
-          23218,
-          23884
+          24114,
+          24780
         ]
       },
       "show": {
@@ -29450,10 +30961,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 744,
+        "source_lineno": 766,
         "source_range": [
-          24071,
-          24192
+          24967,
+          25088
         ]
       },
       "hide": {
@@ -29473,10 +30984,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 753,
+        "source_lineno": 775,
         "source_range": [
-          24380,
-          24501
+          25276,
+          25397
         ]
       },
       "focus": {
@@ -29496,10 +31007,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 762,
+        "source_lineno": 784,
         "source_range": [
-          24624,
-          24747
+          25520,
+          25643
         ]
       },
       "minimize": {
@@ -29519,10 +31030,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 771,
+        "source_lineno": 793,
         "source_range": [
-          24942,
-          25071
+          25838,
+          25967
         ]
       },
       "center": {
@@ -29542,10 +31053,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 780,
+        "source_lineno": 802,
         "source_range": [
-          25277,
-          25402
+          26173,
+          26298
         ]
       },
       "moveTop": {
@@ -29565,10 +31076,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 789,
+        "source_lineno": 811,
         "source_range": [
-          25631,
-          25758
+          26527,
+          26654
         ]
       },
       "setSize": {
@@ -29607,10 +31118,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 800,
+        "source_lineno": 822,
         "source_range": [
-          26014,
-          26169
+          26910,
+          27065
         ]
       },
       "setPos": {
@@ -29649,10 +31160,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 811,
+        "source_lineno": 833,
         "source_range": [
-          26443,
-          26588
+          27339,
+          27484
         ]
       },
       "setResizable": {
@@ -29682,10 +31193,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 821,
+        "source_lineno": 843,
         "source_range": [
-          26901,
-          27050
+          27797,
+          27946
         ]
       },
       "setMovable": {
@@ -29715,10 +31226,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 831,
+        "source_lineno": 853,
         "source_range": [
-          27357,
-          27502
+          28253,
+          28398
         ]
       },
       "setAspectRatio": {
@@ -29748,10 +31259,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 841,
+        "source_lineno": 863,
         "source_range": [
-          27816,
-          27983
+          28712,
+          28879
         ]
       },
       "setOpacity": {
@@ -29781,10 +31292,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 851,
+        "source_lineno": 873,
         "source_range": [
-          28321,
-          28470
+          29217,
+          29366
         ]
       },
       "setFullscreen": {
@@ -29814,10 +31325,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 861,
+        "source_lineno": 883,
         "source_range": [
-          28732,
-          28883
+          29628,
+          29779
         ]
       },
       "setTitle": {
@@ -29847,10 +31358,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 871,
+        "source_lineno": 893,
         "source_range": [
-          29082,
-          29223
+          29978,
+          30119
         ]
       },
       "printToPdf": {
@@ -29880,10 +31391,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 881,
+        "source_lineno": 903,
         "source_range": [
-          29381,
-          29530
+          30277,
+          30426
         ]
       },
       "getSize": {
@@ -29903,10 +31414,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 890,
+        "source_lineno": 912,
         "source_range": [
-          29672,
-          29799
+          30568,
+          30695
         ]
       },
       "getPos": {
@@ -29926,10 +31437,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 899,
+        "source_lineno": 921,
         "source_range": [
-          29941,
-          30066
+          30837,
+          30962
         ]
       },
       "close": {
@@ -29949,10 +31460,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 908,
+        "source_lineno": 930,
         "source_range": [
-          30182,
-          30257
+          31078,
+          31153
         ]
       },
       "openDevTools": {
@@ -29972,10 +31483,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 916,
+        "source_lineno": 938,
         "source_range": [
-          30441,
-          30578
+          31337,
+          31474
         ]
       },
       "getMediaSourceId": {
@@ -29996,10 +31507,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 925,
+        "source_lineno": 947,
         "source_range": [
-          30731,
-          30876
+          31627,
+          31772
         ]
       },
       "startVideoRecording": {
@@ -30030,10 +31541,10 @@
         ],
         "async": true,
         "source_filename": "windows.js",
-        "source_lineno": 935,
+        "source_lineno": 957,
         "source_range": [
-          31043,
-          31251
+          31939,
+          32147
         ]
       },
       "addScript": {
@@ -30052,10 +31563,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 944,
+        "source_lineno": 966,
         "source_range": [
-          31368,
-          31636
+          32264,
+          32532
         ]
       },
       "addLinkStylesheet": {
@@ -30074,10 +31585,10 @@
           }
         ],
         "source_filename": "windows.js",
-        "source_lineno": 955,
+        "source_lineno": 977,
         "source_range": [
-          31770,
-          31989
+          32666,
+          32885
         ]
       },
       "addUI": {
@@ -30086,10 +31597,10 @@
         "description": "Loads the UI script.",
         "params": [],
         "source_filename": "windows.js",
-        "source_lineno": 965,
+        "source_lineno": 987,
         "source_range": [
-          32036,
-          32140
+          32932,
+          33036
         ]
       }
     },
@@ -30101,10 +31612,10 @@
         "params": [],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 901,
+        "source_lineno": 911,
         "source_range": [
-          28280,
-          28684
+          27720,
+          28110
         ]
       },
       "focus": {
@@ -30114,10 +31625,10 @@
         "params": [],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 920,
+        "source_lineno": 930,
         "source_range": [
-          28754,
-          28896
+          28175,
+          28314
         ]
       },
       "setSize": {
@@ -30156,10 +31667,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 931,
+        "source_lineno": 941,
         "source_range": [
-          29144,
-          29316
+          28554,
+          28723
         ]
       },
       "setPos": {
@@ -30198,10 +31709,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 942,
+        "source_lineno": 952,
         "source_range": [
-          29582,
-          29744
+          28981,
+          29140
         ]
       },
       "setTitle": {
@@ -30231,10 +31742,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 952,
+        "source_lineno": 962,
         "source_range": [
-          29943,
-          30101
+          29332,
+          29487
         ]
       },
       "getSize": {
@@ -30254,10 +31765,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 961,
+        "source_lineno": 971,
         "source_range": [
-          30235,
-          30381
+          29615,
+          29758
         ]
       },
       "getPos": {
@@ -30277,10 +31788,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 970,
+        "source_lineno": 980,
         "source_range": [
-          30515,
-          30659
+          29886,
+          30027
         ]
       },
       "getMediaSourceId": {
@@ -30300,10 +31811,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 979,
+        "source_lineno": 989,
         "source_range": [
-          30773,
-          30937
+          30135,
+          30296
         ]
       },
       "startVideoRecording": {
@@ -30334,10 +31845,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 989,
+        "source_lineno": 999,
         "source_range": [
-          31103,
-          31281
+          30455,
+          30630
         ]
       },
       "close": {
@@ -30357,10 +31868,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 998,
+        "source_lineno": 1008,
         "source_range": [
-          31389,
-          31517
+          30732,
+          30857
         ]
       },
       "hideMenu": {
@@ -30369,10 +31880,10 @@
         "description": "Hides figure menu.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 1006,
+        "source_lineno": 1016,
         "source_range": [
-          31562,
-          31763
+          30897,
+          31093
         ]
       },
       "showMenu": {
@@ -30381,10 +31892,10 @@
         "description": "Shows figure menu.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 1016,
+        "source_lineno": 1026,
         "source_range": [
-          31808,
-          32001
+          31133,
+          31321
         ]
       }
     },
@@ -30405,10 +31916,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1248,
+        "source_lineno": 1258,
         "source_range": [
-          38972,
-          39121
+          38065,
+          38209
         ]
       },
       "xlabel": {
@@ -30427,10 +31938,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1259,
+        "source_lineno": 1269,
         "source_range": [
-          39245,
-          39388
+          38327,
+          38465
         ]
       },
       "ylabel": {
@@ -30449,10 +31960,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1270,
+        "source_lineno": 1280,
         "source_range": [
-          39512,
-          39655
+          38583,
+          38721
         ]
       },
       "zlabel": {
@@ -30471,10 +31982,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1281,
+        "source_lineno": 1291,
         "source_range": [
-          39779,
-          39922
+          38839,
+          38977
         ]
       },
       "title": {
@@ -30493,10 +32004,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1292,
+        "source_lineno": 1302,
         "source_range": [
-          40029,
-          40170
+          39078,
+          39214
         ]
       },
       "xlim": {
@@ -30515,10 +32026,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1303,
+        "source_lineno": 1313,
         "source_range": [
-          40289,
-          40453
+          39327,
+          39485
         ]
       },
       "ylim": {
@@ -30537,10 +32048,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1315,
+        "source_lineno": 1325,
         "source_range": [
-          40572,
-          40736
+          39598,
+          39756
         ]
       },
       "zlim": {
@@ -30559,10 +32070,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1327,
+        "source_lineno": 1337,
         "source_range": [
-          40855,
-          41019
+          39869,
+          40027
         ]
       },
       "view": {
@@ -30590,10 +32101,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1340,
+        "source_lineno": 1350,
         "source_range": [
-          41207,
-          41374
+          40208,
+          40370
         ]
       },
       "zoom": {
@@ -30612,10 +32123,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1351,
+        "source_lineno": 1361,
         "source_range": [
-          41482,
-          41623
+          40472,
+          40608
         ]
       },
       "axis": {
@@ -30634,10 +32145,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1362,
+        "source_lineno": 1372,
         "source_range": [
-          41800,
-          41945
+          40779,
+          40919
         ]
       },
       "fromJSON": {
@@ -30656,10 +32167,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1373,
+        "source_lineno": 1383,
         "source_range": [
-          42046,
-          42175
+          41014,
+          41138
         ]
       },
       "print": {
@@ -30688,10 +32199,10 @@
         ],
         "async": true,
         "source_filename": "figures.js",
-        "source_lineno": 1385,
+        "source_lineno": 1395,
         "source_range": [
-          42393,
-          42758
+          41349,
+          41701
         ]
       },
       "update": {
@@ -30719,10 +32230,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1405,
+        "source_lineno": 1415,
         "source_range": [
-          42991,
-          43077
+          41927,
+          42011
         ]
       },
       "updateById": {
@@ -30742,10 +32253,10 @@
           }
         ],
         "source_filename": "figures.js",
-        "source_lineno": 1413,
+        "source_lineno": 1423,
         "source_range": [
-          43247,
-          43331
+          42175,
+          42257
         ]
       },
       "remove": {
@@ -30754,10 +32265,10 @@
         "description": "Removes the plot from the figure, cleaning up any resources associated with it.",
         "params": [],
         "source_filename": "figures.js",
-        "source_lineno": 1420,
+        "source_lineno": 1430,
         "source_range": [
-          43437,
-          43535
+          42358,
+          42452
         ]
       }
     },
@@ -44698,10 +46209,10 @@
           }
         ],
         "source_filename": "device-gamepad.js",
-        "source_lineno": 126,
+        "source_lineno": 128,
         "source_range": [
-          3058,
-          3180
+          3237,
+          3359
         ]
       },
       "setOnConnect": {
@@ -44720,10 +46231,10 @@
           }
         ],
         "source_filename": "device-gamepad.js",
-        "source_lineno": 136,
+        "source_lineno": 138,
         "source_range": [
-          3328,
-          3522
+          3507,
+          3701
         ]
       },
       "setOnDisconnect": {
@@ -44742,10 +46253,10 @@
           }
         ],
         "source_filename": "device-gamepad.js",
-        "source_lineno": 149,
+        "source_lineno": 151,
         "source_range": [
-          3676,
-          3810
+          3855,
+          3989
         ]
       },
       "close": {
@@ -44754,10 +46265,10 @@
         "description": "Cleans up the gamepad instance and stops data reading.",
         "params": [],
         "source_filename": "device-gamepad.js",
-        "source_lineno": 158,
+        "source_lineno": 160,
         "source_range": [
-          3886,
-          4094
+          4065,
+          4351
         ]
       }
     }
@@ -45062,7 +46573,7 @@
         "source_lineno": 213,
         "source_range": [
           6928,
-          9075
+          9103
         ]
       },
       "terminate": {
@@ -45071,10 +46582,10 @@
         "description": "Terminates all workers and resets the worker pool.",
         "params": [],
         "source_filename": "parallel.js",
-        "source_lineno": 285,
+        "source_lineno": 286,
         "source_range": [
-          9147,
-          9326
+          9175,
+          9354
         ]
       }
     },
@@ -45634,10 +47145,10 @@
         ],
         "async": true,
         "source_filename": "sym-math-sympy.js",
-        "source_lineno": 125,
+        "source_lineno": 32,
         "source_range": [
-          3653,
-          3779
+          728,
+          909
         ]
       },
       "getSymbolName": {
@@ -45696,7 +47207,7 @@
                 "string"
               ]
             },
-            "description": "The Python code to evaluate.",
+            "description": "Python for SymPy, or Giac syntax for Giac.",
             "name": "code"
           }
         ],

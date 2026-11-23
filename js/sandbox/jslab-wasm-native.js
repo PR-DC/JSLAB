@@ -51,7 +51,7 @@ class PRDC_JSLAB_WASM_NATIVE_LOADER {
       var pointers = [];
       try {
         lengths.forEach(function(length) {
-          var pointer = wasm._malloc(length * Float64Array.BYTES_PER_ELEMENT);
+          var pointer = wasm._malloc(Math.max(1, length) * Float64Array.BYTES_PER_ELEMENT);
           if(!pointer) {
             throw new RangeError('WebAssembly memory allocation failed.');
           }
@@ -82,6 +82,21 @@ class PRDC_JSLAB_WASM_NATIVE_LOADER {
 
     return {
       wasm: true,
+      control: function(operation, inputs, args, length) {
+        const kernel = wasm['_control_' + operation] ?? wasm['_nm_control_' + operation];
+        if(typeof kernel !== 'function') {
+          throw new Error('Control WebAssembly module is unavailable. Run npm run build-native-wasm.');
+        }
+        inputs.forEach(values => numericArray('Control input', values));
+        return withBuffers([...inputs.map(values => values.length), length], pointers => {
+          inputs.forEach((values, index) => wasm.HEAPF64.set(values, pointers[index] / 8));
+          const output = pointers[inputs.length];
+          if(!kernel(...pointers.slice(0, -1), ...args, output)) {
+            throw new Error('Control calculation failed in ' + operation + '.');
+          }
+          return Array.from(wasm.HEAPF64.subarray(output / 8, output / 8 + length));
+        });
+      },
       minDisksDistance3D: function(O1, n1, r1, O2, n2, r2) {
         [O1, n1, O2, n2].forEach(function(vector) {
           numericArray('Disk vector', vector);
@@ -188,6 +203,9 @@ class PRDC_JSLAB_WASM_NATIVE_LOADER {
     }
     return {
       wasm: true,
+      control: function(...args) {
+        return getNativeModule().control(...args);
+      },
       minDisksDistance3D: function(...args) {
         return getNativeModule().minDisksDistance3D(...args);
       },

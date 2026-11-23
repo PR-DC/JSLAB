@@ -122,4 +122,19 @@ tests.add('configured WASM factories initialize each backend only before matchin
   }, /Unknown WebAssembly/);
 }, { tags: ['unit', 'wasm', 'lazy'] });
 
+tests.add('standalone control commands prepare native WASM on first use', async function(assert) {
+  for(const command of ['lsim', 'step', 'lsimplot', 'stepplot', 'c2d', 'ss2tf', 'tfest', 'series',
+    'parallelConnect', 'feedback', 'freqresp', 'bode', 'bodeplot', 'nyquist', 'nyquistplot', 'pole', 'zero',
+    'dcgain', 'isstable', 'pzmap', 'pzplot', 'initial', 'impulse', 'ctrb', 'obsv', 'isctrb', 'isobsv',
+    'margin', 'rlocus', 'rlocusplot', 'place', 'lqr']) {
+    const loader = PRDC_JSLAB_SANDBOX_TESTS_JSLAB_WASM_LOADER_TEST_HELPER.createLoader();
+    const native = {};
+    loader.configureWasm(() => native, () => {
+      throw new Error('Control command requested geometry WASM');
+    });
+    await loader.prepareWasmForCode(command + '(model)');
+    assert.equal(loader.getWasmModule('native'), native);
+  }
+}, { tags: ['unit', 'wasm', 'control'] });
+
 exports.MODULE_TESTS = tests;

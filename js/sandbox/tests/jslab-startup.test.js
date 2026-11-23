@@ -261,21 +261,24 @@ tests.add('Clear restores shadowed functions and removes user variables', functi
   context.parser = { messages: {} };
   context.flight_data = [1, 2];
   // Isolate resource cleanup while exercising the real workspace clear logic.
+  var workersStopped = false;
   var runtime = {
     context: context,
+    inter: { parallel: { terminate() { workersStopped = true; } } },
     _initial_function_descriptors: jsl._initial_function_descriptors,
     getWorkspaceProperties: jsl.getWorkspaceProperties.bind(jsl),
     doCleanup: () => Promise.resolve(),
     system: { _clear() {} }
   };
   context.sym = { clear() {} };
-  context.parallel = { terminate() {} };
+  context.parallel = () => {};
   for(const name of ['clearEventListeners', 'clearImmediates', 'clearAnimationFrames',
     'clearIntervals', 'clearTimeouts', 'clearIdleCallbacks', 'stopPromises',
     'stopSubprocesses', 'unrequireAll', 'onStatsChange']) {
     runtime[name] = () => {};
   }
   jsl.clear.call(runtime);
+  assert.ok(workersStopped);
   assert.equal(context.parser, original);
   assert.ok(!Object.hasOwn(context, 'flight_data'));
   assert.ok(!jsl.getWorkspaceProperties().includes('parser'));

@@ -617,9 +617,6 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.emptyDirectory(dist_root);
     const { folder: texlive } = require('../../config/texlive.json');
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFolder(path.join(app_root, 'lib', texlive), path.join(dist_root, 'lib', texlive));
-    if(!gui_test_build && !web_preview) {
-      fs.rmSync(old_dist_root, { recursive: true, force: true });
-    }
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.ensureDirectory(dist_root);
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.ensureDirectory(js_root);
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.ensureDirectory(js_code_root);
@@ -988,7 +985,6 @@ var gui_test_build = process.argv.includes('--gui-test-build');
 var web_preview = process.argv.includes('--preview');
 var gui_handler_coverage = gui_test_build ? require('./gui-test-coverage') : null;
 var dist_root = path.join(app_root, gui_test_build ? 'temp/gui-web-build' : web_preview ? 'temp/web-preview' : 'dist-web');
-var old_dist_root = path.join(app_root, 'web-dist');
 var js_root = path.join(dist_root, 'js');
 var js_code_root = path.join(js_root, 'code');
 var js_shared_root = path.join(js_root, 'other-shared');

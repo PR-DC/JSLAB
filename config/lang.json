@@ -3893,5 +3893,30 @@
     "en": "The Simulate workspace request timed out.",
     "rs": "Isteklo je vreme za zahtev simulacije u radnom prostoru.",
     "rsc": "Истекло је време за захтев симулације у радном простору."
+  },
+  "780": {
+    "en": "Output",
+    "rs": "Izlaz",
+    "rsc": "Излаз"
+  },
+  "781": {
+    "en": "Magnitude [dB]",
+    "rs": "Amplituda [dB]",
+    "rsc": "Амплитуда [dB]"
+  },
+  "782": {
+    "en": "Phase [°]",
+    "rs": "Faza [°]",
+    "rsc": "Фаза [°]"
+  },
+  "783": {
+    "en": "Poles",
+    "rs": "Polovi",
+    "rsc": "Полови"
+  },
+  "784": {
+    "en": "Zeros",
+    "rs": "Nule",
+    "rsc": "Нуле"
   }
 }

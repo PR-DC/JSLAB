@@ -91,8 +91,17 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
     if(emsdk_root) {
       tool_path = path.join(emsdk_root, 'upstream', 'emscripten', tool_name + '.py');
       if(fs.existsSync(tool_path)) {
+        var python = 'python';
+        var python_root = path.join(emsdk_root, 'python');
+        if(process.env.EMSDK_PYTHON && fs.existsSync(process.env.EMSDK_PYTHON)) {
+          python = process.env.EMSDK_PYTHON;
+        } else if(process.platform === 'win32' && fs.existsSync(python_root)) {
+          python = fs.readdirSync(python_root).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+            .map(folder => path.join(python_root, folder, 'python.exe'))
+            .find(candidate => fs.existsSync(candidate)) || python;
+        }
         return {
-          command: 'python',
+          command: python,
           args_prefix: [tool_path],
           env: Object.assign({}, process.env, {
             EM_CONFIG: path.join(emsdk_root, '.emscripten'),
@@ -137,12 +146,28 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
 
   /**
    * Compiles the native_module wasm bundle.
+   * @param {string} staging Temporary compilation directory.
    */
-  static buildNativeModuleWasm() {
+  static buildNativeModuleWasm(staging) {
     var source_file = path.join(app_root, 'cpp', 'native-module-wasm.cpp');
-    var output_file = path.join(build_root, 'native_module.js');
+    var output_file = path.join(staging, 'native_module.js');
+    const { folder } = require('../../config/slicot.json');
+    const slicot_objects = ['ab05md', 'ab05nd', 'ab05pd'].map(routine => {
+      const object = path.join(staging, routine + '.o');
+      const run = PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.runEmscripten('emcc', 'EMCC', [
+        '-O3', '-c', path.join(app_root, 'lib', folder, routine + '.c'), '-o', object
+      ]);
+      if(run.status !== 0) {
+        throw new Error('Failed to compile SLICOT ' + routine.toUpperCase() + '.\n' + (run.stderr || run.error));
+      }
+      return object;
+    });
     var args = [
       source_file,
+      path.join(app_root, 'cpp', 'control-slicot.cpp'),
+      path.join(app_root, 'cpp', 'control-identification.cpp'),
+      path.join(app_root, 'cpp', 'control-design.cpp'),
+      ...slicot_objects,
       '-O3',
       '-msimd128',
       '-std=c++17',
@@ -162,10 +187,11 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
 
   /**
    * Compiles the alpha_shape_3d wasm bundle.
+   * @param {string} staging Temporary compilation directory.
    */
-  static buildAlphaShape3DWasm() {
+  static buildAlphaShape3DWasm(staging) {
     var source_file = path.join(app_root, 'cpp', 'alpha-shape-3d-wasm.cpp');
-    var output_file = path.join(build_root, 'alpha_shape_3d.js');
+    var output_file = path.join(staging, 'alpha_shape_3d.js');
     var args = [
       source_file,
       '-O3',
@@ -248,13 +274,20 @@ class PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER {
     PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(build_root);
     PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.ensureDirectory(bundle_root);
 
-    if(!target || target === true || target === 'all' || target === 'native_module') {
-      PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.buildNativeModuleWasm();
+    const staging = fs.mkdtempSync(path.join(build_root, 'compile-'));
+    try {
+      if(!target || target === true || target === 'all' || target === 'native_module') {
+        PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.buildNativeModuleWasm(staging);
+      }
+      if(!target || target === true || target === 'all' || target === 'alpha_shape_3d') {
+        PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.buildAlphaShape3DWasm(staging);
+      }
+      PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.writeManifest();
+    } finally {
+      if(path.dirname(path.resolve(staging)) === path.resolve(build_root)) {
+        fs.rmSync(staging, { recursive: true, force: true });
+      }
     }
-    if(!target || target === true || target === 'all' || target === 'alpha_shape_3d') {
-      PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.buildAlphaShape3DWasm();
-    }
-    PRDC_JSLAB_DEV_BUILD_NATIVE_WASM_HELPER.writeManifest();
 
     console.log('Built native wasm bundles in ' + bundle_root);
   }

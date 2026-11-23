@@ -703,11 +703,21 @@ class PRDC_JSLAB_LIB_FIGURES {
     }
     var data = JSON.parse(this.jsl.inter.env.readFileSync(file_path).toString());
 
+    return this._plotJson(data, fid ?? -1).fid;
+  }
+
+  /**
+   * Displays an in-memory plot through the existing JSON figure path.
+   * @param {Object} data Figure traces and layout.
+   * @param {number} [fid] Figure identifier.
+   * @returns {Object} Plot handle.
+   */
+  _plotJson(data, fid = this.active_figure) {
     this._pid += 1;
 
     fid = this.figure(fid);
     this.open_figures[fid]._fromJSON(this._pid, data);
-    return fid;
+    return this.open_figures[fid].plot;
   }
 
   /**

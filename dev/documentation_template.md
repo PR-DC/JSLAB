@@ -806,6 +806,8 @@ The installation script extracts the bundled C++ libraries and builds both WASM 
 npm run build-native-wasm
 ```
 
+The Control module uses Eigen for state-space conversion, discretization, simulation, and transfer-function fitting. The same WASM bundle includes the versioned SLICOT routines for series, parallel, and feedback interconnections.
+
 The numerical and geometry bundles and their manifest are generated under build/wasm/native. Desktop packaging includes these numerical and geometry bundles under build/wasm in the application. The web distribution serves them from wasm/. Giac uses a prebuilt bundle selected by config/giac.json. The maintainer rebuild writes the Giac loader and binary to build/wasm/giac for review before a bundle update. End users of packaged releases do not need Emscripten.
 
 ### Runtime organization

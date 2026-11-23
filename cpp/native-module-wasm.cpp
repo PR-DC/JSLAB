@@ -5,6 +5,7 @@
 // --------------------
 
 #include <cmath>
+#include <complex>
 #include <vector>
 
 #ifdef __EMSCRIPTEN__
@@ -15,8 +16,81 @@
 
 #include "native-module-core.h"
 #include "geometry-disk-core.h"
+#include "control-core.h"
+#include "control-margin.h"
 
 extern "C" {
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_margin(const double* num, const double* den, int numerator_count,
+    int denominator_count, double period, double tolerance, double* out) {
+  if(numerator_count < 1 || denominator_count < 1) return 0;
+  return control_core::Margins::compute({num, num + numerator_count}, {den, den + denominator_count},
+    period, tolerance, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_fit(const double* input, const double* output, int samples,
+    int poles, int zeros, double duration, double* result) {
+  return control_core::Identification::fit(input, output, nullptr, samples, poles, zeros, duration, false, false, result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_interconnect(const double* first, const double* second,
+    int n1, int n2, int inputs, int intermediate, int outputs, int mode, double factor, double* result) {
+  return control_core::Interconnections::connect(first, second, n1, n2, inputs, intermediate, outputs, mode, factor, result);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_ss2tf(const double* a, const double* b, const double* c, int n, double d, double* out) {
+  return control_core::Models::ss2tf(a, b, c, n, d, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_frequency(const double* num, const double* den, const double* frequencies,
+    int numerator_count, int denominator_count, int count, double period, double* out) {
+  return control_core::Models::frequency(num, den, frequencies, numerator_count, denominator_count, count, period, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_poles(const double* a, int n, double* out) {
+  return control_core::Models::poles(a, n, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_state_subspace(const double* a, const double* channels, int n, int ports,
+    int observe, int rank_only, double* out) {
+  return control_core::Models::stateSubspace(a, channels, n, ports, observe, rank_only, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_dcgain(const double* a, const double* b, const double* c, const double* d,
+    int n, int m, int p, int discrete, double* out) {
+  return control_core::Models::dcgain(a, b, c, d, n, m, p, discrete, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_discretize(const double* a, const double* b, int states, int inputs,
+    double dt, int foh, double* out) {
+  return control_core::Models::discretize(a, b, states, inputs, dt, foh != 0, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_simulate(const double* system, const double* initial, const double* input,
+    int states, int inputs, int outputs, int samples, double* out) {
+  return control_core::Models::simulate(system, initial, input, states, inputs, outputs, samples, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_place(const double* a, const double* b, const double* coefficients, int n, int m, double* out) {
+  return control_core::Design::place(a, b, coefficients, n, m, out);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int nm_control_lqr(const double* a, const double* b, const double* q, const double* r, const double* s,
+    int n, int m, int discrete, double* out) {
+  return control_core::Design::lqr(a, b, q, r, s, n, m, discrete != 0, out);
+}
 
 EMSCRIPTEN_KEEPALIVE
 int nm_min_disks_distance_3d(const double* input, double* output) {

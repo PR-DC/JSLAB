@@ -511,7 +511,7 @@ class PRDC_JSLAB_LIB {
   clear() {
     this.doCleanup().catch(error => this._console.error(error));
     this.context.sym.clear();
-    this.context.parallel.terminate();
+    this.inter.parallel.terminate();
     this.system._clear();
 
     this.clearEventListeners();

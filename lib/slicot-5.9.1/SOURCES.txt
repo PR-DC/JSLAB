@@ -1,0 +1,9 @@
+SLICOT Reference 5.9.1 source subset, copyright The SLICOT Team.
+Sources (AB05MD.f, AB05ND.f, AB05PD.f):
+https://github.com/SLICOT/SLICOT-Reference/tree/5eeb845d84f5a60f6069754b7819dad468951933/src
+License: BSD-3-Clause (LICENSE.txt)
+
+Translated with Netlib f2c 20100827 using f2c -a AB05MD.f AB05ND.f AB05PD.f.
+The generated notice and whitespace were normalized for this distribution.
+JSLAB supplies the required BLAS and LAPACK entry points in cpp/control-slicot.cpp.
+No Fortran compiler or libf2c runtime is required to build this subset.
