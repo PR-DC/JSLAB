@@ -45,10 +45,7 @@ class PRDC_JSLAB_CLI_SESSION {
     delete env.ELECTRON_RUN_AS_NODE;
     this.profile = fs.mkdtempSync(path.join(os.tmpdir(), 'jslab-cli-'));
     var args = (packaged ? [] : [root]).concat(['--cli-runtime', '--cli-parent-pid=' + process.pid,
-      '--user-data-dir=' + this.profile]);
-    if(this.options.headless) {
-      args.push('--disable-gpu', '--in-process-gpu');
-    }
+      '--user-data-dir=' + this.profile, '--disable-gpu', '--in-process-gpu']);
     this.child = cp.spawn(executable, args, { env: env, cwd: this.options.cwd,
       windowsHide: true, detached: this.options.detached === true, stdio: ['pipe', 'pipe', 'pipe'] });
     this.child.on('error', function(err) {

@@ -145,50 +145,6 @@ class PRDC_JSLAB_WEB_PRESENTATION_TRANSPORT {
       return PRDC_JSLAB_PRESENTATION_CONTENT.isLocalReference(url_text);
     }
 
-    function getMimeType(file_path) {
-      var ext = String(file_path || '').toLowerCase();
-      if(ext.endsWith('.html') || ext.endsWith('.htm')) {
-        return 'text/html;charset=utf-8';
-      }
-      if(ext.endsWith('.css')) {
-        return 'text/css;charset=utf-8';
-      }
-      if(ext.endsWith('.js')) {
-        return 'text/javascript;charset=utf-8';
-      }
-      if(ext.endsWith('.json')) {
-        return 'application/json;charset=utf-8';
-      }
-      if(ext.endsWith('.svg')) {
-        return 'image/svg+xml';
-      }
-      if(ext.endsWith('.png')) {
-        return 'image/png';
-      }
-      if(ext.endsWith('.jpg') || ext.endsWith('.jpeg')) {
-        return 'image/jpeg';
-      }
-      if(ext.endsWith('.webp')) {
-        return 'image/webp';
-      }
-      if(ext.endsWith('.gif')) {
-        return 'image/gif';
-      }
-      if(ext.endsWith('.pdf')) {
-        return 'application/pdf';
-      }
-      if(ext.endsWith('.woff')) {
-        return 'font/woff';
-      }
-      if(ext.endsWith('.woff2')) {
-        return 'font/woff2';
-      }
-      if(ext.endsWith('.ttf')) {
-        return 'font/ttf';
-      }
-      return 'application/octet-stream';
-    }
-
     function patchContentSecurityPolicy() {
       var content;
       if(!csp_meta) {
@@ -247,7 +203,7 @@ class PRDC_JSLAB_WEB_PRESENTATION_TRANSPORT {
       if(bytes === false || typeof bytes == 'undefined' || bytes === null) {
         return '';
       }
-      blob = new Blob([bytes], { type: getMimeType(file_path) });
+      blob = new Blob([bytes], { type: PRDC_JSLAB_PRESENTATION_CONTENT.mimeType(file_path) });
       storeResourceUrl(key, URL.createObjectURL(blob));
       return resource_urls[key];
     }

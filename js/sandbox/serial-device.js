@@ -346,15 +346,8 @@ class PRDC_JSLAB_LIB_SERIAL_DEVICE {
       if(save_target) {
         var log_path = typeof save_target == 'object' ? save_target.filePath : save_target;
         var data = context.terminal.getLog();
-        if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
-            save_target && typeof save_target == 'object') {
-          await obj.jsl.inter.env.saveLocalFile(save_target, data, {
-            mimeType: 'text/plain;charset=utf-8',
-            filePath: log_path
-          });
-          return;
-        }
-        obj.jsl.inter.env.writeFileSync(log_path, data);
+        await obj.jsl.inter.file_system._writeSaveTarget(save_target, data,
+          { mimeType: 'text/plain;charset=utf-8', filePath: log_path });
       }
     }
     context.document.getElementById('save-log').addEventListener('click', async () => {

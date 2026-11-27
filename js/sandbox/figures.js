@@ -19,7 +19,7 @@ class PRDC_JSLAB_LIB_FIGURES {
     this.jsl = jsl;
 
     this._fonts_registred = false;
-    this._fonts = [];
+    this._fonts = {};
     this._fid = 0;
     this._pid = 0;
     this._html_figure_path = this.jsl.app_path + '/html/html_figure.html';
@@ -331,16 +331,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         {name: 'interactive offline html', extensions: ['io.html']}
       ]
     };
-    var figure_target = false;
-    if(typeof this.jsl.inter.env.showSaveDialog == 'function') {
-      figure_target = await this.jsl.inter.env.showSaveDialog(options);
-      if(figure_target && figure_target.canceled) {
-        return;
-      }
-    }
-    if(!figure_target && typeof this.jsl.inter.env.showSaveDialogSync == 'function') {
-      figure_target = this.jsl.inter.env.showSaveDialogSync(options);
-    }
+    var figure_target = await this.jsl.inter.file_system._chooseSaveTarget(options);
     if(figure_target) {
       await this.saveFigure(fid, figure_target);
     }
@@ -361,17 +352,8 @@ class PRDC_JSLAB_LIB_FIGURES {
     var ext = figure_path.split('.').pop();
     var obj = this;
     var save_output = async function(data, mime_type) {
-      if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
-          figure_target && typeof figure_target == 'object') {
-        var result = await obj.jsl.inter.env.saveLocalFile(figure_target, data, {
-          mimeType: mime_type,
-          filePath: figure_path
-        });
-        if(result !== false) {
-          return true;
-        }
-      }
-      return obj.jsl.inter.env.writeFileSync(figure_path, data);
+      return await obj.jsl.inter.file_system._writeSaveTarget(figure_target, data,
+        { mimeType: mime_type, filePath: figure_path });
     };
     if(['svg', 'pdf', 'png', 'jpg', 'jpeg', 'webp', 'html', 'json'].includes(ext)) {
       if(ext == 'json' || figure_path.endsWith('.i.html') || figure_path.endsWith('.io.html')) {
@@ -398,7 +380,7 @@ class PRDC_JSLAB_LIB_FIGURES {
         ext = 'svg';
       }
 
-      var data_url = await this.open_figures[fid].context.plot.toImage(ext, size);
+      var data_url = await this.open_figures[fid].context.plot.toImage(ext, size, !html_flag);
       var data;
       if(ext == 'svg') {
         if(html_flag) {
@@ -407,12 +389,18 @@ class PRDC_JSLAB_LIB_FIGURES {
         } else {
           data = decodeURIComponent(data_url.replace('data:image/svg+xml,', ''));
         }
-        data = data.replace(/\bLatinModern\b/g, "LatinModernMath");
+        if(!pdf_flag && !html_flag) {
+          data = this._embedSvgFonts(data);
+        }
       } else {
         data_url = data_url.replace('data:image/png;base64,', '');
         data_url = data_url.replace('data:image/jpeg;base64,', '');
         data_url = data_url.replace('data:image/webp;base64,', '');
-        data = this._decodeBase64(data_url);
+        try {
+          data = this._decodeBase64(data_url);
+        } catch(err) {
+          this.jsl.inter.env.error('@saveFigure: ' + err.message);
+        }
       }
       if(pdf_flag) {
         var pdf_data = await this._svg2pdf(fid, data, size);
@@ -687,13 +675,12 @@ class PRDC_JSLAB_LIB_FIGURES {
         title: this.jsl.inter.lang.currentString(247),
         buttonLabel: this.jsl.inter.lang.currentString(231)
       };
-      file_path = typeof this.jsl.inter.env.showOpenDialog == 'function'
-        ? await this.jsl.inter.env.showOpenDialog(options)
-        : this.jsl.inter.env.showOpenDialogSync(options);
-      if(file_path === undefined || file_path === false) {
+      file_path = await this.jsl.inter.file_system._choosePath(options);
+      if(!file_path?.length) {
         this.jsl.inter.env.error('loadJsonFigure: ' + this.jsl.inter.lang.string(132) + '.');
         return false;
-      } else {
+      }
+      if(Array.isArray(file_path)) {
         file_path = file_path[0];
       }
     }
@@ -785,25 +772,63 @@ class PRDC_JSLAB_LIB_FIGURES {
    */
   _registerFonts() {
     if(!this._fonts_registred) {
-      this._fonts.push(this._getFontData(
-        this.jsl.app_path + '/font/roboto-v20-latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.ttf'
-      ));
-      this._fonts.push(this._getFontData(
-        this.jsl.app_path + '/font/latinmodern-math.otf'
-      ));
+      var roboto = 'roboto-v20-latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-';
+      var files = {
+        Roboto: roboto + 'regular.ttf',
+        'Roboto-Bold': roboto + '700.ttf',
+        'Roboto-Italic': roboto + 'italic.ttf',
+        'Roboto-BoldItalic': roboto + '700italic.ttf',
+        LatinModern: 'latinmodern-math.otf'
+      };
+      for(const [name, file] of Object.entries(files)) {
+        var font = this._getFontData(this.jsl.app_path + '/font/' + file);
+        if(font) {
+          this._fonts[name] = font;
+        }
+      }
       this._fonts_registred = true;
     }
   }
 
   /**
+   * Makes the bundled figure fonts available when an SVG is opened on its own.
+   */
+  _embedSvgFonts(data) {
+    var font_markup = data.replace(/&quot;|&#39;/g, '');
+    var families = new Set([...font_markup.matchAll(/font-family\s*(?::\s*([^;<>]+)|=\s*"([^"]+)")/gi)]
+      .flatMap(match => (match[1] || match[2]).split(','))
+      .map(value => value.replace(/['"]/g, '').trim().toLowerCase()));
+    var roboto = 'roboto-v20-latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-';
+    var faces = [
+      ['Roboto', '400', 'normal', roboto + 'regular.woff2', 'woff2'],
+      ['Roboto', '700', 'normal', roboto + '700.woff2', 'woff2'],
+      ['Roboto', '400', 'italic', roboto + 'italic.woff2', 'woff2'],
+      ['Roboto', '700', 'italic', roboto + '700italic.woff2', 'woff2'],
+      ['LatinModern', '400', 'normal', 'latinmodern-math.otf', 'otf']
+    ];
+    var css = [];
+    for(const [family, weight, style, file, type] of faces) {
+      if(!families.has(family.toLowerCase())) {
+        continue;
+      }
+      var bytes = this._getFontData(this.jsl.app_path + '/font/' + file);
+      if(bytes) {
+        var base64 = this._encodeBase64(bytes);
+        css.push('@font-face{font-family:' + family + ';font-weight:' + weight + ';font-style:' + style +
+          ';src:url(data:font/' + type + ';base64,' + base64 + ')}');
+      }
+    }
+    return css.length ? data.replace(/<svg\b[^>]*>/i, root => root + '<style>' + css.join('') + '</style>') : data;
+  }
+
+  /**
    * Converts SVG data to PDF format.
-   * @param {String} fid - The figure identifier.
-   * @param {String} data - The SVG data to convert.
-   * @param {Array} size - The dimensions [width, height] to use for the PDF.
-   * @returns {Promise<Buffer>} A promise that resolves with the generated PDF data.
+   * @param {string} fid Figure identifier.
+   * @param {string} data SVG markup.
+   * @param {Array} [size] Output dimensions.
+   * @returns {Promise<Buffer|Uint8Array>} Generated PDF bytes.
    */
   _svg2pdf(fid, data, size) {
-    var obj = this;
     this._registerFonts();
     var plot_cont = this.open_figures[fid].dom.querySelector('#figure-content .plot-cont');
     var width = plot_cont.clientWidth;
@@ -811,56 +836,58 @@ class PRDC_JSLAB_LIB_FIGURES {
     if(typeof size != 'undefined') {
       width = size[0];
       height = size[1];
+    } else {
+      // The graph's rendered dimensions can differ from its window's CSS dimensions.
+      var root = data.match(/<svg\b[^>]*>/i)?.[0] || '';
+      var svg_width = Number(root.match(/\swidth="([\d.]+)"/i)?.[1]);
+      var svg_height = Number(root.match(/\sheight="([\d.]+)"/i)?.[1]);
+      if(svg_width > 0 && svg_height > 0) {
+        width = svg_width;
+        height = svg_height;
+      }
     }
 
-    if(typeof this.jsl.inter.env.svgToPdf == 'function') {
-      return this.jsl.inter.env.svgToPdf(data, width, height, this._fonts);
-    }
-
-    return new Promise(function(resolve) {
-      var doc = new obj.jsl.inter.env.PDFDocument({
-        size: [width, height]
-      });
-      if(obj._fonts[0]) {
-        doc.registerFont('Roboto', obj._fonts[0]);
-      }
-      if(obj._fonts[1]) {
-        doc.registerFont('LatinModernMath', obj._fonts[1]);
-      }
-      obj.jsl.inter.env.SVGtoPDF(doc, data, 0, 0, {
-        width: width,
-        height: height,
-        assumePt: true
-      });
-      var buf = [];
-      doc.on('data', buf.push.bind(buf));
-      doc.on('end', function() {
-        var pdfData = Buffer.concat(buf);
-        resolve(pdfData);
-      });
-      doc.end();
-    });
+    return this.jsl.inter.env.svgToPdf(data, width, height, this._fonts);
   }
 
   /**
-   * Decodes a base64 string into a binary payload.
-   * @param {string} data_url
-   * @returns {Buffer|Uint8Array}
+   * Decodes base64 figure data without assuming Node.js Buffer availability.
+   * @param {string} value Base64 text without a data-URL prefix.
+   * @returns {Buffer|Uint8Array} Decoded bytes.
    */
-  _decodeBase64(data_url) {
+  _decodeBase64(value) {
     if(typeof Buffer != 'undefined' && typeof Buffer.from == 'function') {
-      return Buffer.from(data_url, 'base64');
+      return Buffer.from(value, 'base64');
     }
     if(typeof atob == 'function') {
-      var binary = atob(data_url);
-      var data = new Uint8Array(binary.length);
-      for(var i = 0; i < binary.length; i++) {
-        data[i] = binary.charCodeAt(i);
-      }
-      return data;
+      var binary = atob(value);
+      return Uint8Array.from(binary, character => character.charCodeAt(0));
     }
-    this.jsl.inter.env.error('@saveFigure: Base64 decoding is not available.');
+    throw new Error('Base64 decoding is not available.');
   }
+
+  /**
+   * Encodes figure font bytes without assuming Node.js Buffer availability.
+   * @param {ArrayBuffer|ArrayBufferView} value Binary bytes.
+   * @returns {string} Base64 text without a data-URL prefix.
+   */
+  _encodeBase64(value) {
+    if(typeof Buffer != 'undefined' && typeof Buffer.from == 'function') {
+      return Buffer.from(value.buffer || value, value.byteOffset || 0,
+        value.byteLength ?? value.length).toString('base64');
+    }
+    if(typeof btoa == 'function') {
+      var bytes = value instanceof Uint8Array ? value : value instanceof ArrayBuffer
+        ? new Uint8Array(value) : new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+      var binary = '';
+      for(let i = 0; i < bytes.length; i += 32768) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
+      }
+      return btoa(binary);
+    }
+    throw new Error('Base64 encoding is not available.');
+  }
+
 }
 
 exports.PRDC_JSLAB_LIB_FIGURES = PRDC_JSLAB_LIB_FIGURES;

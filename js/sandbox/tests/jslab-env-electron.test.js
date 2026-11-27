@@ -64,6 +64,15 @@ class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_ENV_ELECTRON_TEST_HELPER {
         if(module_path === './jslab-simulate') {
           return require('../jslab-simulate');
         }
+        if(module_path === './sym-math') {
+          return { PRDC_JSLAB_SYMBOLIC_MATH: class {} };
+        }
+        if(module_path === '../../config/giac.json') {
+          return { folder: 'giac' };
+        }
+        if(module_path === '../other-shared/svg-to-pdf') {
+          return { PRDC_JSLAB_SVG_TO_PDF: { convert: function() {} } };
+        }
         if(module_path === '../backend-electron/freecad-link') {
           return { PRDC_JSLAB_FREECAD_LINK: class { /**
  * Initializes the instance.
@@ -143,6 +152,9 @@ class PRDC_JSLAB_SANDBOX_TESTS_JSLAB_ENV_ELECTRON_TEST_HELPER {
         }
         if(module_path === 'path') {
           return require('path');
+        }
+        if(module_path === 'url') {
+          return require('url');
         }
         if(module_path === 'timers') {
           return {
@@ -286,7 +298,7 @@ tests.add('constructor initializes worker-side fields and shared context links',
   assert.ok(runtime_scope.om_link);
   assert.ok(runtime_scope.excel_link);
   assert.ok(runtime_scope.calc_link);
-  assert.deepEqual(env.exports, ['debug', 'version', 'platform', 'buildShareLink']);
+  assert.deepEqual(env.exports, ['debug', 'version', 'platform', 'buildShareLink', 'loadPyodide']);
 }, { tags: ['unit', 'jslab-env-electron'] });
 
 tests.add('bound environment output methods capture automation messages', function(assert) {

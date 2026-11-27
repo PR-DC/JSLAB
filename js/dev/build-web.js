@@ -734,7 +734,7 @@ class PRDC_JSLAB_DEV_BUILD_WEB_HELPER {
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'other-shared', 'terminal-buffer.js'), path.join(js_shared_root, 'terminal-buffer.js'));
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'windows', 'mathjax-config.js'), path.join(js_windows_root, 'mathjax-config.js'));
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'windows', 'plot.js'), path.join(js_windows_root, 'plot.js'));
-    PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'windows', 'plot-mesh-animation.js'), path.join(js_windows_root, 'plot-mesh-animation.js'));
+    PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'windows', 'plot-3d-vector-export.js'), path.join(js_windows_root, 'plot-3d-vector-export.js'));
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'windows', 'serial-terminal.js'), path.join(js_windows_root, 'serial-terminal.js'));
     PRDC_JSLAB_DEV_BUILD_WEB_HELPER.copyFile(path.join(app_root, 'js', 'windows', 'ui.js'), path.join(js_windows_root, 'ui.js'));
 

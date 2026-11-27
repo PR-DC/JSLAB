@@ -58,7 +58,8 @@ class PRDC_JSLAB_DEV_GUI_TEST_BROWSER_HELPER {
     delete env.ELECTRON_RUN_AS_NODE;
     var child = cp.spawn(require('electron'), [path.join(__dirname, 'start-web.js'), '--gui-test-url=' + base,
       '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream',
-      '--disable-background-networking', '--disable-component-update', '--remote-debugging-port=0', '--user-data-dir=' + profile],
+      '--disable-background-networking', '--disable-component-update', '--remote-debugging-port=0',
+      '--use-angle=swiftshader', '--no-sandbox', '--user-data-dir=' + profile],
     { env, stdio: ['ignore', 'ignore', 'pipe'] });
     var stderr = '';
     child.stderr.on('data', data => {

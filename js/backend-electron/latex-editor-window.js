@@ -8,6 +8,7 @@
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const { randomUUID } = require('node:crypto');
+const { pathToFileURL } = require('node:url');
 const { BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
 const { PRDC_JSLAB_LATEX } = require('./latex');
 const { PRDC_JSLAB_LATEX_EDITOR_SETTINGS } = require('../latex-editor/latex-editor-settings');
@@ -55,10 +56,15 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
     this.allow_close = false;
     this.wasm_build.clear();
     const project = new PRDC_JSLAB_LATEX();
+    const editor_file = path.join(__dirname, '../../html/latex-editor.html');
+    const editor_url = pathToFileURL(editor_file).href;
     this.project = project;
     win.setMenu(null);
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    win.webContents.on('will-navigate', event => event.preventDefault());
+    win.webContents.on('will-navigate', (event, url) => {
+      const normalized_url = url.replace(/\\/g, '/');
+      if(normalized_url !== editor_url) event.preventDefault();
+    });
     win.once('ready-to-show', () => win.show());
     win.on('close', event => {
       if(this.allow_close || !this.ready) return;
@@ -72,7 +78,10 @@ class PRDC_JSLAB_LATEX_EDITOR_WINDOW {
       void project.clearPreview();
       this.finishClose(true);
     });
-    void win.loadFile(path.join(__dirname, '../../html/latex-editor.html')).catch(() => win.destroy());
+    void win.loadFile(editor_file).catch(error => {
+      console.error('LaTeX Editor failed to load:', error);
+      win.destroy();
+    });
   }
 
   /**

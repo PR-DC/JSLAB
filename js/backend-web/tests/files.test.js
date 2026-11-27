@@ -21,6 +21,9 @@ class PRDC_JSLAB_WEB_TESTS_FILES_TEST_HELPER {
         if(name === '../other-shared/text') {
           return require('../../other-shared/text');
         }
+        if(name === '../other-shared/svg-to-pdf') {
+          return require('../../other-shared/svg-to-pdf');
+        }
         throw Error('Unexpected file-service dependency: ' + name);
       },
       URL: URL,

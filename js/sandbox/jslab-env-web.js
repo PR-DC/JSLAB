@@ -1233,11 +1233,16 @@ class PRDC_JSLAB_ENV {
   }
 
   /**
-   * Handles svg to pdf.
+   * Converts SVG markup into PDF bytes through the browser host.
+   * @param {string} svg_data SVG markup.
+   * @param {number} width Output width.
+   * @param {number} height Output height.
+   * @param {Object} fonts Registered figure fonts.
+   * @returns {Promise<Uint8Array>|false} Generated PDF bytes or false when unavailable.
    */
-  svgToPdf() {
+  svgToPdf(svg_data, width, height, fonts) {
     if(this.bridge && typeof this.bridge.svgToPdf == 'function') {
-      return this.bridge.svgToPdf(arguments[0], arguments[1], arguments[2], arguments[3]);
+      return this.bridge.svgToPdf(svg_data, width, height, fonts);
     }
     return false;
   }

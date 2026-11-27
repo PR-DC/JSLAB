@@ -160,13 +160,17 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
    */
   _normalizeOpenDialogResult(result, caller) {
     if(result === undefined || result === false || result === null) {
-      this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(126));
+      if(caller) {
+        this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(126));
+      }
       return [];
     }
     if(result && typeof result == 'object' && !Array.isArray(result) &&
         Object.prototype.hasOwnProperty.call(result, 'filePaths')) {
       if(result.canceled) {
-        this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(126));
+        if(caller) {
+          this.jsl.inter.env.error(caller + ': ' + this.jsl.inter.lang.string(126));
+        }
         return [];
       }
       return result.filePaths;
@@ -417,7 +421,7 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
   /**
    * Selects paths using the available dialog API and normalizes its result.
    * @param {Object} options Dialog options.
-   * @param {string} caller Calling command name.
+   * @param {string} [caller] Calling command name used for cancellation errors.
    * @returns {*} Selected paths or their promise.
    */
   _choosePath(options, caller) {
@@ -453,10 +457,33 @@ class PRDC_JSLAB_LIB_FILE_SYSTEM {
         return;
       }
     }
-    if(!save_target) {
+    if(!save_target && typeof this.jsl.inter.env.showSaveDialogSync == 'function') {
       save_target = this.jsl.inter.env.showSaveDialogSync(options);
     }
     return save_target;
+  }
+
+  /**
+   * Writes data to a selected browser file handle or a filesystem path.
+   * @param {Object|string} save_target Selected save target or file path.
+   * @param {*} data Data to write.
+   * @param {Object} [options={}] MIME type and fallback path options.
+   * @returns {Promise<*>} Host save result.
+   */
+  async _writeSaveTarget(save_target, data, options = {}) {
+    var file_path = typeof save_target == 'object' && save_target !== null
+      ? save_target.filePath
+      : save_target;
+    file_path = options.filePath || file_path;
+    if(typeof this.jsl.inter.env.saveLocalFile == 'function' &&
+        save_target && typeof save_target == 'object') {
+      var result = await this.jsl.inter.env.saveLocalFile(save_target, data,
+        { ...options, filePath: file_path });
+      if(result !== false) {
+        return result;
+      }
+    }
+    return this.jsl.inter.env.writeFileSync(file_path, data);
   }
 
   /**

@@ -312,4 +312,31 @@ tests.add('chooseFolder merges directory property and returns selected path list
   assert.deepEqual(out, ['C:/tmp']);
 }, { tags: ['unit', 'file-system'] });
 
+tests.add('save targets use browser handles and fall back to filesystem paths', async function(assert) {
+  var local_calls = [], file_calls = [];
+  var harness = PRDC_JSLAB_SANDBOX_TESTS_FILE_SYSTEM_TEST_HELPER.createFsHarness({
+    env: {
+      saveLocalFile: async function(target, data, options) {
+        local_calls.push({ target, data, options });
+        return target.accepted;
+      },
+      writeFileSync: function(file_path, data) {
+        file_calls.push({ file_path, data });
+        return true;
+      }
+    }
+  });
+  var accepted = { filePath: 'accepted.txt', accepted: true };
+  var rejected = { filePath: 'fallback.txt', accepted: false };
+  await harness.file_system._writeSaveTarget(accepted, 'first', { mimeType: 'text/plain' });
+  await harness.file_system._writeSaveTarget(rejected, 'second', { mimeType: 'text/plain' });
+  await harness.file_system._writeSaveTarget('direct.txt', 'third', { mimeType: 'text/plain' });
+  assert.equal(local_calls.length, 2);
+  assert.equal(local_calls[0].options.filePath, 'accepted.txt');
+  assert.deepEqual(file_calls, [
+    { file_path: 'fallback.txt', data: 'second' },
+    { file_path: 'direct.txt', data: 'third' }
+  ]);
+}, { tags: ['unit', 'file-system', 'async'] });
+
 exports.MODULE_TESTS = tests;

@@ -30,6 +30,7 @@ class PRDC_JSLAB_CODE_TESTS_CODEMIRROR_MODULES_TEST_HELPER {
       },
       commands: {},
       keyMap: { default: {} },
+      hint: options.hint || {},
       innerMode: function() {
         return { mode: { helperType: 'javascript' }, state: {} };
       },
@@ -183,6 +184,60 @@ tests.add('custom-javascript-hint removes exact no-op completions', async functi
   out = await helper.fn(editor, null, {});
   assert.equal(out.list.length, 2);
   assert.equal(out.list[0], 'ans');
+}, { tags: ['unit', 'code', 'codemirror'] });
+
+tests.add('custom-javascript-hint sends unfiltered browser properties for fuzzy matching', async function(assert) {
+  var requested;
+  var run = PRDC_JSLAB_CODE_TESTS_CODEMIRROR_MODULES_TEST_HELPER.runCodeMirrorModule('custom-javascript-hint.js', {
+    hint: {
+      javascript: function(editor) {
+        var token = editor.getTokenAt(editor.getCursor());
+        assert.equal(token.string, '');
+        return { list: ['querySelector', 'releasePointerCapture'] };
+      }
+    }
+  });
+  var helper = run.records.helpers.find(function(entry) {
+    return entry.kind === 'hint' && entry.name === 'javascript';
+  });
+  var editor = {
+    getCursor: function() {
+      return { line: 0, ch: 15 };
+    },
+    getTokenAt: function(position) {
+      if(position.ch === 15) {
+        return { start: 9, end: 15, string: 'lector', state: {}, type: 'property' };
+      }
+      if(position.ch === 9) {
+        return { start: 8, end: 9, string: '.', state: {}, type: null };
+      }
+      return { start: 0, end: 8, string: 'document', state: {}, type: 'variable' };
+    },
+    getMode: function() {
+      return {};
+    },
+    getValue: function() {
+      return 'document.lector';
+    },
+    getLine: function() {
+      return 'document.lector';
+    },
+    hasFocus: function() {
+      return true;
+    }
+  };
+  var out = await helper.fn(editor, null, {
+    includeBrowserCompletions: true,
+    requestCompletions: function(request) {
+      requested = request;
+      return request.editorNames.filter(function(name) {
+        return name === 'querySelector';
+      });
+    }
+  });
+
+  assert.ok(requested.editorNames.includes('querySelector'));
+  assert.ok(out.list.includes('querySelector'));
 }, { tags: ['unit', 'code', 'codemirror'] });
 
 tests.add('custom-javascript-hint falls back to web bridge completions', async function(assert) {

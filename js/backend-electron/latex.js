@@ -211,6 +211,42 @@ class PRDC_JSLAB_LATEX {
   }
 
   /**
+   * Builds the ordered native toolchain search path from configured, inherited
+   * and standard Windows installation directories.
+   * @param {string} [configured] User-selected toolchain directory.
+   * @param {Object} [environment=process.env] Process environment.
+   * @returns {Object} Environment PATH key and unique absolute directories.
+   */
+  toolchainDirectories(configured, environment = process.env) {
+    const windows = process.platform === 'win32';
+    const path_key = Object.keys(environment).find(key => key.toUpperCase() === 'PATH') || 'PATH';
+    const local = environment.LOCALAPPDATA;
+    const program = environment.ProgramFiles;
+    const program_x86 = environment['ProgramFiles(x86)'];
+    const discovered = windows ? [
+      local && path.join(local, 'Programs', 'MiKTeX', 'miktex', 'bin', 'x64'),
+      local && path.join(local, 'Programs', 'MiKTeX', 'miktex', 'bin'),
+      local && path.join(local, 'MiKTeX', 'miktex', 'bin', 'x64'),
+      program && path.join(program, 'MiKTeX', 'miktex', 'bin', 'x64'),
+      program && path.join(program, 'MiKTeX', 'miktex', 'bin'),
+      program_x86 && path.join(program_x86, 'MiKTeX', 'miktex', 'bin'),
+      local && path.join(local, 'Programs', 'Git', 'usr', 'bin'),
+      program && path.join(program, 'Git', 'usr', 'bin'),
+      program_x86 && path.join(program_x86, 'Git', 'usr', 'bin')
+    ] : [];
+    const seen = new Set();
+    const dirs = [configured, ...(environment[path_key] || '').split(path.delimiter), ...discovered]
+      .filter(dir => {
+        if(!dir || !path.isAbsolute(dir)) return false;
+        const key = windows ? path.normalize(dir).toLowerCase() : path.normalize(dir);
+        if(seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    return { path_key, dirs };
+  }
+
+  /**
    * Probes the TeX executables and the latexmk launcher's Perl support.
    * @param {string} [configured] User-selected toolchain directory.
    * @param {string} [engine_name] Requested TeX engine.
@@ -220,13 +256,7 @@ class PRDC_JSLAB_LATEX {
     const { engine } = PRDC_JSLAB_LATEX_COMPILER.preferences({ engine: engine_name });
     const tools = { latexmk: ['-v'], [engine]: ['--version'], synctex: ['help', 'edit'] };
     const windows = process.platform === 'win32';
-    const path_key = Object.keys(process.env).find(key => key.toUpperCase() === 'PATH') || 'PATH';
-    const defaults = windows ? [
-      process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Programs', 'MiKTeX', 'miktex', 'bin', 'x64'),
-      process.env.ProgramFiles && path.join(process.env.ProgramFiles, 'MiKTeX', 'miktex', 'bin', 'x64')
-    ] : [];
-    const dirs = [configured, ...(process.env[path_key] || '').split(path.delimiter), ...defaults]
-      .filter(dir => dir && path.isAbsolute(dir));
+    const { path_key, dirs } = this.toolchainDirectories(configured);
     const env = { ...process.env, [path_key]: dirs.join(path.delimiter), NoDefaultCurrentDirectoryInExePath: '1' };
     for(const key of Object.keys(env)) {
       if(/^(SYNCTEX_EDITOR|SYNCTEX_VIEWER|LATEXMKRC)$/i.test(key)) delete env[key];

@@ -699,15 +699,8 @@ ${this.jsl.inter.format.replaceEditorLinks(data.compiler_err)}`);
       if(save_target) {
         const buffer = Buffer.from(await new Blob(chunks, { type: mimeType }).arrayBuffer());
         var video_path = typeof save_target == 'object' ? save_target.filePath : save_target;
-        if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
-            save_target && typeof save_target == 'object') {
-          await obj.jsl.inter.env.saveLocalFile(save_target, buffer, {
-            mimeType: mimeType,
-            filePath: video_path
-          });
-          return;
-        }
-        obj.jsl.inter.env.writeFileSync(video_path, buffer);
+        await obj.jsl.inter.file_system._writeSaveTarget(save_target, buffer,
+          { mimeType: mimeType, filePath: video_path });
       }
     };
     if(!env.stopMediaRecorder) recorder.onstop = saveRecording;

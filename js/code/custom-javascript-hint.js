@@ -185,6 +185,35 @@
     }
 
     /**
+     * Collects unfiltered property names from CodeMirror's browser completer.
+     * @param {*} editor Editor instance.
+     * @param {Object} options Hint options.
+     * @param {Object} cur Cursor position.
+     * @returns {Array<string>} Browser completion names.
+     */
+    static getBrowserCompletions(editor, options, cur) {
+      if(typeof browserHint != 'function') {
+        return [];
+      }
+      var completion_editor = {
+        getCursor: function() {
+          return cur;
+        },
+        getMode: function() {
+          return editor.getMode();
+        },
+        getTokenAt: function(position) {
+          var browser_token = editor.getTokenAt(position);
+          if(position.line === cur.line && position.ch === cur.ch) {
+            browser_token = Object.assign({}, browser_token, { string: '', end: cur.ch });
+          }
+          return browser_token;
+        }
+      };
+      return browserHint(completion_editor, options)?.list || [];
+    }
+
+    /**
      * Returns completions.
      * @param {*} editor Editor.
      * @param {*} token Token.
@@ -214,7 +243,7 @@
           history: options && Array.isArray(options.history) ? options.history : []
         };
         const editor_names = options?.includeBrowserCompletions ?
-          browserHint?.(editor, { ...options, filter: false })?.list || [] : [];
+          PRDC_JSLAB_CODE_CUSTOM_JAVASCRIPT_HINT_HELPER.getBrowserCompletions(editor, options, cur) : [];
         if(!context?.length) {
           for(const scope of [token.state?.localVars, token.state?.globalVars]) {
             for(let binding = scope; binding; binding = binding.next) editor_names.push(binding.name);

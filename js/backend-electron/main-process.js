@@ -113,7 +113,9 @@ class PRDC_JSLAB_ELECTRON_MAIN_PROCESS {
     }
 
     // Start log
-    this.log_file = this.app_folder + '\\' + app.getName() + '.log';
+    this.log_file = config.TEST
+      ? path.join(app.getPath('temp'), app.getName() + '-test-' + process.pid + '.log')
+      : this.app_folder + '\\' + app.getName() + '.log';
     this.app_logger = new PRDC_APP_LOGGER(this.log_file);
 
     if(config.REPORT_CRASH) {

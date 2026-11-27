@@ -1,9 +1,104 @@
 /**
- * @file JSLAB plot viewer controller
+ * @file JSLAB plot viewer controller and rigid mesh animation
  * @author Milos Petrasinovic <mpetrasinovic@pr-dc.com>
  * PR-DC, Republic of Serbia
  * info@pr-dc.com
  */
+
+/**
+ * Retains Plotly mesh buffers and applies native rigid transforms when drawing.
+ */
+class PRDC_JSLAB_PLOT_MESH_ANIMATION {
+
+  /**
+   * Connects rigid meshes to the pinned Plotly renderer.
+   * @param {Object} viewer Figure plot viewer.
+   * @param {Function} snapshot Current world meshes for exports.
+   */
+  constructor(viewer, snapshot) {
+    this.viewer = viewer;
+    this.snapshot = snapshot;
+    this.entries = [];
+    var plot = viewer.plot_cont;
+    var scene = plot._fullLayout?.scene?._scene;
+    if(!scene || Plotly.version != '3.3.0' ||
+        ['xaxis', 'yaxis', 'zaxis'].some(axis => scene.fullSceneLayout[axis].type != 'linear')) {
+      throw new Error('Rigid mesh playback requires the supported linear Plotly scene.');
+    }
+    this.scene = scene;
+    var traces = plot._fullData.map(data => scene.traces[data.uid]);
+    if(traces.some(trace => !trace?.mesh ||
+        ['draw', 'drawTransparent', 'drawPick'].some(method => typeof trace.mesh[method] != 'function'))) {
+      throw new Error('The plot does not contain supported rigid meshes.');
+    }
+    traces.forEach(trace => {
+      var mesh = trace.mesh;
+      var entry = { mesh, matrix: null, methods: {} };
+      for(const method of ['draw', 'drawTransparent', 'drawPick']) {
+        var original = mesh[method];
+        entry.methods[method] = original;
+        mesh[method] = parameters => original.call(mesh, this._drawParameters(parameters, entry.matrix));
+      }
+      this.entries.push(entry);
+    });
+  }
+
+  /**
+   * Composes the native world matrix with Plotly's normalization and camera.
+   * @param {Object} parameters Plotly draw parameters.
+   * @param {Float32Array} matrix Native column-major transform.
+   * @returns {Object} Parameters for the retained mesh.
+   */
+  _drawParameters(parameters, matrix) {
+    if(!matrix) {
+      return parameters;
+    }
+    var scale = [...this.scene.dataScale, 1];
+    var model = parameters.model;
+    var result = new Float32Array(16);
+    for(let column = 0; column < 4; column++) {
+      for(let row = 0; row < 4; row++) {
+        for(let k = 0; k < 4; k++) {
+          result[column * 4 + row] += model[k * 4 + row] * matrix[column * 4 + k] * scale[k] / scale[column];
+        }
+      }
+    }
+    return { ...parameters, model: result };
+  }
+
+  /**
+   * Changes shader matrices and requests an existing-scene redraw.
+   * @param {Float32Array[]} matrices Native transforms in mesh order.
+   */
+  update(matrices) {
+    if(matrices.length != this.entries.length) {
+      throw new Error('Rigid scene mesh count changed during playback.');
+    }
+    matrices.forEach((matrix, index) => {
+      this.entries[index].matrix = matrix;
+      this.entries[index].mesh.dirty = true;
+    });
+    this.scene.glplot.redraw();
+  }
+
+  /**
+   * Returns current world coordinates together with existing trace options.
+   * @returns {Object[]} Plotly export traces.
+   */
+  exportData() {
+    var meshes = this.snapshot();
+    return this.viewer.plot_cont.data.map((trace, index) => ({ ...trace, ...meshes[index] }));
+  }
+
+  /**
+   * Releases renderer hooks before replacing the plot.
+   */
+  dispose() {
+    this.entries.forEach(entry => Object.assign(entry.mesh, entry.methods));
+    this.entries = [];
+    this.snapshot = null;
+  }
+}
 
 /**
  * Controls the plot viewer inside a figure window.
@@ -279,17 +374,34 @@ class PRDC_JSLAB_PLOT_VIEWER {
    * Converts the plot to an image.
    * @param {string} ext - The image format extension (e.g., 'png', 'jpeg').
    * @param {Array} size - Optional size of image.
+   * @param {boolean} [vector_3d=true] Export 3D geometry as SVG paths when requested.
    * @returns {String} Image of the plot.
    */
-  async toImage(ext, size) {
-    var width = this.plot_cont.clientWidth;
-    var height =  this.plot_cont.clientHeight;
+  async toImage(ext, size, vector_3d = true) {
+    var layout = this.plot_cont._fullLayout;
+    var has_3d = layout?._subplots?.gl3d?.length;
+    var width = has_3d ? layout.width : this.plot_cont.clientWidth;
+    var height = has_3d ? layout.height : this.plot_cont.clientHeight;
     if(typeof size != 'undefined') {
       width = size[0];
       height = size[1];
     }
     var source = this.mesh_animation ? { data: this.mesh_animation.exportData(),
       layout: this.plot_cont.layout, config: this.plot_cont._context } : this.plot_cont;
+    if(has_3d) {
+      if(vector_3d && ext == 'svg') {
+        return await PRDC_JSLAB_PLOT_3D_VECTOR_EXPORT.export(this.plot_cont, source, width, height);
+      }
+      source = { data: structuredClone(source.data),
+        layout: PRDC_JSLAB_PLOT_3D_VECTOR_EXPORT.snapshotLayout(this.plot_cont, source.layout),
+        config: source._context || source.config };
+      if(ext === 'png') {
+        var live = PRDC_JSLAB_PLOT_3D_VECTOR_EXPORT.livePng(this.plot_cont, source, width, height);
+        if(live) {
+          return await live;
+        }
+      }
+    }
     return await Plotly.toImage(source, {format: ext,
       width: width,
       height: height

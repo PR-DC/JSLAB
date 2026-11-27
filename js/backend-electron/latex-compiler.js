@@ -6,6 +6,7 @@
  */
 
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { BrowserWindow, ipcMain } = require('electron');
 const { PRDC_JSLAB_LATEX_COMPILER } = require('../other-shared/latex-compiler');
 
@@ -53,9 +54,11 @@ class PRDC_JSLAB_ELECTRON_LATEX_COMPILER {
       }
     });
     const contents = win.webContents;
+    const compiler_file = path.join(__dirname, '../../html/latex-compiler.html');
+    const compiler_url = pathToFileURL(compiler_file).href;
     const worker = {
       postMessage: job => {
-        void win.loadFile(path.join(__dirname, '../../html/latex-compiler.html')).then(() => {
+        void win.loadFile(compiler_file).then(() => {
           if(!win.isDestroyed()) contents.send('JSLAB_LATEX_WASM_JOB', job);
         }).catch(error => worker.onerror?.(error));
       },
@@ -66,7 +69,9 @@ class PRDC_JSLAB_ELECTRON_LATEX_COMPILER {
     };
     this.workers.set(contents, worker);
     contents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    contents.on('will-navigate', event => event.preventDefault());
+    contents.on('will-navigate', (event, url) => {
+      if(url.replace(/\\/g, '/') !== compiler_url) event.preventDefault();
+    });
     contents.on('render-process-gone', (_event, details) => worker.onerror?.({ message: details.reason }));
     win.on('closed', () => {
       if(this.workers.delete(contents)) worker.onerror?.({ message: 'LaTeX compiler closed' });

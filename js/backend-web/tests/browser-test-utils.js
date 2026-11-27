@@ -24,6 +24,19 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
   }
 
   /**
+   * Registers a browser test whose expected work needs a longer timeout.
+   * @param {PRDC_JSLAB_TESTS} tests Test collection.
+   * @param {string} name Test name.
+   * @param {number} timeout_ms Timeout in milliseconds.
+   * @param {Function} fun Browser scenario.
+   * @param {...*} args Browser scenario arguments.
+   */
+  static webTestWithTimeout(tests, name, timeout_ms, fun, ...args) {
+    fun._jslab_test_timeout_ms = timeout_ms;
+    return PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTest(tests, name, fun, ...args);
+  }
+
+  /**
    * Registers a browser test with exactly the Command Window errors it intentionally produces.
    * @param {PRDC_JSLAB_TESTS} tests Test collection.
    * @param {string} name Test name.
@@ -52,6 +65,60 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
             if(!value) {
               throw new Error(label || 'Expected truthy');
             }
+          },
+          async plotImagePixels(w, url, width, height, background = '#fff') {
+            var image = new w.Image();
+            image.src = url;
+            await image.decode();
+            var canvas = w.document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            var context = canvas.getContext('2d');
+            if(background) {
+              context.fillStyle = background;
+              context.fillRect(0, 0, width, height);
+            }
+            context.drawImage(image, 0, 0, width, height);
+            return context.getImageData(0, 0, width, height).data;
+          },
+          async comparePlotExports(w, label, width, height, meanLimit = 1, fractionLimit = .01, localLimit = Infinity) {
+            var png = await w.plot.toImage('png', [width, height]);
+            var svg = await w.plot.toImage('svg', [width, height]);
+            var [reference, vector] = await Promise.all([this.plotImagePixels(w, png, width, height), this.plotImagePixels(w, svg, width, height)]);
+            var total = 0;
+            var noticeable = 0;
+            var blockSize = 16;
+            var columns = Math.ceil(width / blockSize);
+            var rows = Math.ceil(height / blockSize);
+            var blockErrors = new Float64Array(columns * rows);
+            for(let i = 0; i < reference.length; i += 4) {
+              var r = Math.abs(reference[i] - vector[i]);
+              var g = Math.abs(reference[i + 1] - vector[i + 1]);
+              var b = Math.abs(reference[i + 2] - vector[i + 2]);
+              total += r + g + b;
+              var pixel = i / 4;
+              var column = Math.floor((pixel % width) / blockSize);
+              var row = Math.floor(pixel / (width * blockSize));
+              blockErrors[row * columns + column] += r + g + b;
+              noticeable += Number(Math.max(r, g, b) > 16);
+            }
+            var mean = total / (3 * width * height);
+            var fraction = noticeable / (width * height);
+            var worst = { mean: 0, x: 0, y: 0 };
+            for(let i = 0; i < blockErrors.length; i++) {
+              var x = (i % columns) * blockSize;
+              var y = Math.floor(i / columns) * blockSize;
+              var area = Math.min(blockSize, width - x) * Math.min(blockSize, height - y);
+              var localMean = blockErrors[i] / (3 * area);
+              if(localMean > worst.mean) {
+                worst = { mean: localMean, x, y };
+              }
+            }
+            this.ok(mean < meanLimit && fraction < fractionLimit && worst.mean < localLimit,
+              label + ' PNG and SVG at ' + width + '×' + height + ' differ by ' + mean.toFixed(3) +
+              ' on average, with ' + (100 * fraction).toFixed(2) + '% above 16. Peak block mean is ' +
+              worst.mean.toFixed(3) + ' at (' + worst.x + ', ' + worst.y + ')');
+            return svg;
           },
           click(selector, doc = document) {
             this.q(selector, doc).click();
@@ -136,7 +203,8 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
         throw new Error(error.message + ' ' + JSON.stringify(state));
       }
       assert.ok(result !== false, name);
-    }, { tags: ['gui', 'web', 'integration'], timeout_ms: 20000, expected_command_errors });
+    }, { tags: ['gui', 'web', 'integration'], timeout_ms: fun._jslab_test_timeout_ms || 20000,
+      expected_command_errors });
   }
 
   /**
@@ -153,6 +221,7 @@ class PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS {
 
 
 exports.webTest = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTest;
+exports.webTestWithTimeout = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTestWithTimeout;
 exports.webTestWithCommandErrors = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.webTestWithCommandErrors;
 
 exports.selectSimulateEntry = PRDC_JSLAB_WEB_TESTS_BROWSER_UTILS.selectSimulateEntry;

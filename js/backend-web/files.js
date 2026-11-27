@@ -6,6 +6,7 @@
  */
 
 const { PRDC_JSLAB_TEXT } = require('../other-shared/text');
+const { PRDC_JSLAB_SVG_TO_PDF } = require('../other-shared/svg-to-pdf');
 
 var WORKSPACE_ROOT = '/workspace';
 
@@ -1577,42 +1578,12 @@ class PRDC_JSLAB_WEB_FILES {
   }
 
   /**
-   * Merges streamed binary chunks into a single Uint8Array.
-   * @param {Array} chunks
-   * @returns {Uint8Array}
-   */
-  _mergeBinaryChunks(chunks) {
-    var normalized = (chunks || []).map((chunk) => {
-      if(chunk instanceof Uint8Array) {
-        return chunk;
-      }
-      if(typeof ArrayBuffer != 'undefined' && chunk instanceof ArrayBuffer) {
-        return new Uint8Array(chunk);
-      }
-      if(typeof ArrayBuffer != 'undefined' && ArrayBuffer.isView(chunk)) {
-        return new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength);
-      }
-      return new Uint8Array(0);
-    });
-    var total = normalized.reduce(function(sum, chunk) {
-      return sum + chunk.byteLength;
-    }, 0);
-    var data = new Uint8Array(total);
-    var offset = 0;
-    normalized.forEach(function(chunk) {
-      data.set(chunk, offset);
-      offset += chunk.byteLength;
-    });
-    return data;
-  }
-
-  /**
    * Converts SVG data to PDF in the browser runtime.
-   * @param {string} svg_data
-   * @param {number} width
-   * @param {number} height
-   * @param {Array} [fonts]
-   * @returns {Promise<Uint8Array|false>}
+   * @param {string} svg_data SVG markup.
+   * @param {number} width Output width.
+   * @param {number} height Output height.
+   * @param {Object} [fonts] Registered figure fonts.
+   * @returns {Promise<Uint8Array|false>} Generated PDF bytes or false when unavailable.
    */
   async _svgToPdf(svg_data, width, height, fonts) {
     var optional_assets = globalThis.__JSLAB_WEB_OPTIONAL_ASSETS__ || {};
@@ -1639,35 +1610,8 @@ class PRDC_JSLAB_WEB_FILES {
         typeof globalThis.SVGtoPDF != 'function') {
       return false;
     }
-    var obj = this;
-    return await new Promise(function(resolve, reject) {
-      try {
-        var doc = new globalThis.PDFDocument({
-          size: [width, height]
-        });
-        if(Array.isArray(fonts) && fonts[0]) {
-          doc.registerFont('Roboto', fonts[0]);
-        }
-        if(Array.isArray(fonts) && fonts[1]) {
-          doc.registerFont('LatinModernMath', fonts[1]);
-        }
-        var chunks = [];
-        doc.on('data', function(chunk) {
-          chunks.push(chunk);
-        });
-        doc.on('end', function() {
-          resolve(obj._mergeBinaryChunks(chunks));
-        });
-        globalThis.SVGtoPDF(doc, svg_data, 0, 0, {
-          width: width,
-          height: height,
-          assumePt: true
-        });
-        doc.end();
-      } catch(err) {
-        reject(err);
-      }
-    }).then((result) => {
+    return await PRDC_JSLAB_SVG_TO_PDF.convert(globalThis.PDFDocument, globalThis.SVGtoPDF,
+      svg_data, width, height, fonts).then((result) => {
       if(result instanceof Uint8Array && result.byteLength) {
         return result;
       }
@@ -1709,7 +1653,7 @@ class PRDC_JSLAB_WEB_FILES {
     const chunks = [];
     const finished = new Promise((resolve, reject) => {
       doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => resolve(this._mergeBinaryChunks(chunks)));
+      doc.on('end', () => resolve(PRDC_JSLAB_SVG_TO_PDF.mergeChunks(chunks)));
       doc.on('error', reject);
     });
     let rendered = 0;

@@ -498,15 +498,7 @@ class PRDC_JSLAB_LIB_WINDOWS {
             {name: 'json', extensions: ['json']},
           ]
         };
-        if(typeof obj.jsl.inter.env.showSaveDialog == 'function') {
-          save_target = await obj.jsl.inter.env.showSaveDialog(options);
-          if(save_target && save_target.canceled) {
-            return;
-          }
-        }
-        if(!save_target) {
-          save_target = obj.jsl.inter.env.showSaveDialogSync(options);
-        }
+        save_target = await obj.jsl.inter.file_system._chooseSaveTarget(options);
         if(!save_target) {
           return;
         }
@@ -514,15 +506,8 @@ class PRDC_JSLAB_LIB_WINDOWS {
       }
       var scene_json = scene.toJSON();
       var scene_data = JSON.stringify(scene_json);
-      if(typeof obj.jsl.inter.env.saveLocalFile == 'function' &&
-          save_target && typeof save_target == 'object') {
-        await obj.jsl.inter.env.saveLocalFile(save_target, scene_data, {
-          mimeType: 'application/json;charset=utf-8',
-          filePath: file_path
-        });
-        return;
-      }
-      obj.jsl.inter.env.writeFileSync(file_path, scene_data);
+      await obj.jsl.inter.file_system._writeSaveTarget(save_target || file_path, scene_data,
+        { mimeType: 'application/json;charset=utf-8', filePath: file_path });
     };
 
     const loadScene = async function(file_path) {
@@ -531,13 +516,12 @@ class PRDC_JSLAB_LIB_WINDOWS {
           title: obj.jsl.inter.lang.currentString(247),
           buttonLabel: obj.jsl.inter.lang.currentString(231)
         };
-        file_path = typeof obj.jsl.inter.env.showOpenDialog == 'function'
-          ? await obj.jsl.inter.env.showOpenDialog(options)
-          : obj.jsl.inter.env.showOpenDialogSync(options);
-        if(file_path === undefined || file_path === false) {
+        file_path = await obj.jsl.inter.file_system._choosePath(options);
+        if(!file_path?.length) {
           obj.jsl.inter.env.error('@openWindow3D.fromJSON: ' + obj.jsl.inter.lang.string(132) + '.');
           return false;
-        } else {
+        }
+        if(Array.isArray(file_path)) {
           file_path = file_path[0];
         }
       }

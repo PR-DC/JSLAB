@@ -15,7 +15,9 @@ const { PRDC_JSLAB_SYMBOLIC_MATH_GIAC } = require('./sym-math-giac');
 class PRDC_JSLAB_SYMBOLIC_MATH {
 
   /**
+   * Creates the configured symbolic-math backend for a workspace.
    * @param {Object} jsl JSLAB workspace.
+   * @returns {PRDC_JSLAB_SYMBOLIC_MATH_SYMPY|PRDC_JSLAB_SYMBOLIC_MATH_GIAC} Configured backend.
    */
   constructor(jsl) {
     const backend = jsl.inter.config.SYMBOLIC_MATH_BACKEND;

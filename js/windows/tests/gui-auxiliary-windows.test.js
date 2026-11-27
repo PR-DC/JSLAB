@@ -100,9 +100,6 @@ for(const [selector, action] of [['#save-as-menu', 'save'], ['#reset-menu', 'res
 }
 
 guiTest(tests, 'figure', 'closing an animated figure restores its Plotly drawing methods', [], function(assert, f) {
-  const { PRDC_JSLAB_PLOT_MESH_ANIMATION } = f.load(path.join(root, 'js/windows/plot-mesh-animation.js'),
-    ['PRDC_JSLAB_PLOT_MESH_ANIMATION']);
-  f.window.PRDC_JSLAB_PLOT_MESH_ANIMATION = PRDC_JSLAB_PLOT_MESH_ANIMATION;
   f.window.Plotly = { version: '3.3.0' };
   const { plot } = f.load(path.join(root, 'js/windows/plot.js'), ['plot']);
   const draw = () => {};

@@ -47,6 +47,7 @@ const seedrandom = require('seedrandom');
 const bin7zip = require('7zip-bin').path7za;
 const PDFDocument = require('pdfkit');
 const SVGtoPDF = require('svg-to-pdfkit');
+const { PRDC_JSLAB_SVG_TO_PDF } = require('../other-shared/svg-to-pdf');
 const { PolynomialRegression } = require('ml-regression-polynomial');
 const recast = require('recast');
 const babel_parser = require('@babel/parser');
@@ -133,8 +134,6 @@ class PRDC_JSLAB_ENV {
     this.process_pid = process.pid;
     this.math = this.context.math;
     this.fmin = this.context.fmin;
-    this.PDFDocument = PDFDocument;
-    this.SVGtoPDF = SVGtoPDF;
     this.PolynomialRegression = PolynomialRegression;
     this.os = os;
     this.net = net;
@@ -233,6 +232,18 @@ class PRDC_JSLAB_ENV {
 
     // Which properties and methods to export to context
     this.exports = ['debug', 'version', 'platform', 'buildShareLink', 'loadPyodide'];
+  }
+
+  /**
+   * Converts SVG markup into PDF bytes with the desktop PDF libraries.
+   * @param {string} svg_data SVG markup.
+   * @param {number} width Output width.
+   * @param {number} height Output height.
+   * @param {Object} fonts Registered figure fonts.
+   * @returns {Promise<Buffer|Uint8Array>} Generated PDF bytes.
+   */
+  svgToPdf(svg_data, width, height, fonts) {
+    return PRDC_JSLAB_SVG_TO_PDF.convert(PDFDocument, SVGtoPDF, svg_data, width, height, fonts);
   }
 
   /**

@@ -11,6 +11,44 @@
    */
   class PRDC_JSLAB_PRESENTATION_CONTENT {
     /**
+     * Resolves the content type used for presentation resources in every host.
+     * @param {string} file_path Resource path.
+     * @returns {string} MIME type with an optional UTF-8 charset.
+     */
+    static mimeType(file_path) {
+      var match = /(?:^|\/)(?:[^/]*)(\.[^.?#/]+)(?:[?#].*)?$/i.exec(String(file_path || '').replace(/\\/g, '/'));
+      var extension = match ? match[1].toLowerCase() : '';
+      var types = {
+        '.css': 'text/css; charset=utf-8',
+        '.gif': 'image/gif',
+        '.htm': 'text/html; charset=utf-8',
+        '.html': 'text/html; charset=utf-8',
+        '.ico': 'image/x-icon',
+        '.jpeg': 'image/jpeg',
+        '.jpg': 'image/jpeg',
+        '.js': 'text/javascript; charset=utf-8',
+        '.json': 'application/json; charset=utf-8',
+        '.map': 'application/json; charset=utf-8',
+        '.mjs': 'text/javascript; charset=utf-8',
+        '.mp3': 'audio/mpeg',
+        '.mp4': 'video/mp4',
+        '.ogg': 'audio/ogg',
+        '.otf': 'font/otf',
+        '.pdf': 'application/pdf',
+        '.png': 'image/png',
+        '.svg': 'image/svg+xml',
+        '.txt': 'text/plain; charset=utf-8',
+        '.ttf': 'font/ttf',
+        '.wasm': 'application/wasm',
+        '.webm': 'video/webm',
+        '.webp': 'image/webp',
+        '.woff': 'font/woff',
+        '.woff2': 'font/woff2'
+      };
+      return types[extension] || 'application/octet-stream';
+    }
+
+    /**
      * Maps a resource module to its standalone bundle name.
      * @param {string} module_path Original resource path.
      * @returns {string} Standalone resource path.

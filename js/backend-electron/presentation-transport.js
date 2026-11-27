@@ -10,6 +10,7 @@ const path = require('path');
 const http = require('http');
 const os = require('os');
 const cp = require('child_process');
+const { PRDC_JSLAB_PRESENTATION_CONTENT } = require('../windows/presentation-content');
 
 /**
  * Adapts native files, HTTP previews and the standalone module compiler.
@@ -169,7 +170,7 @@ class PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT {
       }
 
       var headers = {
-        'Content-Type': this._getPresentationContentType(file_path),
+        'Content-Type': PRDC_JSLAB_PRESENTATION_CONTENT.mimeType(file_path),
         'Cache-Control': 'no-store',
         'Accept-Ranges': 'bytes'
       };
@@ -222,42 +223,6 @@ class PRDC_JSLAB_ELECTRON_PRESENTATION_TRANSPORT {
       });
       stream.pipe(res);
     });
-  }
-
-  /**
-   * Returns the HTTP content type for one served presentation asset.
-   * @param {String} file_path
-   * @returns {String}
-   */
-  _getPresentationContentType(file_path) {
-    var ext = path.extname(file_path).toLowerCase();
-    var types = {
-      '.css': 'text/css; charset=utf-8',
-      '.gif': 'image/gif',
-      '.htm': 'text/html; charset=utf-8',
-      '.html': 'text/html; charset=utf-8',
-      '.ico': 'image/x-icon',
-      '.jpeg': 'image/jpeg',
-      '.jpg': 'image/jpeg',
-      '.js': 'text/javascript; charset=utf-8',
-      '.json': 'application/json; charset=utf-8',
-      '.map': 'application/json; charset=utf-8',
-      '.mjs': 'text/javascript; charset=utf-8',
-      '.mp3': 'audio/mpeg',
-      '.mp4': 'video/mp4',
-      '.ogg': 'audio/ogg',
-      '.otf': 'font/otf',
-      '.pdf': 'application/pdf',
-      '.png': 'image/png',
-      '.svg': 'image/svg+xml',
-      '.txt': 'text/plain; charset=utf-8',
-      '.ttf': 'font/ttf',
-      '.wasm': 'application/wasm',
-      '.webm': 'video/webm',
-      '.woff': 'font/woff',
-      '.woff2': 'font/woff2'
-    };
-    return types[ext] || 'application/octet-stream';
   }
 
   /**

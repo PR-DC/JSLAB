@@ -13,6 +13,28 @@ const { gzipSync } = require('node:zlib');
 
 const tests = new PRDC_JSLAB_TESTS();
 
+tests.add('LaTeX toolchain discovery extends configured and PATH directories with MiKTeX support tools', function(assert) {
+  const latex = new PRDC_JSLAB_LATEX();
+  const configured = path.resolve('configured-tex');
+  const inherited = path.resolve('inherited-tools');
+  const program = path.parse(process.cwd()).root + path.join('Program Files');
+  const local = path.resolve('local-app-data');
+  const result = latex.toolchainDirectories(configured, {
+    Path: inherited + path.delimiter + configured,
+    LOCALAPPDATA: local,
+    ProgramFiles: program
+  });
+
+  assert.equal(result.path_key, 'Path');
+  assert.deepEqual(result.dirs.slice(0, 2), [configured, inherited]);
+  assert.equal(result.dirs.filter(dir => path.normalize(dir).toLowerCase() ===
+    path.normalize(configured).toLowerCase()).length, 1);
+  if(process.platform === 'win32') {
+    assert.ok(result.dirs.includes(path.join(program, 'MiKTeX', 'miktex', 'bin', 'x64')));
+    assert.ok(result.dirs.includes(path.join(program, 'Git', 'usr', 'bin')));
+  }
+}, { tags: ['unit', 'backend', 'latex'] });
+
 tests.add('LaTeX reverse jumps prefer the clicked text over a float elsewhere on the page', async function(assert) {
   const directory = path.join(app_path, 'temp');
   await fs.mkdir(directory, { recursive: true });

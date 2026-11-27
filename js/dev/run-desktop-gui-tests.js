@@ -38,7 +38,7 @@ class PRDC_JSLAB_DEV_RUN_DESKTOP_GUI_TESTS_HELPER {
     delete env.ELECTRON_RUN_AS_NODE;
     var gpu_arguments = process.argv.includes('--test-hardware-gpu') ? [] : ['--in-process-gpu', '--disable-gpu'];
     var child = cp.spawn(require('electron'), [path.join(root, 'js/main/tests/desktop-gui-host.js'), '--gui-parent-pid=' + process.pid,
-      '--user-data-dir=' + profile, '--remote-debugging-port=0', ...gpu_arguments],
+      '--user-data-dir=' + profile, '--remote-debugging-port=0', '--no-sandbox', ...gpu_arguments],
     { cwd: root, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     var diagnostics = '';
     [child.stdout, child.stderr].forEach(stream => stream.on('data', data => {

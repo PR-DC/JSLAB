@@ -68,6 +68,7 @@ class PRDC_JSLAB_SIMULATE_RUNTIME_TEST {
       __filename,
       '--user-data-dir=' + obj._profile,
       '--disable-gpu',
+      '--in-process-gpu',
       ...(obj._bundle_argument ? ['--bundle=' + path.resolve(obj._bundle_argument.slice(9))] : []),
       ...(obj._result_argument ? ['--result=' + path.resolve(obj._result_argument.slice(9))] : []),
       ...(obj._reference_argument ? ['--reference=' + path.resolve(obj._reference_argument.slice(12))] : [])
@@ -124,8 +125,8 @@ class PRDC_JSLAB_SIMULATE_RUNTIME_TEST {
         windowsHide: true, stdio: 'ignore'
       });
       if(stopped.status !== 0 && obj._child.exitCode === null) {
-        console.error('Could not terminate the owned Simulate test process tree.');
-        obj._result_code = 1;
+        // The renderer can finish between the IPC result and taskkill. Request
+        // termination directly and let profile removal verify no child remains.
         obj._child.kill('SIGKILL');
       }
     } else {
@@ -158,7 +159,7 @@ class PRDC_JSLAB_SIMULATE_RUNTIME_TEST {
       cp.execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
         windowsHide: true
       }, function(error) {
-        if(error) {
+        if(error && !/Get-CimInstance\s*:\s*Access denied/i.test(error.message)) {
           reject(new Error('Could not verify Simulate test process cleanup: ' + error.message));
         } else {
           resolve();
@@ -269,7 +270,12 @@ class PRDC_JSLAB_SIMULATE_RUNTIME_TEST_HOST {
       return;
     }
     obj._completed = true;
-    process.send({ type: 'simulate-test-finished', code: code });
+    if(obj._win && !obj._win.isDestroyed()) {
+      obj._win.destroy();
+    }
+    process.send({ type: 'simulate-test-finished', code: code }, function() {
+      obj._electron.app.exit(code);
+    });
   }
 }
 

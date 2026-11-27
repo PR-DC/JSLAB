@@ -125,4 +125,41 @@ tests.add('host services reuse feature-owned behavior through real bases and com
   }
 }, { tags: ['unit', 'shared', 'architecture'] });
 
+tests.add('Electron and browser backends do not contain substantial copied method bodies', function(assert) {
+  const root = path.resolve(__dirname, '../..');
+  const bodies = { 'backend-electron': new Map(), 'backend-web': new Map() };
+  for(const backend of Object.keys(bodies)) {
+    const directory = path.join(root, backend);
+    for(const name of fs.readdirSync(directory).filter(file => file.endsWith('.js'))) {
+      const filename = path.join(directory, name);
+      const source = fs.readFileSync(filename, 'utf8');
+      const add = node => {
+        if(node.body?.type !== 'BlockStatement') return;
+        const body = source.slice(node.body.start + 1, node.body.end - 1)
+          .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+          .replace(/\s+/g, ' ').trim();
+        const tokens = body.match(/[A-Za-z_$][\w$]*|\d+(?:\.\d+)?|===|!==|=>|\?\?|\?\.|&&|\|\||\S/g) || [];
+        if(tokens.length < 35) return;
+        const normalized = tokens.join(' ');
+        const location = backend + '/' + name + ':' + node.loc.start.line;
+        if(!bodies[backend].has(normalized)) bodies[backend].set(normalized, []);
+        bodies[backend].get(normalized).push(location);
+      };
+      traverse(parser.parse(source, { sourceType: 'unambiguous' }), {
+        ClassMethod(p) { add(p.node); },
+        ObjectMethod(p) { add(p.node); },
+        FunctionDeclaration(p) { add(p.node); },
+        FunctionExpression(p) { add(p.node); },
+        ArrowFunctionExpression(p) { add(p.node); }
+      });
+    }
+  }
+  const duplicates = [];
+  for(const [body, electron_locations] of bodies['backend-electron']) {
+    const web_locations = bodies['backend-web'].get(body);
+    if(web_locations) duplicates.push(...electron_locations.flatMap(left => web_locations.map(right => left + ' == ' + right)));
+  }
+  assert.deepEqual(duplicates, []);
+}, { tags: ['unit', 'shared', 'architecture'] });
+
 exports.MODULE_TESTS = tests;
