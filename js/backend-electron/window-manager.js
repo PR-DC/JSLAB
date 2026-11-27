@@ -423,12 +423,16 @@ class PRDC_JSLAB_ELECTRON_WINDOW_MANAGER extends PRDC_JSLAB_WINDOW_MANAGER {
   }
 
   /**
-   * Opens a selected project in Simulate.
+   * Opens a new Simulate window or loads an explicitly selected project.
    * @param {string} [file_path] Explicit project path.
-   * @returns {Promise<boolean>} Whether a project was opened.
+   * @returns {Promise<boolean>} Whether the Simulate window was shown.
    */
   async showSimulate(file_path) {
     if(this.application.cli_mode) return false;
+    if(file_path === undefined) {
+      const win = await this.getSimulateWindow();
+      return this.focusFeatureWindow(win);
+    }
     const project = await this.application.files.resolveSimulateProject(file_path);
     if(!project.success || this.application.is_app_quitting) return false;
     const win = await this.getSimulateWindow();

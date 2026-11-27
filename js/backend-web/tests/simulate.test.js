@@ -51,30 +51,27 @@ tests.add('Web Ctrl+C cancels the pending Simulate picker request', async functi
 }, { tags: ['gui', 'web', 'simulate'], timeout_ms: 25000 });
 
 tests.add('Web Simulate opens the shared editor without downloading the solver or standard library', async function(assert) {
-  const canceled = await gui_browser.evaluate(async () => {
+  const opened = await gui_browser.evaluate(async () => {
     const files = jslab_web.files;
     const pick = files._showOpenDialog;
-    files._showOpenDialog = async () => false;
+    var picker_calls = 0;
+    files._showOpenDialog = async () => {
+      picker_calls++;
+      return false;
+    };
     try {
       await jslab_web.platform.host.send('MainProcess', 'show-simulate');
-      return jslab_web.window_manager.windows.has('simulate-window');
+      return { window: jslab_web.window_manager.windows.has('simulate-window'), picker_calls };
     } finally {
       files._showOpenDialog = pick;
     }
   });
-  assert.equal(canceled, false);
+  assert.deepEqual(opened, { window: true, picker_calls: 0 });
   await gui_browser.evaluate(async () => {
-    const files = jslab_web.files;
-    const pick = files._showOpenDialog;
     const project = '/workspace/on-demand.jslmo';
     jslab_web.fs.writeTextFileSync(project, JSON.stringify({ format: 'JSLAB Simulate', version: 1,
       source: 'model OnDemand\nend OnDemand;' }));
-    files._showOpenDialog = async () => [project];
-    try {
-      await jslab_web.platform.host.send('MainProcess', 'show-simulate');
-    } finally {
-      files._showOpenDialog = pick;
-    }
+    await jslab_web.platform.host.send('MainProcess', 'show-simulate', project);
   });
   await gui_browser.waitFor(() => {
     const frame = jslab_web.window_manager.windows.get('simulate-window')?.iframe.contentWindow;

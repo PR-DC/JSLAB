@@ -139,6 +139,67 @@ guiTest(tests, 'main', 'console preview clears immediately and ignores a late re
     f.window.ipcRenderer.invoke = original;
   }
 });
+guiTest(tests, 'main', 'console preview scrolls only after a successful result is shown', [], async function(assert, f, c) {
+  var original_invoke = f.window.ipcRenderer.invoke;
+  var original_scroll = c.command_window.scrollToBottom;
+  var original_autoscroll = c.command_window.autoscroll;
+  var scrolls = 0;
+  f.window.ipcRenderer.invoke = async function(channel, expression) {
+    if(channel === 'get-console-preview') {
+      return expression === 'invalid' ? { success: false } :
+        { success: true, value: { type: 'number', description: '3' } };
+    }
+    return original_invoke.apply(this, arguments);
+  };
+  c.command_window.scrollToBottom = function() {
+    scrolls++;
+  };
+  try {
+    c.command_window.code_input.setValue('invalid');
+    await new Promise(function(resolve) {
+      setTimeout(resolve, 180);
+    });
+    assert.equal(scrolls, 0);
+    c.command_window.code_input.setValue('1 + 2');
+    await new Promise(function(resolve) {
+      setTimeout(resolve, 180);
+    });
+    assert.equal(scrolls, 1);
+    c.command_window.autoscroll = false;
+    c.command_window.code_input.setValue('2 + 1');
+    await new Promise(function(resolve) {
+      setTimeout(resolve, 180);
+    });
+    assert.equal(scrolls, 1);
+  } finally {
+    c.command_window.autoscroll = original_autoscroll;
+    c.command_window.scrollToBottom = original_scroll;
+    f.window.ipcRenderer.invoke = original_invoke;
+  }
+});
+guiTest(tests, 'main', 'command window scrolling keeps autocomplete attached to its editor', [], function(assert, f, c) {
+  var code_input = c.command_window.code_input;
+  var original_completion = code_input.state.completionActive;
+  var wrapper = code_input.getWrapperElement();
+  var original_bounds = wrapper.getBoundingClientRect;
+  var hints = f.document.createElement('ul');
+  hints.style.top = '120px';
+  hints.style.left = '80px';
+  try {
+    code_input.state.completionActive = { widget: { hints } };
+    c.command_window.console_autocomplete_bounds = { top: 200, left: 50 };
+    wrapper.getBoundingClientRect = function() {
+      return { top: 170, left: 45 };
+    };
+    f.query('#command-window').dispatchEvent(new f.window.Event('scroll'));
+    assert.equal(hints.style.top, '90px');
+    assert.equal(hints.style.left, '75px');
+  } finally {
+    wrapper.getBoundingClientRect = original_bounds;
+    code_input.state.completionActive = original_completion;
+    c.command_window.console_autocomplete_bounds = null;
+  }
+});
 guiTest(tests, 'main', 'welcome quick links match the README destinations and order', [], function(assert, f) {
   var links = Array.from(f.document.querySelectorAll('.welcome-message p:last-child a'));
   var expected = [

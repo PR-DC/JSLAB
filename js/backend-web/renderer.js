@@ -343,7 +343,8 @@ class PRDC_JSLAB_WEB_MAIN_HOST extends PRDC_JSLAB_WEB_RENDERER_HOST {
       switch(action) {
         case 'show-editor': return shell.windows._openNewEditorWindow();
         case 'show-assistant': return shell.windows._openAssistantWindow();
-        case 'show-simulate': return shell.windows._openSimulateProject(data);
+        case 'show-simulate': return data === undefined ?
+          shell.windows._openSimulateWindow() : shell.windows._openSimulateProject(data);
         case 'set-fullscreen':
           if(data) {
             return document.documentElement.requestFullscreen?.();

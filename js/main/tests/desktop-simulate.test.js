@@ -176,6 +176,32 @@ if(!globalThis.gui_desktop) {
   return;
 }
 
+tests.add('desktop Simulate menu opens a new project without a file dialog', async function(assert) {
+  const targets = async () => (await fetch('http://127.0.0.1:' + gui_desktop_port + '/json/list')).json();
+  const simulateTarget = async () => (await targets()).find(item => item.type === 'page' && item.url.endsWith('/simulate.html'));
+  await gui_desktop.main.evaluate(() => document.getElementById('simulate-menu').click());
+  let target;
+  for(let attempt = 0; attempt < 120 && !target; attempt++) {
+    target = await simulateTarget();
+    if(!target) await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert.ok(target, 'Simulate menu opens the window');
+  const client = new PRDC_JSLAB_GUI_TEST_BROWSER();
+  await client.connect(target.webSocketDebuggerUrl);
+  try {
+    await client.waitFor(() => typeof win_simulate !== 'undefined' && !win_simulate.busy,
+      'new Simulate project', 15000);
+    assert.equal(await client.evaluate(() => win_simulate.file_path), '');
+    await client.evaluate(() => document.getElementById('win-close').click());
+    for(let attempt = 0; attempt < 40 && await simulateTarget(); attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    assert.equal(await simulateTarget(), undefined);
+  } finally {
+    await client.close();
+  }
+}, { tags: ['gui', 'electron', 'integration'], timeout_ms: 25000 });
+
 tests.add('desktop Simulate waits for a .jslmo file before creating its window', async function(assert) {
   const targets = async () => (await fetch('http://127.0.0.1:' + gui_desktop_port + '/json/list')).json();
   const simulateTarget = async () => (await targets()).find(item => item.type === 'page' && item.url.endsWith('/simulate.html'));

@@ -64,6 +64,18 @@ guiTest(tests, 'main', 'opening another dialog closes the previous dialog', ['#h
   assert.equal(f.visible('#settings-container'), true);
 });
 
+guiTest(tests, 'main', 'shared dialogs keep their content in the dialog card layout', ['#settings-menu'], function(assert, f) {
+  f.click('#settings-menu');
+  var card = f.query('#settings-container .page-cont');
+  var content = f.query('#settings-container .page-panel');
+  var button = f.query('#settings-container .change-settings');
+  var card_bounds = card.getBoundingClientRect();
+  assert.equal(f.window.getComputedStyle(card).position, 'relative');
+  assert.notEqual(f.window.getComputedStyle(content).position, 'absolute');
+  assert.ok(card_bounds.height > 150);
+  assert.ok(button.getBoundingClientRect().bottom <= card_bounds.bottom);
+});
+
 guiTest(tests, 'main', 'language selector broadcasts the selected language', ['#settings-container .set-language'], function(assert, f) {
   f.input('#settings-container .set-language', 'rs', 'change');
   assert.equal(f.window.language.lang, 'rs');

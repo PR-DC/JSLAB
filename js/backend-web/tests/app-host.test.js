@@ -131,6 +131,23 @@ for(const name of ['help', 'info', 'settings']) {
   }, name);
 }
 
+webTest(tests, 'web shared dialogs retain their full card layout', async function() {
+  GUI.ok(Array.from(document.querySelectorAll('.main-dialog .page-cont'))
+    .every(card => !card.classList.contains('panel')));
+  GUI.ok(Array.from(document.querySelectorAll('.main-dialog .page-panel'))
+    .every(content => !content.classList.contains('panel')));
+  GUI.click('#settings-menu');
+  var card = document.querySelector('#settings-container .page-cont');
+  var content = document.querySelector('#settings-container .page-panel');
+  var button = document.querySelector('#settings-container .change-settings');
+  var card_bounds = card.getBoundingClientRect();
+  GUI.eq(getComputedStyle(card).position, 'relative');
+  GUI.ok(getComputedStyle(content).position !== 'absolute');
+  GUI.ok(card_bounds.height > 150);
+  GUI.ok(button.getBoundingClientRect().bottom <= card_bounds.bottom);
+  GUI.click('#settings-close');
+});
+
 webTest(tests, 'web settings language and history input persist in localStorage', async function() {
   var t = GUI;
   t.click('#settings-menu');

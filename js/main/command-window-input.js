@@ -212,6 +212,16 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
     this.code_input.on('change', function() {
       obj.scheduleConsolePreview();
     });
+    this.code_input.on('startCompletion', function() {
+      obj.console_autocomplete_bounds =
+        obj.code_input.getWrapperElement().getBoundingClientRect();
+    });
+    this.code_input.on('endCompletion', function() {
+      obj.console_autocomplete_bounds = null;
+    });
+    this.messages_scroll_container.addEventListener('scroll', function() {
+      obj.repositionConsoleAutocomplete();
+    });
 
     this.console_preview = document.createElement('div');
     this.console_preview.className = 'jslab-console-eager-preview';
@@ -433,6 +443,30 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
   },
 
   /**
+   * Keeps the open autocomplete menu attached to the command input while its
+   * outer terminal container scrolls.
+   */
+  repositionConsoleAutocomplete() {
+    if(!this.code_input) {
+      return;
+    }
+    var bounds = this.code_input.getWrapperElement().getBoundingClientRect();
+    var completion = this.code_input.state.completionActive;
+    var hints = completion && completion.widget && completion.widget.hints;
+    if(hints && this.console_autocomplete_bounds) {
+      var top = parseFloat(hints.style.top);
+      var left = parseFloat(hints.style.left);
+      if(isFinite(top)) {
+        hints.style.top = top + bounds.top - this.console_autocomplete_bounds.top + 'px';
+      }
+      if(isFinite(left)) {
+        hints.style.left = left + bounds.left - this.console_autocomplete_bounds.left + 'px';
+      }
+    }
+    this.console_autocomplete_bounds = bounds;
+  },
+
+  /**
    * Schedules a side-effect-free eager result preview.
    */
   scheduleConsolePreview() {
@@ -466,6 +500,9 @@ Object.assign(PRDC_JSLAB_COMMAND_WINDOW_INPUT.prototype, {
         return;
       }
       obj.console_preview.appendChild(obj.createConsoleValueElement(result.value));
+      if(obj.autoscroll) {
+        obj.scrollToBottom();
+      }
     }, 150);
   },
 
