@@ -6,6 +6,7 @@
 #include "control-core.h"
 #include <cmath>
 #include <limits>
+#include <vector>
 
 namespace {
 using control_core::Matrix;

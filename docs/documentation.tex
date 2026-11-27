@@ -1660,8 +1660,7 @@ If no session is found, check that JSLAB was started with \texttt{--mcp} under t
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
 
-\noindent Adds one or more paths to the search path list.
-Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
+\noindent Adds one or more paths to the search path list.Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{rmpath(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1674,8 +1673,7 @@ Alias compatible with MATLAB/Octave \textasciigrave{}addpath\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Updated search path entries.
 
-\noindent Removes one or more paths from the search path list.
-Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
+\noindent Removes one or more paths from the search path list.Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{path(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1688,8 +1686,7 @@ Alias compatible with MATLAB/Octave \textasciigrave{}rmpath\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Active search path entries.
 
-\noindent Retrieves or sets the active search path list.
-Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
+\noindent Retrieves or sets the active search path list.Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ls([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1702,8 +1699,7 @@ Compatible with MATLAB/Octave \textasciigrave{}path\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Entry names.
 
-\noindent Lists contents of a folder or wildcard target.
-Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
+\noindent Lists contents of a folder or wildcard target.Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{dir([target])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1716,8 +1712,7 @@ Compatible with MATLAB/Octave \textasciigrave{}ls\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<Object>>}: Directory entries.
 
-\noindent Lists directory entries with metadata.
-Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
+\noindent Lists directory entries with metadata.Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isfile(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1730,8 +1725,7 @@ Compatible with MATLAB/Octave \textasciigrave{}dir\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}:
 
-\noindent Returns true when the path resolves to a file.
-Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
+\noindent Returns true when the path resolves to a file.Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isfolder(path\_in)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1744,8 +1738,7 @@ Compatible with MATLAB \textasciigrave{}isfile\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}:
 
-\noindent Returns true when the path resolves to a folder.
-Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
+\noindent Returns true when the path resolves to a folder.Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{exist(name, [kind])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1759,9 +1752,7 @@ Compatible with MATLAB \textasciigrave{}isfolder\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<number>}: Existence code.
 
-\noindent Checks existence with MATLAB-compatible return codes.
-\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.
-Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
+\noindent Checks existence with MATLAB-compatible return codes.\textasciigrave{}1\textasciigrave{} variable, \textasciigrave{}2\textasciigrave{} file, \textasciigrave{}5\textasciigrave{} built-in, \textasciigrave{}7\textasciigrave{} directory, \textasciigrave{}0\textasciigrave{} missing.Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave{}'file'\textasciigrave{}, \textasciigrave{}'dir'|'folder'\textasciigrave{}, \textasciigrave{}'builtin'\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{which(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1774,8 +1765,7 @@ Supports typed queries: \textasciigrave{}'var'\textasciigrave{}, \textasciigrave
 
 \noindent \textbf{Returns:} \texttt{<string>}: Resolved absolute path, or false if not found.
 
-\noindent Resolves a file/module using the active search path.
-Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
+\noindent Resolves a file/module using the active search path.Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{who(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1788,8 +1778,7 @@ Compatible with MATLAB/Octave \textasciigrave{}which\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Variable names.
 
-\noindent Lists workspace variable names.
-Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
+\noindent Lists workspace variable names.Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{whos(names)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1802,8 +1791,7 @@ Compatible with MATLAB/Octave \textasciigrave{}who\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<Array.<Array.<string>>>}: Workspace descriptor rows.
 
-\noindent Lists workspace variable descriptors (name/type/class).
-Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
+\noindent Lists workspace variable descriptors (name/type/class).Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cd(new\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -1847,9 +1835,7 @@ Compatible with MATLAB/Octave \textasciigrave{}whos\textasciigrave{}.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when command was accepted.
 
-\noindent Controls command window transcript logging.
-\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,
-and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
+\noindent Controls command window transcript logging.\textasciigrave{}diary()\textasciigrave{} toggles logging, \textasciigrave{}diary('on')\textasciigrave{} enables, \textasciigrave{}diary('off')\textasciigrave{} disables,and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the specified file (append mode).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{error(msg)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2059,8 +2045,7 @@ and \textasciigrave{}diary('<file>')\textasciigrave{} enables logging to the spe
   \item \texttt{args} \texttt{<*>}: A single filename or a scope and filename to specify where to load the variables.
 \end{itemize}
 
-\noindent Loads variables from a specified file into the specified scope or the default script context.
-Supports current JSLAB workspace format and legacy plain JSON object files.
+\noindent Loads variables from a specified file into the specified scope or the default script context.Supports current JSLAB workspace format and legacy plain JSON object files.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getCompletions(data)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2315,8 +2300,7 @@ Supports current JSLAB workspace format and legacy plain JSON object files.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: Tuple \textasciigrave{}[success, wasm\_path|undefined]\textasciigrave{}.
 
-\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.
-The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
+\noindent Compiles a WebAssembly module from C/C++ or Rust sources using the available toolchain.The method automatically selects \textasciigrave{}emcc\textasciigrave{} for native sources and \textasciigrave{}wasm-pack\textasciigrave{} when a Cargo.toml is present.
 
 
 \subsection{docs}
@@ -2426,8 +2410,7 @@ The method automatically selects \textasciigrave{}emcc\textasciigrave{} for nati
 
 \noindent \textbf{Returns:} \texttt{<Array.<string>>}: Matching summary lines.
 
-\noindent Searches documentation by keyword and prints matching symbols.
-MATLAB-compatible alias for documentation search.
+\noindent Searches documentation by keyword and prints matching symbols.MATLAB-compatible alias for documentation search.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{source(name)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2626,8 +2609,7 @@ MATLAB-compatible alias for documentation search.
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Grid object: \{ xAxis, yAxis, Z, m, n, filled \}.
 
-\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.
-Ordering can be arbitrary. Values that are NaN/Inf are ignored.
+\noindent Builds a rectilinear grid (xAxis, yAxis, Z[y][x]) from flattened grid arrays.Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{gridSolveYforXZ(x, y, z, x0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2651,9 +2633,7 @@ Ordering can be arbitrary. Values that are NaN/Inf are ignored.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: Array of y solutions.
 
-\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.
-If z is a flat array, the function tries to rebuild a grid automatically.
-Returns an array of solutions (can be empty or multiple).
+\noindent Finds y values where z(x0, y) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{gridSolveXforYZ(x, y, z, y0, z0, [opts], [opts.extrap], [opts.eps], [opts.tolIn], [opts.minFill], [opts.allowMissing], [opts.minFillIfMissing])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2675,9 +2655,7 @@ Returns an array of solutions (can be empty or multiple).
   \item \texttt{opts.minFillIfMissing} \texttt{<number>}: Minimum filled ratio when allowMissing is true.
 \end{itemize}
 
-\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.
-If z is a flat array, the function tries to rebuild a grid automatically.
-Returns an array of solutions (can be empty or multiple).
+\noindent Finds x values where z(x, y0) == z0 on a rectilinear grid.If z is a flat array, the function tries to rebuild a grid automatically.Returns an array of solutions (can be empty or multiple).
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bilinearFunction(x, midPoint, midValue)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -2898,8 +2876,7 @@ Returns an array of solutions (can be empty or multiple).
 
 \noindent \textbf{Parameters:}
 \begin{itemize}
-  \item \texttt{A} \texttt{<Array>}: If \textasciigrave{}A\textasciigrave{} is a matrix (2D array), computes its characteristic polynomial.
-If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polynomial with those roots.
+  \item \texttt{A} \texttt{<Array>}: If \textasciigrave{}A\textasciigrave{} is a matrix (2D array), computes its characteristic polynomial.If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polynomial with those roots.
 \end{itemize}
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - Coefficients of the resulting polynomial.
@@ -3047,12 +3024,7 @@ If \textasciigrave{}A\textasciigrave{} is an array of roots, computes the polyno
 
 \noindent \textbf{Returns:} \texttt{<number>}: The minimum value found in the array.
 
-\noindent Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.
-Complex numbers are represented as objects with 'real' and 'imag' properties.
-The comparison follows Octave's rules:
-1. Compare magnitudes (absolute values) of the numbers.
-2. If magnitudes are equal, compare real parts.
-3. If real parts are equal, compare imaginary parts.
+\noindent Finds the minimum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{max(arr)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -3065,12 +3037,7 @@ The comparison follows Octave's rules:
 
 \noindent \textbf{Returns:} \texttt{<number>}: The maximum value found in the array.
 
-\noindent Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.
-Complex numbers are represented as objects with 'real' and 'imag' properties.
-The comparison follows Octave's rules:
-1. Compare magnitudes (absolute values) of the numbers.
-2. If magnitudes are equal, compare real parts.
-3. If real parts are equal, compare imaginary parts.
+\noindent Finds the maximum value in an array of numbers, which can include both real numbers and complex numbers.Complex numbers are represented as objects with 'real' and 'imag' properties.The comparison follows Octave's rules:1. Compare magnitudes (absolute values) of the numbers.2. If magnitudes are equal, compare real parts.3. If real parts are equal, compare imaginary parts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clamp(v, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -3085,8 +3052,7 @@ The comparison follows Octave's rules:
 
 \noindent \textbf{Returns:} \texttt{<number>}: The clamped value.
 
-\noindent Clamps a value to the inclusive range [a, b].
-Assumes a <= b.
+\noindent Clamps a value to the inclusive range [a, b].Assumes a <= b.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{real(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -3099,8 +3065,7 @@ Assumes a <= b.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The real part(s) of the input.
 
-\noindent Extracts the real part of a number or an array of numbers.
-Handles mixed inputs containing both real numbers and complex numbers.
+\noindent Extracts the real part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{imag(input)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -3113,8 +3078,7 @@ Handles mixed inputs containing both real numbers and complex numbers.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The imaginary part(s) of the input.
 
-\noindent Extracts the imaginary part of a number or an array of numbers.
-Handles mixed inputs containing both real numbers and complex numbers.
+\noindent Extracts the imaginary part of a number or an array of numbers.Handles mixed inputs containing both real numbers and complex numbers.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cumtrapz(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -3184,8 +3148,7 @@ Handles mixed inputs containing both real numbers and complex numbers.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<*>>}: Copied result; parent variables survive task interruption.
 
-\noindent Runs scientific/native work outside the persistent workspace so it can be stopped safely.
-The function receives copied arguments and must not depend on caller closures.
+\noindent Runs scientific/native work outside the persistent workspace so it can be stopped safely.The function receives copied arguments and must not depend on caller closures.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{nbwhile(fn)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5386,8 +5349,7 @@ The function receives copied arguments and must not depend on caller closures.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of adding all operands.
 
-\noindent Adds multiple operands, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{add(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5400,8 +5362,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of adding all operands.
 
-\noindent Adds multiple operands, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Adds multiple operands, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{minus(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5414,8 +5375,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of subtracting all subsequent operands from the first one.
 
-\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{subtract(args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -5428,8 +5388,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The result of subtracting all subsequent operands from the first one.
 
-\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.
-If multiple operands are arrays, they must be of the same length.
+\noindent Subtracts multiple operands from the first one, which can be either scalars or arrays.If multiple operands are arrays, they must be of the same length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{cross3D(A, B, cols)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -6576,8 +6535,7 @@ If multiple operands are arrays, they must be of the same length.
 
 \noindent \textbf{Returns:} \texttt{<string>}: The generated CSV as a string, with each row representing an entry and each column representing data from the corresponding key in the input object.
 
-\noindent Generates a CSV string from an simple object containing arrays of values.
-Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
+\noindent Generates a CSV string from an simple object containing arrays of values.Each key in the object represents a column in the CSV. This function handles uneven array lengths by filling missing values with an empty string.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{simpleArray2Csv(data, [delimiter])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7195,8 +7153,7 @@ Each key in the object represents a column in the CSV. This function handles une
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the directory was successfully created or already exists, false if an error occurred.
 
-\noindent Creates a directory at the specified path if it does not already exist.
-This method delegates the directory creation task to the environment's makeDirectory function.
+\noindent Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{mkdir(directory)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7209,8 +7166,7 @@ This method delegates the directory creation task to the environment's makeDirec
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True if the directory was successfully created or already exists, false if an error occurred.
 
-\noindent Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.
-This method delegates the directory creation task to the environment's makeDirectory function.
+\noindent Alias for makeDirectory. Creates a directory at the specified path if it does not already exist.This method delegates the directory creation task to the environment's makeDirectory function.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{openDir(filepath)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7456,8 +7412,7 @@ This method delegates the directory creation task to the environment's makeDirec
   \item \texttt{program\_name} \texttt{<string>}: The name of the program to check.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Array>}: An array where the first element is a boolean indicating if the program is running,
-and the second element is an array of process IDs if the program is running.
+\noindent \textbf{Returns:} \texttt{<Array>}: An array where the first element is a boolean indicating if the program is running,and the second element is an array of process IDs if the program is running.
 
 \noindent Checks if a specific program is running and retrieves its process IDs.
 
@@ -7655,8 +7610,7 @@ and the second element is an array of process IDs if the program is running.
 
 \noindent \textbf{Returns:} \texttt{<Object>}: An object containing the calculated heading (in radians from North, positive East) and pitch (in radians from the local horizontal, positive Up).
 
-\noindent Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.
-The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
+\noindent Calculates the heading (yaw) and pitch angles from a starting Cartesian point to a target Cartesian point.The angles are calculated in the local East-North-Up (ENU) frame of the starting point.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{mslToEllipsoidAlt(lat\_deg, lon\_deg, h\_msl\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7671,8 +7625,7 @@ The angles are calculated in the local East-North-Up (ENU) frame of the starting
 
 \noindent \textbf{Returns:} \texttt{<number>}: Ellipsoid altitude(s) in meters.
 
-\noindent Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.
-The conversion can handle single values or arrays of values.
+\noindent Converts altitude from Mean Sea Level (MSL) height to Ellipsoid height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ellipsoidToMslAlt(lat\_deg, lon\_deg, h\_ellipsoid\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7687,8 +7640,7 @@ The conversion can handle single values or arrays of values.
 
 \noindent \textbf{Returns:} \texttt{<number>}: MSL altitude(s) in meters.
 
-\noindent Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.
-The conversion can handle single values or arrays of values.
+\noindent Converts altitude from Ellipsoid height to Mean Sea Level (MSL) height using the EGM96 geoid model.The conversion can handle single values or arrays of values.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{positionToEllipsoid(lat\_deg, lon\_deg, h\_msl\_meters)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -7703,8 +7655,7 @@ The conversion can handle single values or arrays of values.
 
 \noindent \textbf{Returns:} \texttt{<Cesium.Cartesian3>}: Cartesian coordinate(s) in the WGS84 system.
 
-\noindent Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.
-The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
+\noindent Converts a position (latitude, longitude, and MSL altitude) into a Cesium Cartesian3 coordinate using Ellipsoid height.The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid model.
 
 
 \subsection{networking}
@@ -7970,8 +7921,7 @@ The MSL altitude is first converted to Ellipsoid altitude using the EGM96 geoid 
 
 \noindent \textbf{Returns:} \texttt{<string>}: A string containing the formatted number.
 
-\noindent Formats a floating-point number to a fixed number of significant digits,
-automatically adjusting decimal places depending on the integer part length.
+\noindent Formats a floating-point number to a fixed number of significant digits,automatically adjusting decimal places depending on the integer part length.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{clip(number, control\_number, clip\_value, [direction])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8139,8 +8089,7 @@ automatically adjusting decimal places depending on the integer part length.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when all names are unique.
 
-\noindent Ensures that name list contains unique values.
-Throws when a duplicate name is found.
+\noindent Ensures that name list contains unique values.Throws when a duplicate name is found.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{compareMixedValues(a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8570,8 +8519,7 @@ Throws when a duplicate name is found.
 
 \noindent \textbf{Returns:} \texttt{<string>}: A bounded representation with cycles and accessors identified.
 
-\noindent Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.
-It also escapes strings to prevent HTML injection.
+\noindent Safely serializes an object into a JSON string, handling circular references and deep structures, with depth control.It also escapes strings to prevent HTML injection.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{escapeHTML(string)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8624,8 +8572,7 @@ It also escapes strings to prevent HTML injection.
 
 \noindent \textbf{Returns:} \texttt{<string>}: A unique key string not present in the object.
 
-\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,
-numerical suffixes are appended until uniqueness is achieved.
+\noindent Produces a unique key name inside an object. If \textasciigrave{}key\textasciigrave{} already exists,numerical suffixes are appended until uniqueness is achieved.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{randomString(num)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8692,8 +8639,7 @@ numerical suffixes are appended until uniqueness is achieved.
 
 \noindent \textbf{Returns:} \texttt{<boolean>}: True when the value is valid.
 
-\noindent Checks that an input contains a finite number
-and—if supplied—is within the inclusive range [min, max].
+\noindent Checks that an input contains a finite numberand—if supplied—is within the inclusive range [min, max].
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{bold(s)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8784,13 +8730,7 @@ and—if supplied—is within the inclusive range [min, max].
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Result object with \textasciigrave{}plain\textasciigrave{} and \textasciigrave{}tex\textasciigrave{} strings.
 
-\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.
-
-Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/value
-pairs or as a final options object.
-
-Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,
-align, float, caption, label, escapeTeX.
+\noindent Prints a formatted plain-text table and optionally exports a LaTeX table.Columns are Arrays/TypedArrays (all same length). Options can be passed as parameter/valuepairs or as a final options object.Options: VariableNames, RowNames, Format, Save ("no"|"plain"|"tex"), File, rlines, clines,align, float, caption, label, escapeTeX.
 
 
 \subsection{table}
@@ -8805,11 +8745,7 @@ align, float, caption, label, escapeTeX.
 
 \noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TABLE>}:
 
-\noindent Creates a table from columns.
-Usage examples:
-table(colA, colB, \{ VariableNames: ['A', 'B'] \})
-table(\{ A: colA, B: colB \})
-table(colA, colB, 'VariableNames', ['A', 'B'])
+\noindent Creates a table from columns.Usage examples:table(colA, colB, \{ VariableNames: ['A', 'B'] \})table(\{ A: colA, B: colB \})table(colA, colB, 'VariableNames', ['A', 'B'])
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{timetable(row\_times, args)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -8823,10 +8759,7 @@ table(colA, colB, 'VariableNames', ['A', 'B'])
 
 \noindent \textbf{Returns:} \texttt{<PRDC\_JSLAB\_TIMETABLE>}:
 
-\noindent Creates a timetable from row times and columns.
-Usage examples:
-timetable(times, colA, colB, \{ VariableNames: ['A', 'B'] \})
-timetable(times, \{ A: colA, B: colB \})
+\noindent Creates a timetable from row times and columns.Usage examples:timetable(times, colA, colB, \{ VariableNames: ['A', 'B'] \})timetable(times, \{ A: colA, B: colB \})
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{array2table(A, [options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9166,9 +9099,7 @@ timetable(times, \{ A: colA, B: colB \})
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Distance bounds and closest points.
 
-\noindent Finds the minimum Euclidean distance between two filled disks in 3D.
-Overlapping disks have zero distance. Normals need not have unit length.
-Throws for invalid inputs or if the error bound cannot be met.
+\noindent Finds the minimum Euclidean distance between two filled disks in 3D.Overlapping disks have zero distance. Normals need not have unit length.Throws for invalid inputs or if the error bound cannot be met.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{pointLineDistance(P, A, i)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9181,11 +9112,9 @@ Throws for invalid inputs or if the error bound cannot be met.
   \item \texttt{i} \texttt{<Array.<number>>}: a unit direction vector of the line
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: d   - shortest distance
-P1  - point on the line with the smallest distance to P
+\noindent \textbf{Returns:} \texttt{<Object>}: d   - shortest distanceP1  - point on the line with the smallest distance to P
 
-\noindent Returns the shortest distance from point P to the line defined by (A, i)
-and the closest point (P1) on that line.
+\noindent Returns the shortest distance from point P to the line defined by (A, i)and the closest point (P1) on that line.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{pointSegmentDistance(p, a, b)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9200,11 +9129,7 @@ and the closest point (P1) on that line.
 
 \noindent \textbf{Returns:} \texttt{<number>}: The minimal distance from p to the segment a-b.
 
-\noindent Computes the shortest distance from a point to a line segment in 2D.
-
-The point and segment endpoints are expected as objects with numeric
-properties \{x, y\}. The result is the Euclidean distance to the closest
-point on the segment.
+\noindent Computes the shortest distance from a point to a line segment in 2D.The point and segment endpoints are expected as objects with numericproperties \{x, y\}. The result is the Euclidean distance to the closestpoint on the segment.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{lineCircleIntersection(P, i, O, r)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9218,12 +9143,9 @@ point on the segment.
   \item \texttt{r} \texttt{<number>}: circle radius
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> intersection (two points)
-flag = 1 -> tangent (one point)
-flag = 2 -> no intersection
+\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> intersection (two points)flag = 1 -> tangent (one point)flag = 2 -> no intersection
 
-\noindent Returns the intersection points of a circle (center O, radius r)
-in a plane with a line passing through point P with direction i.
+\noindent Returns the intersection points of a circle (center O, radius r)in a plane with a line passing through point P with direction i.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{planesIntersection(P1, n1, P2, n2)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9237,12 +9159,9 @@ in a plane with a line passing through point P with direction i.
   \item \texttt{n2} \texttt{<Array.<number>>}: normal to plane 2
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> planes intersect
-flag = 1 -> planes are the same
-flag = 2 -> planes are parallel (no intersection)
+\noindent \textbf{Returns:} \texttt{<Object>}: flag = 0 -> planes intersectflag = 1 -> planes are the sameflag = 2 -> planes are parallel (no intersection)
 
-\noindent Returns the line (point P, direction i) that is the intersection
-of two planes, or indicates if they are the same or parallel.
+\noindent Returns the line (point P, direction i) that is the intersectionof two planes, or indicates if they are the same or parallel.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{isPointOnLine(P, A, B)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9257,8 +9176,7 @@ of two planes, or indicates if they are the same or parallel.
 
 \noindent \textbf{Returns:} \texttt{<number>}: 1 (on segment), 0 (not on segment)
 
-\noindent Checks if point P lies on the line segment A-B.
-Returns 1 if on segment, 0 otherwise.
+\noindent Checks if point P lies on the line segment A-B.Returns 1 if on segment, 0 otherwise.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{linesOverlap(P1, P2, P3, P4)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9274,8 +9192,7 @@ Returns 1 if on segment, 0 otherwise.
 
 \noindent \textbf{Returns:} \texttt{<Object>}:
 
-\noindent Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,
-or indicates no overlap.
+\noindent Returns the overlapping segment (if any) between two segments P1-P2 and P3-P4,or indicates no overlap.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{minPointsDistance3D(P1i, P2i)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9287,9 +9204,7 @@ or indicates no overlap.
   \item \texttt{P2i} \texttt{<Array.<Array.<number>>>}: Another array of 3D points.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: L  - The minimal distance found.
-P1 - The point in P1i corresponding to the minimal distance.
-P2 - The point in P2i corresponding to the minimal distance.
+\noindent \textbf{Returns:} \texttt{<Object>}: L  - The minimal distance found.P1 - The point in P1i corresponding to the minimal distance.P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent Finds the minimal 3D distance between all pairs of points in two arrays.
 
@@ -9705,8 +9620,7 @@ P2 - The point in P2i corresponding to the minimal distance.
 
 \noindent \textbf{Returns:} \texttt{<Object>}: Output, time, and state samples.
 
-\noindent Computes the unit-area impulse response of a single-input system.
-Continuous-time direct feedthrough is an impulse and is omitted from sampled output.
+\noindent Computes the unit-area impulse response of a single-input system.Continuous-time direct feedthrough is an impulse and is omitted from sampled output.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{lsimplot(sys, u, [t])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -9775,8 +9689,7 @@ Continuous-time direct feedthrough is an impulse and is omitted from sampled out
   \item \texttt{tolerance} \texttt{<number>}: Relative tolerance for crossover roots.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: Gain factor, principal phase margin in degrees,
-and the respective angular frequencies. Absent crossover frequencies are NaN.
+\noindent \textbf{Returns:} \texttt{<Object>}: Gain factor, principal phase margin in degrees,and the respective angular frequencies. Absent crossover frequencies are NaN.
 
 \noindent Computes SISO gain and phase margins from polynomial crossover equations.
 
@@ -10101,18 +10014,10 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
 \begin{itemize}
   \item \texttt{fnc} \texttt{<function>}: Function to be minimized. Accepts an array of size N and returns a scalar.
   \item \texttt{x0} \texttt{<Array>}: Initial guess for the parameters as an array of size N.
-  \item \texttt{options} \texttt{<Object>}: Optional parameters:
-- eps: Convergence threshold (default: 1e-6)
-- alpha: Initial step size scaling factor (default: 0.001)
-- stepSize: Finite difference step size for gradient estimation (default: 1e-6)
-- maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)
-- functionTolerance: Optional stopping tolerance for the loss change over one sweep.
-- parameterTolerance: Optional stopping tolerance for the largest parameter change over one sweep.
+  \item \texttt{options} \texttt{<Object>}: Optional parameters:- eps: Convergence threshold (default: 1e-6)- alpha: Initial step size scaling factor (default: 0.001)- stepSize: Finite difference step size for gradient estimation (default: 1e-6)- maxIterations: Maximum number of iterations to prevent infinite loops (default: 1000)- functionTolerance: Optional stopping tolerance for the loss change over one sweep.- parameterTolerance: Optional stopping tolerance for the largest parameter change over one sweep.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:
-- argument: The parameter array that minimizes the function.
-- fncvalue: The function value at the minimized parameters.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object with two fields:- argument: The parameter array that minimizes the function.- fncvalue: The function value at the minimized parameters.
 
 \noindent Minimizes an unconstrained function using a coordinate descent-like Powell algorithm.
 
@@ -10137,9 +10042,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
   \item \texttt{parameters.history} \texttt{<Array.<Object>>}: Optional array to store the history of simplex states for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
 
 \noindent Performs optimization using the Nelder-Mead algorithm.
 
@@ -10156,10 +10059,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
-- \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.- \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Conjugate Gradient method.
 
@@ -10177,10 +10077,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
-- \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.- \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Gradient Descent method.
 
@@ -10200,10 +10097,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
   \item \texttt{params.history} \texttt{<Array.<Object>>}: Optional array to store the history of optimization steps for analysis, including line search details.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
-- \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.- \textasciigrave{}fxprime\textasciigrave{}: The gradient of the function at the minimum.
 
 \noindent Performs optimization using the Gradient Descent method with Wolfe Line Search.
 
@@ -10246,9 +10140,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
   \item \texttt{parameters.history} \texttt{<Array.<Object>>}: Optional array to store the history of simplex states for analysis.
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.- \textasciigrave{}x\textasciigrave{}: The parameters corresponding to the minimum function value.
 
 \noindent Performs search using the Nelder-Mead algorithm.
 
@@ -10264,9 +10156,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
   \item \texttt{tol} \texttt{<number>}: The tolerance for convergence (optional).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:
-- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.
-- \textasciigrave{}x\textasciigrave{}: The x-value where the function attains its minimum within [a, b].
+\noindent \textbf{Returns:} \texttt{<Object>}: An object containing:- \textasciigrave{}fx\textasciigrave{}: The minimum function value found.- \textasciigrave{}x\textasciigrave{}: The x-value where the function attains its minimum within [a, b].
 
 \noindent Finds the minimum of a univariate function within a specified interval using a bracketing method.
 
@@ -10296,11 +10186,7 @@ and the respective angular frequencies. Absent crossover frequencies are NaN.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the opened presentation.
 
-\noindent Opens an existing presentation in a new window and returns its context.
-In the opened presentation, press Ctrl+S to toggle the slide controls.
-Press F9 to toggle the stopwatch overlay.
-When the stopwatch is visible, right-click it for Start, Stop, and Reset,
-drag it to move it, and drag any corner to resize it.
+\noindent Opens an existing presentation in a new window and returns its context.In the opened presentation, press Ctrl+S to toggle the slide controls.Press F9 to toggle the stopwatch overlay.When the stopwatch is visible, right-click it for Start, Stop, and Reset,drag it to move it, and drag any corner to resize it.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{editPresentation(file\_path, type)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -10314,9 +10200,7 @@ drag it to move it, and drag any corner to resize it.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<Window>>}: Resolves to the window context of the editor window.
 
-\noindent Opens the presentation editor for the specified project and returns its context.
-The preview uses the same runtime controls as openPresentation,
-including Ctrl+S for slide controls and F9 for the stopwatch.
+\noindent Opens the presentation editor for the specified project and returns its context.The preview uses the same runtime controls as openPresentation,including Ctrl+S for slide controls and F9 for the stopwatch.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{updatePresentation(file\_path)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12853,15 +12737,13 @@ including Ctrl+S for slide controls and F9 for the stopwatch.
   \item \texttt{options} \texttt{<Object>}: Configuration options such as port and host.
 \end{itemize}
 
-\noindent Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.
-Attempts to start FreeCAD if it's not running and connects to its TCP server.
+\noindent Starts the FreeCAD application and establishes a TCP connection for remote procedure calls.Attempts to start FreeCAD if it's not running and connects to its TCP server.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{findServer()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.
-Checks if the TCP server is reachable by sending a 'PING' command.
+\noindent Attempts to locate the FreeCAD TCP server within the network, respecting the startup timeout.Checks if the TCP server is reachable by sending a 'PING' command.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{send(message, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12875,8 +12757,7 @@ Checks if the TCP server is reachable by sending a 'PING' command.
 
 \noindent \textbf{Returns:} \texttt{<Buffer>}: - The response from the server or false if the request times out.
 
-\noindent Sends a message to the FreeCAD TCP server and waits for a response.
-Manages the TCP communication by ensuring message integrity and handling timeouts.
+\noindent Sends a message to the FreeCAD TCP server and waits for a response.Manages the TCP communication by ensuring message integrity and handling timeouts.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{inputParser(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12889,8 +12770,7 @@ Manages the TCP communication by ensuring message integrity and handling timeout
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - An array of parsed message components.
 
-\noindent Parses the input from FreeCAD responses to identify errors and data.
-Splits the message by '|' and checks for error or data messages.
+\noindent Parses the input from FreeCAD responses to identify errors and data.Splits the message by '|' and checks for error or data messages.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{showMessage(message)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12901,15 +12781,13 @@ Splits the message by '|' and checks for error or data messages.
   \item \texttt{message} \texttt{<string>}: The message received from FreeCAD.
 \end{itemize}
 
-\noindent Displays a message from FreeCAD in the JSLAB interface.
-Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
+\noindent Displays a message from FreeCAD in the JSLAB interface.Parses and displays messages specifically tagged as 'MSG' from FreeCAD.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{quit()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Closes the FreeCAD application gracefully.
-Sends a quit command and handles the termination of the TCP connection.
+\noindent Closes the FreeCAD application gracefully.Sends a quit command and handles the termination of the TCP connection.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{open(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12921,8 +12799,7 @@ Sends a quit command and handles the termination of the TCP connection.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Opens a specified file in FreeCAD.
-Sends a command to open a file and handles responses to confirm file access.
+\noindent Opens a specified file in FreeCAD.Sends a command to open a file and handles responses to confirm file access.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{importFile(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12934,8 +12811,7 @@ Sends a command to open a file and handles responses to confirm file access.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Imports a file into the current FreeCAD document.
-Sends an import command and handles responses to confirm the import operation.
+\noindent Imports a file into the current FreeCAD document.Sends an import command and handles responses to confirm the import operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{newDocument(filename, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12947,8 +12823,7 @@ Sends an import command and handles responses to confirm the import operation.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Creates a new document in FreeCAD, optionally specifying a filename.
-Sends a command to create a new document and handles the document creation response.
+\noindent Creates a new document in FreeCAD, optionally specifying a filename.Sends a command to create a new document and handles the document creation response.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{save(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12959,8 +12834,7 @@ Sends a command to create a new document and handles the document creation respo
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Saves the current document in FreeCAD.
-Sends a save command and handles responses to confirm the save operation.
+\noindent Saves the current document in FreeCAD.Sends a save command and handles responses to confirm the save operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{saveAs(filePath, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12972,8 +12846,7 @@ Sends a save command and handles responses to confirm the save operation.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Saves the current document in FreeCAD under a new filename.
-Sends a save as command and handles responses to confirm the operation.
+\noindent Saves the current document in FreeCAD under a new filename.Sends a save as command and handles responses to confirm the operation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{close(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12984,8 +12857,7 @@ Sends a save as command and handles responses to confirm the operation.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Closes the current document in FreeCAD.
-Sends a close command and handles responses to confirm the document closure.
+\noindent Closes the current document in FreeCAD.Sends a close command and handles responses to confirm the document closure.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{evaluate(command, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -12997,8 +12869,7 @@ Sends a close command and handles responses to confirm the document closure.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Executes a command in FreeCAD and returns the evaluation result.
-Sends an evaluate command with the specified command string.
+\noindent Executes a command in FreeCAD and returns the evaluation result.Sends an evaluate command with the specified command string.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{callScript(script, param, timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -13011,8 +12882,7 @@ Sends an evaluate command with the specified command string.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Runs a script in FreeCAD with optional parameters.
-Sends a script command along with parameters and handles the script execution response.
+\noindent Runs a script in FreeCAD with optional parameters.Sends a script command along with parameters and handles the script execution response.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getArea(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -13023,8 +12893,7 @@ Sends a script command along with parameters and handles the script execution re
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Retrieves the area of the selected object in FreeCAD.
-Sends a measure area command and parses the response to extract the area value.
+\noindent Retrieves the area of the selected object in FreeCAD.Sends a measure area command and parses the response to extract the area value.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{getVolume(timeout)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -13035,8 +12904,7 @@ Sends a measure area command and parses the response to extract the area value.
   \item \texttt{timeout} \texttt{<number>}: Timeout in milliseconds to wait for a response.
 \end{itemize}
 
-\noindent Retrieves the volume of the selected object in FreeCAD.
-Sends a measure volume command and parses the response to extract the volume value.
+\noindent Retrieves the volume of the selected object in FreeCAD.Sends a measure volume command and parses the response to extract the volume value.
 
 
 \subsection{om\_link}
@@ -13049,9 +12917,7 @@ Sends a measure volume command and parses the response to extract the volume val
   \item \texttt{exe} \texttt{<string>}: Path to the executable to be run, defaults to the OpenModelica compiler if not provided.
 \end{itemize}
 
-\noindent Starts the interaction with an external executable by initializing the necessary environment and parameters.
-Launches the executable with the appropriate command-line arguments for interaction via ZMQ.
-Waits for a port file to be created to establish the ZMQ communication.
+\noindent Starts the interaction with an external executable by initializing the necessary environment and parameters.Launches the executable with the appropriate command-line arguments for interaction via ZMQ.Waits for a port file to be created to establish the ZMQ communication.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{sendExpression(expr)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -13064,8 +12930,7 @@ Waits for a port file to be created to establish the ZMQ communication.
 
 \noindent \textbf{Returns:} \texttt{<Promise.<any>>}: - A promise that resolves with the parsed result of the expression evaluation.
 
-\noindent Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.
-Parses the response using a dedicated expression parser.
+\noindent Sends an expression to be evaluated by the external executable through the ZMQ connection and waits for the result.Parses the response using a dedicated expression parser.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{ModelicaSystem(filename, modelname, [libraries], [command\_line\_options])}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -13079,8 +12944,7 @@ Parses the response using a dedicated expression parser.
   \item \texttt{command\_line\_options} \texttt{<string>}: Additional command-line options for the simulation.
 \end{itemize}
 
-\noindent Initializes and configures a Modelica system with the specified parameters and libraries.
-Loads necessary files and prepares the environment for simulation.
+\noindent Initializes and configures a Modelica system with the specified parameters and libraries.Loads necessary files and prepares the environment for simulation.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{BuildModelicaModel()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -13370,15 +13234,13 @@ Loads necessary files and prepares the environment for simulation.
 
 \noindent \textbf{Returns:} \texttt{<Array>}: - The parsed data which could be an array, an object, or a string.
 
-\noindent Parses a given expression string into structured data based on predefined formats.
-Handles various formats including single and nested lists, records, and single elements.
+\noindent Parses a given expression string into structured data based on predefined formats.Handles various formats including single and nested lists, records, and single elements.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{close()}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
 
 
-\noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.
-Terminates any active processes and removes temporary port files.
+\noindent Closes the current session safely by cleaning up resources such as temporary files and network connections.Terminates any active processes and removes temporary port files.
 
 
 \subsection{excel\_link}
@@ -18402,17 +18264,7 @@ Terminates any active processes and removes temporary port files.
   \item \texttt{dz} \texttt{<number>}: Fine grid spacing in Z (must be >0).
 \end{itemize}
 
-\noindent \textbf{Returns:} \texttt{<Object>}: Result object:
-- dim: 3
-- closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise
-- touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise
-- surfaceCells: number of mixed voxels visited (surface voxel count)
-- evalCount: total feasibility evaluations performed
-- N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]
-- grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics
-- seed: coarse seed edge diagnostics (used steps + endpoints + orientation)
-- fineBracket: refined fine flip bracket used to start flood-fill
-- startVoxel: voxel indices used as flood-fill start
+\noindent \textbf{Returns:} \texttt{<Object>}: Result object:- dim: 3- closed: true if the mixed-voxel component does not touch bbox boundary; false otherwise- touchesBoundary: true if flood-fill hit voxel-grid boundary; false otherwise- surfaceCells: number of mixed voxels visited (surface voxel count)- evalCount: total feasibility evaluations performed- N: [feasible\_points,infeasible\_points], each is an array of [x,y,z]- grid: \{dx,dy,dz,nx,ny,nz\} fine grid diagnostics- seed: coarse seed edge diagnostics (used steps + endpoints + orientation)- fineBracket: refined fine flip bracket used to start flood-fill- startVoxel: voxel indices used as flood-fill start
 
 \noindent Main entry (3D).
 
@@ -18447,8 +18299,7 @@ Terminates any active processes and removes temporary port files.
   \item \texttt{lon} \texttt{<number>}: Longitude.
 \end{itemize}
 
-\noindent Sets the center of the map to the specified latitude and longitude.
-This will update the internal state and move the Leaflet map if it is ready.
+\noindent Sets the center of the map to the specified latitude and longitude.This will update the internal state and move the Leaflet map if it is ready.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{setZoom(zoom)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
@@ -18459,8 +18310,7 @@ This will update the internal state and move the Leaflet map if it is ready.
   \item \texttt{zoom} \texttt{<number>}: The zoom level.
 \end{itemize}
 
-\noindent Sets the zoom level of the map.
-This will update the internal state and adjust the Leaflet map if it is ready.
+\noindent Sets the zoom level of the map.This will update the internal state and adjust the Leaflet map if it is ready.
 
 \vspace{5mm}
 \noindent \codeBlock{\texttt{addMarker(lat, lon)}}{\color{jsl-gray}\vspace{2mm}\hrule\vspace{4mm}}
